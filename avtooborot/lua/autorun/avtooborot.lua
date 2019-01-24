@@ -1,7 +1,7 @@
 --[[============================= АВТООБОРОТ ==========================]]
 SetGlobalInt("AvtooborotEnabled", 2)
  
-if SERVER then
+if SERVER then 
 
 	local function OpenRoute(str)
 		for k,v in pairs(ents.FindByClass("gmod_track_signal"))do
