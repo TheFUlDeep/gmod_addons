@@ -5,6 +5,6 @@ hook.Add( "PlayerInitialSpawn", "Privet", function(ply)
     end
     end)
     timer.Simple(1, function()
-        ply:ChatPrint("Ты на проект WelsorRP. Развлекася")
+        --ply:ChatPrint("Ты на проект WelsorRP. Развлекася")
     end)
  end)
