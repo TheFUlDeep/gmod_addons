@@ -2750,10 +2750,11 @@ if SERVER then
 		NextMapTable = NewMapTable
 	end)
 
-
-	if game.GetMap():find("imagine") then
-		for k,v in pairs(ents.FindByClass("gmod_track_autodrive_plate")) do if v.PlateType == 760 then v:Remove() end end
-	end
+	timer.Simple(10, function()
+		if game.GetMap():find("imagine") then
+			for k,v in pairs(ents.FindByClass("gmod_track_autodrive_plate")) do if v.PlateType == 760 then v:Remove() end end
+		end
+	end)
 end
 --ply.InMetrostroiTrain
 --[[============================= УДАЛЕНИЕ НЕНУЖНЫХ ВКЛАДОК ИЗ SPAWNMENU ==========================]]
