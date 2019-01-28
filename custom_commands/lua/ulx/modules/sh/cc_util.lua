@@ -1717,12 +1717,13 @@ if CLIENT then
 			text6 = "ДСЦП(4) Парк: " .. (Metrostroi.ActiveDSCP4 or "отсутствует")
 			text7 = "ДСЦП(5) Уоллеса Брина " .. (Metrostroi.ActiveDSCP5 or "отсутствует")
 		end
-		if game.GetMap() == "gm_metro_jar_imagine_line_v3_n" then 
+		if game.GetMap() == "gm_metro_jar_imagine_line_v3_v" then 
 			text3 = "Блок пост депо(1): " .. (Metrostroi.ActiveDSCP1 or "отсутствует")
-			text4 = "ДСЦП(2) Проспект Метростроителей: " .. (Metrostroi.ActiveDSCP2 or "отсутствует")
-			text5 = "ДСЦП(3) Северная: " .. (Metrostroi.ActiveDSCP3 or "отсутствует")
-			text6 = "ДСЦП(4) Проспект Энергетиков: " .. (Metrostroi.ActiveDSCP4 or "отсутствует")
-			text7 = "ДСЦП(5) Селигерская роща " .. (Metrostroi.ActiveDSCP5 or "отсутствует")
+			text4 = "ДСЦП(2) Касторская: " .. (Metrostroi.ActiveDSCP2 or "отсутствует")
+			text4 = "ДСЦП(3) Проспект Метростроителей: " .. (Metrostroi.ActiveDSCP2 or "отсутствует")
+			text5 = "ДСЦП(4) Северная: " .. (Metrostroi.ActiveDSCP3 or "отсутствует")
+			text6 = "ДСЦП(5) Проспект Энергетиков: " .. (Metrostroi.ActiveDSCP4 or "отсутствует")
+			text7 = "ДСЦП(6) Восход " .. (Metrostroi.ActiveDSCP5 or "отсутствует")
 		end
 		local font = "ChatFont"
 		local text = "ДЦХ: " .. (Metrostroi.ActiveDispatcher or "отсутствует")
@@ -1745,7 +1746,7 @@ if CLIENT then
 			draw.SimpleText(text5, font, ScrW() - (w5 / 2) - 20, ScrH()/2 - 170 + Height + h2 + h3 + h4, Color(255, 255, 255, 255), 1, 1)
 			draw.SimpleText(text6, font, ScrW() - (w6 / 2) - 20, ScrH()/2 - 170 + Height + h2 + h3 + h4 + h5, Color(255, 255, 255, 255), 1, 1)
 		end
-		if game.GetMap() == "gm_mus_neoorange_d" or game.GetMap() == "gm_metro_jar_imagine_line_v3_n" then 
+		if game.GetMap() == "gm_mus_neoorange_d" or game.GetMap() == "gm_metro_jar_imagine_line_v3_v" then 
 			draw.RoundedBox(6, ScrW() - math.Max(w3,w4,w5,w6,w7) - 28, (ScrH()/2 - 170) - 13 + Height + h2, math.Max(w3,w4,w5,w6,w7) + 20, h3 + h4 + h5 + h6 + h7 --[[+ h6]] + 11, Color(0, 0, 0, 150))
 			draw.SimpleText(text3, font, ScrW() - (w3 / 2) - 20, ScrH()/2 - 170 + Height + h2, Color(255, 255, 255, 255), 1, 1)
 			draw.SimpleText(text4, font, ScrW() - (w4 / 2) - 20, ScrH()/2 - 170 + Height + h2 + h3, Color(255, 255, 255, 255), 1, 1)
@@ -1769,7 +1770,7 @@ local undisp = ulx.command( "Metrostroi", "ulx undisp", ulx.undisp, "!undisp",tr
 undisp:defaultAccess( ULib.ACCESS_ALL )
 undisp:help( "Уйти с занятых постов.")
 
-if game.GetMap() == "gm_mus_neoorange_d" or game.GetMap() == "gm_mus_crimson_line_tox_v9_21" or game.GetMap() == "gm_metro_jar_imagine_line_v3_n" then
+if game.GetMap() == "gm_mus_neoorange_d" or game.GetMap() == "gm_mus_crimson_line_tox_v9_21" or game.GetMap() == "gm_metro_jar_imagine_line_v3_v" then
 local dscp1 = ulx.command( "Metrostroi", "ulx dscp1", ulx.dscp1, "!dscp1",true  )
 dscp1:addParam{ type=ULib.cmds.PlayerArg, ULib.cmds.optional }
 dscp1:defaultAccess( ULib.ACCESS_OPERATOR )
@@ -2350,7 +2351,7 @@ if SERVER then
 		
 		if game.GetMap() == "gm_mus_crimson_line_tox_v9_21" then krugtime = 20 * 60
 		elseif game.GetMap() == "gm_smr_first_line_v2" then krugtime = 35 * 60
-		elseif game.GetMap() == "gm_metro_crossline_c4" then krugtime = 35 * 60	
+		elseif game.GetMap() == "gm_metro_crossline_c5" then krugtime = 35 * 60	
 		elseif game.GetMap() == "gm_metrostroi_b50" then krugtime = 70*60
 		end
 		krugtime = krugtime / trains_n
