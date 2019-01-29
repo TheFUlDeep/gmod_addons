@@ -55,10 +55,11 @@ if(table.HasValue(MSync.Settings.EnabledModules,"MBSync"))then
 			end
 			--if not ULib.isValidSteamID(target_ply:SteamID()) then ULib.tsayError( calling_ply, "Invalid StemID", true ) return end
 			--if MSync:IsValidPlayer(calling_ply) then
+			if not calling_ply:SteamID() then
+				MSync.AddBan(target_ply:SteamID(), target_ply:GetName(), "(Unknown)", "(Console)", reason, minutes)
+			else
 				MSync.AddBan(target_ply:SteamID(), target_ply:GetName(), calling_ply:SteamID(), calling_ply:GetName(), reason, minutes)
-			--else
-				--MSync.AddBan(target_ply:SteamID(), target_ply:GetName(), "(Unknown)", "(Console)", reason, minutes)
-			--end
+			end
 		end
 
 		local MBSyncban = ulx.command( CATEGORY_NAME, "ulx ban", MSync.ban, "!ban" )
