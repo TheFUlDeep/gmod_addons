@@ -17,7 +17,7 @@ if(table.HasValue(MSync.Settings.EnabledModules,"MBSync"))then
 					break
 				end
 			end]]
-			if not ULib.isValidSteamID(target_ply:SteamID()) then ULib.tsayError( calling_ply, "Invalid StemID", true ) return end
+			--if not ULib.isValidSteamID(target_ply:SteamID()) then ULib.tsayError( calling_ply, "Invalid StemID", true ) return end
 			if player.GetBySteamID(steamid) then
 				if IsValid(calling_ply) then
 					MSync.AddBan(steamid, player.GetBySteamID(steamid):Nick(), calling_ply:SteamID(), calling_ply:Nick(), reason, minutes)
@@ -53,7 +53,7 @@ if(table.HasValue(MSync.Settings.EnabledModules,"MBSync"))then
 				ULib.tsayError( calling_ply, "You cannot ban a bot.", true )
 				return
 			end
-			if not ULib.isValidSteamID(target_ply:SteamID()) then ULib.tsayError( calling_ply, "Invalid StemID", true ) return end
+			--if not ULib.isValidSteamID(target_ply:SteamID()) then ULib.tsayError( calling_ply, "Invalid StemID", true ) return end
 			--if MSync:IsValidPlayer(calling_ply) then
 				MSync.AddBan(target_ply:SteamID(), target_ply:GetName(), calling_ply:SteamID(), calling_ply:GetName(), reason, minutes)
 			--else
