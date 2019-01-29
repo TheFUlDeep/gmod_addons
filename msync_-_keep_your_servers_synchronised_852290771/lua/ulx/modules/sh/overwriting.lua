@@ -1,3 +1,4 @@
+local CATEGORY_NAME = "Utility"
 timer.Simple(6, function()
 	--[[============================= Новая функция adduser для мгновенного сохранения ранга ==========================]]
 	function ulx.adduser( calling_ply, target_ply, group_name )
