@@ -1,5 +1,5 @@
 //Increase this if the menu shows on map change.
-local DelayTime = 4
+local DelayTime = 10
 
 --айпи второго сервера
 local secondip
