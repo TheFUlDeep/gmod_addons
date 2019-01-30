@@ -2665,13 +2665,14 @@ if CLIENT then
 	end)
 end
 
-if SERVER then
 
 --[[============================= Скрытие дефолтного уведомления о коннекте ==========================]]
+if CLIENT
 	hook.Add( "ChatText", "hide_joinleave", function( index, name, text, typ )
 		if ( typ == "joinleave" ) then return true end
 	end)
-	
+end
+if SERVER then
 --[[============================= ФОНАРИК В КАБИНЕ ==========================]]
 	hook.Add("PlayerButtonDown", "Flashlight", function(ply,key)
 		if ply:InVehicle() then
