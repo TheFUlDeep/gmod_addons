@@ -1848,7 +1848,9 @@ if SERVER then
 	end
 	
 	----------------------------------------ПОСАДКА ИГРОКА В СВОБОДНОЕ МЕСТО---------------------------------------------
-				local function KekLolArbidol(v2,ply)
+				function KekLolArbidol(v2,ply)
+					ply:ExitVehicle()
+					ply:SetMoveType( MOVETYPE_NOCLIP )
 					if not IsValid(v2.DriverSeat:GetDriver()) then 
 						timer.Create("FindSeat",1.5,1,function() ply:EnterVehicle(v2.DriverSeat) end )
 					elseif not IsValid(v2.InstructorsSeat:GetDriver()) then
@@ -1867,7 +1869,7 @@ if SERVER then
 
 
 --[[ ======================================= ТП К СОСТАВУ ======================================= ]]		-- return'ы добавил для псевдооптимизации
-	function traintp( calling_ply,target_ply)
+	function ulx.traintp( calling_ply,target_ply)
 	local p = 0
 	for k, v in pairs( ents.GetAll() ) do
 		if string.match(tostring(v),"gmod_subway_") == "gmod_subway_" and string.match(tostring(v),"714") ~= "714" and v:CPPIGetOwner() == target_ply then 
@@ -1941,9 +1943,6 @@ if SERVER then
 		end
 	end
 end
- function ulx.traintp( calling_ply,target_ply)
-	traintp( calling_ply,target_ply)
- end
 local traintp = ulx.command( "Metrostroi", "ulx traintp", ulx.traintp, "!traintp",true)
 traintp:addParam{ type=ULib.cmds.PlayerArg, ULib.cmds.optional }
 traintp:defaultAccess( ULib.ACCESS_OPERATOR )
@@ -2381,7 +2380,7 @@ if SERVER then
 
 
 	--[[============================= РЕДИРЕКТ ==========================]]
-	function redirect(ply)
+	function ulx.redirect(ply)
 	local redirectip = ""
 		if GetHostName() == "metrostroi norank 2" then redirectip = "metronorank.ddns.net:27016"
 		elseif GetHostName() == "metrostroi norank 1" then redirectip = "metronorank.ddns.net:27017" 
@@ -2392,9 +2391,6 @@ if SERVER then
 		--print(GetHostName())
 		--print(redirectip)
 	end
-end
-function ulx.redirect(ply)
-	redirect(ply)
 end
 local redirect = ulx.command( "Utility", "ulx redirect", ulx.redirect, "!redirect", true, false, true )
 redirect:defaultAccess( ULib.ACCESS_ALL )
@@ -2415,85 +2411,82 @@ end
 
 timer.Simple(5, function()
 --[[============================= Новая функция смены карты для того, чтобы она сохранялась в файл ==========================]]
-function ulx.map( calling_ply, map, gamemode )
-	if not gamemode or gamemode == "" then
-		ulx.fancyLogAdmin( calling_ply, "#A changed the map to #s", map )
-	else
-		ulx.fancyLogAdmin( calling_ply, "#A changed the map to #s with gamemode #s", map, gamemode )
+	if SERVER then
+		function ulx.map( calling_ply, map, gamemode )
+			if not gamemode or gamemode == "" then
+				ulx.fancyLogAdmin( calling_ply, "#A changed the map to #s", map )
+			else
+				ulx.fancyLogAdmin( calling_ply, "#A changed the map to #s with gamemode #s", map, gamemode )
+			end
+			if gamemode and gamemode ~= "" then
+				game.ConsoleCommand( "gamemode " .. gamemode .. "\n" )
+			end
+			file.Write( "lastmap.txt", map )
+			game.ConsoleCommand( "changelevel " .. map ..  "\n" )
+		end
 	end
-	if gamemode and gamemode ~= "" then
-		game.ConsoleCommand( "gamemode " .. gamemode .. "\n" )
-	end
-	file.Write( "lastmap.txt", map )
-	game.ConsoleCommand( "changelevel " .. map ..  "\n" )
-end
-local map = ulx.command( "Utility", "ulx map", ulx.map, "!map" )
-map:addParam{ type=ULib.cmds.StringArg, completes=ulx.maps, hint="map", error="invalid map \"%s\" specified", ULib.cmds.restrictToCompletes }
-map:addParam{ type=ULib.cmds.StringArg, completes=ulx.gamemodes, hint="gamemode", error="invalid gamemode \"%s\" specified", ULib.cmds.restrictToCompletes, ULib.cmds.optional }
-map:defaultAccess( ULib.ACCESS_ADMIN )
-map:help( "Changes map and gamemode." )
+	local map = ulx.command( "Utility", "ulx map", ulx.map, "!map" )
+	map:addParam{ type=ULib.cmds.StringArg, completes=ulx.maps, hint="map", error="invalid map \"%s\" specified", ULib.cmds.restrictToCompletes }
+	map:addParam{ type=ULib.cmds.StringArg, completes=ulx.gamemodes, hint="gamemode", error="invalid gamemode \"%s\" specified", ULib.cmds.restrictToCompletes, ULib.cmds.optional }
+	map:defaultAccess( ULib.ACCESS_ADMIN )
+	map:help( "Changes map and gamemode." )
 end)
 
 --[[============================= НОВАЯ КОМАНДА !TRAINS ==========================]]
-if SERVER then
-	function wagons()
-	local Class1
-	local tbl = {}
-	local i = 1 
-	local NA = "N/A"
-	local Class
-	for k,v in pairs (Metrostroi.TrainClasses) do							--переношу все найденные паравозы в отдельную таблицу, чтобы потом уже редактировать ее
-		local ents = ents.FindByClass(v)
-		for k2,v2 in pairs(ents) do
-			tbl[i] = {v2, Class}
-			i = i + 1
-		end
-	end
-	for k,v in pairs(tbl) do	--беру один вагон, смотрю все сцепленные с ним вагоны (они уже есть в таблице) и удаляю все вагоны (кроме первого), если там нет водителя
-		Class = v[1].SubwayTrain.Name
-		for _k, _v in pairs(v[1].WagonList) do
-			if Class ~= _v.SubwayTrain.Name and not string.find(Class, "/") then Class = Class.."/".._v.SubwayTrain.Name end	--уточнение вагонов в составе
-		end
-			for k1,v1 in pairs(v[1].WagonList) do
-				if v[1] ~= v1 and not v1:GetDriver() then
-					for k2,v2 in pairs(tbl) do
-						if v1 == v2[1] then tbl[k2] = nil end
-					end
-				end
-			end
-		v[2] = Class
-	end
-	--PrintTable(tbl)
-	ulx.fancyLog("Вагонов на сервере: #s", Metrostroi.TrainCount())
-	ulx.fancyLog("Составов на сервере: #i", table.Count(tbl))
-	for k,v in pairs(tbl) do
-	local routenumber = 0
-	local routenumber1 = ""
-			for k1,v1 in pairs(v[1].WagonList) do
-				if string.find(v1.SubwayTrain.Name, "722") or string.find(v1.SubwayTrain.Name, "Ema") or (string.find(v1.SubwayTrain.Name, "717") and not string.find(v1.SubwayTrain.Name, "5m")) or string.find(v1.SubwayTrain.Name, ".6") then routenumber = v1:GetNW2Int("RouteNumber") else routenumber = v1:GetNW2Int("RouteNumber") / 10 end
-				if routenumber ~= 0 then
-					if routenumber1 == "" then routenumber1 = tostring(routenumber)
-					elseif routenumber1 ~= tostring(routenumber) then routenumber1 = routenumber1.."/"..tostring(routenumber)
-					end
-				end
-			end
-		if routenumber1 == "" then routenumber1 = "0" end
-		if not v[1]:GetDriver() then
-			ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец: #A, состав: #s, вагонов: #i, маршрут: #s, машинист: #s",v[2], table.Count(v[1].WagonList), routenumber1, NA)
-		elseif v[1]:GetDriver() == v[1]:CPPIGetOwner() then
-				ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец/машинист: #A, состав: #s, вагонов: #i, маршрут: #s",v[2], table.Count(v[1].WagonList), routenumber1)
-		else
-				ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец: #A, состав: #s, вагонов: #i, маршрут: #s, машинист: #T",v[2], table.Count(v[1].WagonList), routenumber1, v[1]:GetDriver())
-		end
-	end
-	end
-end
 timer.Simple(5, function()
-	function ulx.wagons(ply)
-		if IsValid(ply) and ply:Nick() then
-			ulx.fancyLogAdmin(ply,true,"#A вызвал !trains")
+	if SERVER then
+		function ulx.wagons(ply)
+		ulx.fancyLogAdmin(ply,true,"#A вызвал !trains")
+		local Class1
+		local tbl = {}
+		local i = 1 
+		local NA = "N/A"
+		local Class
+		for k,v in pairs (Metrostroi.TrainClasses) do							--переношу все найденные паравозы в отдельную таблицу, чтобы потом уже редактировать ее
+			local ents = ents.FindByClass(v)
+			for k2,v2 in pairs(ents) do
+				tbl[i] = {v2, Class}
+				i = i + 1
+			end
 		end
-		wagons()
+		for k,v in pairs(tbl) do	--беру один вагон, смотрю все сцепленные с ним вагоны (они уже есть в таблице) и удаляю все вагоны (кроме первого), если там нет водителя
+			Class = v[1].SubwayTrain.Name
+			for _k, _v in pairs(v[1].WagonList) do
+				if Class ~= _v.SubwayTrain.Name and not string.find(Class, "/") then Class = Class.."/".._v.SubwayTrain.Name end	--уточнение вагонов в составе
+			end
+				for k1,v1 in pairs(v[1].WagonList) do
+					if v[1] ~= v1 and not v1:GetDriver() then
+						for k2,v2 in pairs(tbl) do
+							if v1 == v2[1] then tbl[k2] = nil end
+						end
+					end
+				end
+			v[2] = Class
+		end
+		--PrintTable(tbl)
+		ulx.fancyLog("Вагонов на сервере: #s", Metrostroi.TrainCount())
+		ulx.fancyLog("Составов на сервере: #i", table.Count(tbl))
+		for k,v in pairs(tbl) do
+		local routenumber = 0
+		local routenumber1 = ""
+				for k1,v1 in pairs(v[1].WagonList) do
+					if string.find(v1.SubwayTrain.Name, "722") or string.find(v1.SubwayTrain.Name, "Ema") or (string.find(v1.SubwayTrain.Name, "717") and not string.find(v1.SubwayTrain.Name, "5m")) or string.find(v1.SubwayTrain.Name, ".6") then routenumber = v1:GetNW2Int("RouteNumber") else routenumber = v1:GetNW2Int("RouteNumber") / 10 end
+					if routenumber ~= 0 then
+						if routenumber1 == "" then routenumber1 = tostring(routenumber)
+						elseif routenumber1 ~= tostring(routenumber) then routenumber1 = routenumber1.."/"..tostring(routenumber)
+						end
+					end
+				end
+			if routenumber1 == "" then routenumber1 = "0" end
+			if not v[1]:GetDriver() then
+				ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец: #A, состав: #s, вагонов: #i, маршрут: #s, машинист: #s",v[2], table.Count(v[1].WagonList), routenumber1, NA)
+			elseif v[1]:GetDriver() == v[1]:CPPIGetOwner() then
+					ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец/машинист: #A, состав: #s, вагонов: #i, маршрут: #s",v[2], table.Count(v[1].WagonList), routenumber1)
+			else
+					ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец: #A, состав: #s, вагонов: #i, маршрут: #s, машинист: #T",v[2], table.Count(v[1].WagonList), routenumber1, v[1]:GetDriver())
+			end
+		end
+		end
 	end
 	local wagons = ulx.command( "Metrostroi", "ulx trains", ulx.wagons, "!trains",true )
 	wagons:defaultAccess( ULib.ACCESS_ALL )
@@ -2593,7 +2586,7 @@ if SERVER then
 	end)
 
 --[[============================= ТЕЛЕПОРТ К СИГНАЛУ ==========================]]
-	function tpsig( calling_ply, command)
+	function ulx.tpsig( calling_ply, command)
 		if not command or command == "" then
 			for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
 				if v.Name ~= nil then ULib.tsayError( calling_ply, ""..tostring(v.Name), true ) end
@@ -2615,9 +2608,6 @@ if SERVER then
 		ULib.tsayError( calling_ply, "Не найдено светофора с таким именем", true )
 	end
 end
-function ulx.tpsig(calling_ply, command)
-	tpsig(calling_ply, command)
-end
 local tpsig = ulx.command( "Metrostroi", "ulx tpsig", ulx.tpsig, "!tpsig", true )
 tpsig:addParam{ type=ULib.cmds.StringArg, hint="name", ULib.cmds.optional }
 tpsig:defaultAccess( ULib.ACCESS_ALL )
@@ -2628,70 +2618,66 @@ tpsig:help( "Телепортирует к светофору.\nОставь п�
 if SERVER then
 	--[[============================= ВОССТАНОВЛЕНИЕ УДОЧЕК ==========================]]
 	local udochkitbl = {}
-	local i = 1
-	for k,v in pairs(ents.GetAll()) do
-		if v:GetClass() == "gmod_track_udochka" or v:GetClass() == "func_physbox" or v:GetClass() == "func_tracktrain" then
-			udochkitbl[i] = {v,v:GetPos()}
-			i = i + 1
-		end
-	end
-	
-	function resetudochki()
+	hook.Add("PlayerInitialSpawn", "UdichkiTBL", function()
+		print("Creating UdochkiTBL")
+		hook.Remove( "PlayerInitialSpawn", "UdichkiTBL" )
+		local i = 1
 		for k,v in pairs(ents.GetAll()) do
-			if v:GetClass() == "gmod_track_udochka" or v:GetClass() == "func_physbox" or v:GetClass() == "func_tracktrain" then
-				for k1,v1 in pairs(udochkitbl) do
-					if v1[1] == v then v:SetPos(v1[2]) end
+			if stringfind(v:GetClass(),"udochka",true) or stringfind(v:GetClass(),"physbox",true) or stringfind(v:GetClass(), "tracktrain",true) then
+				udochkitbl[i] = {v,v:GetPos(),v:GetAngles()}
+				i = i + 1
 			end
+		end		
+	end)
+	
+	function ulx.resetudochki()
+		for k,v in pairs(ents.GetAll()) do
+			if stringfind(v:GetClass(),"udochka",true) or stringfind(v:GetClass(),"physbox",true) or stringfind(v:GetClass(), "tracktrain",true) then
+				for k1,v1 in pairs(udochkitbl) do
+					if v1[1] == v then v:SetPos(v1[2]) v:SetAngles(v1[3]) end
+				end
 			end
 		end
 	end
-
-end
-function ulx.resetudochki(ply)
-	resetudochki()
-	ulx.fancyLogAdmin(ply,"#A восстановил удочки")
 end
 local resetudochki = ulx.command( "Metrostroi", "ulx resetudochki", ulx.resetudochki, "!resetudochki", true )
 resetudochki:defaultAccess( ULib.ACCESS_OPERATOR )
 resetudochki:help( "Восстанавливает удочки на карте." )
 
 --[[============================= ТЕЛЕПОРТ НА СТАНЦИЮ ==========================]]
-if SERVER then
-	function tps(ply,comm)
-		comm = bigrustosmall(comm)
-		local stationstbl = {}
-		local i = 1
-		local comm = bigrustosmall(comm)
-		for k,v in pairs(Metrostroi.StationConfigurations) do
-			if not v["names"] then continue end
-			if not v["names"][1] then v["names"][1] = "ERROR"
-			elseif not v["names"][2] then v["names"][2] = "ERROR"
-			end
-			if bigrustosmall(tostring(k)):find(comm) or bigrustosmall(v["names"][1]):find(comm) or bigrustosmall(v["names"][2]):find(comm) then
-				stationstbl[i] = {k,v["names"][1],v["names"][2],v["positions"][1][1]}
-				i = i + 1
-			end
-		end
-		--PrintTable(stationstbl)
-		if table.Count(stationstbl) > 1 then 
-			ULib.tsayError(ply,"По запросу найдено несколько станций",true)
-			for k,v in pairs(stationstbl) do
-				ULib.tsayError(ply,""..tostring(stationstbl[k][1]).." = "..stationstbl[k][2].." or "..stationstbl[k][3],true)
-			end
-		elseif table.Count(stationstbl) == 1 then
-			ply:ExitVehicle()
-            ply.ulx_prevpos = ply:GetPos()
-            ply.ulx_prevang = ply:EyeAngles()
-			ply:SetMoveType( MOVETYPE_NOCLIP )
-            ply:SetPos(stationstbl[1][4])
-		else
-			ULib.tsayError(ply,"По запросу не найдено совпадений",true)
-		end
-	end
-end
 timer.Simple(5, function()
-	function ulx.station(ply,comm)
-		tps(ply,comm)
+	if SERVER then
+		function ulx.station(ply,comm)
+			comm = bigrustosmall(comm)
+			local stationstbl = {}
+			local i = 1
+			local comm = bigrustosmall(comm)
+			for k,v in pairs(Metrostroi.StationConfigurations) do
+				if not v["names"] then continue end
+				if not v["names"][1] then v["names"][1] = "ERROR"
+				elseif not v["names"][2] then v["names"][2] = "ERROR"
+				end
+				if bigrustosmall(tostring(k)):find(comm) or bigrustosmall(v["names"][1]):find(comm) or bigrustosmall(v["names"][2]):find(comm) then
+					stationstbl[i] = {k,v["names"][1],v["names"][2],v["positions"][1][1]}
+					i = i + 1
+				end
+			end
+			--PrintTable(stationstbl)
+			if table.Count(stationstbl) > 1 then 
+				ULib.tsayError(ply,"По запросу найдено несколько станций",true)
+				for k,v in pairs(stationstbl) do
+					ULib.tsayError(ply,""..tostring(stationstbl[k][1]).." = "..stationstbl[k][2].." or "..stationstbl[k][3],true)
+				end
+			elseif table.Count(stationstbl) == 1 then
+				ply:ExitVehicle()
+				ply.ulx_prevpos = ply:GetPos()
+				ply.ulx_prevang = ply:EyeAngles()
+				ply:SetMoveType( MOVETYPE_NOCLIP )
+				ply:SetPos(stationstbl[1][4])
+			else
+				ULib.tsayError(ply,"По запросу не найдено совпадений",true)
+			end
+		end
 	end
 	local station = ulx.command( "Metrostroi", "ulx station", ulx.station, "!station",true)
 	station:defaultAccess( ULib.ACCESS_OPERATOR )
@@ -2706,13 +2692,14 @@ if CLIENT then
 	end)
 end
 
---[[============================= Скрытие дефолтного уведомления о коннекте ==========================]]
-hook.Add( "ChatText", "hide_joinleave", function( index, name, text, typ )
-	if ( typ == "joinleave" ) then return true end
-end )
-
---[[============================= ФОНАРИК В КАБИНЕ ==========================]]
 if SERVER then
+
+--[[============================= Скрытие дефолтного уведомления о коннекте ==========================]]
+	hook.Add( "ChatText", "hide_joinleave", function( index, name, text, typ )
+		if ( typ == "joinleave" ) then return true end
+	end)
+	
+--[[============================= ФОНАРИК В КАБИНЕ ==========================]]
 	hook.Add("PlayerButtonDown", "Flashlight", function(ply,key)
 		if ply:InVehicle() then
 			 if key == KEY_8 then
@@ -2726,10 +2713,9 @@ end
 
 --[[============================= Перегрузка !menu ==========================]]
 timer.Simple(5, function()
-	function ulx.menu(ply)
-		if IsValid(ply) then ply:ConCommand("xgui") end
+	if SERVER then
+		function ulx.menu(ply)ply:ConCommand("xgui") end
 	end
-	
 	local menu = ulx.command( "Metrostroi", "ulx menu", ulx.menu, "!menu",true)
 	menu:defaultAccess( ULib.ACCESS_ALL )
 	menu:help( "Телепортация к станции." )
@@ -2749,13 +2735,34 @@ if SERVER then
 		--PrintTable(NewMapTable)
 		NextMapTable = NewMapTable
 	end)
-
-	timer.Simple(10, function()
+	
+	
+--[[============================= УДАЛЕНИЕ ПРОСТА ДЛЯ ИМАДЖИНА ==========================]]
+	hook.Add("PlayerInitialSpawn", "ProstImagine",function()
+		hook.Remove("PlayerInitialSpawn", "ProstImagine")
+		print("deleteng PROST")
 		if game.GetMap():find("imagine") then
 			for k,v in pairs(ents.FindByClass("gmod_track_autodrive_plate")) do if v.PlateType == 760 then v:Remove() end end
 		end
 	end)
+	
+--[[============================= ТЕЛЕПОРТАЦИЯ В ПРОТИВОПОЛОЖНУЮ КАБИНУ ==========================]]
+	function ulx.changecabin(ply)
+		if not ply:InVehicle() then ULib.tsayError( ply, "Ты не в кабине", true ) return end
+		local ToSeat = nil
+		local ent = ply:GetVehicle():GetNW2Entity("TrainEntity")
+		local WagonList = ent.WagonList
+		if #WagonList == 1 then ULib.tsayError( ply, "У тебя только 1 вагон", true ) return end
+		local EntClass = ent:GetClass()
+		for k,v in pairs(WagonList) do
+			if k ~= #WagonList then continue end
+			if v ~= ent and v:GetClass() == EntClass then KekLolArbidol(v,ply) return end
+		end
+	end
 end
+local changecabin = ulx.command( "Metrostroi", "ulx ch", ulx.changecabin, "!ch",true)
+changecabin:defaultAccess( ULib.ACCESS_ALL )
+changecabin:help( "Телепортация в заднюю кабиную." )
 --ply.InMetrostroiTrain
 --[[============================= УДАЛЕНИЕ НЕНУЖНЫХ ВКЛАДОК ИЗ SPAWNMENU ==========================]]
 --[[local function testkek(panel)
