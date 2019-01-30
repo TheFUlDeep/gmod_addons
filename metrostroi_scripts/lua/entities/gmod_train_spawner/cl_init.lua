@@ -288,6 +288,7 @@ local function Draw()
 end
 local function createFrame()
 	MaxWagons = GetGlobalInt("metrostroi_maxwagons")
+	maximum = MaximumWagons(LocalPlayer())
 	MaxWagonsOnPlayer = maximum
 	--if GetConVarString("gmod_toolmode") == "train_spawner" then RunConsoleCommand("gmod_toolmode", "weld") end
 	if !frame or !frame:IsValid() then
@@ -356,6 +357,7 @@ end
 net.Receive("MetrostroiTrainSpawner",createFrame)
 net.Receive("MetrostroiMaxWagons", function()
 	MaxWagons = GetGlobalInt("metrostroi_maxwagons")
+	maximum = MaximumWagons(LocalPlayer())
 	MaxWagonsOnPlayer = maximum
 	if trainTypeT and trainTypeT:IsValid() then
 		trainTypeT:SetText(Format("%s(%d/%d)\n%s:%d",Metrostroi.GetPhrase("Spawner.Trains1"),GetGlobalInt("metrostroi_train_count"),MaxWagons,Metrostroi.GetPhrase("Spawner.Trains2"),MaxWagonsOnPlayer))
