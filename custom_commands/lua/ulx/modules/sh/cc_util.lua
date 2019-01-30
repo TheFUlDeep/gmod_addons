@@ -2015,7 +2015,7 @@ if SERVER then
 		local sostav = train
 		--RunConsoleCommand( "ulx", "asay", drv:Nick().." сорвал пломбу с "..but.." на "..string.sub(train:GetClass(),13))
 		local poezd = string.sub(train:GetClass(),13)
-		ulx.fancyLogAdmin(drv, true, "#A сорвал пломбу с #s на #s", but, train:GetClass())
+		ulx.fancyLogAdmin(drv, true, "#A сорвал пломбу с #s на #s", but, train.SubwayTrain.Name)
 		return true
 	end)
 
@@ -2284,37 +2284,10 @@ if SERVER then
 		return (blizhnaya.." (ближайшая в плоскости)")
 	end
 
-		-------------------------ОПРЕДЕЛЕНИЕ ТИПА СОСТАВА-------------------------------- да лол можно просто брать имя паравоза вот дебил лол
-	local function TrainName(ClassName)
-		local TrainName = ""
-		if ClassName == "gmod_subway_81-502" then TrainName = "Ема-502"
-		elseif ClassName == "gmod_subway_81-702" then TrainName = "81-702 (Д)"
-		elseif ClassName == "gmod_subway_81-717_mvm" then TrainName = "81-717.5 МВМ (Номерной)"
-		elseif ClassName == "gmod_subway_81-717_lvz" then TrainName = "81-717.5 ЛВЗ (Номерной)"
-		elseif ClassName == "gmod_subway_81-720" then TrainName = "81-720 (Яуза)"
-		elseif ClassName == "gmod_subway_81-720_lvz" then TrainName = "81-720 ЛВЗ (Яуза)"
-		elseif ClassName == "gmod_subway_81-722" then TrainName = "81-722 (Юбилейный)"
-		elseif ClassName == "gmod_subway_81-703" then TrainName = "81-703 (Е)"
-		elseif ClassName == "gmod_subway_81-705_experimental" then TrainName = "81-705 (Ема)"
-		elseif ClassName == "gmod_subway_ezh" then TrainName = "81-707 (Еж)"
-		elseif ClassName == "gmod_subway_ezh3" then TrainName = "81-710 (Еж3)"
-		elseif ClassName == "gmod_subway_ezh3ru1" then TrainName = "Еж3 РУ1"
-		elseif ClassName == "gmod_subway_em508" then TrainName = "Ем-508"
-		elseif ClassName == "gmod_subway_81-740.4" then TrainName = "Cрусич (ой дебил, нахуя)"
-		elseif ClassName == "gmod_subway_81-717_6" then TrainName = "81-717.6 (Номерной)"
-		elseif ClassName == "gmod_subway_81-717.6_vip" then TrainName = "81-717.6 VIP (Номерной)"
-		elseif ClassName == "gmod_subway_81-720-yauzich" then TrainName = "81-720 (Яуза(не Яуза))"
-		elseif ClassName == "gmod_subway_81-718" then TrainName = "81-718 (ТИСУ номерной)"
-		elseif ClassName == "gmod_subway_81-717_mvm_custom" then TrainName = "81-717 (Номерной кастом)"
-		else TrainName = ""
-		end
-		return TrainName
-	end
 
 	-------------------------УВЕДОМЛЕНИЕ О СПАВНЕ СОСТАВА В ЧАТ (само использование функции нужно прописать в trains_spawner.lua)--------------------------------
-	function SpawnNotif(ply, ClassName, vector, WagNum)	-- SpawnNotif(ply, self.Train.ClassName, trace.HitPos, self.Settings.WagNum) в функции TOOL:SpawnWagon
-		local TrainName = TrainName(ClassName)
-		if TrainName == "" then TrainName = ClassName end
+	function SpawnNotif(ply, self, vector, WagNum)	-- SpawnNotif(ply, self.Train.ClassName, trace.HitPos, self.Settings.WagNum) в функции TOOL:SpawnWagon
+		local TrainName = self.Train.SubwayTrain.Name
 		ulx.fancyLogAdmin(ply, true, "#A заспавнил #s", TrainName--[[, self.Train.ClassName, self.Train.Spawner.interim]])
 		
 		local ourstation = detectstation(vector)
@@ -2452,7 +2425,7 @@ timer.Simple(5, function()
 		for k,v in pairs(tbl) do	--беру один вагон, смотрю все сцепленные с ним вагоны (они уже есть в таблице) и удаляю все вагоны (кроме первого), если там нет водителя
 			Class = v[1].SubwayTrain.Name
 			for _k, _v in pairs(v[1].WagonList) do
-				if Class ~= _v.SubwayTrain.Name and not string.find(Class, "/") then Class = Class.."/".._v.SubwayTrain.Name end	--уточнение вагонов в составе
+				if not stringfind(Class, _v.SubwayTrain.Name) then Class = Class.."/".._v.SubwayTrain.Name end	--уточнение вагонов в составе
 			end
 				for k1,v1 in pairs(v[1].WagonList) do
 					if v[1] ~= v1 and not v1:GetDriver() then
@@ -2511,7 +2484,7 @@ if SERVER then
 	for k,v in pairs(tbl) do	--беру один вагон, смотрю все сцепленные с ним вагоны (они уже есть в таблице) и удаляю все вагоны (кроме первого), если там нет водителя
 		Class = v[1].SubwayTrain.Name
 		for _k, _v in pairs(v[1].WagonList) do
-			if Class ~= _v.SubwayTrain.Name and not string.find(Class, "/") then Class = Class.."/".._v.SubwayTrain.Name end	--уточнение вагонов в составе
+			if not stringfind(Class, _v.SubwayTrain.Name) then Class = Class.."/".._v.SubwayTrain.Name end	--уточнение вагонов в составе
 		end
 			for k1,v1 in pairs(v[1].WagonList) do
 				if v[1] ~= v1 and not v1:GetDriver() then
@@ -2740,8 +2713,8 @@ if SERVER then
 --[[============================= УДАЛЕНИЕ ПРОСТА ДЛЯ ИМАДЖИНА ==========================]]
 	hook.Add("PlayerInitialSpawn", "ProstImagine",function()
 		hook.Remove("PlayerInitialSpawn", "ProstImagine")
-		print("deleteng PROST")
-		if game.GetMap():find("imagine") then
+		if game.GetMap():find("imagine") then 
+			print("deleteng PROST")
 			for k,v in pairs(ents.FindByClass("gmod_track_autodrive_plate")) do if v.PlateType == 760 then v:Remove() end end
 		end
 	end)
@@ -2763,6 +2736,42 @@ end
 local changecabin = ulx.command( "Metrostroi", "ulx ch", ulx.changecabin, "!ch",true)
 changecabin:defaultAccess( ULib.ACCESS_ALL )
 changecabin:help( "Телепортация в заднюю кабиную." )
+
+
+--[[============================= АВТОМАТИЧЕСКАЯ УСТАНОВКА ДЕШИФРАТОРА ==========================]]
+if SERVER then
+	hook.Add("OnEntityCreated", "AlsFReq", function(ent)
+		timer.Simple(2, function()
+			if not IsValid(ent) then return
+			elseif not stringfind(ent:GetClass(), "717_m") then return
+			end
+			local blizhniy = nil
+			for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
+				if blizhniy == nil then blizhniy = v
+				elseif ent:GetPos():DistToSqr(v:GetPos()) < ent:GetPos():DistToSqr(blizhniy:GetPos()) then blizhniy = v
+				end
+			end
+			if blizhniy.TwoToSix then ent.ALSFreq:TriggerInput("Set",1) end
+		end)
+	end)
+end
+
+function MaximumWagons(ply,self)
+	local maximum = 6
+	if GetGlobalInt("metrostroi_train_count") > 12 then maximum = 4 end
+	if GetGlobalInt("metrostroi_train_count") > 21 then maximum = 3 end
+	if GetGlobalInt("metrostroi_train_count") > 30 then maximum = 2 end
+	if ply:GetUserGroup() == "superadmin" or ply:GetUserGroup() == "tsar" or ply:GetUserGroup() == "tsarbom" or ply:GetUserGroup() == "tsarbomba" then maximum = 6 end
+	if maximum < 4 and ((ply:GetUserGroup() == "operator") or (ply:GetUserGroup() == "zamtsar")) then maximum = 4 end
+	if (ply:GetUserGroup() == "admin") then maximum = 6 end
+	if (game.GetMap() == "gm_mus_crimson_line_tox_v9_21" or game.GetMap() == "gm_mus_crimson_line_b_n" or game.GetMap() == "gm_mus_orange_metro_h" or game.GetMap() == "gm_mus_neoorange_d") and maximum > 3 then maximum = 3 end
+	if (game.GetMap() == "gm_smr_first_line_v2" or game.GetMap():find("neocrims") or game.GetMap():find("rural") or game.GetMap():find("remastered")) and maximum > 4 then maximum = 4 end
+	if (game.GetMap() == "gm_mus_loopline_e" or game.GetMap() == "gm_metrostroi_b50") and maximum > 5 then maximum = 5 end	
+	if SERVER and self then
+		if maximum < 6 and self.Train.ClassName == "gmod_subway_81-722" then self.Settings.WagNum = 3 end
+	end
+	return maximum
+end
 --ply.InMetrostroiTrain
 --[[============================= УДАЛЕНИЕ НЕНУЖНЫХ ВКЛАДОК ИЗ SPAWNMENU ==========================]]
 --[[local function testkek(panel)

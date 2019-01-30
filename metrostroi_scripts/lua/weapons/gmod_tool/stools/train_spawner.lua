@@ -363,7 +363,7 @@ function TOOL:SpawnWagon(trace)
     --self.rot = false
 	
 	--------------УВЕДОМЛЕНИЕ В ЧАТ-------------------------------------------
-	SpawnNotif(ply, self.Train.ClassName, trace.HitPos, self.Settings.WagNum)
+	SpawnNotif(ply, self, trace.HitPos, self.Settings.WagNum)
 	
     for k,v in pairs(FIXFIXFIX) do SafeRemoveEntity(v) end
 end
@@ -428,18 +428,8 @@ function TOOL:LeftClick(trace)
 	if (self.Train.ClassName == "gmod_subway_81-703" or self.Train.ClassName == "gmod_subway_em508" or self.Train.ClassName == "gmod_subway_81-702") and ply:GetUserGroup() == "user" then ULib.tsayError( ply, "Тебе нельзя спавнить этот состав", true ) return end
 	--if self.Train.ClassName == "gmod_subway_81-717_6" and ply:GetUserGroup() ~= "superadmin"  then ULib.tsayError( ply, "Тебе нельзя спавнить этот состав", true ) return end
 	if self.Train.ClassName == "gmod_subway_81-740.4" then self.Settings.WagNum = 2 end --только 2 вагона для русича
-		
-		local maximum = 6
-		if Metrostroi.TrainCount() > 12 then maximum = 4 end
-		if Metrostroi.TrainCount() > 21 then maximum = 3 end
-		if Metrostroi.TrainCount() > 30 then maximum = 2 end
-		if ply:GetUserGroup() == "superadmin" or ply:GetUserGroup() == "tsar" or ply:GetUserGroup() == "tsarbom" or ply:GetUserGroup() == "tsarbomba" then maximum = 6 end
-		if maximum < 4 and ((ply:GetUserGroup() == "operator") or (ply:GetUserGroup() == "zamtsar")) then maximum = 4 end
-		if (ply:GetUserGroup() == "admin") then maximum = 6 end
-		if (game.GetMap() == "gm_mus_crimson_line_tox_v9_21" or game.GetMap() == "gm_mus_crimson_line_b_n" or game.GetMap() == "gm_mus_orange_metro_h" or game.GetMap() == "gm_mus_neoorange_d") and maximum > 3 then maximum = 3 end
-		if (game.GetMap() == "gm_smr_first_line_v2" or game.GetMap():find("neocrims") or game.GetMap():find("rural") or game.GetMap():find("remastered")) and maximum > 4 then maximum = 4 end
-		if (game.GetMap() == "gm_mus_loopline_e" or game.GetMap() == "gm_metrostroi_b50") and maximum > 5 then maximum = 5 end	
-		if maximum < 6 and self.Train.ClassName == "gmod_subway_81-722" then self.Settings.WagNum = 3 end
+
+		local maximum = MaximumWagons(ply,self)
 
         if self.Settings.WagNum > maximum then
             self.Settings.WagNum = maximum
