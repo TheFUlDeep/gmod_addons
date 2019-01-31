@@ -2602,7 +2602,7 @@ if SERVER then
 		if #udochkitbl < 1 then return end
 		for k,v in pairs(udochkitbl) do
 			for k1,v1 in pairs(ents.FindByClass(v[1]:GetClass())) do
-				if v1 == v[1] then v1:SetPos(v[2]) v1:SetAngles(v[3])
+				if v1 == v[1] then v1:SetPos(v[2]) v1:SetAngles(v[3]) end
 			end
 		end
 	end
@@ -2661,7 +2661,7 @@ end
 
 
 --[[============================= Скрытие дефолтного уведомления о коннекте ==========================]]
-if CLIENT
+if CLIENT then
 	hook.Add( "ChatText", "hide_joinleave", function( index, name, text, typ )
 		if ( typ == "joinleave" ) then return true end
 	end)
