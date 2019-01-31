@@ -1806,22 +1806,32 @@ end
 
 
 --[[============================= ФУНКЦИЯ ПОИСКА СОВПАДЕНИЯ СТРИНГОВ ==========================]]
-if SERVER then
-	function stringfind(where,what, lowerr)
-		if type(where) ~= "string" or type(what) ~= "string" or  string.len(what) > string.len(where) then --[[print("not string")]] return false end
-		local i = 1
-		if lowerr then 
-			where = bigrustosmall(where)
-			what = bigrustosmall(what)
-		end
-		local strlen1 = string.len(where)
-		local strlen2 = string.len(what)
-		for i = 1, strlen1 - strlen2 + 1 do
-		--print(string.sub(where, i, i + string.len(what) - 1))
-			if string.sub(where, i, i + strlen2 - 1) == what then --[[print("startpos is "..tostring(i))]] return true end
-		end
-		return false
+function stringfind(where,what,lowerr,startpos,endpos)
+	local Exeption = false
+	if not where or not what then print("[STRINGFIND EXEPTION] cant find required arguments") return false end
+	if type(where) ~= "string" or type(what) ~= "string" then print("[STRINGFIND EXEPTION] not string") return false
+	elseif string.len(what) > string.len(where) then print("[STRINGFIND EXEPTION] string what you want to find bigger than string where you want to find it") Exeption = true 
 	end
+	if lowerr then 
+		where = bigrustosmall(where)
+		what = bigrustosmall(what)
+	end
+	local strlen1 = string.len(where)
+	local strlen2 = string.len(what)
+	if not startpos then startpos = 1 end
+	if startpos < 1 then print("[STRINGFIND EXEPTION] start position smaller then 1") Exeption = true end
+	if not endpos then endpos = strlen1	end
+	if endpos > strlen1 then print("[STRINGFIND EXEPTION] end position bigger then source string (source string size = "..#where..")") Exeption = true end
+	if endpos < startpos then print("[STRINGFIND EXEPTION] end position smaller then start position") Exeption = true end
+	if startpos > strlen1 - strlen2 + 1 then print("[STRINGFIND EXEPTION] string from your start position smaller then string what you want to find") Exeption = true end
+	if endpos - startpos + 1 < strlen2 then print("[STRINGFIND EXEPTION] section for finding smaller than string what you want to find") Exeption = true end
+	if Exeption then return false end
+	for i = startpos, endpos do
+		if i + strlen2 - 1 > endpos then return false
+		elseif string.sub(where, i, i + strlen2 - 1) == what then return i
+		end
+	end
+	return false
 end
 
 if SERVER then
@@ -1871,68 +1881,54 @@ if SERVER then
 --[[ ======================================= ТП К СОСТАВУ ======================================= ]]		-- return'ы добавил для псевдооптимизации
 	function ulx.traintp( calling_ply,target_ply)
 	local p = 0
-	for k, v in pairs( ents.GetAll() ) do
-		if string.match(tostring(v),"gmod_subway_") == "gmod_subway_" and string.match(tostring(v),"714") ~= "714" and v:CPPIGetOwner() == target_ply then 
-			if v.KV and v.KV.ReverserPosition == 0 then
-				calling_ply:ExitVehicle()
-				calling_ply:SetPos(Vector(v:GetPos()))
-				calling_ply:SetMoveType( MOVETYPE_NOCLIP )
-				--KekLolArbidol(v,calling_ply)
-				p = 1
-			elseif v.KV and v.KV.ReverserPosition ~= 0 then
-				calling_ply:ExitVehicle()
-				calling_ply:SetPos(Vector(v:GetPos()))
-				calling_ply:SetMoveType( MOVETYPE_NOCLIP )
-				KekLolArbidol(v,calling_ply)
-				p = 2
-				break
-			elseif v.KR and v.KR.Position == 0 then
-				calling_ply:ExitVehicle()
-				calling_ply:SetPos(Vector(v:GetPos()))
-				calling_ply:SetMoveType( MOVETYPE_NOCLIP )
-				--KekLolArbidol(v,calling_ply)
-				p = 1
-			elseif v.KR and v.KR.Position ~= 0 then
-				calling_ply:ExitVehicle()
-				calling_ply:SetPos(Vector(v:GetPos()))
-				calling_ply:SetMoveType( MOVETYPE_NOCLIP )
-				KekLolArbidol(v,calling_ply)
-				p = 2
-				break
-			elseif v.KRO and v.KRO.Value == 1 then
-				calling_ply:ExitVehicle()
-				calling_ply:SetPos(Vector(v:GetPos()))
-				calling_ply:SetMoveType( MOVETYPE_NOCLIP )
-				--KekLolArbidol(v,calling_ply)
-				p = 1
-			elseif v.KRO and v.KRO.Value ~= 1 then
-				calling_ply:ExitVehicle()
-				calling_ply:SetPos(Vector(v:GetPos()))
-				calling_ply:SetMoveType( MOVETYPE_NOCLIP )
-				KekLolArbidol(v,calling_ply)
-				p = 2
-				break
-			elseif v.RV and v.RV.KROPosition == 0 then
-				calling_ply:ExitVehicle()
-				calling_ply:SetPos(Vector(v:GetPos()))
-				calling_ply:SetMoveType( MOVETYPE_NOCLIP )
-				--KekLolArbidol(v,calling_ply)
-				p = 1
-			elseif v.RV and v.RV.KROPosition ~= 0 then
-				calling_ply:ExitVehicle()
-				calling_ply:SetPos(Vector(v:GetPos()))
-				calling_ply:SetMoveType( MOVETYPE_NOCLIP )
-				KekLolArbidol(v,calling_ply)
-				p = 2
-				break
-			else 
-				calling_ply:ExitVehicle()
-				calling_ply:SetPos(Vector(v:GetPos()))
-				calling_ply:SetMoveType( MOVETYPE_NOCLIP )
-				--KekLolArbidol(v,calling_ply)
-				p = 1
+	local Class = "Class"
+	for k1,v1 in pairs(Metrostroi.TrainClasses) do
+		for k, v in pairs( ents.FindByClass(v1)) do
+			Class = v:GetClass()
+			if stringfind(Class,"gmod_subway") and not stringfind(Class,"714") and v:CPPIGetOwner() == target_ply then 
+				if v.KV and v.KV.ReverserPosition == 0 then
+					calling_ply:ExitVehicle()
+					calling_ply:SetPos(Vector(v:GetPos()))
+					calling_ply:SetMoveType( MOVETYPE_NOCLIP )
+					p = 1
+				elseif v.KV and v.KV.ReverserPosition ~= 0 then
+					KekLolArbidol(v,calling_ply)
+					p = 2
+					break
+				elseif v.KR and v.KR.Position == 0 then
+					calling_ply:ExitVehicle()
+					calling_ply:SetPos(Vector(v:GetPos()))
+					calling_ply:SetMoveType( MOVETYPE_NOCLIP )
+					p = 1
+				elseif v.KR and v.KR.Position ~= 0 then
+					KekLolArbidol(v,calling_ply)
+					p = 2
+					break
+				elseif v.KRO and v.KRO.Value == 1 then
+					calling_ply:ExitVehicle()
+					calling_ply:SetPos(Vector(v:GetPos()))
+					calling_ply:SetMoveType( MOVETYPE_NOCLIP )
+					p = 1
+				elseif v.KRO and v.KRO.Value ~= 1 then
+					KekLolArbidol(v,calling_ply)
+					p = 2
+					break
+				elseif v.RV and v.RV.KROPosition == 0 then
+					calling_ply:ExitVehicle()
+					calling_ply:SetPos(Vector(v:GetPos()))
+					calling_ply:SetMoveType( MOVETYPE_NOCLIP )
+					p = 1
+				elseif v.RV and v.RV.KROPosition ~= 0 then
+					KekLolArbidol(v,calling_ply)
+					p = 2
+					break
+				else 
+					calling_ply:ExitVehicle()
+					calling_ply:SetPos(Vector(v:GetPos()))
+					calling_ply:SetMoveType( MOVETYPE_NOCLIP )
+					p = 1
+				end
 			end
-			--v = nil
 		end
 	end
 		if p == 0 then  
@@ -2301,7 +2297,7 @@ if SERVER then
 	--------------------------------------ПОДСЧЕТ ИНТЕРВАЛА ОТ ВРЕМЕНИ КРУГА НА КАРТЕ сама функция используется в модуле выше------------------------------------
 	function AutoInterval()
 	if Metrostroi.ActiveDispatcher ~= nil then return end
-	local krugtime = 0
+	local LoopTime = 0
 	local trains_n = 0
 		if CPPI then
 			local N = {}
@@ -2319,17 +2315,17 @@ if SERVER then
 		end
 		
 		if trains_n == 0 then trains_n = 1 end
-		
-		if game.GetMap() == "gm_mus_crimson_line_tox_v9_21" then krugtime = 20 * 60
-		elseif game.GetMap() == "gm_smr_first_line_v2" then krugtime = 35 * 60
-		elseif game.GetMap() == "gm_metro_crossline_c4" then krugtime = 35 * 60	
-		elseif game.GetMap() == "gm_metrostroi_b50" then krugtime = 70*60
+		local Map = game.GetMap()
+		if Map == "gm_mus_crimson_line_tox_v9_21" then LoopTime = 20 * 60
+		elseif Map == "gm_smr_first_line_v2" then LoopTime = 35 * 60
+		elseif Map == "gm_metro_crossline_c4" then LoopTime = 35 * 60	
+		elseif Map == "gm_metrostroi_b50" then LoopTime = 70*60
 		end
-		krugtime = krugtime / trains_n
-		if krugtime > 1023 then krugtime = 0 end
+		LoopTime = LoopTime / trains_n
+		if LoopTime > 1023 then LoopTime = 0 end
 		
 		if SERVER then
-		ulx.SendActiveInt(krugtime)
+		ulx.SendActiveInt(LoopTime)
 		end
 		--print(trains_n)
 	end
@@ -2409,56 +2405,56 @@ end)
 timer.Simple(5, function()
 	if SERVER then
 		function ulx.wagons(ply)
-		ulx.fancyLogAdmin(ply,true,"#A вызвал !trains")
-		local Class1
-		local tbl = {}
-		local i = 1 
-		local NA = "N/A"
-		local Class
-		for k,v in pairs (Metrostroi.TrainClasses) do							--переношу все найденные паравозы в отдельную таблицу, чтобы потом уже редактировать ее
-			local ents = ents.FindByClass(v)
-			for k2,v2 in pairs(ents) do
-				tbl[i] = {v2, Class}
-				i = i + 1
+			ulx.fancyLogAdmin(ply,true,"#A вызвал !trains")
+			local Class1
+			local tbl = {}
+			local i = 1 
+			local NA = "N/A"
+			local Class
+			for k,v in pairs (Metrostroi.TrainClasses) do							--переношу все найденные паравозы в отдельную таблицу, чтобы потом уже редактировать ее
+				local ents = ents.FindByClass(v)
+				for k2,v2 in pairs(ents) do
+					tbl[i] = {v2, Class}
+					i = i + 1
+				end
 			end
-		end
-		for k,v in pairs(tbl) do	--беру один вагон, смотрю все сцепленные с ним вагоны (они уже есть в таблице) и удаляю все вагоны (кроме первого), если там нет водителя
-			Class = v[1].SubwayTrain.Name
-			for _k, _v in pairs(v[1].WagonList) do
-				if not stringfind(Class, _v.SubwayTrain.Name) then Class = Class.."/".._v.SubwayTrain.Name end	--уточнение вагонов в составе
-			end
-				for k1,v1 in pairs(v[1].WagonList) do
-					if v[1] ~= v1 and not v1:GetDriver() then
-						for k2,v2 in pairs(tbl) do
-							if v1 == v2[1] then tbl[k2] = nil end
+			for k,v in pairs(tbl) do	--беру один вагон, смотрю все сцепленные с ним вагоны (они уже есть в таблице) и удаляю все вагоны (кроме первого), если там нет водителя
+				Class = v[1].SubwayTrain.Name
+				for _k, _v in pairs(v[1].WagonList) do
+					if not stringfind(Class, _v.SubwayTrain.Name) then Class = Class.."/".._v.SubwayTrain.Name end	--уточнение вагонов в составе
+				end
+					for k1,v1 in pairs(v[1].WagonList) do
+						if v[1] ~= v1 and not v1:GetDriver() then
+							for k2,v2 in pairs(tbl) do
+								if v1 == v2[1] then tbl[k2] = nil end
+							end
 						end
 					end
-				end
-			v[2] = Class
-		end
-		--PrintTable(tbl)
-		ulx.fancyLog("Вагонов на сервере: #s", Metrostroi.TrainCount())
-		ulx.fancyLog("Составов на сервере: #i", table.Count(tbl))
-		for k,v in pairs(tbl) do
-		local routenumber = 0
-		local routenumber1 = ""
-				for k1,v1 in pairs(v[1].WagonList) do
-					if string.find(v1.SubwayTrain.Name, "722") or string.find(v1.SubwayTrain.Name, "Ema") or (string.find(v1.SubwayTrain.Name, "717") and not string.find(v1.SubwayTrain.Name, "5m")) or string.find(v1.SubwayTrain.Name, ".6") then routenumber = v1:GetNW2Int("RouteNumber") else routenumber = v1:GetNW2Int("RouteNumber") / 10 end
-					if routenumber ~= 0 then
-						if routenumber1 == "" then routenumber1 = tostring(routenumber)
-						elseif routenumber1 ~= tostring(routenumber) then routenumber1 = routenumber1.."/"..tostring(routenumber)
+				v[2] = Class
+			end
+			--PrintTable(tbl)
+			ulx.fancyLog("Вагонов на сервере: #s", Metrostroi.TrainCount())
+			ulx.fancyLog("Составов на сервере: #i", table.Count(tbl))
+			for k,v in pairs(tbl) do
+			local routenumber = 0
+			local routenumber1 = ""
+					for k1,v1 in pairs(v[1].WagonList) do
+						if string.find(v1.SubwayTrain.Name, "722") or string.find(v1.SubwayTrain.Name, "Ema") or (string.find(v1.SubwayTrain.Name, "717") and not string.find(v1.SubwayTrain.Name, "5m")) or string.find(v1.SubwayTrain.Name, ".6") or stringfind(v1.SubwayTrain.Name, "76") then routenumber = v1:GetNW2Int("RouteNumber") else routenumber = v1:GetNW2Int("RouteNumber") / 10 end
+						if routenumber ~= 0 then
+							if routenumber1 == "" then routenumber1 = tostring(routenumber)
+							elseif routenumber1 ~= tostring(routenumber) then routenumber1 = routenumber1.."/"..tostring(routenumber)
+							end
 						end
 					end
+				if routenumber1 == "" then routenumber1 = "0" end
+				if not v[1]:GetDriver() then
+					ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец: #A, состав: #s, вагонов: #i, маршрут: #s, машинист: #s",v[2], table.Count(v[1].WagonList), routenumber1, NA)
+				elseif v[1]:GetDriver() == v[1]:CPPIGetOwner() then
+						ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец/машинист: #A, состав: #s, вагонов: #i, маршрут: #s",v[2], table.Count(v[1].WagonList), routenumber1)
+				else
+						ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец: #A, состав: #s, вагонов: #i, маршрут: #s, машинист: #T",v[2], table.Count(v[1].WagonList), routenumber1, v[1]:GetDriver())
 				end
-			if routenumber1 == "" then routenumber1 = "0" end
-			if not v[1]:GetDriver() then
-				ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец: #A, состав: #s, вагонов: #i, маршрут: #s, машинист: #s",v[2], table.Count(v[1].WagonList), routenumber1, NA)
-			elseif v[1]:GetDriver() == v[1]:CPPIGetOwner() then
-					ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец/машинист: #A, состав: #s, вагонов: #i, маршрут: #s",v[2], table.Count(v[1].WagonList), routenumber1)
-			else
-					ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец: #A, состав: #s, вагонов: #i, маршрут: #s, машинист: #T",v[2], table.Count(v[1].WagonList), routenumber1, v[1]:GetDriver())
 			end
-		end
 		end
 	end
 	local wagons = ulx.command( "Metrostroi", "ulx trains", ulx.wagons, "!trains",true )
@@ -2566,10 +2562,9 @@ if SERVER then
 			end
 		return
 		end
-	local command = string.upper(command)
-	local command1 = string.lower(command)
+	local command = string.lower(command)
 		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
-			if v.Name == command or v.Name == command1 then
+			if bigrustosmall(v.Name) == command then
 				if calling_ply:InVehicle() then calling_ply:ExitVehicle() end
 				calling_ply.ulx_prevpos = calling_ply:GetPos()
 				calling_ply.ulx_prevang = calling_ply:EyeAngles()
@@ -2604,11 +2599,10 @@ if SERVER then
 	end)
 	
 	function ulx.resetudochki()
-		for k,v in pairs(ents.GetAll()) do
-			if stringfind(v:GetClass(),"udochka",true) or stringfind(v:GetClass(),"physbox",true) or stringfind(v:GetClass(), "tracktrain",true) then
-				for k1,v1 in pairs(udochkitbl) do
-					if v1[1] == v then v:SetPos(v1[2]) v:SetAngles(v1[3]) end
-				end
+		if #udochkitbl < 1 then return end
+		for k,v in pairs(udochkitbl) do
+			for k1,v1 in pairs(ents.FindByClass(v[1]:GetClass())) do
+				if v1 == v[1] then v1:SetPos(v[2]) v1:SetAngles(v[3])
 			end
 		end
 	end
@@ -2715,7 +2709,7 @@ if SERVER then
 	hook.Add("PlayerInitialSpawn", "ProstImagine",function()
 		hook.Remove("PlayerInitialSpawn", "ProstImagine")
 		if game.GetMap():find("imagine") then 
-			print("deleteng PROST")
+			print("deleting PROST")
 			for k,v in pairs(ents.FindByClass("gmod_track_autodrive_plate")) do if v.PlateType == 760 then v:Remove() end end
 		end
 	end)
@@ -2723,13 +2717,13 @@ if SERVER then
 --[[============================= ТЕЛЕПОРТАЦИЯ В ПРОТИВОПОЛОЖНУЮ КАБИНУ ==========================]]
 	function ulx.changecabin(ply)
 		if not ply:InVehicle() then ULib.tsayError( ply, "Ты не в кабине", true ) return end
-		local ToSeat = nil
 		local ent = ply:GetVehicle():GetNW2Entity("TrainEntity")
 		local WagonList = ent.WagonList
-		if #WagonList == 1 then ULib.tsayError( ply, "У тебя только 1 вагон", true ) return end
+		local WagonListN = #WagonList
+		if WagonListN == 1 then ULib.tsayError( ply, "У тебя только 1 вагон", true ) return end
 		local EntClass = ent:GetClass()
 		for k,v in pairs(WagonList) do
-			if k ~= #WagonList then continue end
+			if k ~= WagonListN then continue end
 			if v ~= ent and v:GetClass() == EntClass then KekLolArbidol(v,ply) return end
 		end
 	end
@@ -2752,27 +2746,31 @@ if SERVER then
 				elseif ent:GetPos():DistToSqr(v:GetPos()) < ent:GetPos():DistToSqr(blizhniy:GetPos()) then blizhniy = v
 				end
 			end
-			if blizhniy.TwoToSix then ent.ALSFreq:TriggerInput("Set",1) end
+			if blizhniy.TwoToSix then ent.ALSFreq:TriggerInput("Set",1) return end
 		end)
 	end)
 end
 
+--[[============================= НАСТРОЙКА ЛИМИТОВ ДЛЯ СПАВНЕРА ==========================]]
 function MaximumWagons(ply,self)
+	local Map = game.GetMap()
+	local Rank = ply:GetUserGroup()
 	local maximum = 6
-	if GetGlobalInt("metrostroi_train_count") > 12 then maximum = 4 end
-	if GetGlobalInt("metrostroi_train_count") > 21 then maximum = 3 end
-	if GetGlobalInt("metrostroi_train_count") > 30 then maximum = 2 end
-	if ply:GetUserGroup() == "superadmin" or ply:GetUserGroup() == "tsar" or ply:GetUserGroup() == "tsarbom" or ply:GetUserGroup() == "tsarbomba" then maximum = 6 end
-	if maximum < 4 and ((ply:GetUserGroup() == "operator") or (ply:GetUserGroup() == "zamtsar")) then maximum = 4 end
-	if (ply:GetUserGroup() == "admin") then maximum = 6 end
-	if (game.GetMap() == "gm_mus_crimson_line_tox_v9_21" or game.GetMap() == "gm_mus_crimson_line_b_n" or game.GetMap() == "gm_mus_orange_metro_h" or game.GetMap() == "gm_mus_neoorange_d") and maximum > 3 then maximum = 3 end
-	if (game.GetMap() == "gm_smr_first_line_v2" or game.GetMap():find("neocrims") or game.GetMap():find("rural") or game.GetMap():find("remastered")) and maximum > 4 then maximum = 4 end
-	if (game.GetMap() == "gm_mus_loopline_e" or game.GetMap() == "gm_metrostroi_b50") and maximum > 5 then maximum = 5 end	
+	local MetrostroiTrainCount = GetGlobalInt("metrostroi_train_count")
+	if MetrostroiTrainCount > 12 then maximum = 4 end
+	if MetrostroiTrainCount > 21 then maximum = 3 end
+	if MetrostroiTrainCount > 30 then maximum = 2 end
+	if Rank == "superadmin" then maximum = 6 end
+	if maximum < 4 and (Rank == "operator" or Rank == "admin") then maximum = 4 end
+	if (stringfind(Map,"mus_crimson_line") or stringfind(Map, "orange")) and maximum > 3 then maximum = 3 end
+	if (stringfind(Map,"smr") or stringfind(Map,"neocrims") or stringfind(Map, "rural") or stringfind(Map, "remaste")) and maximum > 4 then maximum = 4 end
+	if (stringfind(Map,"loopline") or stringfind(Map,"gm_metrostroi_b")) and maximum > 5 then maximum = 5 end	
 	if SERVER and self then
 		if maximum < 6 and self.Train.ClassName == "gmod_subway_81-722" then self.Settings.WagNum = 3 end
 	end
 	return maximum
 end
+--используй table.insert только если ключи не числа
 --ply.InMetrostroiTrain
 --[[============================= УДАЛЕНИЕ НЕНУЖНЫХ ВКЛАДОК ИЗ SPAWNMENU ==========================]]
 --[[local function testkek(panel)
