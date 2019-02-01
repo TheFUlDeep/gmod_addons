@@ -3,22 +3,6 @@ SetGlobalInt("AvtooborotEnabled", 2)
  
 if SERVER then 
 
-	local function OpenRoute(str)
-		for k,v in pairs(ents.FindByClass("gmod_track_signal"))do
-		--if v.Name == "PR173" then
-			for k1,v1 in pairs(v.Routes) do
-				--print(v1.RouteName) 
-				--print(k1)
-				--print(v1.RouteName)
-				if str == v1.RouteName then 
-					lastused = nil
-					v:OpenRoute(k1)
-					--ulx.fancyLog("Автооборот собрал маршрут #s", str)
-				end
-			end
-		--end
-		end
-	end
 
 	local function createTrigger(name, vector)
 		SetGlobalInt("AvtooborotEnabled", 1)
@@ -31,14 +15,14 @@ if SERVER then
 		ent:UseTriggerBounds(true, 10)
 	--[[local scale = 0.1
 	local button = ents.Create( "gmod_button" )
-	button:SetModel( "models/6000/body.mdl" )
+	button:SetModel( "models/6000/6000.mdl" )
 	button:SetCollisionGroup( COLLISION_GROUP_WORLD )
 	button:SetPersistent( true )
 	button:SetPos(ent:GetPos() )
 	button:SetModelScale(scale)
 	button:Spawn()
 	local button = ents.Create( "gmod_button" )
-	button:SetModel( "models/6000/body.mdl" )
+	button:SetModel( "models/6000/6000.mdl" )
 	button:SetCollisionGroup( COLLISION_GROUP_WORLD )
 	button:SetPersistent( true )
 	button:SetPos(ent:GetPos() )
@@ -46,7 +30,7 @@ if SERVER then
 	button:SetModelScale(scale)
 	button:Spawn()
 	local button = ents.Create( "gmod_button" )
-	button:SetModel( "models/6000/body.mdl" )
+	button:SetModel( "models/6000/6000.mdl" )
 	button:SetCollisionGroup( COLLISION_GROUP_WORLD )
 	button:SetPersistent( true )
 	button:SetPos(ent:GetPos() )
@@ -57,6 +41,7 @@ if SERVER then
 		ent = nil
 	end
 
+	
 	local avtooborottbl = {}
 	local chetiretblST1 = {}
 	local chetiretblST2 = {}
@@ -64,7 +49,7 @@ if SERVER then
 
 	local function deleteavtooborot()
 		for k,v in pairs(ents.GetAll()) do
-			if v:GetClass() == "avtooborot" or v:GetModel() == "models/6000/body.mdl" then v:Remove() end
+			if v:GetClass() == "avtooborot" or v:GetModel() == "models/6000/6000.mdl" then v:Remove() end
 		end
 		--[[for k,v in pairs(ents.FindByClass("avtooborot")) do
 			v:Remove()
@@ -174,18 +159,18 @@ if SERVER then
 			chetiretblST1[table.Count(chetiretblST1) + 1] = "ST3-2"
 			
 			--[[=============================БРАТЕЕВО ==========================]]
-			createTrigger("br1", Vector(-14735.519531, -9313.416016 +4800 + 1900, -1478.274414))	--станция
-			createTrigger("br30", Vector(-14735.519531, -9313.416016, -1478.274414))	--у ближнего светофора
-			createTrigger("br40", Vector(-14735.519531 + 600, -9313.416016 - 400, -1478.274414))	--у дальнего светофора
-			createTrigger("br3", Vector(-14735.519531, -9313.416016 - 1900, -1478.274414))		--ближний путь	--расстояние между двумя 1900
-			createTrigger("br33", Vector(-14735.519531, -9313.416016 - 1900 - 1900, -1478.274414))
-			createTrigger("br333", Vector(-14735.519531, -9313.416016 - 1900 - 1900 - 1900, -1478.274414))
-			createTrigger("br4", Vector(-14735.519531 + 600, -9313.416016 - 400 - 1900, -1478.274414))
-			createTrigger("br44", Vector(-14735.519531 + 600, -9313.416016 - 400 - 1900 - 1900, -1478.274414))
-			createTrigger("br444", Vector(-14735.519531 + 600, -9313.416016 - 400 - 1900 - 1900 -1900, -1478.274414))
-			createTrigger("br2", Vector(-14735.519531 + 600, -9313.416016 + 4100, -1478.274414))
+			createTrigger("br1", Vector(-14735.519531, -9313.416016 +4800 + 1900, -1478.274414-20))	--станция
+			createTrigger("br30", Vector(-14735.519531, -9313.416016, -1478.274414-20))	--у ближнего светофора
+			createTrigger("br40", Vector(-14735.519531 + 600, -9313.416016 - 400, -1478.274414-20))	--у дальнего светофора
+			createTrigger("br3", Vector(-14735.519531, -9313.416016 - 1900, -1478.274414-20))		--ближний путь	--расстояние между двумя 1900
+			createTrigger("br33", Vector(-14735.519531, -9313.416016 - 1900 - 1900, -1478.274414-20))
+			createTrigger("br333", Vector(-14735.519531, -9313.416016 - 1900 - 1900 - 1900, -1478.274414-20))
+			createTrigger("br4", Vector(-14735.519531 + 600, -9313.416016 - 400 - 1900, -1478.274414-20))
+			createTrigger("br44", Vector(-14735.519531 + 600, -9313.416016 - 400 - 1900 - 1900, -1478.274414-20))
+			createTrigger("br444", Vector(-14735.519531 + 600, -9313.416016 - 400 - 1900 - 1900 -1900, -1478.274414-20))
+			createTrigger("br2", Vector(-14735.519531 + 600, -9313.416016 + 4100, -1478.274414-20))
 			createTrigger("br22", Vector(-14735.519531 + 600, -9313.416016 + 4100 + 500, -1478.274414))
-			createTrigger("obnovlenie", Vector(11817.193359, -405.242218, -1466.181519 + 20))
+			createTrigger("obnovlenie", Vector(11817.193359, -405.242218, -1466.181519 + 20-20))
 			local i = 0
 			for k,v in pairs(ents.FindByClass("avtooborot")) do
 				if v.name:find("br") then i = i + 1 chetiretblST2[i] = v end
@@ -233,14 +218,14 @@ local md34 = nil
 					end
 				end
 				if not chetiretbl[8] then
-					OpenRoute(chetiretbl[11])
+					ForAvtooborot(chetiretbl[11])
 				end
 			end			
 		end
 		if chetiretbl[1].zanyat and not chetiretbl[8] then																													--если приехал на станцию
 			if not chetiretbl[9] then				--если оба тупика свободны
 				chetiretbl[8] = chetiretbl[1].zanyat
-				OpenRoute(chetiretbl[10])
+				ForAvtooborot(chetiretbl[10])
 			end
 		end
 		return chetiretbl
@@ -267,7 +252,7 @@ local md34 = nil
 					end
 				end
 				if not chetiretbl[10 + 2] and not chetiretbl[11 + 2] then
-					OpenRoute(chetiretbl[15 + 2])
+					ForAvtooborot(chetiretbl[15 + 2])
 				end
 			end			
 		end
@@ -281,7 +266,7 @@ local md34 = nil
 					end
 				end
 				if not chetiretbl[10 + 2] and not chetiretbl[12 + 2] then
-					OpenRoute(chetiretbl[16 + 2])
+					ForAvtooborot(chetiretbl[16 + 2])
 				end
 			end	
 		end
@@ -289,10 +274,10 @@ local md34 = nil
 		if chetiretbl[1].zanyat and not chetiretbl[10 + 2] then																													--если приехал на станцию
 			if not chetiretbl[11 + 2] and not chetiretbl[12 + 2] then				--если оба тупика свободны
 				chetiretbl[10 + 2] = chetiretbl[1].zanyat
-				OpenRoute(chetiretbl[13 + 2])
+				ForAvtooborot(chetiretbl[13 + 2])
 			elseif not chetiretbl[11 + 2] and chetiretbl[12 + 2] then																--если дальний занят и ближний свободен
 				chetiretbl[10 + 2] = chetiretbl[1].zanyat
-				OpenRoute(chetiretbl[14 + 2])
+				ForAvtooborot(chetiretbl[14 + 2])
 			end
 		end
 		
@@ -309,13 +294,13 @@ local md34 = nil
 		--[[============================= МЕЖДУНАРОДНАЯ ==========================]]
 			if not IsValid(md2) then md2 = nil end
 			if not IsValid(md34) then md34 = nil end
-			if avtooborottbl["md34"].zanyat and md34 == nil then md34 = avtooborottbl["md34"].zanyat OpenRoute("md4-1") end
+			if avtooborottbl["md34"].zanyat and md34 == nil then md34 = avtooborottbl["md34"].zanyat ForAvtooborot("md4-1") end
 			if avtooborottbl["md2"].zanyat and md2 == nil and md34 == nil and not avtooborottbl["md34"].zanyat then		-- на станцию
 				md2 = avtooborottbl["md2"].zanyat.WagonList[table.Count(avtooborottbl["md2"].zanyat.WagonList)]
-				OpenRoute("md2-4")
+				ForAvtooborot("md2-4")
 				--ulx.fancyLogAdmin(md2:CPPIGetOwner(),"Игроку #A собран маршрут в оборотный тупик Междануродной")
 			end
-			if avtooborottbl["md34"].zanyat and avtooborottbl["md34"].zanyat == md2 then md34 = md2 OpenRoute("md4-1") md2 = nil end
+			if avtooborottbl["md34"].zanyat and avtooborottbl["md34"].zanyat == md2 then md34 = md2 ForAvtooborot("md4-1") md2 = nil end
 
 			if avtooborottbl["md11"].zanyat and not avtooborottbl["md1"].zanyat and md34 ~= nil then			--освобождение md4 с помощью двух триггеров
 				for k,v in pairs(avtooborottbl["md11"].zanyat.WagonList) do
@@ -326,15 +311,15 @@ local md34 = nil
 
 		if game.GetMap():find("ruralline") then
 			dvatbl1 = dva(dvatbl1)					-- роклейк
-			if not dvatbl1[8] and not dvatbl1[9] then OpenRoute(dvatbl1[10]) end
+			if not dvatbl1[8] and not dvatbl1[9] then ForAvtooborot(dvatbl1[10]) end
 			
 			chetiretblST1 = chetire(chetiretblST1)	-- маркет стрит
 		end
 		if game.GetMap():find("neocrims") then	
 			chetiretblST1 = chetire(chetiretblST1)	-- сталинская
 			chetiretblST2 = chetire(chetiretblST2)	-- братеево
-			if not chetiretblST2[10 + 2] and not chetiretblST2[11 + 2] and not chetiretblST2[12 + 2] then OpenRoute(chetiretblST2[13 + 2]) end	-- значение на братеево по умолчанию
-			if not chetiretblST2[11+2] and not chetiretblST2[10 + 2] and chetiretblST2[12+2] then OpenRoute(chetiretblST2[14+2]) end
+			if not chetiretblST2[10 + 2] and not chetiretblST2[11 + 2] and not chetiretblST2[12 + 2] then ForAvtooborot(chetiretblST2[13 + 2]) end	-- значение на братеево по умолчанию
+			if not chetiretblST2[11+2] and not chetiretblST2[10 + 2] and chetiretblST2[12+2] then ForAvtooborot(chetiretblST2[14+2]) end
 		end
 
 	end

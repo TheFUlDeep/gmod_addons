@@ -87,7 +87,6 @@ function ENT:SayHook(ply, comm)
 		and Metrostroi.ActiveDSCP5 ~= ply 
 		and Metrostroi.ActiveDispatcher ~= nil 
 		and ply:GetUserGroup() == "user" 
-		and avtooborot == 0
 	then 
 		return
 	end
@@ -145,7 +144,7 @@ function ENT:SayHook(ply, comm)
 			end
 		end
 	elseif comm:sub(1,7) == "!sopen " then
-	if avtooborot == 1 then comm = comm:sub(1, -2) timer.Simple(1, function() avtooborot = 0 end) end
+	--if avtooborot == 1 then comm = comm:sub(1, -2) timer.Simple(1, function() avtooborot = 0 end) end
 		comm = comm:sub(8,-1):upper()
 		comm = string.Explode(":",comm)
 		if comm[1] == self.Name then
