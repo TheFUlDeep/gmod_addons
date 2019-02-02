@@ -1,7 +1,7 @@
 if CLIENT then return end
 
-local interval = 1
-local lasttime = os.time()
+local interval = 0.5
+local lasttime = os.clock()
 local SyncedTrainsTBL = {}
 local RoutesTBL = {}
 local GetTrainsTBLL = {}
@@ -19,7 +19,7 @@ local function SendSyncedTrains(arg)
 			i = i + 1
 			p = 0
 			TrainsTBL[i] = {
-				OsTime = os.time(),
+				OsTime = os.clock(),
 				model = v1:GetModel(),
 				pos = v1:GetPos(),
 				ang = v1:GetAngles()
@@ -61,6 +61,7 @@ local function DeleteSyncedTrain(index)
 	end
 end
 
+local shetchik = 1
 local LastGetSyncedTrains
 local function GetSyncedTrains(arg)
 	if not file.Exists("SyncTrainsDataRec.txt", "DATA") then
@@ -72,7 +73,10 @@ local function GetSyncedTrains(arg)
 	end
 	if LastGetSyncedTrains == file.Read("SyncTrainsDataRec.txt", "DATA") then
 		if not SyncedTrainsTBL then return end
+		if shetchik ~= 50 then shetchik = shetchik + 1 return end
+		shetchik = 1
 		for k,v in pairs(SyncedTrainsTBL) do
+			print("1")
 			DeleteSyncedTrain(k)
 		end
 		return
@@ -91,7 +95,7 @@ local function GetSyncedTrains(arg)
 	end
 	
 	for k,v in pairs(SyncedTrainsTBL) do
-		if not GetTrainsTBLL[k] then DeleteSyncedTrain(k) end
+		if not GetTrainsTBLL[k] then DeleteSyncedTrain(k) print("2") end
 	end
 	
 	for k,v in pairs(GetTrainsTBLL) do
@@ -123,7 +127,7 @@ end
 local function CheckRoutes(arg)
 	if not RoutesTBL then return end
 	for k,v in pairs(RoutesTBL) do
-		if v.OsTime + interval  < os.time() then 
+		if v.OsTime + interval  < os.clock() then 
 			RoutesTBL[k] = nil
 		end
 	end
@@ -270,7 +274,7 @@ end
 local function CheckSwitchesTBL(arg)
 	if SwitchesTBL then
 		for k,v in pairs(SwitchesTBL) do
-			if v.OsTime + interval < os.time() then 
+			if v.OsTime + interval < os.clock() then 
 				SwitchesTBL[k] = nil
 			end
 		end
@@ -296,8 +300,8 @@ end
 --hook.Remove("Think","SyncTrainsSend")
 
 hook.Add("Think", "SyncTrainsSend", function()
-	if os.time() - lasttime < interval then return end
-	lasttime = os.time()
+	if os.clock() - lasttime < interval then return end
+	lasttime = os.clock()
 
 	SendSyncedTrains(nil)
 	GetSyncedTrains(nil)
@@ -313,20 +317,20 @@ end)
 
 hook.Add("PlayerSay","SyncRoutes", function(ply,text)
 	if stringfind(text,"!sclps ") or stringfind(text,"!sopps ") or stringfind(text,"!sopen ") or stringfind(text,"!sclose ") or stringfind(text,"!sactiv ") or stringfind(text,"!sdeactiv ") then
-		table.insert(RoutesTBL,1,{comm = text, OsTime = os.time()})
+		table.insert(RoutesTBL,1,{comm = text, OsTime = os.clock()})
 	end
 end)
 
 hook.Add("MetrostroiChangedSwitch", "SyncSwitches", function(self,AlternateTrack)
 	local state = nil
 	if AlternateTrack then state = "Open" else state = "Close" end
-	table.insert(SwitchesTBL,1,{name = self.Name,state = state,OsTime = os.time()})
+	table.insert(SwitchesTBL,1,{name = self.Name,state = state,OsTime = os.clock()})
 end)
 
 
 function ForAvtooborot(route)
 	OpenRoute(route)
-	table.insert(RoutesTBL,1,{comm = "!sopen "..route, OsTime = os.time()})
+	table.insert(RoutesTBL,1,{comm = "!sopen "..route, OsTime = os.clock()})
 	--PrintTable(SopensTBL)
 end
 
@@ -356,11 +360,11 @@ local server1 = "R:\\Downloads\\gms_norank\\garrysmod\\data\\"
 --local server2 = "T:\\gms_norank_obnova\\garrysmod\\data\\"
 local server2 = "R:\\Downloads\\gms_norank\\garrysmod\\data\\"
 local interval = 1
-local lasttime = os.time()
+local lasttime = os.clock()
 ::cycle::
 while true do
-  if os.time() - lasttime < interval then goto cycle end
-	lasttime = os.time()
+  if os.clock() - lasttime < interval then goto cycle end
+	lasttime = os.clock()
   
   local lastmap1 = io.open(server1.."lastmap.txt")
   local lastmap2 = io.open(server2.."lastmap.txt")
