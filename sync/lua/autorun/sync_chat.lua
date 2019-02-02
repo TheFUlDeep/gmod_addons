@@ -18,50 +18,43 @@ local function SravnenieForTbl(tbl1,tbl2)
 end
 
 if CLIENT then
-
-	local function ClearWasInChat(tbl)
-		if not tbl then return end
-		local i
-		if #tbl > 10 then
-			for i = 11, #tbl do
-				tbl[i] = nil
-			end
-		end
-	end
-
+	local LastRec
 	local RecChatTBL = {}
-	local WasInChat = {}
 	net.Receive( "SyncedChat", function()
 		local leng = net.ReadUInt(32)
-		local NewTable = util.JSONToTable(util.Decompress(net.ReadData(leng)))
-		if SravnenieForTbl(NewTable, RecChatTBL) then return end
-		RecChatTBL = NewTable
+		local NewRec = (net.ReadData(leng))
+		if NewRec == LastRec then return end
+		LastRec = NewRec
+		RecChatTBL = util.JSONToTable(util.Decompress(LastRec))
 		if not RecChatTBL then return end
-		for k,v in pairs(WasInChat) do
-			for k1,v1 in pairs(RecChatTBL) do
-				if v1.nick == v.nick and v.msg == v1.msg and v.OsTime == v1.OsTime then RecChatTBL[k1] = nil end
-			end
-		end
-		--PrintTable(RecChatTBL)
-		for k,v in pairs(RecChatTBL) do 
+		for k,v in pairs(RecChatTBL) do
 			chat.AddText(Color(0,0,0), v.nick, Color(255,255,255), ": "..(v.msg))
-			table.insert(WasInChat,1,RecChatTBL[k])
 		end
-		ClearWasInChat(WasInChat)
 	end)
 end
 if CLIENT then return end
 
-
+local WebHookUrl = "https://discordapp.com/api/webhooks/514197550509850655/VdoxR99ZM2vGhrmC629rH3rYCcUtHSUtIT9_7PxauoLhRA-DnLwnpWedmqlHoQvtCrDL"
 local HostName = GetHostName()
 hook.Add("PlayerSay","chat_to_discord",function(ply,text,team)
-	http.Post( "https://discordapp.com/api/webhooks/514197550509850655/VdoxR99ZM2vGhrmC629rH3rYCcUtHSUtIT9_7PxauoLhRA-DnLwnpWedmqlHoQvtCrDL", {username = ply:Nick(), content = "["..HostName.."] "..text})
+	http.Post( WebHookUrl, {username = ply:Nick(), content = "[Server: "..HostName.."] "..text})
 end)
 
 util.AddNetworkString( "SyncedChat" )
 local interval = 1
 local lasttime = os.time()
 local ChatTBL = {}
+local WasInChat = {}
+local LastFile
+local function ClearWasInChat(tbl)
+	if not tbl then return end
+	local i
+	if #tbl > 10 then
+		for i = 11, #tbl do
+			tbl[i] = nil
+		end
+	end
+end
 hook.Add("Think","SyncChat", function()
 	if os.time() - lasttime < interval then return end
 	lasttime = os.time()
@@ -70,24 +63,50 @@ hook.Add("Think","SyncChat", function()
 		ChatTBL = {}
 		return
 	end
-	if SravnenieForTbl(util.JSONToTable(file.Read("SyncChatDataRec.txt", "DATA")), ChatTBL) then return end
-	ChatTBL = util.JSONToTable(file.Read("SyncChatDataRec.txt", "DATA"))
+	if LastFile == file.Read("SyncChatDataRec.txt", "DATA") then return end
+	LastFile = file.Read("SyncChatDataRec.txt", "DATA")
+	ChatTBL = util.JSONToTable(LastFile)
 	if not ChatTBL then return end
-		net.Start( "SyncedChat" )
-		local DataToSend = ChatTBL
-		DataToSend = util.TableToJSON(ChatTBL)
-		DataToSend = util.Compress(DataToSend)
-		local DataToSendN = #DataToSend
-		net.WriteUInt(DataToSendN, 32)
-		net.WriteData(DataToSend,DataToSendN)
-		net.Broadcast()
-		--net.Send(ply)
+	for k,v in pairs(WasInChat) do
+		for k1,v1 in pairs(ChatTBL) do
+			if v1.nick == v.nick and v.msg == v1.msg and v.OsTime == v1.OsTime then ChatTBL[k1] = nil end
+		end
+	end
+	net.Start( "SyncedChat" )
+	local DataToSend = ChatTBL
+	DataToSend = util.TableToJSON(ChatTBL)
+	DataToSend = util.Compress(DataToSend)
+	local DataToSendN = #DataToSend
+	net.WriteUInt(DataToSendN, 32)
+	net.WriteData(DataToSend,DataToSendN)
+	net.Broadcast()
+	--net.Send(ply)
+	for k,v in pairs(ChatTBL) do
+		table.insert(WasInChat,1,{nick = v.nick, OsTime = v.OsTime, msg = v.msg})
+	end
+	ClearWasInChat(WasInChat)
 end)
 
 
+--Если username = HostName тогда нельзя допустить, чтобы в content были квадратные скобки
+--[[http.Post( WebHookUrl, {username = HostName, content = "Смена карты на "..file.Read("lastmap.txt","DATA")})					--не работает. Мб что-то придумать
+hook.Add("ShutDown","ShutDownToGlobalChat",function() 
+	http.Post( WebHookUrl, {username = HostName, content = "Выключаюсь (но это неточно)"})
+end)]]
 
+hook.Add("PlayerDisconnected","DisconnectToGlobalChat",function(ply)
+	if not IsValid(ply) then return end
+	http.Post( WebHookUrl, {username = ply:Nick(), content = "[Server: "..HostName.."] ".."вышел с сервера. SteamID: "..ply:SteamID()})
+end)
 
+hook.Add("PlayerConnect","ConnectToGlobalChat",function(ply)
+	http.Post( WebHookUrl, {username = ply, content = "[Server: "..HostName.."] ".."присоединяюсь."})
+end)
 
+hook.Add("PlayerInitialSpawn","SpawnToGlobalChat",function(ply)
+	if not IsValid(ply) then return end
+	http.Post( WebHookUrl, {username = ply:Nick(), content = "[Server: "..HostName.."] ".."завершаю загрузку."})
+end)
 -- код дискорд бота
 
 
@@ -97,7 +116,7 @@ local Client = discordia.Client()
 local json = require ("json")
 
 local BotSettings = {
-	['Token'] = "Bot ";
+	['Token'] = "Bot NTE0Mzg3ODY0NjUwNTE0NDY3.DzZWGw.VzokWP8vlLsBScfqXPtCk0fGEx4";
 	['Prefix'] = ";";
 }
 
@@ -160,11 +179,15 @@ Client:on('messageCreate', function(message)
 			server = "Discord"
 			msg = (message.content)
 			nick = "["..server.."] "..(message.author.name)
-		else
-			server = string.sub(message.content, 1,stringfind(message.content,"]"))
+		elseif stringfind(message.content,"[",nil,1,2) then
+			server = string.sub(message.content, stringfind(message.content,":" )+2,stringfind(message.content,"]")-1)
 			msg = (string.sub(message.content,stringfind(message.content,"]") + 2))
-			nick = server.." "..(message.author.name)
+			nick = "["..server.."] "..(message.author.name)
 			--print("asdasd")
+		else
+			server = message.author.name
+			msg = message.content
+			nick = "["..server.."]"
 		end
 		table.insert(SendTBL,1,{msg = msg,nick = nick,server = server,OsTime = os.time()})
 	end
@@ -185,7 +208,6 @@ Client:on('messageCreate', function(message)
 	SendToSecond = json.encode(SendToSecond)
 	filewrite("SyncChatDataRec",SendToFirst,"C:\\gms_norank_obnova\\garrysmod\\data\\")
 	filewrite("SyncChatDataRec",SendToSecond,"C:\\gms_norank_obnova2\\garrysmod\\data\\")
-	
 end)
 
 Client:run(BotSettings.Token)

@@ -9,25 +9,6 @@ local GetSyncedRoutesTbl = {}
 local SwitchesTBL = {}
 local GetSyncedSwitchesTbl = {}
 
-local function SravnenieForTbl(tbl1,tbl2)
-	if not tbl1 or not tbl2 then return false end
-	local ravno = false
-	local maxx
-	local minn
-	if #tbl1 < #tbl2 then 
-		minn = tbl1 maxx = tbl2 
-	else 
-		minn = tbl2 maxx = tbl1
-	end
-	for k,v in pairs(maxx) do
-		ravno = false
-		for k1,v1 in pairs(minn) do
-			if not ravno and table.ToString(v) == table.ToString(v1) then ravno = true end
-		end
-	end
-	if ravno then return true else return false end
-end
-
 local function SendSyncedTrains(arg)
 	local TrainsTBL = {}
 	local i = 0
@@ -80,6 +61,7 @@ local function DeleteSyncedTrain(index)
 	end
 end
 
+local LastGetSyncedTrains
 local function GetSyncedTrains(arg)
 	if not file.Exists("SyncTrainsDataRec.txt", "DATA") then
 		if not SyncedTrainsTBL then return end
@@ -88,14 +70,15 @@ local function GetSyncedTrains(arg)
 		end 
 		return
 	end
-	if SravnenieForTbl(util.JSONToTable(file.Read("SyncTrainsDataRec.txt", "DATA")),GetTrainsTBLL) then
+	if LastGetSyncedTrains == file.Read("SyncTrainsDataRec.txt", "DATA") then
+		if not SyncedTrainsTBL then return end
 		for k,v in pairs(SyncedTrainsTBL) do
 			DeleteSyncedTrain(k)
 		end
 		return
 	end
-	
-	GetTrainsTBLL = (util.JSONToTable(file.Read("SyncTrainsDataRec.txt", "DATA")))
+	LastGetSyncedTrains = file.Read("SyncTrainsDataRec.txt", "DATA")
+	GetTrainsTBLL = util.JSONToTable(LastGetSyncedTrains)
 	if not GetTrainsTBLL then
 		for k,v in pairs(SyncedTrainsTBL) do
 			if IsValid(v) then v:Remove() end 
@@ -145,10 +128,12 @@ local function CheckRoutes(arg)
 	end
 end
 
+local LastGetSyncedRoutes
 local function GetSyncedRoutes(arg)
 	if file.Exists("SyncRoutesDataRec.txt", "DATA") then 
-		if SravnenieForTbl(util.JSONToTable(file.Read("SyncRoutesDataRec.txt", "DATA")),GetSyncedRoutesTbl) then return end
-		GetSyncedRoutesTbl = util.JSONToTable(file.Read("SyncRoutesDataRec.txt", "DATA"))
+		if LastGetSyncedRoutes == file.Read("SyncRoutesDataRec.txt", "DATA") then return end
+		LastGetSyncedRoutes = file.Read("SyncRoutesDataRec.txt", "DATA")
+		GetSyncedRoutesTbl = util.JSONToTable(LastGetSyncedRoutes)
 	end
 	if not GetSyncedRoutesTbl then return end
 	local comm
@@ -255,10 +240,12 @@ local function GetSyncedRoutes(arg)
 	end
 end
 
+local LastGetSyncedSwitches
 local function GetSyncedSwitches(arg)
 	if not file.Exists("SyncSwitchesDataRec.txt", "DATA") then return end
-	if SravnenieForTbl(util.JSONToTable(file.Read("SyncSwitchesDataRec.txt", "DATA")),GetSyncedSwitchesTbl) then return end
-	GetSyncedSwitchesTbl = util.JSONToTable(file.Read("SyncSwitchesDataRec.txt", "DATA"))
+	if LastGetSyncedSwitches == file.Read("SyncSwitchesDataRec.txt", "DATA") then return end
+	LastGetSyncedSwitches = file.Read("SyncSwitchesDataRec.txt", "DATA")
+	GetSyncedSwitchesTbl = util.JSONToTable(LastGetSyncedSwitches)
 	if not GetSyncedSwitchesTbl then return end
 	for k,v in pairs(GetSyncedSwitchesTbl) do
 		if not name then continue end
