@@ -2682,11 +2682,13 @@ end
 --[[============================= Перегрузка !menu ==========================]]
 timer.Simple(5, function()
 	if SERVER then
-		function ulx.menu(ply)ply:ConCommand("xgui") end
+		function ulx.menu(ply)
+			ply:ConCommand("xgui")
+		end
 	end
 	local menu = ulx.command( "Metrostroi", "ulx menu", ulx.menu, "!menu",true)
 	menu:defaultAccess( ULib.ACCESS_ALL )
-	menu:help( "Телепортация к станции." )
+	menu:help( "Открыть ulx меню" )
 end)
 
 
