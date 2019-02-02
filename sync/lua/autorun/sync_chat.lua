@@ -1,22 +1,23 @@
-if CLIENT then
-	local function SravnenieForTbl(tbl1,tbl2)
-		if not tbl1 or not tbl2 then return false end
-		local ravno = false
-		local maxx
-		local minn
-		if #tbl1 < #tbl2 then 
-			minn = tbl1 maxx = tbl2 
-		else 
-			minn = tbl2 maxx = tbl1
-		end
-		for k,v in pairs(maxx) do
-			ravno = false
-			for k1,v1 in pairs(minn) do
-				if not ravno and table.ToString(v) == table.ToString(v1) then ravno = true end
-			end
-		end
-		if ravno then return true else return false end
+local function SravnenieForTbl(tbl1,tbl2)
+	if not tbl1 or not tbl2 then return false end
+	local ravno = false
+	local maxx
+	local minn
+	if #tbl1 < #tbl2 then 
+		minn = tbl1 maxx = tbl2 
+	else 
+		minn = tbl2 maxx = tbl1
 	end
+	for k,v in pairs(maxx) do
+		ravno = false
+		for k1,v1 in pairs(minn) do
+			if not ravno and table.ToString(v) == table.ToString(v1) then ravno = true end
+		end
+	end
+	if ravno then return true else return false end
+end
+
+if CLIENT then
 
 	local function ClearWasInChat(tbl)
 		if not tbl then return end

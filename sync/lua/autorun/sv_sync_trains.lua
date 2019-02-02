@@ -1,54 +1,34 @@
 if CLIENT then return end
 
-for k,v in pairs(ents.FindByClass("gmod_subway_base")) do
-	if IsValid(v) and v.name == "SyncedTrain" then v:Remove() end
-end
-
-for k,v in pairs(ents.FindByClass("gmod_button")) do
-	if IsValid(v) and v.name == "SyncedTrain" then v:Remove() end
-end
-
-	function SravnenieForTbl(tbl1,tbl2)
-		if not tbl1 or not tbl2 then return false end
-		local ravno = false
-		local maxx
-		local minn
-		if #tbl1 < #tbl2 then 
-			minn = tbl1 maxx = tbl2 
-		else 
-			minn = tbl2 maxx = tbl1
-		end
-		for k,v in pairs(maxx) do
-			ravno = false
-			for k1,v1 in pairs(minn) do
-				if not ravno and table.ToString(v) == table.ToString(v1) then ravno = true end
-			end
-		end
-		if ravno then return true else return false end
-	end
-
---file.CreateDir("MetrostroiSync")
-local ShW = false
-hook.Remove("Think","SyncTrainsSend")
 local interval = 1
 local lasttime = os.time()
-hook.Add("Think", "SyncTrainsSend", function()
-	if os.time() - lasttime < interval then return end
-	lasttime = os.time()
+local SyncedTrainsTBL = {}
+local RoutesTBL = {}
+local GetTrainsTBLL = {}
+local GetSyncedRoutesTbl = {}
+local SwitchesTBL = {}
+local GetSyncedSwitchesTbl = {}
 
-	SendSyncedTrains()
-	GetSyncedTrains()
-	
-	CheckRoutes()
-	SendSyncedRoutes()
-	GetSyncedRoutes()
-	
-	CheckSwitchesTBL()
-	SendSyncedSwitches()
-	GetSyncedSwitches()
-end)
---hook.Remove("Think","SyncTrainsSend")
-function SendSyncedTrains()
+local function SravnenieForTbl(tbl1,tbl2)
+	if not tbl1 or not tbl2 then return false end
+	local ravno = false
+	local maxx
+	local minn
+	if #tbl1 < #tbl2 then 
+		minn = tbl1 maxx = tbl2 
+	else 
+		minn = tbl2 maxx = tbl1
+	end
+	for k,v in pairs(maxx) do
+		ravno = false
+		for k1,v1 in pairs(minn) do
+			if not ravno and table.ToString(v) == table.ToString(v1) then ravno = true end
+		end
+	end
+	if ravno then return true else return false end
+end
+
+local function SendSyncedTrains(arg)
 	local TrainsTBL = {}
 	local i = 0
 	local p = 0
@@ -79,8 +59,7 @@ function SendSyncedTrains()
 	file.Write("SyncTrainsDataSend.txt",util.TableToJSON(TrainsTBL))
 end
 
-local SyncedTrainsTBL = {}
-function CreateSyncedTrain(index)
+local function CreateSyncedTrain(index)
 	local ent = ents.Create( "gmod_subway_base" )
 	ent.name = "SyncedTrain"
 	ent:SetPos(Vector(0,0,0))
@@ -92,7 +71,7 @@ function CreateSyncedTrain(index)
 	print("Added SyncedTrain")
 end
 
-function DeleteSyncedTrain(index)
+local function DeleteSyncedTrain(index)
 	for k,v in pairs(SyncedTrainsTBL) do
 		if k == index then 
 			if IsValid(v) then v:Remove() end
@@ -101,9 +80,7 @@ function DeleteSyncedTrain(index)
 	end
 end
 
-
-local GetTrainsTBLL = {}
-function GetSyncedTrains()
+local function GetSyncedTrains(arg)
 	if not file.Exists("SyncTrainsDataRec.txt", "DATA") then
 		if not SyncedTrainsTBL then return end
 		for k,v in pairs(SyncedTrainsTBL) do
@@ -145,8 +122,7 @@ function GetSyncedTrains()
 	end
 end
 
-
-function OpenRoute(str)
+local function OpenRoute(str)
 	str = bigrustosmall(str)
 	for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
 		if str == v.Name then
@@ -160,16 +136,7 @@ function OpenRoute(str)
 	end
 end
 
---CloseRoute("626M")
-local RoutesTBL = {}
-hook.Add("PlayerSay","SyncRoutes", function(ply,text)
-	if stringfind(text,"!sclps ") or stringfind(text,"!sopps ") or stringfind(text,"!sopen ") or stringfind(text,"!sclose ") or stringfind(text,"!sactiv ") or stringfind(text,"!sdeactiv ") then
-		table.insert(RoutesTBL,1,{comm = text, OsTime = os.time()})
-	end
-end)
---hook.Remove("PlayerSay","SyncRoutes")
-
-function CheckRoutes()
+local function CheckRoutes(arg)
 	if not RoutesTBL then return end
 	for k,v in pairs(RoutesTBL) do
 		if v.OsTime + interval  < os.time() then 
@@ -178,12 +145,7 @@ function CheckRoutes()
 	end
 end
 
-function SendSyncedRoutes()
-	file.Write("SyncRoutesDataSend.txt",util.TableToJSON(RoutesTBL))
-end
-
-GetSyncedRoutesTbl = {}
-function GetSyncedRoutes()
+local function GetSyncedRoutes(arg)
 	if file.Exists("SyncRoutesDataRec.txt", "DATA") then 
 		if SravnenieForTbl(util.JSONToTable(file.Read("SyncRoutesDataRec.txt", "DATA")),GetSyncedRoutesTbl) then return end
 		GetSyncedRoutesTbl = util.JSONToTable(file.Read("SyncRoutesDataRec.txt", "DATA"))
@@ -293,31 +255,7 @@ function GetSyncedRoutes()
 	end
 end
 
-
-local SwitchesTBL = {}
-hook.Add("MetrostroiChangedSwitch", "SyncSwitches", function(self,AlternateTrack)
-	local state = nil
-	if AlternateTrack then state = "Open" else state = "Close" end
-	table.insert(SwitchesTBL,1,{name = self.Name,state = state,OsTime = os.time()})
-end)
---hook.Remove("MetrostroiChangedSwitch","SyncSwitches")
-
-function CheckSwitchesTBL()
-	if SwitchesTBL then
-		for k,v in pairs(SwitchesTBL) do
-			if v.OsTime + interval < os.time() then 
-				SwitchesTBL[k] = nil
-			end
-		end
-	end
-end
-
-function SendSyncedSwitches()
-	file.Write("SyncSwitchesDataSend.txt",util.TableToJSON(SwitchesTBL))
-end
-
-local GetSyncedSwitchesTbl = {}
-function GetSyncedSwitches()
+local function GetSyncedSwitches(arg)
 	if not file.Exists("SyncSwitchesDataRec.txt", "DATA") then return end
 	if SravnenieForTbl(util.JSONToTable(file.Read("SyncSwitchesDataRec.txt", "DATA")),GetSyncedSwitchesTbl) then return end
 	GetSyncedSwitchesTbl = util.JSONToTable(file.Read("SyncSwitchesDataRec.txt", "DATA"))
@@ -329,7 +267,21 @@ function GetSyncedSwitches()
 	end
 end
 
-function SetSwitchState(name,state)
+local function CheckSwitchesTBL(arg)
+	if SwitchesTBL then
+		for k,v in pairs(SwitchesTBL) do
+			if v.OsTime + interval < os.time() then 
+				SwitchesTBL[k] = nil
+			end
+		end
+	end
+end
+
+local function SendSyncedSwitches(arg)
+	file.Write("SyncSwitchesDataSend.txt",util.TableToJSON(SwitchesTBL))
+end
+
+local function SetSwitchState(name,state)
 	for k,v in pairs(ents.FindByClass("gmod_track_switch")) do
 		if v.Name ~= name then continue end
 		if v.Invertred then 
@@ -340,6 +292,49 @@ function SetSwitchState(name,state)
 		for k1,v1 in pairs(v.TrackSwitches) do if IsValid(v1) then v1:Fire(state,"","0") end end
 	end
 end
+
+local function SendSyncedRoutes(arg)
+	file.Write("SyncRoutesDataSend.txt",util.TableToJSON(RoutesTBL))
+end
+
+for k,v in pairs(ents.FindByClass("gmod_subway_base")) do
+	if IsValid(v) and v.name == "SyncedTrain" then v:Remove() end
+end
+
+for k,v in pairs(ents.FindByClass("gmod_button")) do
+	if IsValid(v) and v.name == "SyncedTrain" then v:Remove() end
+end
+
+--hook.Remove("Think","SyncTrainsSend")
+
+hook.Add("Think", "SyncTrainsSend", function()
+	if os.time() - lasttime < interval then return end
+	lasttime = os.time()
+
+	SendSyncedTrains(nil)
+	GetSyncedTrains(nil)
+	
+	CheckRoutes(nil)
+	SendSyncedRoutes(nil)
+	GetSyncedRoutes(nil)
+	
+	CheckSwitchesTBL(nil)
+	SendSyncedSwitches(nil)
+	GetSyncedSwitches(nil)
+end)
+
+hook.Add("PlayerSay","SyncRoutes", function(ply,text)
+	if stringfind(text,"!sclps ") or stringfind(text,"!sopps ") or stringfind(text,"!sopen ") or stringfind(text,"!sclose ") or stringfind(text,"!sactiv ") or stringfind(text,"!sdeactiv ") then
+		table.insert(RoutesTBL,1,{comm = text, OsTime = os.time()})
+	end
+end)
+
+hook.Add("MetrostroiChangedSwitch", "SyncSwitches", function(self,AlternateTrack)
+	local state = nil
+	if AlternateTrack then state = "Open" else state = "Close" end
+	table.insert(SwitchesTBL,1,{name = self.Name,state = state,OsTime = os.time()})
+end)
+
 
 function ForAvtooborot(route)
 	OpenRoute(route)
