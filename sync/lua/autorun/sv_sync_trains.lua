@@ -85,6 +85,7 @@ local function GetSyncedTrains(arg)
 		end 
 		return
 	end
+	
 	for k,v in pairs(GetTrainsTBLL) do
 		if not SyncedTrainsTBL[k] or not IsValid(SyncedTrainsTBL[k]) then CreateSyncedTrain(k) end
 	end
@@ -240,6 +241,18 @@ local function GetSyncedRoutes(arg)
 	end
 end
 
+local function SetSwitchState(name,state)
+	for k,v in pairs(ents.FindByClass("gmod_track_switch")) do
+		if v.Name ~= name then continue end
+		if v.Invertred then 
+			if state == "Open" then state = "Close"
+			elseif state == "Close" then state = "Open"
+			end
+		end
+		for k1,v1 in pairs(v.TrackSwitches) do if IsValid(v1) then v1:Fire(state,"","0") end end
+	end
+end
+
 local LastGetSyncedSwitches
 local function GetSyncedSwitches(arg)
 	if not file.Exists("SyncSwitchesDataRec.txt", "DATA") then return end
@@ -248,9 +261,9 @@ local function GetSyncedSwitches(arg)
 	GetSyncedSwitchesTbl = util.JSONToTable(LastGetSyncedSwitches)
 	if not GetSyncedSwitchesTbl then return end
 	for k,v in pairs(GetSyncedSwitchesTbl) do
-		if not name then continue end
-			print("switch "..(v.name))
+		--if not name then continue end
 			SetSwitchState(v.name,v.state)
+			print("switch "..(v.name))
 	end
 end
 
@@ -266,18 +279,6 @@ end
 
 local function SendSyncedSwitches(arg)
 	file.Write("SyncSwitchesDataSend.txt",util.TableToJSON(SwitchesTBL))
-end
-
-local function SetSwitchState(name,state)
-	for k,v in pairs(ents.FindByClass("gmod_track_switch")) do
-		if v.Name ~= name then continue end
-		if v.Invertred then 
-			if state == "Open" then state = "Close"
-			elseif state == "Close" then state = "Open"
-			end
-		end
-		for k1,v1 in pairs(v.TrackSwitches) do if IsValid(v1) then v1:Fire(state,"","0") end end
-	end
 end
 
 local function SendSyncedRoutes(arg)

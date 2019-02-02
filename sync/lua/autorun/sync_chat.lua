@@ -97,7 +97,7 @@ local Client = discordia.Client()
 local json = require ("json")
 
 local BotSettings = {
-	['Token'] = "Bot NTE0Mzg3ODY0NjUwNTE0NDY3.DzZWGw.VzokWP8vlLsBScfqXPtCk0fGEx4";
+	['Token'] = "Bot ";
 	['Prefix'] = ";";
 }
 
@@ -150,6 +150,11 @@ Client:on('messageCreate', function(message)
 	--if message.author.name:find('TheFulDeep') then return end
 		--message.channel:send(message.author.mentionString..' пидорас ')
 		--print(message.author.mentionString)
+		
+	local lastmap1 = io.open("C:\\gms_norank_obnova\\garrysmod\\data\\".."lastmap.txt")
+	local lastmap2 = io.open("C:\\gms_norank_obnova2\\garrysmod\\data\\".."lastmap.txt")
+	if lastmap1 and lastmap2 and lastmap1:read() ~= lastmap2:read() then lastmap1:close() lastmap2:close() return end
+		
 		local server
 		local nick
 		local msg
