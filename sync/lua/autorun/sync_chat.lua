@@ -74,7 +74,7 @@ hook.Add("Think","SyncChat", function()
 	if not ChatTBL then return end
 		net.Start( "SyncedChat" )
 		--net.WriteString(ChatTBL)3
-		SetGlobalInt("SyncChat", string.len(util.Compress(util.TableToJSON(ChatTBL)))
+		SetGlobalInt("SyncChat", string.len(string.dump(util.Compress(util.TableToJSON(ChatTBL)))))
 		net.WriteData(util.Compress(util.TableToJSON(ChatTBL)),GetGlobalInt("SyncChat"))
 		net.Broadcast()
 		--net.Send(ply)
