@@ -32,7 +32,8 @@ if CLIENT then
 	local RecChatTBL = {}
 	local WasInChat = {}
 	net.Receive( "SyncedChat", function()
-		local NewTable = util.JSONToTable(util.Decompress(net.ReadData(GetGlobalInt("SyncChat"))))
+		local leng = net.ReadUInt(32)
+		local NewTable = util.JSONToTable(util.Decompress(net.ReadData(leng)))
 		if SravnenieForTbl(NewTable, RecChatTBL) then return end
 		RecChatTBL = NewTable
 		if not RecChatTBL then return end
@@ -73,9 +74,12 @@ hook.Add("Think","SyncChat", function()
 	ChatTBL = util.JSONToTable(file.Read("SyncChatDataRec.txt", "DATA"))
 	if not ChatTBL then return end
 		net.Start( "SyncedChat" )
-		--net.WriteString(ChatTBL)3
-		SetGlobalInt("SyncChat", string.len(string.dump(util.Compress(util.TableToJSON(ChatTBL)))))
-		net.WriteData(util.Compress(util.TableToJSON(ChatTBL)),GetGlobalInt("SyncChat"))
+		local DataToSend = ChatTBL
+		DataToSend = util.TableToJSON(ChatTBL)
+		DataToSend = util.Compress(DataToSend)
+		local DataToSendN = #DataToSend
+		net.WriteUInt(DataToSendN, 32)
+		net.WriteData(DataToSend,DataToSendN)
 		net.Broadcast()
 		--net.Send(ply)
 end)
