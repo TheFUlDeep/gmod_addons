@@ -2,7 +2,7 @@
 local DelayTime = 5
 hook.Add("ShutDown","DelayChangeCrash", function() 
 	DelayTime = 30
-end)
+end) 
 
 --айпи второго сервера
 local secondip
