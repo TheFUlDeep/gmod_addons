@@ -111,9 +111,9 @@ function GetSyncedTrains()
 		end 
 		return
 	end
-	if SravnenieForTbl(util.JSONToTable(file.Read("SyncTrainsDataRec.txt", "DATA")),GetTrainsTBLL) then print("alo")
+	if SravnenieForTbl(util.JSONToTable(file.Read("SyncTrainsDataRec.txt", "DATA")),GetTrainsTBLL) then
 		for k,v in pairs(SyncedTrainsTBL) do
-			if IsValid(v) then v:Remove() end 
+			DeleteSyncedTrain(k)
 		end
 		return
 	end

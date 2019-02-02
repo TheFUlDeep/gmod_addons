@@ -1,41 +1,51 @@
 if CLIENT then
-
-	function UpdateTblByFinding(whereTbl,whatTbl)
-		for k,v in pairs(whereTbl) do
-			for k1,v1 in pairs(whatTbl) do
-				if v.nick == v1.nick and v.msg == v1.msg then whereTbl[k] = nil end
+	local function SravnenieForTbl(tbl1,tbl2)
+		if not tbl1 or not tbl2 then return false end
+		local ravno = false
+		local maxx
+		local minn
+		if #tbl1 < #tbl2 then 
+			minn = tbl1 maxx = tbl2 
+		else 
+			minn = tbl2 maxx = tbl1
+		end
+		for k,v in pairs(maxx) do
+			ravno = false
+			for k1,v1 in pairs(minn) do
+				if not ravno and table.ToString(v) == table.ToString(v1) then ravno = true end
 			end
 		end
-		return whereTbl
+		if ravno then return true else return false end
 	end
 
-	function FindInTbl(where,what,key)
-		for k1,v1 in pairs(where) do
-			if what[key].nick == v1.nick and what[key].msg == v1.msg then return true end
+	local function ClearWasInChat(tbl)
+		if not tbl then return end
+		local i
+		if #tbl > 10 then
+			for i = 11, #tbl do
+				tbl[i] = nil
+			end
 		end
-		return false
 	end
 
+	local RecChatTBL = {}
 	local WasInChat = {}
 	net.Receive( "SyncedChat", function()
-		local tbl = {}
-		tbl = util.JSONToTable(util.Decompress(net.ReadData()))
-		if not tbl then return end
-		--Добавляю новые поля
-		for k,v in pairs(tbl) do
-			if not FindInTbl(WasInChat,tbl,k) then table.insert(WasInChat,1,{nick = v.nick,msg = v.msg,OsTime = os.time()})
-		end
-		--Удаляю просроченные поля
+		local NewTable = util.JSONToTable(util.Decompress(net.ReadData(GetGlobalInt("SyncChat"))))
+		if SravnenieForTbl(NewTable, RecChatTBL) then return end
+		RecChatTBL = NewTable
+		if not RecChatTBL then return end
 		for k,v in pairs(WasInChat) do
-			if v.OsTime + interval < os.time() then 
-				WasInChat[k] = nil
+			for k1,v1 in pairs(RecChatTBL) do
+				if v1.nick == v.nick and v.msg == v1.msg and v.OsTime == v1.OsTime then RecChatTBL[k1] = nil end
 			end
 		end
-		--Удаляю то, что уже было секунду назад, но не просрочено
-		tbl = UpdateTblByFinding(tbl,WasInChat)
-		for k,v in pairs(tbl) do
-			chat.AddText(Color(0,0,0),tbl.nick, ": ",Color(255,255,255),tbl.msg)
+		--PrintTable(RecChatTBL)
+		for k,v in pairs(RecChatTBL) do 
+			chat.AddText(Color(0,0,0), v.nick, Color(255,255,255), ": "..(v.msg))
+			table.insert(WasInChat,1,RecChatTBL[k])
 		end
+		ClearWasInChat(WasInChat)
 	end)
 end
 if CLIENT then return end
@@ -55,36 +65,34 @@ hook.Add("Think","SyncChat", function()
 	lasttime = os.time()
 	
 	if not file.Exists("SyncChatDataRec.txt", "DATA") then
-		if not ChatTBL then return end
 		ChatTBL = {}
+		return
 	end
+	if SravnenieForTbl(util.JSONToTable(file.Read("SyncChatDataRec.txt", "DATA")), ChatTBL) then return end
 	ChatTBL = util.JSONToTable(file.Read("SyncChatDataRec.txt", "DATA"))
 	if not ChatTBL then return end
 		net.Start( "SyncedChat" )
 		--net.WriteString(ChatTBL)3
-		net.WriteData(util.Compress(util.TableToJSON(ChatTBL)))
+		SetGlobalInt("SyncChat", string.len(table.ToString(ChatTBL)))
+		net.WriteData(util.Compress(util.TableToJSON(ChatTBL)),GetGlobalInt("SyncChat"))
 		net.Broadcast()
 		--net.Send(ply)
-	end
 end)
 
 
 
 
 
+-- код дискорд бота
 
 
-
-
-
-
---[[					 						-- код дискорд бота
+--[[
 local discordia = require('discordia')
 local Client = discordia.Client()
-local json = require "json"
+local json = require ("json")
 
 local BotSettings = {
-	['Token'] = "Bot NTE0Mzg3ODY0NjUwNTE0NDY3.DtV0tg.XVat0wATqf5NxSLo2dQ8ewgsoX0";
+	['Token'] = "Bot ";
 	['Prefix'] = ";";
 }
 
@@ -123,49 +131,57 @@ file:write(filetext)
 file:close()
 end
 
-local lasttime = os.time
-local interval = 1
 local SendTBL = {}
-local function CheckSendTBL()
-	if not SendTBL then return end
-	for k,v in pairs(SendTBL) do
-		if v.OsTime + interval < os.time() then 
-			SendTBL[k] = nil
+local function CheckSendTBL(tbl)
+	if not tbl then return end
+	local i
+	if #tbl > 10 then 
+		for i = 11, #tbl do
+			tbl[i] = nil
 		end
 	end
 end
 Client:on('messageCreate', function(message)
 	--if message.author.name:find('TheFulDeep') then return end
 		--message.channel:send(message.author.mentionString..' пидорас ')
+		--print(message.author.mentionString)
+		local server
+		local nick
+		local msg
+		--print(message.content)
 	if message.channel.id == "485508569073188874" then
-		CheckSendTBL()
-		table.insert(CheckSendTBL,1,{msg = string.sub(message.content,stringfind(message.content,"]") + 2),nick = message.author.name,OsTime = os.time(),server = string.sub(message.content, 1,stringfind(message.content,"]"))})
+		CheckSendTBL(SendTBL)
+		if message.author.mentionString ~= "<@514197550509850655>" then 
+			server = "Discord"
+			msg = (message.content)
+			nick = "["..server.."] "..(message.author.name)
+		else
+			server = string.sub(message.content, 1,stringfind(message.content,"]"))
+			msg = (string.sub(message.content,stringfind(message.content,"]") + 2))
+			nick = server.." "..(message.author.name)
+			--print("asdasd")
+		end
+		table.insert(SendTBL,1,{msg = msg,nick = nick,server = server,OsTime = os.time()})
 	end
-	if os.time() - lasttime < interval then return end
-	lasttime = os.time()
 	if not SendTBL then return end
 	local SendToFirst = {}
 	local SendToSecond = {}
-	for k,v in pairsSendTBL) do
+	for k,v in pairs (SendTBL) do
 		if stringfind(v.server,"1") then
-			table.insert(SendToFirst,1,{msg = v.msg,nick = v.nick})
-		elseif stringfind(v.server,"2")
-			table.insert(SendToSecond,1,{msg = v.msg,nick = v.nick})
+			table.insert(SendToSecond,1,{msg = v.msg,nick = v.nick, OsTime = v.OsTime})
+		elseif stringfind(v.server,"2") then
+			table.insert(SendToFirst,1,{msg = v.msg,nick = v.nick, OsTime = v.OsTime})
+		else
+			table.insert(SendToSecond,1,{msg = v.msg,nick = v.nick, OsTime = v.OsTime})
+			table.insert(SendToFirst,1,{msg = v.msg,nick = v.nick, OsTime = v.OsTime})
 		end
 	end
 	SendToFirst = json.encode(SendToFirst)
 	SendToSecond = json.encode(SendToSecond)
-	filwrite("SyncChatDataRec.txt",SendToFirst,"C:\\gms_norank_obnova\\garrysmod\\data\\")
-	filwrite("SyncChatDataRec.txt",SendToSecond,"C:\\gms_norank_obnova2\\garrysmod\\data\\")
+	filewrite("SyncChatDataRec",SendToFirst,"C:\\gms_norank_obnova\\garrysmod\\data\\")
+	filewrite("SyncChatDataRec",SendToSecond,"C:\\gms_norank_obnova2\\garrysmod\\data\\")
 	
-      --[[if not message.author.name:find("[norank1]") then
-        filewrite("SyncChatDataRec",message.author.name..":::"..message.content,"C:\\gms_norank_obnova\\garrysmod\\data\\")
-		print("sended "..message.content.." to norank1")
-      end
-      if not message.author.name:find("[norank2]") then
-        filewrite("SyncChatDataRec",message.author.name..":::"..message.content,"C:\\gms_norank_obnova2\\garrysmod\\data\\")
-		print("sended "..message.content.." to norank2")
-      end]]
 end)
 
-Client:run(BotSettings.Token)]]
+Client:run(BotSettings.Token)
+]]
