@@ -77,16 +77,16 @@ end)]]
 
 hook.Add("PlayerDisconnected","DisconnectToGlobalChat",function(ply)
 	if not IsValid(ply) then return end
-	http.Post( WebHookUrl, {username = ply:Nick(), content = "[Server: "..HostName.."] ".."вышел с сервера. SteamID: "..ply:SteamID()})
+	http.Post( WebHookUrl, {username = ply:Nick(), content = "[ServerInfo: "..HostName.."] ".."вышел с сервера. SteamID: "..ply:SteamID()})
 end)
 
 hook.Add("PlayerConnect","ConnectToGlobalChat",function(ply)
-	http.Post( WebHookUrl, {username = ply, content = "[Server: "..HostName.."] ".."присоединяюсь."})
+	http.Post( WebHookUrl, {username = ply, content = "[ServerInfo: "..HostName.."] ".."присоединяюсь."})
 end)
 
 hook.Add("PlayerInitialSpawn","SpawnToGlobalChat",function(ply)
 	if not IsValid(ply) then return end
-	http.Post( WebHookUrl, {username = ply:Nick(), content = "[Server: "..HostName.."] ".."завершаю загрузку."})
+	http.Post( WebHookUrl, {username = ply:Nick(), content = "[ServerInfo: "..HostName.."] ".."завершаю загрузку."})
 end)
 -- код дискорд бота
 
