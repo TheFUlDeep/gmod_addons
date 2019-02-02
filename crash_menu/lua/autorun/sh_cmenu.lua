@@ -1,5 +1,8 @@
 //Increase this if the menu shows on map change.
-local DelayTime = 10
+local DelayTime = 5
+hook.Add("ShutDown","DelayChangeCrash", function() 
+	DelayTime = 30
+end) 
 
 --айпи второго сервера
 local secondip
@@ -13,7 +16,7 @@ end
 local Title = GetHostName()
 
 //What is the estimated time in seconds it takes for the server to restart after a crash?
-local ServerRestartTime = 15
+local ServerRestartTime = 15 + DelayTime
 
 //What message do you want to display when the server has crashed?
 local Message = "Возможно это краш, рестарт или проблема с вашим подключением к сети.\nПодождите "..ServerRestartTime.. " секунд перед переподключением.\nИли выйти в главное меню."
