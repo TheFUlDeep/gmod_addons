@@ -44,10 +44,11 @@ local function CreateSyncedTrain(index)
 	local ent = ents.Create( "gmod_subway_base" )
 	ent.name = "SyncedTrain"
 	ent:SetPos(Vector(0,0,0))
-	ent:Spawn()
 	ent:SetPersistent(true)
 	ent:SetMoveType(MOVETYPE_FLY)
+	--ent:SetNW2Bool("IsSyncedTrain",true)
 	--ent:SetCollisionGroup(COLLISION_GROUP_NONE)
+	ent:Spawn()
 	SyncedTrainsTBL[index] = ent
 	print("Added SyncedTrain")
 end
@@ -76,7 +77,6 @@ local function GetSyncedTrains(arg)
 		if shetchik ~= 50 then shetchik = shetchik + 1 return end
 		shetchik = 1
 		for k,v in pairs(SyncedTrainsTBL) do
-			print("1")
 			DeleteSyncedTrain(k)
 		end
 		return
@@ -95,14 +95,14 @@ local function GetSyncedTrains(arg)
 	end
 	
 	for k,v in pairs(SyncedTrainsTBL) do
-		if not GetTrainsTBLL[k] then DeleteSyncedTrain(k) print("2") end
+		if not GetTrainsTBLL[k] then DeleteSyncedTrain(k) end
 	end
 	
 	for k,v in pairs(GetTrainsTBLL) do
 		for k1,v1 in pairs(SyncedTrainsTBL) do
 			if k == k1 and IsValid(v1) then 
 				v1:SetModel(v.model)
-				v1:SetPos(v.pos)
+				v1:SetPos(v.pos + Vector(200,0,0))
 				v1:SetAngles(v.ang)
 				--print(v.pos)
 			end
