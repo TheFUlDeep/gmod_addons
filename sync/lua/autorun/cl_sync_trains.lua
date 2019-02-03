@@ -100,8 +100,7 @@ local function Sdvig()
 		if not v.ents then continue end
 		for k1,v1 in pairs(v.ents) do
 			if not v1.name then continue end
-			if v1.name == "asdadsa1" then v1:SetPos(v1:GetPos() + Vector(1,0,0))
-			elseif v1:GetModel() == "models/metrostroi_train/bogey/metro_couple_717.mdl" and v1.name == "сцепка1" then SetCLientPropPos(v1,v.ent,Vector(410,0,-68))
+			if v1:GetModel() == "models/metrostroi_train/bogey/metro_couple_717.mdl" and v1.name == "сцепка1" then SetCLientPropPos(v1,v.ent,Vector(410,0,-68))
 			elseif v1:GetModel() == "models/metrostroi_train/bogey/metro_couple_717.mdl" and v1.name == "сцепка2" then SetCLientPropPos(v1,v.ent,Vector(-420.9,0,-68),Angle(0,180,0))
 			end
 		end

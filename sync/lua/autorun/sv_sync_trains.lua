@@ -102,6 +102,8 @@ local function GetSyncedTrains(arg)
 		for k1,v1 in pairs(SyncedTrainsTBL) do
 			if k == k1 and IsValid(v1) then 
 				v1:SetModel(v.model)
+				v1:SetMoveType(MOVETYPE_NONE)
+				v1:SetMoveType(MOVETYPE_FLY)					-- установится ли?
 				v1:SetPos(v.pos + Vector(200,0,0))
 				v1:SetAngles(v.ang)
 				--print(v.pos)
