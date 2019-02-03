@@ -338,6 +338,7 @@ end
 
 --[[										--код передатчика
 local function Send(Send, Rec)
+	local string2 = nil
 	local file = nil
 	local stringg = nil
   file = io.open(Send)
@@ -348,6 +349,8 @@ local function Send(Send, Rec)
   if stringg then
     file = io.open(Rec, "w")
     if not file then return end
+		string2 = file:read()
+		if string2 and stringg == string2 then file:close() return end
       file:write(stringg)
       file:close()
       file = nil
@@ -355,11 +358,11 @@ local function Send(Send, Rec)
   end
 end
 
---local server1 = "T:\\gms_norank_obnova2\\garrysmod\\data\\"
-local server1 = "R:\\Downloads\\gms_norank\\garrysmod\\data\\"
---local server2 = "T:\\gms_norank_obnova\\garrysmod\\data\\"
-local server2 = "R:\\Downloads\\gms_norank\\garrysmod\\data\\"
-local interval = 1
+local server1 = "T:\\gms_norank_obnova2\\garrysmod\\data\\"
+--local server1 = "R:\\Downloads\\gms_norank\\garrysmod\\data\\"
+local server2 = "T:\\gms_norank_obnova\\garrysmod\\data\\"
+--local server2 = "R:\\Downloads\\gms_norank\\garrysmod\\data\\"
+local interval = 0.1
 local lasttime = os.clock()
 ::cycle::
 while true do
@@ -378,5 +381,8 @@ while true do
   
   Send(server1.."SyncSwitchesDataSend.txt", server2.."SyncSwitchesDataRec.txt")
   Send(server2.."SyncSwitchesDataSend.txt", server1.."SyncSwitchesDataRec.txt")
+  
+  --Send(server1.."SyncChatDataRec.txt", server2.."SyncChatDataRec.txt")
+  
  end
  ]]
