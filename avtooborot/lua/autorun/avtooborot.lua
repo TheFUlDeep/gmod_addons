@@ -24,7 +24,7 @@ if SERVER then
 		--ent:SetSolid(SOLID_BBOX)
 		--ent:SetCollisionBounds(vector + Vector(10,10,10), vector - Vector(100,100,100))
 		ent:UseTriggerBounds(true, 10)
-											local scale = 0.1													-- for debug
+											--[[local scale = 0.1													-- for debug
 											local button = ents.Create( "gmod_button" )
 											button:SetModel( "models/6000/6000.mdl" )
 											button:SetCollisionGroup( COLLISION_GROUP_WORLD )
@@ -47,7 +47,7 @@ if SERVER then
 											button:SetPos(ent:GetPos() )
 											button:SetAngles(Angle(90,0,0))
 											button:SetModelScale(scale)
-											button:Spawn()
+											button:Spawn()]]
 		ent:Spawn()
 	if not AvtooborotTBL[fun] then AvtooborotTBL[fun] = {} end
 	if not AvtooborotTBL[fun][StationName] then AvtooborotTBL[fun][StationName] = {} end
@@ -65,7 +65,7 @@ if SERVER then
 	end
 	
 	local function RoutesAvtooborot(StationName,fun,str1,str2,str3,str4)
-		if table.Count(AvtooborotTBL[fun][StationName]) ~= 11 and table.Count(AvtooborotTBL[fun][StationName]) ~= 1231321 then print("Я что-то сделал не так") deleteavtooborot() return end
+		if table.Count(AvtooborotTBL[fun][StationName]) ~= 11 and table.Count(AvtooborotTBL[fun][StationName]) ~= 1231321 then print("Я что-то сделал не так") deleteavtooborot() return end	-- TODO проверка для функции dva и вообще обороты для этой функции
 		AvtooborotTBL[fun][StationName][table.Count(AvtooborotTBL[fun][StationName])+1] = false	--станция			12
 		AvtooborotTBL[fun][StationName][table.Count(AvtooborotTBL[fun][StationName])+1] = false	--ближний			13
 		AvtooborotTBL[fun][StationName][table.Count(AvtooborotTBL[fun][StationName])+1] = false	--дальний			14
