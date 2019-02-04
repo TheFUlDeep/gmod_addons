@@ -24,7 +24,7 @@ if SERVER then
 		--ent:SetSolid(SOLID_BBOX)
 		--ent:SetCollisionBounds(vector + Vector(10,10,10), vector - Vector(100,100,100))
 		ent:UseTriggerBounds(true, 10)
-											--[[local scale = 0.1													-- for debug
+											local scale = 0.1													-- for debug
 											local button = ents.Create( "gmod_button" )
 											button:SetModel( "models/6000/6000.mdl" )
 											button:SetCollisionGroup( COLLISION_GROUP_WORLD )
@@ -47,7 +47,7 @@ if SERVER then
 											button:SetPos(ent:GetPos() )
 											button:SetAngles(Angle(90,0,0))
 											button:SetModelScale(scale)
-											button:Spawn()]]
+											button:Spawn()
 		ent:Spawn()
 	if not AvtooborotTBL[fun] then AvtooborotTBL[fun] = {} end
 	if not AvtooborotTBL[fun][StationName] then AvtooborotTBL[fun][StationName] = {} end
@@ -65,14 +65,18 @@ if SERVER then
 	end
 	
 	local function RoutesAvtooborot(StationName,fun,str1,str2,str3,str4)
-		if table.Count(AvtooborotTBL[fun][StationName]) ~= 11 and table.Count(AvtooborotTBL[fun][StationName]) ~= 1231321 then print("Я что-то сделал не так") deleteavtooborot() return end	-- TODO проверка для функции dva и вообще обороты для этой функции
-		AvtooborotTBL[fun][StationName][table.Count(AvtooborotTBL[fun][StationName])+1] = false	--станция			12
-		AvtooborotTBL[fun][StationName][table.Count(AvtooborotTBL[fun][StationName])+1] = false	--ближний			13
-		AvtooborotTBL[fun][StationName][table.Count(AvtooborotTBL[fun][StationName])+1] = false	--дальний			14
+		if table.Count(AvtooborotTBL[fun][StationName]) ~= 11 and table.Count(AvtooborotTBL[fun][StationName]) ~= 7 then print("Я что-то сделал не так") deleteavtooborot() return end	-- TODO проверка для функции dva и вообще обороты для этой функции
+		AvtooborotTBL[fun][StationName][table.Count(AvtooborotTBL[fun][StationName])+1] = false	--станция			12 или 8
+		AvtooborotTBL[fun][StationName][table.Count(AvtooborotTBL[fun][StationName])+1] = false	--ближний			13 или 9
+		if fun ~= "2" then
+			AvtooborotTBL[fun][StationName][table.Count(AvtooborotTBL[fun][StationName])+1] = false	--дальний			14
+		end
 		AvtooborotTBL[fun][StationName][table.Count(AvtooborotTBL[fun][StationName])+1] = str1		--на дальний
 		AvtooborotTBL[fun][StationName][table.Count(AvtooborotTBL[fun][StationName])+1] = str2		--на ближний
-		AvtooborotTBL[fun][StationName][table.Count(AvtooborotTBL[fun][StationName])+1] = str3		--с дальнего
-		AvtooborotTBL[fun][StationName][table.Count(AvtooborotTBL[fun][StationName])+1] = str4		--с ближнего
+		if fun ~= "2" then
+			AvtooborotTBL[fun][StationName][table.Count(AvtooborotTBL[fun][StationName])+1] = str3		--с дальнего
+			AvtooborotTBL[fun][StationName][table.Count(AvtooborotTBL[fun][StationName])+1] = str4		--с ближнего
+		end
 	end
 
 	function createavtooborot()	
@@ -120,6 +124,15 @@ if SERVER then
 			createTrigger("st2","МаркетСтрит", "4",Vector(-1901.142090 - 7550 + 2100, 15205.250000 - 270, -16247.982422 + 50))
 			createTrigger("st22","МаркетСтрит", "4",Vector(-1901.142090 - 7550 + 2300, 15205.250000 - 270, -16247.982422 + 50))
 			RoutesAvtooborot("МаркетСтрит","4","MS2-3","MS2-4","MS3-1","MS4-1")
+			
+			createTrigger("Из депо","Роклейк", "2",Vector(-4435.384766, -14238.708008, -13842.546875)) -- на станции
+			createTrigger("Светофор","Роклейк", "2",Vector(-13116.465820, -6903.582031, -13804.361328))
+			createTrigger("Станция1","Роклейк", "2",Vector(-13116.465820, -6903.582031 + 900*1, -13804.361328))
+			createTrigger("Станция2","Роклейк", "2",Vector(-13116.465820, -6903.582031 + 900*2, -13804.361328))
+			createTrigger("Станция3","Роклейк", "2",Vector(-13116.465820, -6903.582031 + 900*3, -13804.361328))
+			createTrigger("Со станции1","Роклейк", "2",Vector(-13116.465820, -6903.582031 - 1200, -13804.361328))
+			createTrigger("Со станции2","Роклейк", "2",Vector(-13116.465820, -6903.582031 - 1200 - 200, -13804.361328))
+			RoutesAvtooborot("Роклейк", "2","RL1-2","RL2-2")
 		end
 		PrintTable(AvtooborotTBL)
 	end
@@ -227,6 +240,13 @@ if SERVER then
 		end
 		
 		if AvtooborotTBL["2"] then
+			for k,v in pairs(AvtooborotTBL["2"]) do
+				v = dva(v)
+			end
+			
+			if AvtooborotTBL["2"]["Роклейк"] then		--дополнительное условие для роклейка. Чтобы по умолчанию стрелка открывалась по отклюнению
+				if not AvtooborotTBL["2"]["Роклейк"][8] and not AvtooborotTBL["2"]["Роклейк"][9] then ForAvtooborot(AvtooborotTBL["2"]["Роклейк"][10]) end
+			end
 		end
 
 	end
