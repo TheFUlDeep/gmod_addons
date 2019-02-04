@@ -48,9 +48,9 @@ local function AddNewTrain(k)
 		table.insert(TrainsTBL[k].ents,1,AddClientProp("модель","колесная пара 2:1"))
 		table.insert(TrainsTBL[k].ents,1,AddClientProp("модель","колесная пара 2:2"))
 	if TrainsTBL[k].model == "models/metrostroi_train/81-717/81-717_mvm.mdl" then
-		table.insert(TrainsTBL[k].ents,1,AddClientProp("models/metrostroi_train/bogey/metro_couple_717.mdl","сцепка1"))
+		table.insert(TrainsTBL[k].ents,1,AddClientProp("models/metrostroi_train/bogey/metro_couple_717.mdl","сцепка1 717мсск"))
 		table.insert(TrainsTBL[k].ents,1,AddClientProp("models/metrostroi_train/81-717/interior_mvm.mdl","салон"))
-		table.insert(TrainsTBL[k].ents,1,AddClientProp("models/metrostroi_train/bogey/metro_couple_717.mdl","сцепка2"))
+		table.insert(TrainsTBL[k].ents,1,AddClientProp("models/metrostroi_train/bogey/metro_couple_717.mdl","сцепка2 717мск"))
 		table.insert(TrainsTBL[k].ents,1,AddClientProp("модель","имя2"))
 		table.insert(TrainsTBL[k].ents,1,AddClientProp("модель1","имя3"))
 		table.insert(TrainsTBL[k].ents,1,AddClientProp("модель1","имя4"))
@@ -61,15 +61,11 @@ end
 
 local function RemoveTrain(k)
 	--удаление ненужных пропов
-	if not TrainsTBL[k] then return end
-	if not TrainsTBL[k].ents then TrainsTBL[k] = nil return end
-	for k,v in pairs(TrainsTBL) do
-		if not v.ents then continue end
-		for k1,v1 in pairs(v.ents) do
-			--if not IsValid(v) then continue end
-			v1:Remove()
-			print("Removed ClientEntity "..(v1.name))
-		end
+	if not TrainsTBL[k] or not TrainsTBL[k].ents then return end
+	for k1,v1 in pairs(TrainsTBL[k].ents) do
+		--if not IsValid(v) then continue end
+		v1:Remove()
+		print("Removed ClientEntity "..(v1.name))
 	end
 	TrainsTBL[k] = nil
 end
@@ -100,8 +96,8 @@ local function Sdvig()
 		if not v.ents then continue end
 		for k1,v1 in pairs(v.ents) do
 			if not v1.name then continue end
-			if v1:GetModel() == "models/metrostroi_train/bogey/metro_couple_717.mdl" and v1.name == "сцепка1" then SetCLientPropPos(v1,v.ent,Vector(410,0,-68))
-			elseif v1:GetModel() == "models/metrostroi_train/bogey/metro_couple_717.mdl" and v1.name == "сцепка2" then SetCLientPropPos(v1,v.ent,Vector(-420.9,0,-68),Angle(0,180,0))
+			if v1.name == "сцепка1 717мсск" then SetCLientPropPos(v1,v.ent,Vector(410,0,-68))
+			elseif v1.name == "сцепка2 717мск" then SetCLientPropPos(v1,v.ent,Vector(-420.9,0,-68),Angle(0,180,0))
 			end
 		end
 	end
