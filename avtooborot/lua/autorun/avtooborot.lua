@@ -125,6 +125,7 @@ if SERVER then
 	end
 
 	deleteavtooborot()
+	SendAvtooborot(-1)
 	timer.Simple(2, function() createavtooborot() end)
 
 	local function dva(chetiretbl)
