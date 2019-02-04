@@ -1560,7 +1560,7 @@ if SERVER then
 			Metrostroi.ActiveInt = 0
 		--	RunConsoleCommand("FPP_Setting", "FPP_PLAYERUSE1",  "worldprops", 1)
 			Metrostroi.ActiveDispatcher = nil
-			ulx.SendActiveDispatcher(nil)
+			ulx.SendActiveDispatcher(Metrostroi.ActiveDispatcher)
 			ulx.SendActiveInt(Metrostroi.ActiveInt)
 		end
 	end)
@@ -1569,7 +1569,7 @@ if SERVER then
 		if ply == Metrostroi.ActiveDSCP1 then
 			ulx.fancyLogAdmin( ply, false, "#A ушел с поста ДСЦП(1)" )	
 			Metrostroi.ActiveDSCP1 = nil
-			ulx.SendActiveDSCP1(nil)
+			ulx.SendActiveDSCP1(Metrostroi.ActiveDSCP1)
 		end	
 	end)
 	
@@ -1577,7 +1577,7 @@ if SERVER then
 		if ply == Metrostroi.ActiveDSCP2 then
 			ulx.fancyLogAdmin( ply, false, "#A ушел с поста ДСЦП(2)" )	
 			Metrostroi.ActiveDSCP2 = nil
-			ulx.SendActiveDSCP2(nil)
+			ulx.SendActiveDSCP2(Metrostroi.ActiveDSCP2)
 		end	
 	end)
 	
@@ -1585,7 +1585,7 @@ if SERVER then
 		if ply == Metrostroi.ActiveDSCP3 then
 			ulx.fancyLogAdmin( ply, false, "#A ушел с поста ДСЦП(3)" )	
 			Metrostroi.ActiveDSCP3 = nil
-			ulx.SendActiveDSCP3(nil)
+			ulx.SendActiveDSCP3(Metrostroi.ActiveDSCP3)
 		end	
 	end)	
 
@@ -1593,7 +1593,7 @@ if SERVER then
 		if ply == Metrostroi.ActiveDSCP4 then
 			ulx.fancyLogAdmin( ply, false, "#A ушел с поста ДСЦП(4)" )	
 			Metrostroi.ActiveDSCP4 = nil
-			ulx.SendActiveDSCP4(nil)
+			ulx.SendActiveDSCP4(Metrostroi.ActiveDSCP4)
 		end	
 	end)
 	
@@ -1601,37 +1601,22 @@ if SERVER then
 		if ply == Metrostroi.ActiveDSCP5 then
 			ulx.fancyLogAdmin( ply, false, "#A ушел с поста ДСЦП(5)" )	
 			Metrostroi.ActiveDSCP5 = nil
-			ulx.SendActiveDSCP5(nil)
+			ulx.SendActiveDSCP5(Metrostroi.ActiveDSCP5)
 		end	
 	end)
 	
-	net.Receive("gmod_metrostroi_activedispatcher",function( len , ply)
-		ulx.SendActiveDispatcher(Metrostroi.ActiveDispatcher)
+	hook.Add("PlayerInitialSpawn","DispatcherSpawn", function(ply) 
+		timer.Simple(2, function()
+			ulx.SendActiveDispatcher(Metrostroi.ActiveDispatcher)
+			ulx.SendActiveInt(Metrostroi.ActiveInt)
+			ulx.SendActiveDSCP1(Metrostroi.ActiveDSCP1)
+			ulx.SendActiveDSCP2(Metrostroi.ActiveDSCP2)
+			ulx.SendActiveDSCP3(Metrostroi.ActiveDSCP3)
+			ulx.SendActiveDSCP4(Metrostroi.ActiveDSCP4)
+			ulx.SendActiveDSCP5(Metrostroi.ActiveDSCP5)
+		end)
 	end)
 	
-	net.Receive("gmod_metrostroi_activeint",function( len , ply)
-		ulx.SendActiveInt(Metrostroi.ActiveInt or 0)
-	end)	
-	
-	net.Receive("gmod_metrostroi_activedscp1",function( len , ply)
-		ulx.SendActiveDSCP1(Metrostroi.ActiveDSCP1)
-	end)
-	
-	net.Receive("gmod_metrostroi_activedscp2",function( len , ply)
-		ulx.SendActiveDSCP2(Metrostroi.ActiveDSCP2)
-	end)	
-	
-	net.Receive("gmod_metrostroi_activedscp3",function( len , ply)
-		ulx.SendActiveDSCP3(Metrostroi.ActiveDSCP3)
-	end)	
-	
-	net.Receive("gmod_metrostroi_activedscp4",function( len , ply)
-		ulx.SendActiveDSCP4(Metrostroi.ActiveDSCP4)
-	end)	
-	
-	net.Receive("gmod_metrostroi_activedscp5",function( len , ply)
-		ulx.SendActiveDSCP5(Metrostroi.ActiveDSCP5)
-	end)	
 end
 
 if CLIENT then
@@ -1663,42 +1648,7 @@ if CLIENT then
 		Metrostroi.ActiveDSCP5 = net.ReadString()
 	end)
 	
-	hook.Add("HUDPaint", "Disp Hud Paint", function()
-		if not Metrostroi.ActiveDispatcher then
-			net.Start("gmod_metrostroi_activedispatcher")
-			net.SendToServer()
-		end
-		
-		if not Metrostroi.ActiveInt then
-			net.Start("gmod_metrostroi_activeint")	
-			net.SendToServer()
-		end
-		
-		if not Metrostroi.ActiveDSCP1 then
-			net.Start("gmod_metrostroi_activedscp1")
-			net.SendToServer()
-		end	
-		
-		if not Metrostroi.ActiveDSCP2 then
-			net.Start("gmod_metrostroi_activedscp2")
-			net.SendToServer()
-		end
-		
-		if not Metrostroi.ActiveDSCP3 then
-			net.Start("gmod_metrostroi_activedscp3")
-			net.SendToServer()
-		end
-		
-		if not Metrostroi.ActiveDSCP4 then
-			net.Start("gmod_metrostroi_activedscp4")
-			net.SendToServer()
-		end	
-		
-		if not Metrostroi.ActiveDSCP5 then
-			net.Start("gmod_metrostroi_activedscp5")
-			net.SendToServer()
-		end	
-		
+	hook.Add("HUDPaint", "Disp Hud Paint", function()		
 		local text3 = ""
 		local text4 = ""
 		local text5 = ""

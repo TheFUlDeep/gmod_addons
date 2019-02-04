@@ -44,10 +44,11 @@ local function CreateSyncedTrain(index)
 	local ent = ents.Create( "gmod_subway_base" )
 	ent.name = "SyncedTrain"
 	ent:SetPos(Vector(0,0,0))
-	ent:Spawn()
 	ent:SetPersistent(true)
 	ent:SetMoveType(MOVETYPE_FLY)
+	--ent:SetNW2Bool("IsSyncedTrain",true)
 	--ent:SetCollisionGroup(COLLISION_GROUP_NONE)
+	ent:Spawn()
 	SyncedTrainsTBL[index] = ent
 	print("Added SyncedTrain")
 end
@@ -76,7 +77,6 @@ local function GetSyncedTrains(arg)
 		if shetchik ~= 50 then shetchik = shetchik + 1 return end
 		shetchik = 1
 		for k,v in pairs(SyncedTrainsTBL) do
-			print("1")
 			DeleteSyncedTrain(k)
 		end
 		return
@@ -95,14 +95,17 @@ local function GetSyncedTrains(arg)
 	end
 	
 	for k,v in pairs(SyncedTrainsTBL) do
-		if not GetTrainsTBLL[k] then DeleteSyncedTrain(k) print("2") end
+		if not GetTrainsTBLL[k] then DeleteSyncedTrain(k) end
 	end
 	
 	for k,v in pairs(GetTrainsTBLL) do
 		for k1,v1 in pairs(SyncedTrainsTBL) do
 			if k == k1 and IsValid(v1) then 
 				v1:SetModel(v.model)
-				v1:SetPos(v.pos)
+				v1:SetMoveType(MOVETYPE_NONE)
+				v1:SetMoveType(MOVETYPE_FLY)					-- установится ли?
+				v1:SetPersistent(true)
+				v1:SetPos(v.pos + Vector(200,0,0))
 				v1:SetAngles(v.ang)
 				--print(v.pos)
 			end
@@ -338,6 +341,7 @@ end
 
 --[[										--код передатчика
 local function Send(Send, Rec)
+	local string2 = nil
 	local file = nil
 	local stringg = nil
   file = io.open(Send)
@@ -348,6 +352,8 @@ local function Send(Send, Rec)
   if stringg then
     file = io.open(Rec, "w")
     if not file then return end
+		string2 = file:read()
+		if string2 and stringg == string2 then file:close() return end
       file:write(stringg)
       file:close()
       file = nil
@@ -355,11 +361,11 @@ local function Send(Send, Rec)
   end
 end
 
---local server1 = "T:\\gms_norank_obnova2\\garrysmod\\data\\"
-local server1 = "R:\\Downloads\\gms_norank\\garrysmod\\data\\"
---local server2 = "T:\\gms_norank_obnova\\garrysmod\\data\\"
-local server2 = "R:\\Downloads\\gms_norank\\garrysmod\\data\\"
-local interval = 1
+local server1 = "T:\\gms_norank_obnova2\\garrysmod\\data\\"
+--local server1 = "R:\\Downloads\\gms_norank\\garrysmod\\data\\"
+local server2 = "T:\\gms_norank_obnova\\garrysmod\\data\\"
+--local server2 = "R:\\Downloads\\gms_norank\\garrysmod\\data\\"
+local interval = 0.1
 local lasttime = os.clock()
 ::cycle::
 while true do
@@ -378,5 +384,8 @@ while true do
   
   Send(server1.."SyncSwitchesDataSend.txt", server2.."SyncSwitchesDataRec.txt")
   Send(server2.."SyncSwitchesDataSend.txt", server1.."SyncSwitchesDataRec.txt")
+  
+  --Send(server1.."SyncChatDataRec.txt", server2.."SyncChatDataRec.txt")
+  
  end
  ]]
