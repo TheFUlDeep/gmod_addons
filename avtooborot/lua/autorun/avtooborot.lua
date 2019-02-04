@@ -1,11 +1,19 @@
 --[[============================= АВТООБОРОТ ==========================]]
-SetGlobalInt("AvtooborotEnabled", 2)
  
 if SERVER then 
-
+	util.AddNetworkString("Avtooborot")
+	AvtooborotEnabled = -1
+	function SendAvtooborot(int)
+		net.Start("Avtooborot")
+			net.WriteInt(int,2)
+			AvtooborotEnabled = int
+		net.Broadcast()
+	end
+	
+	SendAvtooborot(-1)
 
 	local function createTrigger(name, vector)
-		SetGlobalInt("AvtooborotEnabled", 1)
+		SendAvtooborot(1)
 		local ent = ents.Create( "avtooborot" )
 		ent.name = name
 		ent.zanyat = nil
@@ -47,7 +55,8 @@ if SERVER then
 	local chetiretblST2 = {}
 	local dvatbl1 = {}
 
-	local function deleteavtooborot()
+	function deleteavtooborot()
+		SendAvtooborot(0)
 		for k,v in pairs(ents.GetAll()) do
 			if v:GetClass() == "avtooborot" or v:GetModel() == "models/6000/6000.mdl" then v:Remove() end
 		end
@@ -58,7 +67,7 @@ if SERVER then
 	end
 
 
-	local function createavtooborot()
+	function createavtooborot()
 		if game.GetMap():find("crossline") then
 		--[[=============================ПРОЛЕТАРСКАЯ ==========================]]
 			createTrigger("pr1",Vector(-15563.694336, -5413.343750 + 50, -9845.212891))
@@ -286,7 +295,7 @@ local md34 = nil
 	
 	function UpdateAvtooborot()
 		
-		if GetGlobalInt("AvtooborotEnabled") ~= 1 then return end
+		if AvtooborotEnabled ~= 1 then return end
 	
 		if game.GetMap():find("crossline") then
 			dvatbl1 = dva(dvatbl1)	-- пролетарская
@@ -327,28 +336,31 @@ local md34 = nil
 	for k,v in pairs(player.GetAll()) do
 		if v:Nick():find("TheFulDeep") then print(v:GetPos()) end
 	end
-
-	function AvtooborotToggle(ply)
-			if GetGlobalInt("AvtooborotEnabled") == 0 then ulx.fancyLogAdmin(ply, "#A включил автооборот") SetGlobalInt("AvtooborotEnabled", 1) createavtooborot()
-			elseif GetGlobalInt("AvtooborotEnabled") == 1 then ulx.fancyLogAdmin(ply, "#A отключил автооборот") SetGlobalInt("AvtooborotEnabled", 0) deleteavtooborot()
-			end
-	end
+	
+	hook.Add("PlayerInitialSpawn","AvtooborotSpawn", function() 
+		timer.Simple(2, function()
+			SendAvtooborot(AvtooborotEnabled)
+		end)
+	end)
 	
 end
 
 if CLIENT then
 		--[[hook.Add("Think", "AvtooborotEnabled", function()
 		end)]]
+	local AvtooborotEnabled = -1
+	net.Receive("AvtooborotEnabled", function()
+		AvtooborotEnabled = net.ReadInt(1)
+	end)
 		
 	hook.Add( "HUDPaint", "AvtooborotEnabled1", function()
-				local text = ""
-				local w1
-				local h1
-				if GetGlobalInt("AvtooborotEnabled") == 1 then text = "Автооборот: включен" elseif GetGlobalInt("AvtooborotEnabled") == 0 then text = "Автооборот: выключен" else text = "" end
-				w1,h1 = surface.GetTextSize(text)
-				if text ~= "" then
-					draw.RoundedBox(6, ScrW() - w1 - 24, ScrH()/2 - 250 - 5, w1 + 15, h1 + 10, Color(0, 0, 0, 150))
-					draw.SimpleText(text, "ChatFont",ScrW() - 15, ScrH()/2 - 250, Color(255, 255, 255, 255),TEXT_ALIGN_RIGHT,TEXT_ALIGN_TOP)
-				end
+		if AvtooborotEnabled < 0 then return end
+		local text
+		local w1
+		local h1
+		if AvtooborotEnabled == 1 then text = "Автооборот: включен" else text = "Автооборот: выключен" end
+		w1,h1 = surface.GetTextSize(text)
+		draw.RoundedBox(6, ScrW() - w1 - 24, ScrH()/2 - 250 - 5, w1 + 15, h1 + 10, Color(0, 0, 0, 150))
+		draw.SimpleText(text, "ChatFont",ScrW() - 15, ScrH()/2 - 250, Color(255, 255, 255, 255),TEXT_ALIGN_RIGHT,TEXT_ALIGN_TOP)
 	end)
 end
