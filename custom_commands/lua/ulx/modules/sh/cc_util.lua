@@ -2747,7 +2747,7 @@ end )]]
 end )]]
 --spawnmenu.AddToolMenuOption( "Utilities", "Metrostroi", "metrostroi_client_panel2", Metrostroi.GetPhrase( "Panel.Client" ) .. "2", "", "", ClientPanel )
 
-
+--gmod_track_platform
 --metrostroi_signal_debug 1
 --hook.Add("PlayerSpawnSENT", "PerzKek16", function(ply, class)							-- для проверки, если игрок спавнит что-то не треинспавнером
 --hook.Add("OnEntityCreated", "Perzpidor2281337123", function(ent)			-- можно использовать это для уведомления о спавне состава не в спавнере. А ограничение по вагонам можно сделать через cantool
