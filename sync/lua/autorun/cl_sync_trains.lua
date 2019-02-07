@@ -1,3 +1,4 @@
+if CLIENT then return end
 if SERVER then return end
 
 for k,v in pairs(ents.GetAll()) do

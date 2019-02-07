@@ -105,7 +105,7 @@ local function GetSyncedTrains(arg)
 				v1:SetMoveType(MOVETYPE_NONE)
 				v1:SetMoveType(MOVETYPE_FLY)					-- установится ли?
 				v1:SetPersistent(true)
-				v1:SetPos(v.pos + Vector(200,0,0))
+				v1:SetPos(v.pos)
 				v1:SetAngles(v.ang)
 				--print(v.pos)
 			end
@@ -122,6 +122,7 @@ local function OpenRoute(str)
 			return
 		end
 		for k1,v1 in pairs(v.Routes) do
+			if not v1.RouteName then continue end
 			if str == bigrustosmall(v1.RouteName) then v:OpenRoute(k1) end
 		end
 	end
