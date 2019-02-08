@@ -2713,7 +2713,7 @@ function MaximumWagons(ply,self)
 	if MetrostroiTrainCount > 21 then maximum = 3 end
 	if MetrostroiTrainCount > 30 then maximum = 2 end
 	if Rank == "superadmin" then maximum = 6 end
-	if maximum < 4 and (Rank == "operator" or Rank == "admin") then maximum = 4 end
+	if maximum < 4 and (Rank == "operator" or Rank == "admin" or Rank == "zamtsar" or Rank == "tsar") then maximum = 4 end
 	if (stringfind(Map,"mus_crimson_line") or stringfind(Map, "orange")) and maximum > 3 then maximum = 3 end
 	if (stringfind(Map,"smr") or stringfind(Map,"neocrims") or stringfind(Map, "rural") or stringfind(Map, "remaste")) and maximum > 4 then maximum = 4 end
 	if (stringfind(Map,"loopline") or stringfind(Map,"gm_metrostroi_b")) and maximum > 5 then maximum = 5 end	
