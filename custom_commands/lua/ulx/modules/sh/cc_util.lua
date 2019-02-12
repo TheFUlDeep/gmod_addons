@@ -2415,60 +2415,60 @@ end)
 --[[============================= ПОИСК ОДИНАКОВЫХ МАРШРУТОВ ==========================]]
 if SERVER then
 	function findroutes()
-	local Class1
-	local tbl = {}
-	local i = 1 
-	local NA = "N/A"
-	local Class
-	for k,v in pairs (Metrostroi.TrainClasses) do							--переношу все найденные паравозы в отдельную таблицу, чтобы потом уже редактировать ее
-		local ents = ents.FindByClass(v)
-		for k2,v2 in pairs(ents) do
-			tbl[i] = {v2, Class}
+		local Class1
+		local tbl = {}
+		local i = 1 
+		local NA = "N/A"
+		local Class
+		for k,v in pairs (Metrostroi.TrainClasses) do							--переношу все найденные паравозы в отдельную таблицу, чтобы потом уже редактировать ее
+			local ents = ents.FindByClass(v)
+			for k2,v2 in pairs(ents) do
+				tbl[i] = {v2, Class}
+				i = i + 1
+			end
+		end
+		for k,v in pairs(tbl) do	--беру один вагон, смотрю все сцепленные с ним вагоны (они уже есть в таблице) и удаляю все вагоны (кроме первого), если там нет водителя
+			Class = v[1].SubwayTrain.Name
+			for _k, _v in pairs(v[1].WagonList) do
+				if not stringfind(Class, _v.SubwayTrain.Name) then Class = Class.."/".._v.SubwayTrain.Name end	--уточнение вагонов в составе
+			end
+				for k1,v1 in pairs(v[1].WagonList) do
+					if v[1] ~= v1 and not v1:GetDriver() then
+						for k2,v2 in pairs(tbl) do
+							if v1 == v2[1] then tbl[k2] = nil end
+						end
+					end
+				end
+			v[2] = Class
+		end
+		--PrintTable(tbl)
+		--ulx.fancyLog("Вагонов на сервере: #s", Metrostroi.TrainCount())
+		--ulx.fancyLog("Составов на сервере: #i", table.Count(tbl))
+		local i = 1
+		local routes = {}
+		for k,v in pairs(tbl) do
+		local routenumber = 0
+		local routenumber1 = ""
+				for k1,v1 in pairs(v[1].WagonList) do
+					if string.find(v1.SubwayTrain.Name, "722") or string.find(v1.SubwayTrain.Name, "Ema") or (string.find(v1.SubwayTrain.Name, "717") and not string.find(v1.SubwayTrain.Name, "5m")) or string.find(v1.SubwayTrain.Name, ".6") then routenumber = v1:GetNW2Int("RouteNumber") else routenumber = v1:GetNW2Int("RouteNumber") / 10 end
+					if routenumber ~= 0 then
+						if routenumber1 == "" then routenumber1 = tostring(routenumber)
+						elseif routenumber1 ~= tostring(routenumber) then routenumber1 = routenumber1.."/"..tostring(routenumber)
+						end
+					end
+				end
+			if routenumber1 == "" then routenumber1 = "0" end
+			--[[if not v[1]:GetDriver() then
+				ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец: #A, состав: #s, вагонов: #i, маршрут: #s, машинист: #s",v[2], table.Count(v[1].WagonList), routenumber1, NA)
+			elseif v[1]:GetDriver() == v[1]:CPPIGetOwner() then
+					ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец/машинист: #A, состав: #s, вагонов: #i, маршрут: #s",v[2], table.Count(v[1].WagonList), routenumber1)
+			else
+					ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец: #A, состав: #s, вагонов: #i, маршрут: #s, машинист: #T",v[2], table.Count(v[1].WagonList), routenumber1, v[1]:GetDriver())
+			end]]
+			local entity = v[1]
+			routes[i] = {routenumber1, v[1]:CPPIGetOwner(), entity}
 			i = i + 1
 		end
-	end
-	for k,v in pairs(tbl) do	--беру один вагон, смотрю все сцепленные с ним вагоны (они уже есть в таблице) и удаляю все вагоны (кроме первого), если там нет водителя
-		Class = v[1].SubwayTrain.Name
-		for _k, _v in pairs(v[1].WagonList) do
-			if not stringfind(Class, _v.SubwayTrain.Name) then Class = Class.."/".._v.SubwayTrain.Name end	--уточнение вагонов в составе
-		end
-			for k1,v1 in pairs(v[1].WagonList) do
-				if v[1] ~= v1 and not v1:GetDriver() then
-					for k2,v2 in pairs(tbl) do
-						if v1 == v2[1] then tbl[k2] = nil end
-					end
-				end
-			end
-		v[2] = Class
-	end
-	--PrintTable(tbl)
-	--ulx.fancyLog("Вагонов на сервере: #s", Metrostroi.TrainCount())
-	--ulx.fancyLog("Составов на сервере: #i", table.Count(tbl))
-	local i = 1
-	local routes = {}
-	for k,v in pairs(tbl) do
-	local routenumber = 0
-	local routenumber1 = ""
-			for k1,v1 in pairs(v[1].WagonList) do
-				if string.find(v1.SubwayTrain.Name, "722") or string.find(v1.SubwayTrain.Name, "Ema") or (string.find(v1.SubwayTrain.Name, "717") and not string.find(v1.SubwayTrain.Name, "5m")) or string.find(v1.SubwayTrain.Name, ".6") then routenumber = v1:GetNW2Int("RouteNumber") else routenumber = v1:GetNW2Int("RouteNumber") / 10 end
-				if routenumber ~= 0 then
-					if routenumber1 == "" then routenumber1 = tostring(routenumber)
-					elseif routenumber1 ~= tostring(routenumber) then routenumber1 = routenumber1.."/"..tostring(routenumber)
-					end
-				end
-			end
-		if routenumber1 == "" then routenumber1 = "0" end
-		--[[if not v[1]:GetDriver() then
-			ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец: #A, состав: #s, вагонов: #i, маршрут: #s, машинист: #s",v[2], table.Count(v[1].WagonList), routenumber1, NA)
-		elseif v[1]:GetDriver() == v[1]:CPPIGetOwner() then
-				ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец/машинист: #A, состав: #s, вагонов: #i, маршрут: #s",v[2], table.Count(v[1].WagonList), routenumber1)
-		else
-				ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец: #A, состав: #s, вагонов: #i, маршрут: #s, машинист: #T",v[2], table.Count(v[1].WagonList), routenumber1, v[1]:GetDriver())
-		end]]
-		local entity = v[1]
-		routes[i] = {routenumber1, v[1]:CPPIGetOwner(), entity}
-		i = i + 1
-	end
 		for k,v in pairs(routes) do																	-- разделение маршрутов со знаком /
 			if string.find(v[1], "/") then
 				local slashpos = string.find(v[1], "/") 
@@ -2476,7 +2476,7 @@ if SERVER then
 				v[1] = string.sub(v[1],slashpos+1)
 			end
 		end
-	--PrintTable(routes)
+		--PrintTable(routes)
 		for k,v in pairs(routes) do
 			for k1,v1 in pairs(routes) do
 				if v1[1] == v[1] and v1[3] ~= v[3] and v1[1] ~= "0" then 
@@ -2747,7 +2747,7 @@ end )]]
 end )]]
 --spawnmenu.AddToolMenuOption( "Utilities", "Metrostroi", "metrostroi_client_panel2", Metrostroi.GetPhrase( "Panel.Client" ) .. "2", "", "", ClientPanel )
 
---gmod_track_platform
+--gmod_track_platform	Metrostroi.Stations[self.StationIndex]
 --metrostroi_signal_debug 1
 --hook.Add("PlayerSpawnSENT", "PerzKek16", function(ply, class)							-- для проверки, если игрок спавнит что-то не треинспавнером
 --hook.Add("OnEntityCreated", "Perzpidor2281337123", function(ent)			-- можно использовать это для уведомления о спавне состава не в спавнере. А ограничение по вагонам можно сделать через cantool
