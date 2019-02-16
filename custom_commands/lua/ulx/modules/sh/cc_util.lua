@@ -1,252 +1,3 @@
----------------------------------------------------
---  This file holds client and server utilities  --
----------------------------------------------------
---lastused = nil
-
-function ulx.give( calling_ply, target_plys, entity, should_silent )
-
-	for k,v in pairs( target_plys ) do
-
-		if ( not v:Alive() ) then -- Is the player dead?
-	
-			ULib.tsayError( calling_ply, v:Nick() .. " is dead!", true )
-	
-		elseif v:IsFrozen() then -- Is the player frozen?
-	
-			ULib.tsayError( calling_ply, v:Nick() .. " is frozen!", true )
-	
-		elseif v:InVehicle() then -- Is the player in a vehicle?
-	
-			ULib.tsayError( calling_ply, v:Nick() .. " is in a vehicle.", true )
-		
-		else 
-	
-			v:Give( entity )
-			
-		end
-		
-	end
-	
-	if should_silent then
-	
-		ulx.fancyLogAdmin( calling_ply, true, "#A gave #T #s", target_plys, entity )
-		
-	else
-	
-		ulx.fancyLogAdmin( calling_ply, "#A gave #T #s", target_plys, entity )
-	
-	end
-
-end
-local give = ulx.command( "Utility", "ulx give", ulx.give, "!give" )
-give:addParam{ type=ULib.cmds.PlayersArg }
-give:addParam{ type=ULib.cmds.StringArg, hint="entity" }
-give:addParam{ type=ULib.cmds.BoolArg, invisible=true }
-give:defaultAccess( ULib.ACCESS_ADMIN )
-give:help( "Give a player an entity" )
-give:setOpposite ( "ulx sgive", { _, _, _, true }, "!sgive", true )
-
-function ulx.maprestart( calling_ply )
-
-    timer.Simple( 1, function() -- Wait 1 second so players can see the log
-	
-		game.ConsoleCommand( "changelevel " .. game.GetMap() .. "\n" ) 
-		
-	end ) 
-	
-    ulx.fancyLogAdmin( calling_ply, "#A forced a mapchange" )
-	
-end
-local maprestart = ulx.command( "Utility", "ulx maprestart", ulx.maprestart, "!maprestart" )
-maprestart:defaultAccess( ULib.ACCESS_SUPERADMIN )
-maprestart:help( "Forces a mapchange to the current map." )
-
-function ulx.stopsounds( calling_ply )
-
-	for _,v in ipairs( player.GetAll() ) do 
-	
-		v:SendLua([[RunConsoleCommand("stopsound")]]) 
-		
-	end
-	
-	ulx.fancyLogAdmin( calling_ply, "#A stopped sounds" )
-	
-end
-local stopsounds = ulx.command("Utility", "ulx stopsounds", ulx.stopsounds, {"!ss", "!stopsounds"} )
-stopsounds:defaultAccess( ULib.ACCESS_SUPERADMIN )
-stopsounds:help( "Stops sounds/music of everyone in the server." )
-
-function ulx.multiban( calling_ply, target_ply, minutes, reason )
-
-	local affected_plys = {}
-	
-	for i=1, #target_ply do
-    local v = target_ply[ i ]
-
-	
-	if v:IsBot() then
-	
-		ULib.tsayError( calling_ply, "Cannot ban a bot", true )
-		
-		return
-		
-	end
-
-	table.insert( affected_plys, v )
-	
-	ULib.kickban( v, minutes, reason, calling_ply )
-    
-	end
-	
-	local time = "for #i minute(s)"
-	
-		if minutes == 0 then time = "permanently" end
-	
-	local str = "#A banned #T " .. time
-	
-		if reason and reason ~= "" then str = str .. " (#s)" end
-	
-	ulx.fancyLogAdmin( calling_ply, str, affected_plys, minutes ~= 0 and minutes or reason, reason )
-	
-	
-end
-local multiban = ulx.command( "Utility", "ulx multiban", ulx.multiban )
-multiban:addParam{ type=ULib.cmds.PlayersArg }
-multiban:addParam{ type=ULib.cmds.NumArg, hint="minutes, 0 for perma", ULib.cmds.optional, ULib.cmds.allowTimeString, min=0 }
-multiban:addParam{ type=ULib.cmds.StringArg, hint="reason", ULib.cmds.optional, ULib.cmds.takeRestOfLine, completes=ulx.common_kick_reasons }
-multiban:defaultAccess( ULib.ACCESS_ADMIN )
-multiban:help( "Bans multiple targets." )
-
-if ( CLIENT ) then
-
-local on = false -- default off
-
-local function toggle()
-
-	on = !on
-
-	if on == true then
-
-		print( 'enabled' )
-		
-		LocalPlayer():PrintMessage( HUD_PRINTTALK, "Third person mode enabled." )
-
-	else
-
-		print( 'disabled')
-		
-		LocalPlayer():PrintMessage( HUD_PRINTTALK, "Third person mode disabled." )
-
-	end
-
-end
-
-
-hook.Add( "ShouldDrawLocalPlayer", "ThirdPersonDrawPlayer", function()
-
-	if on and LocalPlayer():Alive() then
-
-		return true
-
-	end
-
-end )
-
-hook.Add( "CalcView", "ThirdPersonView", function( ply, pos, angles, fov )
-
-	if on and ply:Alive() then
-
-		local view = {}
-		view.origin = pos - ( angles:Forward() * 70 ) + ( angles:Right() * 20 ) + ( angles:Up() * 5 )
-		--view.origin = pos - ( angles:Forward() * 70 )
-		view.angles = ply:EyeAngles() + Angle( 1, 1, 0 )
-		view.fov = fov
-
-		return GAMEMODE:CalcView( ply, view.origin, view.angles, view.fov )
-
-	end
-
-end )
-
-concommand.Add( "thirdperson_toggle", toggle )
-
-
---[[	local function ulx.discotdgui()
-	gui.OpenURL( https://discord.gg/p4mJVKr )
-	end	
-	local discordgui = ulx.command( "Menus", "ulx discordgui", ulx.discordgui, "!discordgui" )
-	discordgui:defaultAccess( ULib.ACCESS_SUPERADMIN )
-	discordgui:help( "открыть дискорд" )]]
-	
-
-end
-
-if ( SERVER ) then
-
-function ulx.thirdperson( calling_ply )
-
-	calling_ply:SendLua([[RunConsoleCommand("thirdperson_toggle")]])	
-
-end
-local thirdperson = ulx.command( "Utility", "ulx thirdperson", ulx.thirdperson, {"!thirdperson", "!3p"}, true )
-thirdperson:defaultAccess( ULib.ACCESS_ALL )
-thirdperson:help( "Toggles third person mode" )
-
-end -- end serverside
-
-function ulx.timedcmd( calling_ply, command, seconds, should_cancel )
-
-	ulx.fancyLogAdmin( calling_ply, true, "#A will run command #s in #i seconds", command, seconds )
-
-	timer.Create( "timedcommand", seconds, 1, function()
-
-		calling_ply:ConCommand( command )
-	
-	end)
-
-	timer.Create( "halftime", ( seconds/2 ), 1, function() -- Print to the chat when half the time is left
-
-		ULib.tsay( calling_ply, ( seconds/2 ) .. " seconds left" )	
-	
-	end)	
-	
-end
-local timedcmd = ulx.command( "Utility", "ulx timedcmd", ulx.timedcmd, "!timedcmd", true )
-timedcmd:addParam{ type=ULib.cmds.StringArg, hint="command" }
-timedcmd:addParam{ type=ULib.cmds.NumArg, min=1, hint="seconds", ULib.cmds.round }
-timedcmd:addParam{ type=ULib.cmds.BoolArg, invisible=true }
-timedcmd:defaultAccess( ULib.ACCESS_ADMIN )
-timedcmd:help( "Runs the specified command after a number of seconds." )
-
---cancel the active timed command--
-function ulx.cancelcmd( calling_ply )
-
-	timer.Destroy( "timedcommand" )
-	
-	timer.Destroy( "halftime" )
-	
-	ulx.fancyLogAdmin( calling_ply, true, "#A cancelled the timed command" )
-	
-end
-local cancelcmd = ulx.command( "Utility", "ulx cancelcmd", ulx.cancelcmd, "!cancelcmd", true )
-cancelcmd:addParam{ type=ULib.cmds.BoolArg, invisible=true }
-cancelcmd:defaultAccess( ULib.ACCESS_ADMIN )
-cancelcmd:help( "Runs the specified command after a number of seconds." )
-
-function ulx.cleardecals( calling_ply )
-
-	for _,v in ipairs( player.GetAll() ) do
-		
-		v:ConCommand("r_cleardecals")
-		
-	end
-	
-	ulx.fancyLogAdmin( calling_ply, "#A cleared decals" )
-	
-end
-local cleardecals = ulx.command( "Utility", "ulx cleardecals", ulx.cleardecals, "!cleardecals" )
-cleardecals:defaultAccess( ULib.ACCESS_ADMIN )
-cleardecals:help( "Clear decals for all players." )
 
 function ulx.fix( calling_ply, command )
 
@@ -2297,33 +2048,6 @@ if SERVER then
 		end
 	end)
 
-
-	--[[============================= РЕДИРЕКТ ==========================]]
-	function ulx.redirect(ply)
-	local redirectip = ""
-		if GetHostName() == "metrostroi norank 2" then redirectip = "metronorank.ddns.net:27016"
-		elseif GetHostName() == "metrostroi norank 1" then redirectip = "metronorank.ddns.net:27017" 
-		else return
-		end
-		ulx.fancyLogAdmin(ply, true, "#A был перенаправлен на другой сервер")
-		ply:SendLua([[LocalPlayer():ConCommand('connect ]]..tostring(redirectip)..[[')]])
-		--print(GetHostName())
-		--print(redirectip)
-	end
-end
-local redirect = ulx.command( "Utility", "ulx redirect", ulx.redirect, "!redirect", true, false, true )
-redirect:defaultAccess( ULib.ACCESS_ALL )
-redirect:help( "Перейти на другой сервер" )
-
-if SERVER then
-	hook.Add( "PlayerInitialSpawn", "autoredirect", function( ply )
-	timer.Simple(1, function()
-	if ply:GetUserGroup() == "superadmin" then return
-	elseif game.MaxPlayers() == #player.GetAll() then ulx.redirect(ply) end
-	--print(game.MaxPlayers())
-	end)
-	end)
-
 	--[[============================= СТАРОЕ РАССТОЯНИЕ МЕЖДУ ВАГОНАМИ НА НВЛ ==========================]]
 	if string.find(game.GetMap(), "nvl") then Metrostroi.BogeyOldMap = 1 end
 end
@@ -2415,60 +2139,60 @@ end)
 --[[============================= ПОИСК ОДИНАКОВЫХ МАРШРУТОВ ==========================]]
 if SERVER then
 	function findroutes()
-	local Class1
-	local tbl = {}
-	local i = 1 
-	local NA = "N/A"
-	local Class
-	for k,v in pairs (Metrostroi.TrainClasses) do							--переношу все найденные паравозы в отдельную таблицу, чтобы потом уже редактировать ее
-		local ents = ents.FindByClass(v)
-		for k2,v2 in pairs(ents) do
-			tbl[i] = {v2, Class}
+		local Class1
+		local tbl = {}
+		local i = 1 
+		local NA = "N/A"
+		local Class
+		for k,v in pairs (Metrostroi.TrainClasses) do							--переношу все найденные паравозы в отдельную таблицу, чтобы потом уже редактировать ее
+			local ents = ents.FindByClass(v)
+			for k2,v2 in pairs(ents) do
+				tbl[i] = {v2, Class}
+				i = i + 1
+			end
+		end
+		for k,v in pairs(tbl) do	--беру один вагон, смотрю все сцепленные с ним вагоны (они уже есть в таблице) и удаляю все вагоны (кроме первого), если там нет водителя
+			Class = v[1].SubwayTrain.Name
+			for _k, _v in pairs(v[1].WagonList) do
+				if not stringfind(Class, _v.SubwayTrain.Name) then Class = Class.."/".._v.SubwayTrain.Name end	--уточнение вагонов в составе
+			end
+				for k1,v1 in pairs(v[1].WagonList) do
+					if v[1] ~= v1 and not v1:GetDriver() then
+						for k2,v2 in pairs(tbl) do
+							if v1 == v2[1] then tbl[k2] = nil end
+						end
+					end
+				end
+			v[2] = Class
+		end
+		--PrintTable(tbl)
+		--ulx.fancyLog("Вагонов на сервере: #s", Metrostroi.TrainCount())
+		--ulx.fancyLog("Составов на сервере: #i", table.Count(tbl))
+		local i = 1
+		local routes = {}
+		for k,v in pairs(tbl) do
+		local routenumber = 0
+		local routenumber1 = ""
+				for k1,v1 in pairs(v[1].WagonList) do
+					if string.find(v1.SubwayTrain.Name, "722") or string.find(v1.SubwayTrain.Name, "Ema") or (string.find(v1.SubwayTrain.Name, "717") and not string.find(v1.SubwayTrain.Name, "5m")) or string.find(v1.SubwayTrain.Name, ".6") then routenumber = v1:GetNW2Int("RouteNumber") else routenumber = v1:GetNW2Int("RouteNumber") / 10 end
+					if routenumber ~= 0 then
+						if routenumber1 == "" then routenumber1 = tostring(routenumber)
+						elseif routenumber1 ~= tostring(routenumber) then routenumber1 = routenumber1.."/"..tostring(routenumber)
+						end
+					end
+				end
+			if routenumber1 == "" then routenumber1 = "0" end
+			--[[if not v[1]:GetDriver() then
+				ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец: #A, состав: #s, вагонов: #i, маршрут: #s, машинист: #s",v[2], table.Count(v[1].WagonList), routenumber1, NA)
+			elseif v[1]:GetDriver() == v[1]:CPPIGetOwner() then
+					ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец/машинист: #A, состав: #s, вагонов: #i, маршрут: #s",v[2], table.Count(v[1].WagonList), routenumber1)
+			else
+					ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец: #A, состав: #s, вагонов: #i, маршрут: #s, машинист: #T",v[2], table.Count(v[1].WagonList), routenumber1, v[1]:GetDriver())
+			end]]
+			local entity = v[1]
+			routes[i] = {routenumber1, v[1]:CPPIGetOwner(), entity}
 			i = i + 1
 		end
-	end
-	for k,v in pairs(tbl) do	--беру один вагон, смотрю все сцепленные с ним вагоны (они уже есть в таблице) и удаляю все вагоны (кроме первого), если там нет водителя
-		Class = v[1].SubwayTrain.Name
-		for _k, _v in pairs(v[1].WagonList) do
-			if not stringfind(Class, _v.SubwayTrain.Name) then Class = Class.."/".._v.SubwayTrain.Name end	--уточнение вагонов в составе
-		end
-			for k1,v1 in pairs(v[1].WagonList) do
-				if v[1] ~= v1 and not v1:GetDriver() then
-					for k2,v2 in pairs(tbl) do
-						if v1 == v2[1] then tbl[k2] = nil end
-					end
-				end
-			end
-		v[2] = Class
-	end
-	--PrintTable(tbl)
-	--ulx.fancyLog("Вагонов на сервере: #s", Metrostroi.TrainCount())
-	--ulx.fancyLog("Составов на сервере: #i", table.Count(tbl))
-	local i = 1
-	local routes = {}
-	for k,v in pairs(tbl) do
-	local routenumber = 0
-	local routenumber1 = ""
-			for k1,v1 in pairs(v[1].WagonList) do
-				if string.find(v1.SubwayTrain.Name, "722") or string.find(v1.SubwayTrain.Name, "Ema") or (string.find(v1.SubwayTrain.Name, "717") and not string.find(v1.SubwayTrain.Name, "5m")) or string.find(v1.SubwayTrain.Name, ".6") then routenumber = v1:GetNW2Int("RouteNumber") else routenumber = v1:GetNW2Int("RouteNumber") / 10 end
-				if routenumber ~= 0 then
-					if routenumber1 == "" then routenumber1 = tostring(routenumber)
-					elseif routenumber1 ~= tostring(routenumber) then routenumber1 = routenumber1.."/"..tostring(routenumber)
-					end
-				end
-			end
-		if routenumber1 == "" then routenumber1 = "0" end
-		--[[if not v[1]:GetDriver() then
-			ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец: #A, состав: #s, вагонов: #i, маршрут: #s, машинист: #s",v[2], table.Count(v[1].WagonList), routenumber1, NA)
-		elseif v[1]:GetDriver() == v[1]:CPPIGetOwner() then
-				ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец/машинист: #A, состав: #s, вагонов: #i, маршрут: #s",v[2], table.Count(v[1].WagonList), routenumber1)
-		else
-				ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец: #A, состав: #s, вагонов: #i, маршрут: #s, машинист: #T",v[2], table.Count(v[1].WagonList), routenumber1, v[1]:GetDriver())
-		end]]
-		local entity = v[1]
-		routes[i] = {routenumber1, v[1]:CPPIGetOwner(), entity}
-		i = i + 1
-	end
 		for k,v in pairs(routes) do																	-- разделение маршрутов со знаком /
 			if string.find(v[1], "/") then
 				local slashpos = string.find(v[1], "/") 
@@ -2476,7 +2200,7 @@ if SERVER then
 				v[1] = string.sub(v[1],slashpos+1)
 			end
 		end
-	--PrintTable(routes)
+		--PrintTable(routes)
 		for k,v in pairs(routes) do
 			for k1,v1 in pairs(routes) do
 				if v1[1] == v[1] and v1[3] ~= v[3] and v1[1] ~= "0" then 
@@ -2747,7 +2471,7 @@ end )]]
 end )]]
 --spawnmenu.AddToolMenuOption( "Utilities", "Metrostroi", "metrostroi_client_panel2", Metrostroi.GetPhrase( "Panel.Client" ) .. "2", "", "", ClientPanel )
 
---gmod_track_platform
+--gmod_track_platform	Metrostroi.Stations[self.StationIndex]
 --metrostroi_signal_debug 1
 --hook.Add("PlayerSpawnSENT", "PerzKek16", function(ply, class)							-- для проверки, если игрок спавнит что-то не треинспавнером
 --hook.Add("OnEntityCreated", "Perzpidor2281337123", function(ent)			-- можно использовать это для уведомления о спавне состава не в спавнере. А ограничение по вагонам можно сделать через cantool
