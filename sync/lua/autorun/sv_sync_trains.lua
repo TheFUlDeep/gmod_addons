@@ -295,12 +295,34 @@ local function CheckSwitchesTBL(arg)
 	end
 end
 
+local shetchik1 = true
 local function SendSyncedSwitches(arg)
-	SendToWebServer(SwitchesTBL, WebServerUrl,"switches")
+	if not SwitchesTBL then 
+		if shetchik1 then
+			SendToWebServer(SwitchesTBL, WebServerUrl,"switches")
+			shetchik1 = false
+		else 
+			return 
+		end
+	else
+		shetchik1 = true
+		SendToWebServer(SwitchesTBL, WebServerUrl,"switches")
+	end
 end
 
+local shetchik2 = true
 local function SendSyncedRoutes(arg)
-	SendToWebServer(RoutesTBL, WebServerUrl,"routes")
+	if not RoutesTBL then 
+		if shetchik2 then
+			SendToWebServer(RoutesTBL, WebServerUrl,"routes")
+			shetchik2 = false
+		else 
+			return 
+		end
+	else
+		shetchik2 = true
+		SendToWebServer(RoutesTBL, WebServerUrl,"routes")
+	end
 end
 
 for k,v in pairs(ents.FindByClass("gmod_subway_base")) do
