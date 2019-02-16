@@ -29,9 +29,7 @@ if SERVER then
 		if not outputTBL[typ] or not istable(outputTBL[typ]) then return {} end
 		for k,v in pairs(outputTBL[typ]) do
 			if not v.MainTable then continue end
-			for k1,v1 in pairs(v.MainTable) do
-				table.insert(tbl2,1,v1)
-			end
+			table.insert(tbl2,1,v.MainTable)
 		end
 		return tbl2
 	end
@@ -61,8 +59,10 @@ if SERVER then
 	function ulx.redirect(ply)
 		local PlayerCount = GetFromWebServer(WebServerUrl,"PlayerCount")
 		if not PlayerCount then return end
+		PrintTable(PlayerCount)
 		for k,v in pairs(PlayerCount) do
 			if not v.ip or not v.count or not v.maxx then continue end
+			if v.ip:find("0.0.0.0") then continue end
 			if v.ip ~= IpAdress and v.count < v.maxx then 
 				ply:SendLua([[LocalPlayer():ConCommand('connect ]]..tostring(v.ip)..[[')]])
 				ulx.fancyLogAdmin(ply, true, "#A был перенаправлен на другой сервер")
