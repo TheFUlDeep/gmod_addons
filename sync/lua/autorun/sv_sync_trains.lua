@@ -8,9 +8,44 @@ local GetTrainsTBLL = {}
 local GetSyncedRoutesTbl = {}
 local SwitchesTBL = {}
 local GetSyncedSwitchesTbl = {}
+local TrainsTBL = {}
+
+local HostName = GetHostName()
+local Map = game.GetMap()
+local WebServerUrl = "http://metronorank.ddns.net/sync/"
+local function SendToWebServer(tbl,url,typ)
+	local TableToSend = {MainTable = util.TableToJSON(tbl), server = HostName, map = Map,typ = typ}
+	http.Post(url, TableToSend)
+end
+
+local outputTBL = {}
+local function GetFromWebServer(url,typ)
+	http.Fetch( 
+	url.."?typ="..typ,
+	function (body)
+		outputTBL[typ] = {}
+		if body then
+			outputTBL[typ] = util.JSONToTable(body)
+		end
+	end,
+	function()
+		outputTBL[typ] = {}
+	end
+	)
+	local tbl2 = {}
+	if not outputTBL[typ] or not istable(outputTBL[typ]) then return {} end
+	for k,v in pairs(outputTBL[typ]) do
+		if k == HostName or (v.map and v.map ~= Map) then continue end
+		if not v.MainTable then continue end
+		for k1,v1 in pairs(v.MainTable) do
+			table.insert(tbl2,1,v1)
+		end
+	end
+	return tbl2
+end
 
 local function SendSyncedTrains(arg)
-	local TrainsTBL = {}
+	local TrainsTBLL = {}
 	local i = 0
 	local p = 0
 	for k,v in pairs(Metrostroi.TrainClasses) do
@@ -18,7 +53,7 @@ local function SendSyncedTrains(arg)
 			if not IsValid(v1) then continue end
 			i = i + 1
 			p = 0
-			TrainsTBL[i] = {
+			TrainsTBLL[i] = {
 				OsTime = os.clock(),
 				model = v1:GetModel(),
 				pos = v1:GetPos(),
@@ -37,7 +72,9 @@ local function SendSyncedTrains(arg)
 			end]]
 		end
 	end
-	file.Write("SyncTrainsDataSend.txt",util.TableToJSON(TrainsTBL))
+	if not TrainsTBLL then return end
+	TrainsTBL = TrainsTBLL
+	SendToWebServer(TrainsTBL,WebServerUrl,"trains")
 end
 
 local function CreateSyncedTrain(index)
@@ -62,27 +99,8 @@ local function DeleteSyncedTrain(index)
 	end
 end
 
-local shetchik = 1
-local LastGetSyncedTrains
 local function GetSyncedTrains(arg)
-	if not file.Exists("SyncTrainsDataRec.txt", "DATA") then
-		if not SyncedTrainsTBL then return end
-		for k,v in pairs(SyncedTrainsTBL) do
-			if IsValid(v) then v:Remove() end 
-		end 
-		return
-	end
-	if LastGetSyncedTrains == file.Read("SyncTrainsDataRec.txt", "DATA") then
-		if not SyncedTrainsTBL then return end
-		if shetchik ~= 50 then shetchik = shetchik + 1 return end
-		shetchik = 1
-		for k,v in pairs(SyncedTrainsTBL) do
-			DeleteSyncedTrain(k)
-		end
-		return
-	end
-	LastGetSyncedTrains = file.Read("SyncTrainsDataRec.txt", "DATA")
-	GetTrainsTBLL = util.JSONToTable(LastGetSyncedTrains)
+	GetTrainsTBLL = GetFromWebServer(WebServerUrl,"trains")
 	if not GetTrainsTBLL then
 		for k,v in pairs(SyncedTrainsTBL) do
 			if IsValid(v) then v:Remove() end 
@@ -105,7 +123,7 @@ local function GetSyncedTrains(arg)
 				v1:SetMoveType(MOVETYPE_NONE)
 				v1:SetMoveType(MOVETYPE_FLY)					-- установится ли?
 				v1:SetPersistent(true)
-				v1:SetPos(v.pos)
+				v1:SetPos(v.pos + Vector(200,0,0))
 				v1:SetAngles(v.ang)
 				--print(v.pos)
 			end
@@ -139,11 +157,7 @@ end
 
 local LastGetSyncedRoutes
 local function GetSyncedRoutes(arg)
-	if file.Exists("SyncRoutesDataRec.txt", "DATA") then 
-		if LastGetSyncedRoutes == file.Read("SyncRoutesDataRec.txt", "DATA") then return end
-		LastGetSyncedRoutes = file.Read("SyncRoutesDataRec.txt", "DATA")
-		GetSyncedRoutesTbl = util.JSONToTable(LastGetSyncedRoutes)
-	end
+	GetSyncedRoutesTbl = GetFromWebServer(WebServerUrl,"routes")
 	if not GetSyncedRoutesTbl then return end
 	local comm
 	for key1,value1 in pairs(GetSyncedRoutesTbl) do
@@ -261,12 +275,8 @@ local function SetSwitchState(name,state)
 	end
 end
 
-local LastGetSyncedSwitches
 local function GetSyncedSwitches(arg)
-	if not file.Exists("SyncSwitchesDataRec.txt", "DATA") then return end
-	if LastGetSyncedSwitches == file.Read("SyncSwitchesDataRec.txt", "DATA") then return end
-	LastGetSyncedSwitches = file.Read("SyncSwitchesDataRec.txt", "DATA")
-	GetSyncedSwitchesTbl = util.JSONToTable(LastGetSyncedSwitches)
+	GetSyncedSwitchesTbl = GetFromWebServer(WebServerUrl,"switches")
 	if not GetSyncedSwitchesTbl then return end
 	for k,v in pairs(GetSyncedSwitchesTbl) do
 		--if not name then continue end
@@ -286,11 +296,11 @@ local function CheckSwitchesTBL(arg)
 end
 
 local function SendSyncedSwitches(arg)
-	file.Write("SyncSwitchesDataSend.txt",util.TableToJSON(SwitchesTBL))
+	SendToWebServer(SwitchesTBL, WebServerUrl,"switches")
 end
 
 local function SendSyncedRoutes(arg)
-	file.Write("SyncRoutesDataSend.txt",util.TableToJSON(RoutesTBL))
+	SendToWebServer(RoutesTBL, WebServerUrl,"routes")
 end
 
 for k,v in pairs(ents.FindByClass("gmod_subway_base")) do
@@ -298,7 +308,7 @@ for k,v in pairs(ents.FindByClass("gmod_subway_base")) do
 end
 
 for k,v in pairs(ents.FindByClass("gmod_button")) do
-	if IsValid(v) and v.name == "SyncedTrain" then v:Remove() end
+	if IsValid(v) and v.name and v.name == "SyncedTrain" then v:Remove() end
 end
 
 --hook.Remove("Think","SyncTrainsSend")
@@ -341,52 +351,101 @@ end
 
 
 --[[										--код передатчика
-local function Send(Send, Rec)
-	local string2 = nil
-	local file = nil
-	local stringg = nil
-  file = io.open(Send)
-  if not file then return end
-  stringg = file:read()
-  file:close()
-  file = nil
-  if stringg then
-    file = io.open(Rec, "w")
-    if not file then return end
-		string2 = file:read()
-		if string2 and stringg == string2 then file:close() return end
-      file:write(stringg)
-      file:close()
-      file = nil
-      stringg = nil
-  end
-end
+<?php
+function getUserIP()
+{
+    // Get real visitor IP behind CloudFlare network
+    if (isset($_SERVER["HTTP_CF_CONNECTING_IP"])) {
+              $_SERVER['REMOTE_ADDR'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
+              $_SERVER['HTTP_CLIENT_IP'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
+    }
+    $client  = @$_SERVER['HTTP_CLIENT_IP'];
+    $forward = @$_SERVER['HTTP_X_FORWARDED_FOR'];
+    $remote  = $_SERVER['REMOTE_ADDR'];
 
-local server1 = "T:\\gms_norank_obnova2\\garrysmod\\data\\"
---local server1 = "R:\\Downloads\\gms_norank\\garrysmod\\data\\"
-local server2 = "T:\\gms_norank_obnova\\garrysmod\\data\\"
---local server2 = "R:\\Downloads\\gms_norank\\garrysmod\\data\\"
-local interval = 0.1
-local lasttime = os.clock()
-::cycle::
-while true do
-  if os.clock() - lasttime < interval then goto cycle end
-	lasttime = os.clock()
-  
-  local lastmap1 = io.open(server1.."lastmap.txt")
-  local lastmap2 = io.open(server2.."lastmap.txt")
-  if lastmap1 and lastmap2 and lastmap1:read() ~= lastmap2:read() then lastmap1:close() lastmap2:close() goto cycle end
-  
-  Send(server1.."SyncTrainsDataSend.txt", server2.."SyncTrainsDataRec.txt")
-  Send(server2.."SyncTrainsDataSend.txt", server1.."SyncTrainsDataRec.txt")
-  
-  Send(server1.."SyncRoutesDataSend.txt", server2.."SyncRoutesDataRec.txt")
-  Send(server2.."SyncRoutesDataSend.txt", server1.."SyncRoutesDataRec.txt")
-  
-  Send(server1.."SyncSwitchesDataSend.txt", server2.."SyncSwitchesDataRec.txt")
-  Send(server2.."SyncSwitchesDataSend.txt", server1.."SyncSwitchesDataRec.txt")
-  
-  --Send(server1.."SyncChatDataRec.txt", server2.."SyncChatDataRec.txt")
-  
- end
+    if(filter_var($client, FILTER_VALIDATE_IP))
+    {
+        $ip = $client;
+    }
+    elseif(filter_var($forward, FILTER_VALIDATE_IP))
+    {
+        $ip = $forward;
+    }
+    else
+    {
+        $ip = $remote;
+    }
+
+    return $ip;
+}
+
+
+//echo $hostname
+
+
+
+
+
+
+if (getUserIP() == gethostbyname("metronorank.ddns.net"))
+{
+	//unlink($fname);
+	//clearstatcache();
+	$gettyp = $_GET["typ"];
+	$posttyp = $_POST["typ"];
+	global $typ;
+	if ($gettyp) $typ = $gettyp; elseif ($posttyp) $typ = $posttyp;
+	if ($typ)
+	{
+		$MainTable = $_POST["MainTable"];
+		$server = $_POST["server"];
+		$map = $_POST["map"];
+		global $fname;
+		$fname = "O:\denwer_tmp\\" . $typ . ".txt";
+		global $a;
+		if ($MainTable)
+		{
+			if ($server)
+			{
+				if ($map)
+				{
+					if (file_exists($fname) == true)
+					{
+						exec('icacls $fname /q /c /r');
+						$a = file_get_contents($fname);	
+						$a = json_decode($a,TRUE);
+					}
+					
+					$b = array(
+						$server => array(
+							"map" => $map,	
+							"MainTable" => json_decode($MainTable)
+						)
+					);
+					
+					if (is_array($a) == true)
+					{
+						if ($a[$server])
+						{
+							$a[$server] = $b[$server];
+						}
+						else
+						{
+							$a = array_merge($a,$b);
+						}
+					}
+					else $a = $b;
+					file_put_contents($fname,json_encode($a));
+				}
+			}
+		}
+
+		if (file_exists($fname) == true)
+		{
+			echo file_get_contents($fname);	
+		}
+	}
+}
+else echo "access denied";
+?>
  ]]
