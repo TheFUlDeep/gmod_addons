@@ -1,3 +1,5 @@
+if CLIENT then return end
+if SERVER then return end
 if CLIENT then
 	local LastRec
 	local RecChatTBL = {}
