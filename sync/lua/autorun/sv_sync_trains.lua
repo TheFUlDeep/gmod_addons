@@ -44,6 +44,7 @@ local function GetFromWebServer(url,typ)
 	return tbl2
 end
 
+local shetchik0 = true
 local function SendSyncedTrains(arg)
 	local TrainsTBLL = {}
 	local i = 0
@@ -72,9 +73,18 @@ local function SendSyncedTrains(arg)
 			end]]
 		end
 	end
-	if not TrainsTBLL then return end
 	TrainsTBL = TrainsTBLL
-	SendToWebServer(TrainsTBL,WebServerUrl,"trains")
+	if not TrainsTBL or #TrainsTBL == 0 then 
+		if shetchik0 then
+			SendToWebServer(TrainsTBL, WebServerUrl,"trains")
+			shetchik0 = false
+		else 
+			return 
+		end
+	else
+		shetchik0 = true
+		SendToWebServer(TrainsTBL, WebServerUrl,"trains")
+	end
 end
 
 local function CreateSyncedTrain(index)
@@ -155,7 +165,6 @@ local function CheckRoutes(arg)
 	end
 end
 
-local LastGetSyncedRoutes
 local function GetSyncedRoutes(arg)
 	GetSyncedRoutesTbl = GetFromWebServer(WebServerUrl,"routes")
 	if not GetSyncedRoutesTbl then return end
@@ -295,12 +304,34 @@ local function CheckSwitchesTBL(arg)
 	end
 end
 
+local shetchik1 = true
 local function SendSyncedSwitches(arg)
-	SendToWebServer(SwitchesTBL, WebServerUrl,"switches")
+	if not SwitchesTBL or #SwitchesTBL == 0 then 
+		if shetchik1 then
+			SendToWebServer(SwitchesTBL, WebServerUrl,"switches")
+			shetchik1 = false
+		else 
+			return 
+		end
+	else
+		shetchik1 = true
+		SendToWebServer(SwitchesTBL, WebServerUrl,"switches")
+	end
 end
 
+local shetchik2 = true
 local function SendSyncedRoutes(arg)
-	SendToWebServer(RoutesTBL, WebServerUrl,"routes")
+	if not RoutesTBL or #RoutesTBL == 0 then 
+		if shetchik2 then
+			SendToWebServer(RoutesTBL, WebServerUrl,"routes")
+			shetchik2 = false
+		else 
+			return 
+		end
+	else
+		shetchik2 = true
+		SendToWebServer(RoutesTBL, WebServerUrl,"routes")
+	end
 end
 
 for k,v in pairs(ents.FindByClass("gmod_subway_base")) do

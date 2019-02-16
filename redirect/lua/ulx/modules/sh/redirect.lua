@@ -66,6 +66,7 @@ if SERVER then
 			if v.ip ~= IpAdress and v.count < v.maxx then 
 				ply:SendLua([[LocalPlayer():ConCommand('connect ]]..tostring(v.ip)..[[')]])
 				ulx.fancyLogAdmin(ply, true, "#A был перенаправлен на другой сервер")
+				break
 			end
 		end
 		--print(GetHostName())
