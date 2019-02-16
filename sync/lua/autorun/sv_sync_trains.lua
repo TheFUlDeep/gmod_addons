@@ -9,6 +9,23 @@ local GetSyncedRoutesTbl = {}
 local SwitchesTBL = {}
 local GetSyncedSwitchesTbl = {}
 local TrainsTBL = {}
+local CurTime = os.clock()
+
+local function MoveSmooth(ent,vec1,vec2,ang1,ang2)
+	hook.Add("Think",tostring(ent), function()
+		if not IsValid(ent) then hook.Remove("Think", tostring(ent)) return end
+		CurTime = os.clock()
+		if CurTime - lasttime < 0 or ent:GetPos() == vec2 then 
+			hook.Remove("Think", tostring(ent))
+			--ent:SetPos(vec2)
+			return 
+		end
+		local percent = ((CurTime - lasttime) / interval)
+		--print(percent)
+		ent:SetPos(LerpVector( percent, vec1, vec2 ))	
+		ent:SetAngles(LerpAngle( percent, ang1, ang2 ))	
+	end)
+end
 
 local HostName = GetHostName()
 local Map = game.GetMap()
@@ -90,7 +107,8 @@ end
 local function CreateSyncedTrain(index)
 	local ent = ents.Create( "gmod_subway_base" )
 	ent.name = "SyncedTrain"
-	ent:SetPos(Vector(0,0,0))
+	ent:SetPos(GetTrainsTBLL[index].pos)
+	ent:SetAngles(GetTrainsTBLL[index].ang)
 	ent:SetPersistent(true)
 	ent:SetMoveType(MOVETYPE_FLY)
 	--ent:SetNW2Bool("IsSyncedTrain",true)
@@ -133,8 +151,9 @@ local function GetSyncedTrains(arg)
 				v1:SetMoveType(MOVETYPE_NONE)
 				v1:SetMoveType(MOVETYPE_FLY)
 				v1:SetPersistent(true)
-				v1:SetPos(v.pos)
-				v1:SetAngles(v.ang)
+				--v1:SetPos(v.pos)
+				--v1:SetAngles(v.ang)
+				MoveSmooth(v1,v1:GetPos(),v.pos,v1:GetAngles(),v.ang)
 				--print(v.pos)
 			end
 		end
@@ -288,7 +307,7 @@ local function GetSyncedSwitches(arg)
 	GetSyncedSwitchesTbl = GetFromWebServer(WebServerUrl,"switches")
 	if not GetSyncedSwitchesTbl then return end
 	for k,v in pairs(GetSyncedSwitchesTbl) do
-		--if not name then continue end
+		if not v.name then continue end
 			SetSwitchState(v.name,v.state)
 			print("switch "..(v.name))
 	end
