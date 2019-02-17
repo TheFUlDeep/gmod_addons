@@ -2049,6 +2049,7 @@ if SERVER then
 			and string.match(ourstation, "депо") ~= "депо"
 			and string.match(ourstation, "ближайшая") ~= "ближайшая"
 			and not ourstation:find("depo")
+			and not ourstation:find("ддэ")
 			then 
 				if SERVER then ply:LimitHit( "Запрещено спавнить на станциях" ) end return false
 		end
