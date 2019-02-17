@@ -99,7 +99,7 @@ local function SendSyncedTrains(arg)
 			return 
 		end
 	else
-		shetchik0 = true
+		if not shetchik0 then shetchik0 = true end
 		SendToWebServer(TrainsTBL, WebServerUrl,"trains")
 	end
 end
@@ -333,7 +333,7 @@ local function SendSyncedSwitches(arg)
 			return 
 		end
 	else
-		shetchik1 = true
+		if not shetchik1 then shetchik1 = true end
 		SendToWebServer(SwitchesTBL, WebServerUrl,"switches")
 	end
 end
@@ -348,7 +348,7 @@ local function SendSyncedRoutes(arg)
 			return 
 		end
 	else
-		shetchik2 = true
+		if not shetchik2 then shetchik2 = true end
 		SendToWebServer(RoutesTBL, WebServerUrl,"routes")
 	end
 end
