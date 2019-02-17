@@ -1992,7 +1992,6 @@ if SERVER then
 		then ulx.fancyLog(true, "Вагонов: #i", WagNum)
 		else ulx.fancyLog(true, "Станция: #s. Вагонов: #i", ourstation, WagNum)
 		end
-		timer.Simple( 3, function() AutoInterval() end)
 	end
 
 	--------------------------------------ПОДСЧЕТ ИНТЕРВАЛА ОТ ВРЕМЕНИ КРУГА НА КАРТЕ сама функция используется в модуле выше------------------------------------
@@ -2030,9 +2029,16 @@ if SERVER then
 		end
 		--print(trains_n)
 	end
-	hook.Add( "PlayerDisconnected", "AutoInterval1", AutoInterval())
-	hook.Add( "PlayerConnect", "AutoInterval2", AutoInterval())
-	hook.Add( "PlayerInitialSpawn", "AutoInterval3", AutoInterval())
+	hook.Add( "OnEntityCreated", "AutoInterval4", function()
+		timer.Simple(5,function() 
+			AutoInterval()
+		end)
+	end)
+	hook.Add( "EntityRemoved", "AutoInterval5", function()
+		timer.Simple(1,function() 
+			AutoInterval()
+		end)
+	end)
 
 	--[[============================= РАЗРЕШЕНИЕ СПАВНА ТОЛЬКО В ОПРЕДЕЛЕННЫХ МЕСТАХ ==========================]]
 	hook.Add("CanTool", "AllowSpawnTrain", function(ply, tr, tool)
