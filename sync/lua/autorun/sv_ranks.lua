@@ -72,7 +72,9 @@ if SERVER then
 				if not body then return end
 				body = util.JSONToTable(body)
 				if not body or not body.Nick then return end
-				game.KickID(SteamID,"ВЫ ЗАБАНЕНЫ\nЗабанил "..(body.WhoBanned).." его SteamID: "..(body.WhoBannedID).."\nПричина: "..(body.Reason).."\nДата разбана:"..(body.UnBanDate))
+				local UnBanDate = "Никогда"
+				if body.UnBanDate ~= 0 then UnBanDate = os.date("%H:%M:%S %d/%m/%Y",body.UnBanDate) end
+				game.KickID(SteamID,"ВЫ ЗАБАНЕНЫ\nЗабанил "..(body.WhoBanned).." его SteamID: "..(body.WhoBannedID).."\nПричина: "..(body.Reason).."\nДата разбана: "..UnBanDate)
 				--[[if BansTBL[SteamID].Nick == "Unknown" then				--вообще можно еще сделать проверку и обновление ника, но мне лень
 					
 				end]]
@@ -154,12 +156,19 @@ local function OverWriteUlxCommands()
 	end
 	
 	function ulx.ban(calling_ply,target_ply,minutes,reason)
+		if not minutes then minutes = 0 end
 		if not reason or reason == "" then reason = "reason" end
 		local WhoBanned
 		local WhoBannedSteamID
-		if not IsValid(calling_ply) or not calling_ply:SteamID() then WhoBanned = "Console" WhoBannedSteamID = "Console" end
+		if not IsValid(calling_ply) then
+			WhoBanned = "Console" 
+			WhoBannedSteamID = "Console" 
+		else
+			WhoBanned = calling_ply:Nick()
+			WhoBannedSteamID = calling_ply:SteamID()
+		end
 		SetBan(target_ply:SteamID(),target_ply:Nick(),WhoBannedSteamID,WhoBanned,reason,minutes)
-		if IsValid(target_ply) then target_ply:Kick("ВЫ ЗАБАНЕНЫ\nPабанил "..WhoBanned.." его SteamID: "..WhoBannedSteamID.."\nПричина: "..reason.."\nДлительность: "..minutes.." мин.") end
+		if IsValid(target_ply) then target_ply:Kick("ВЫ ЗАБАНЕНЫ\nЗабанил "..WhoBanned.." его SteamID: "..WhoBannedSteamID.."\nПричина: "..reason.."\nДлительность: "..minutes.." мин.") end
 	end
 	local ban = ulx.command( CATEGORY_NAME, "ulx ban", ulx.ban, "!ban", false, false, true )
 	ban:addParam{ type=ULib.cmds.PlayerArg }
@@ -169,6 +178,7 @@ local function OverWriteUlxCommands()
 	ban:help( "Bans target." )
 	
 	function ulx.banid( calling_ply, steamid, minutes, reason )
+		if not minutes then minutes = 0 end
 		if not ULib.isValidSteamID(steamid) then ULib.tsayError(calling_ply,"Invalid SteamID") return end
 		if not reason then reason = "reason" end
 		if not IsValid(calling_ply) or not calling_ply:SteamID() then WhoBanned = "Console" WhoBannedSteamID = "Console" end
@@ -177,7 +187,7 @@ local function OverWriteUlxCommands()
 		if IsValid(player.GetBySteamID(steamid)) then 
 			ply = player.GetBySteamID(steamid)
 			Nick = ply:Nick()
-			ply:Kick("ВЫ ЗАБАНЕНЫ\nPабанил "..WhoBanned.." его SteamID: "..WhoBannedSteamID.."\nПричина: "..reason.."\nДлительность: "..minutes.." мин.")
+			ply:Kick("ВЫ ЗАБАНЕНЫ\nЗабанил "..WhoBanned.." его SteamID: "..WhoBannedSteamID.."\nПричина: "..reason.."\nДлительность: "..minutes.." мин.")
 		end
 		SetBan(steamid,Nick,WhoBannedSteamID,WhoBanned,reason,minutes)
 	end

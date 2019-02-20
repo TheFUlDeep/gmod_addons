@@ -75,7 +75,8 @@ local function SendSyncedTrains(arg)
 				OsTime = os.clock(),
 				model = v1:GetModel(),
 				pos = v1:GetPos(),
-				ang = v1:GetAngles()
+				ang = v1:GetAngles(),
+				Owner = v1:GetOwner()
 			}
 			--[[if stringfind(v1:GetClass(),"base") then continue end
 			if not v1.ClientEnts then continue end
@@ -111,6 +112,7 @@ local function CreateSyncedTrain(index)
 	ent:SetAngles(GetTrainsTBLL[index].ang)
 	ent:SetPersistent(true)
 	ent:SetMoveType(MOVETYPE_FLY)
+	ent:SetNW2String("Owner",GetTrainsTBLL[index].Owner,"N/A Owner")
 	--ent:SetNW2Bool("IsSyncedTrain",true)
 	--ent:SetCollisionGroup(COLLISION_GROUP_NONE)
 	ent:Spawn()
