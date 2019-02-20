@@ -2222,12 +2222,12 @@ if SERVER then
 			end
 		end
 	end
-	local routeswait = 1
-	hook.Add( "PlayerSay", "routes", function( ply, text, team )
-		if routeswait == 10 then findroutes() routeswait = 0
-		else routeswait = routeswait + 1
-		end
-	end)
+	
+	local function CheckRoutes()
+		findroutes()
+		timer.Simple(60, function() CheckRoutes() end)
+	end
+	CheckRoutes()
 
 	--[[============================= NOCLIP ПРИ ПОПЫТКЕ ТЕЛЕПОРТА НА СТАНЦИЮ ==========================]]
 	hook.Add( "PlayerSay", "stationnoclip", function( ply, text, team )
