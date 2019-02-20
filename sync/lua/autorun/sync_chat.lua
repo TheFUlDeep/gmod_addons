@@ -1,3 +1,6 @@
+if SERVER then retuen end
+if CLIENT then return end
+
 if SERVER then
 	local WebServerTyp = "chat"
 	local HostName = GetHostName()
