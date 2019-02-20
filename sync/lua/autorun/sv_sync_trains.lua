@@ -361,24 +361,6 @@ for k,v in pairs(ents.FindByClass("gmod_button")) do
 	if IsValid(v) and v.name and v.name == "SyncedTrain" then v:Remove() end
 end
 
---hook.Remove("Think","SyncTrainsSend")
-
-hook.Add("Think", "SyncTrainsSend", function()
-	if os.clock() - lasttime < interval then return end
-	lasttime = os.clock()
-
-	SendSyncedTrains(nil)
-	GetSyncedTrains(nil)
-	
-	CheckRoutes(nil)
-	SendSyncedRoutes(nil)
-	GetSyncedRoutes(nil)
-	
-	CheckSwitchesTBL(nil)
-	SendSyncedSwitches(nil)
-	GetSyncedSwitches(nil)
-end)
-
 hook.Add("PlayerSay","SyncRoutes", function(ply,text)
 	if stringfind(text,"!sclps ") or stringfind(text,"!sopps ") or stringfind(text,"!sopen ") or stringfind(text,"!sclose ") or stringfind(text,"!sactiv ") or stringfind(text,"!sdeactiv ") then
 		table.insert(RoutesTBL,1,{comm = text, OsTime = os.clock()})
@@ -397,6 +379,22 @@ function ForAvtooborot(route)
 	table.insert(RoutesTBL,1,{comm = "!sopen "..route, OsTime = os.clock()})
 	--PrintTable(SopensTBL)
 end
+
+local MetrostroiSyncEnabled = true
+hook.Add("Think","SyncTrainsThink", function() 
+	if not MetrostroiSyncEnabled or lasttime + interval > os.clock() then return end
+	lasttime = os.clock()
+	SendSyncedTrains(nil)
+	GetSyncedTrains(nil)
+	
+	CheckRoutes(nil)
+	SendSyncedRoutes(nil)
+	GetSyncedRoutes(nil)
+	
+	CheckSwitchesTBL(nil)
+	SendSyncedSwitches(nil)
+	GetSyncedSwitches(nil)
+end)
 
 
 
