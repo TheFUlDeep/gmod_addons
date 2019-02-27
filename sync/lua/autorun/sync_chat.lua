@@ -57,7 +57,7 @@ if SERVER then
 			if not tbl then return end
 			local tbl2 = {}
 			for k,v in pairs(tbl) do
-				if k == HostName or (v.map and v.map ~= Map) then continue end
+				--if k == HostName or (v.map and v.map ~= Map) then continue end
 				if not v.MainTable then continue end
 				for k1,v1 in pairs(v.MainTable) do
 					table.insert(tbl2,1,v1)

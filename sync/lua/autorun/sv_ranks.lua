@@ -72,9 +72,10 @@ if SERVER then
 				if not body then return end
 				body = util.JSONToTable(body)
 				if not body or not body.Nick then return end
-				local UnBanDate = "Никогда"
-				if body.UnBanDate ~= 0 then UnBanDate = os.date("%H:%M:%S %d/%m/%Y",body.UnBanDate) end
-				game.KickID(SteamID,"ВЫ ЗАБАНЕНЫ\nЗабанил "..(body.WhoBanned).." его SteamID: "..(body.WhoBannedID).."\nПричина: "..(body.Reason).."\nДата разбана: "..UnBanDate)
+				local BanDate = os.date("%H:%M:%S %d/%m/%Y",body.BanDate)
+				local UnBanDate = "никогда"
+				if body.UnBanDate ~= "perma" then UnBanDate = os.date("%H:%M:%S %d/%m/%Y",body.UnBanDate) end
+				game.KickID(SteamID,"ВЫ ЗАБАНЕНЫ\nЗабанил "..(body.WhoBanned).." его SteamID: "..(body.WhoBannedID).."\nПричина: "..(body.Reason).."\nДата бана: "..BanDate.."\nДата разбана: "..UnBanDate)
 				--[[if BansTBL[SteamID].Nick == "Unknown" then				--вообще можно еще сделать проверку и обновление ника, но мне лень
 					
 				end]]
@@ -113,7 +114,7 @@ if SERVER then
 end
 
 local function OverWriteUlxCommands()
-	local CATEGORY_NAME = "User Management"	
+	local CATEGORY_NAME = "Utility"	
 	
 	local function SendRankToWebServer(url,SteamID,Nick,Rank)
 		if not url or not SteamID or not Rank then return end
@@ -152,12 +153,12 @@ local function OverWriteUlxCommands()
 		if not WhoBanned then WhoBanned = "Console" end
 		if not Nick then Nick = "Unknown" end
 		if IsValid(player.GetBySteamID(SteamID)) then Nick = player.GetBySteamID(SteamID):Nick() end
-		http.Post(WebServerUrl.."bans/", {SteamID = SteamID,Nick = Nick,WhoBanned = WhoBanned, WhoBannedSteamID = WhoBannedSteamID,Reason = reason,Duration = duration})
+		http.Post(WebServerUrl.."bans/", {SteamID = SteamID,Nick = Nick,WhoBanned = WhoBanned, WhoBannedID = WhoBannedSteamID,Reason = reason,Duration = duration})
 	end
 	
 	function ulx.ban(calling_ply,target_ply,minutes,reason)
-		if not minutes then minutes = 0 end
-		if not reason or reason == "" then reason = "reason" end
+		if not minutes or minutes == 0 or minutes == "" then minutes = "perma" end
+		if not reason or reason == "" then reason = "не указана" end
 		local WhoBanned
 		local WhoBannedSteamID
 		if not IsValid(calling_ply) then
@@ -168,17 +169,18 @@ local function OverWriteUlxCommands()
 			WhoBannedSteamID = calling_ply:SteamID()
 		end
 		SetBan(target_ply:SteamID(),target_ply:Nick(),WhoBannedSteamID,WhoBanned,reason,minutes)
-		if IsValid(target_ply) then target_ply:Kick("ВЫ ЗАБАНЕНЫ\nЗабанил "..WhoBanned.." его SteamID: "..WhoBannedSteamID.."\nПричина: "..reason.."\nДлительность: "..minutes.." мин.") end
+		if IsValid(target_ply) then target_ply:Kick("ВЫ ЗАБАНЕНЫ\nЗабанил "..WhoBanned..", его SteamID: "..WhoBannedSteamID.."\nПричина: "..reason.."\nДлительность: "..minutes.." мин.") end
+		ulx.fancyLogAdmin(calling_ply,"#A забанил игрока #T на #s. Причина #s",target_ply,minutes,reason)
 	end
 	local ban = ulx.command( CATEGORY_NAME, "ulx ban", ulx.ban, "!ban", false, false, true )
 	ban:addParam{ type=ULib.cmds.PlayerArg }
 	ban:addParam{ type=ULib.cmds.NumArg, hint="minutes, 0 for perma", ULib.cmds.optional, ULib.cmds.allowTimeString, min=0 }
-	ban:addParam{ type=ULib.cmds.StringArg, hint="reason", ULib.cmds.optional, ULib.cmds.takeRestOfLine, completes=ulx.common_kick_reasons }
+	ban:addParam{ type=ULib.cmds.StringArg, hint="причина", ULib.cmds.optional, ULib.cmds.takeRestOfLine, completes=ulx.common_kick_reasons }
 	ban:defaultAccess( ULib.ACCESS_ADMIN )
 	ban:help( "Bans target." )
 	
 	function ulx.banid( calling_ply, steamid, minutes, reason )
-		if not minutes then minutes = 0 end
+		if not minutes or minutes == 0 or minutes == "" then minutes = "perma" end
 		if not ULib.isValidSteamID(steamid) then ULib.tsayError(calling_ply,"Invalid SteamID") return end
 		if not reason then reason = "reason" end
 		if not IsValid(calling_ply) or not calling_ply:SteamID() then WhoBanned = "Console" WhoBannedSteamID = "Console" end
@@ -194,13 +196,13 @@ local function OverWriteUlxCommands()
 	local banid = ulx.command( CATEGORY_NAME, "ulx banid", ulx.banid, nil, false, false, true )
 	banid:addParam{ type=ULib.cmds.StringArg, hint="steamid" }
 	banid:addParam{ type=ULib.cmds.NumArg, hint="minutes, 0 for perma", ULib.cmds.optional, ULib.cmds.allowTimeString, min=0 }
-	banid:addParam{ type=ULib.cmds.StringArg, hint="reason", ULib.cmds.optional, ULib.cmds.takeRestOfLine, completes=ulx.common_kick_reasons }
+	banid:addParam{ type=ULib.cmds.StringArg, hint="причина", ULib.cmds.optional, ULib.cmds.takeRestOfLine, completes=ulx.common_kick_reasons }
 	banid:defaultAccess( ULib.ACCESS_SUPERADMIN )
 	banid:help( "Bans steamid." )
 	
 	function ulx.unban(calling_ply,steamid)
 		if not ULib.isValidSteamID( steamid ) then ULib.tsayError( calling_ply, "Invalid SteamID." ) return end
-		http.Post(WebServerUrl.."bans/", {SteamID = SteamID, Unbanned = "unbanned"})
+		http.Post(WebServerUrl.."bans/", {SteamID = steamid, Unbanned = "unbanned"})
 	end
 	local unban = ulx.command( CATEGORY_NAME, "ulx unban", ulx.unban, nil, false, false, true )
 	unban:addParam{ type=ULib.cmds.StringArg, hint="steamid" }
