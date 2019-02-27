@@ -75,7 +75,8 @@ local function SendSyncedTrains(arg)
 				OsTime = os.clock(),
 				model = v1:GetModel(),
 				pos = v1:GetPos(),
-				ang = v1:GetAngles()
+				ang = v1:GetAngles(),
+				Owner = v1:GetOwner()
 			}
 			--[[if stringfind(v1:GetClass(),"base") then continue end
 			if not v1.ClientEnts then continue end
@@ -111,6 +112,7 @@ local function CreateSyncedTrain(index)
 	ent:SetAngles(GetTrainsTBLL[index].ang)
 	ent:SetPersistent(true)
 	ent:SetMoveType(MOVETYPE_FLY)
+	ent:SetNW2String("Owner",GetTrainsTBLL[index].Owner,"N/A Owner")
 	--ent:SetNW2Bool("IsSyncedTrain",true)
 	--ent:SetCollisionGroup(COLLISION_GROUP_NONE)
 	ent:Spawn()
@@ -361,24 +363,6 @@ for k,v in pairs(ents.FindByClass("gmod_button")) do
 	if IsValid(v) and v.name and v.name == "SyncedTrain" then v:Remove() end
 end
 
---hook.Remove("Think","SyncTrainsSend")
-
-hook.Add("Think", "SyncTrainsSend", function()
-	if os.clock() - lasttime < interval then return end
-	lasttime = os.clock()
-
-	SendSyncedTrains(nil)
-	GetSyncedTrains(nil)
-	
-	CheckRoutes(nil)
-	SendSyncedRoutes(nil)
-	GetSyncedRoutes(nil)
-	
-	CheckSwitchesTBL(nil)
-	SendSyncedSwitches(nil)
-	GetSyncedSwitches(nil)
-end)
-
 hook.Add("PlayerSay","SyncRoutes", function(ply,text)
 	if stringfind(text,"!sclps ") or stringfind(text,"!sopps ") or stringfind(text,"!sopen ") or stringfind(text,"!sclose ") or stringfind(text,"!sactiv ") or stringfind(text,"!sdeactiv ") then
 		table.insert(RoutesTBL,1,{comm = text, OsTime = os.clock()})
@@ -397,6 +381,22 @@ function ForAvtooborot(route)
 	table.insert(RoutesTBL,1,{comm = "!sopen "..route, OsTime = os.clock()})
 	--PrintTable(SopensTBL)
 end
+
+local MetrostroiSyncEnabled = false
+hook.Add("Think","SyncTrainsThink", function() 
+	if not MetrostroiSyncEnabled or lasttime + interval > os.clock() then return end
+	lasttime = os.clock()
+	SendSyncedTrains(nil)
+	GetSyncedTrains(nil)
+	
+	CheckRoutes(nil)
+	SendSyncedRoutes(nil)
+	GetSyncedRoutes(nil)
+	
+	CheckSwitchesTBL(nil)
+	SendSyncedSwitches(nil)
+	GetSyncedSwitches(nil)
+end)
 
 
 

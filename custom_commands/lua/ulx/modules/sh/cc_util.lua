@@ -1506,57 +1506,8 @@ end
 
 
 
---[[============================= ФУНКЦИЯ ПОИСКА СОВПАДЕНИЯ СТРИНГОВ ==========================]]
-function stringfind(where,what,lowerr,startpos,endpos)
-	local Exeption = false
-	if not where or not what then --[[print("[STRINGFIND EXEPTION] cant find required arguments")]] return false end
-	if type(where) ~= "string" or type(what) ~= "string" then --[[print("[STRINGFIND EXEPTION] not string")]] return false
-	elseif string.len(what) > string.len(where) then --[[print("[STRINGFIND EXEPTION] string what you want to find bigger than string where you want to find it")]] Exeption = true 
-	end
-	if lowerr then 
-		where = bigrustosmall(where)
-		what = bigrustosmall(what)
-	end
-	local strlen1 = string.len(where)
-	local strlen2 = string.len(what)
-	if not startpos then startpos = 1 end
-	if startpos < 1 then --[[print("[STRINGFIND EXEPTION] start position smaller then 1")]] Exeption = true end
-	if not endpos then endpos = strlen1	end
-	if endpos > strlen1 then --[[print("[STRINGFIND EXEPTION] end position bigger then source string (source string size = "..#where..")")]] Exeption = true end
-	if endpos < startpos then --[[print("[STRINGFIND EXEPTION] end position smaller then start position")]] Exeption = true end
-	if startpos > strlen1 - strlen2 + 1 then --[[print("[STRINGFIND EXEPTION] string from your start position smaller then string what you want to find")]] Exeption = true end
-	if endpos - startpos + 1 < strlen2 then --[[print("[STRINGFIND EXEPTION] section for finding smaller than string what you want to find")]] Exeption = true end
-	if Exeption then return false end
-	for i = startpos, endpos do
-		if i + strlen2 - 1 > endpos then return false
-		elseif string.sub(where, i, i + strlen2 - 1) == what then return i
-		end
-	end
-	return false
-end
 
 if SERVER then
-
-	--[[============================= string.lower ДЛЯ РУССКИХ СИМВОЛОВ ==========================]]
-	local BIGRUS = {"А","Б","В","Г","Д","Е","Ё","Ж","З","И","Й","К","Л","М","Н","О","П","Р","С","Т","У","Ф","Х","Ц","Ч","Ш","Щ","Ъ","Ы","Ь","Э","Ю","Я"}
-	local smallrus = {"а","б","в","г","д","е","ё","ж","з","и","й","к","л","м","н","о","п","р","с","т","у","ф","х","ц","ч","ш","щ","ъ","ы","ь","э","ю","я"}
-	local BIG_to_small = {}
-	for k, v in next, BIGRUS do
-	   
-		BIG_to_small[v] = smallrus[k]
-	   
-	end
-	function bigrustosmall(str)
-	   
-		local strlow = ""
-	   
-		for v in string.gmatch(str, "[%z\x01-\x7F\xC2-\xF4][\x80-\xBF]*") do
-			strlow = strlow .. (BIG_to_small[v] or v)
-		end
-	   
-		return string.lower(strlow) --жтобы англ буквы тоже занижалис
-	   
-	end
 	
 	----------------------------------------ПОСАДКА ИГРОКА В СВОБОДНОЕ МЕСТО---------------------------------------------
 				function KekLolArbidol(v2,ply)
@@ -2222,12 +2173,12 @@ if SERVER then
 			end
 		end
 	end
-	local routeswait = 1
-	hook.Add( "PlayerSay", "routes", function( ply, text, team )
-		if routeswait == 10 then findroutes() routeswait = 0
-		else routeswait = routeswait + 1
-		end
-	end)
+	
+	local function CheckRoutes()
+		findroutes()
+		timer.Simple(60, function() CheckRoutes() end)
+	end
+	CheckRoutes()
 
 	--[[============================= NOCLIP ПРИ ПОПЫТКЕ ТЕЛЕПОРТА НА СТАНЦИЮ ==========================]]
 	hook.Add( "PlayerSay", "stationnoclip", function( ply, text, team )
