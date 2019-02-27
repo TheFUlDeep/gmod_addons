@@ -382,7 +382,7 @@ function ForAvtooborot(route)
 	--PrintTable(SopensTBL)
 end
 
-local MetrostroiSyncEnabled = true
+local MetrostroiSyncEnabled = false
 hook.Add("Think","SyncTrainsThink", function() 
 	if not MetrostroiSyncEnabled or lasttime + interval > os.clock() then return end
 	lasttime = os.clock()
