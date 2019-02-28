@@ -26,14 +26,14 @@ if SERVER then
 		ent:UseTriggerBounds(true, 10)
 											--[[local scale = 0.1													-- for debug
 											local button = ents.Create( "gmod_button" )
-											button:SetModel( "models/6000/6000.mdl" )
+											button:SetModel( "models/metrostroi_train/81-717.6/6000.mdl" )
 											button:SetCollisionGroup( COLLISION_GROUP_WORLD )
 											button:SetPersistent( true )
 											button:SetPos(ent:GetPos() )
 											button:SetModelScale(scale)
 											button:Spawn()
 											local button = ents.Create( "gmod_button" )
-											button:SetModel( "models/6000/6000.mdl" )
+											button:SetModel( "models/metrostroi_train/81-717.6/6000.mdl" )
 											button:SetCollisionGroup( COLLISION_GROUP_WORLD )
 											button:SetPersistent( true )
 											button:SetPos(ent:GetPos() )
@@ -41,7 +41,7 @@ if SERVER then
 											button:SetModelScale(scale)
 											button:Spawn()
 											local button = ents.Create( "gmod_button" )
-											button:SetModel( "models/6000/6000.mdl" )
+											button:SetModel( "models/metrostroi_train/81-717.6/6000.mdl" )
 											button:SetCollisionGroup( COLLISION_GROUP_WORLD )
 											button:SetPersistent( true )
 											button:SetPos(ent:GetPos() )
@@ -51,7 +51,7 @@ if SERVER then
 		ent:Spawn()
 	if not AvtooborotTBL[fun] then AvtooborotTBL[fun] = {} end
 	if not AvtooborotTBL[fun][StationName] then AvtooborotTBL[fun][StationName] = {} end
-	AvtooborotTBL[fun][StationName][table.Count(AvtooborotTBL[fun][StationName])+1] = ent
+	AvtooborotTBL[fun][StationName][name] = ent
 	--PrintTable(AvtooborotTBL)
 	
 	end
@@ -60,80 +60,84 @@ if SERVER then
 	function deleteavtooborot()
 		SendAvtooborot(0)
 		for k,v in pairs(ents.FindByClass("avtooborot")) do v:Remove() end 
-		for k,v in pairs(ents.FindByClass("gmod_button")) do if v:GetModel() == "models/6000/6000.mdl" then v:Remove() end end
+		for k,v in pairs(ents.FindByClass("gmod_button")) do if v:GetModel() == "models/metrostroi_train/81-717.6/6000.mdl" then v:Remove() end end
 		AvtooborotTBL = {}
-	end
-	
-	local function RoutesAvtooborot(StationName,fun,str1,str2,str3,str4)
-		if table.Count(AvtooborotTBL[fun][StationName]) ~= 11 and table.Count(AvtooborotTBL[fun][StationName]) ~= 7 then print("Я что-то сделал не так") deleteavtooborot() return end	-- TODO проверка для функции dva и вообще обороты для этой функции
-		AvtooborotTBL[fun][StationName][table.Count(AvtooborotTBL[fun][StationName])+1] = false	--станция			12 или 8
-		AvtooborotTBL[fun][StationName][table.Count(AvtooborotTBL[fun][StationName])+1] = false	--ближний			13 или 9
-		if fun ~= "2" then
-			AvtooborotTBL[fun][StationName][table.Count(AvtooborotTBL[fun][StationName])+1] = false	--дальний			14
-		end
-		AvtooborotTBL[fun][StationName][table.Count(AvtooborotTBL[fun][StationName])+1] = str1		--на дальний
-		AvtooborotTBL[fun][StationName][table.Count(AvtooborotTBL[fun][StationName])+1] = str2		--на ближний
-		if fun ~= "2" then
-			AvtooborotTBL[fun][StationName][table.Count(AvtooborotTBL[fun][StationName])+1] = str3		--с дальнего
-			AvtooborotTBL[fun][StationName][table.Count(AvtooborotTBL[fun][StationName])+1] = str4		--с ближнего
-		end
 	end
 
 	function createavtooborot()	
 		if Map:find("neocrims") then
-			--[[=============================СТАЛИНСКАЯ ==========================]]
-			createTrigger("st1","Сталинская","4", Vector(-799.596069, -6264.959961, -3994.191650 + 50))	--станция
-			createTrigger("st30","Сталинская","4", Vector(6738.398926 - 1300, -5884.746582, -3982.595459))	--у ближнего светофора
-			createTrigger("st40","Сталинская","4", Vector(6738.398926 - 1300, -5884.746582 +260 , -3982.595459))	--у дальнего светофора
-			createTrigger("st31","Сталинская","4", Vector(6738.398926 - 350, -5884.746582, -3982.595459))		--ближний путь	--расстояние между двумя 1900
-			createTrigger("st32","Сталинская","4", Vector(6738.398926 + 1600, -5884.746582, -3982.595459))
-			createTrigger("st333","Сталинская","4", Vector(6738.398926 + 1600 + 1900, -5884.746582, -3982.595459))
-			createTrigger("st41","Сталинская","4", Vector(6738.398926 - 350, -5884.746582 + 260, -3982.595459))
-			createTrigger("st42","Сталинская","4", Vector(6738.398926 + 1600, -5884.746582 + 260, -3982.595459))
-			createTrigger("st43","Сталинская","4", Vector(6738.398926 + 1600 + 1900, -5884.746582 + 260, -3982.595459))
-			createTrigger("st2","Сталинская","4", Vector(2916.443115, -5629.077148, -4024.620117 +50))
-			createTrigger("st22","Сталинская","4", Vector(2916.443115 - 400, -5629.077148 + 10, -4024.620117 +50))
-			RoutesAvtooborot("Сталинская","4","ST1-4","ST1-3","ST4-2","ST3-2")
+			local StationName = "Сталинская"
+			local fun = "4"
+			createTrigger("TPeredStation1",StationName,fun,Vector(-4136.666504, -6264.695313, -3950))
+			createTrigger("TPeredStation2",StationName,fun,Vector(-4136.666504-200, -6264.695313, -3950))
+			createTrigger("TStationReika",StationName,fun,Vector(-774.843201, -6267.464844, -3950))
+			createTrigger("TStationZaReikoi",StationName,fun,Vector(-774.843201+500, -6267.464844, -3950))
 			
-			--[[=============================БРАТЕЕВО ==========================]]
-			createTrigger("br1","Братеево","4", Vector(-14735.519531, -9313.416016 +4800 + 1900, -1478.274414-20))	--станция
-			createTrigger("br30", "Братеево","4",Vector(-14735.519531, -9313.416016, -1478.274414-20))	--у ближнего светофора
-			createTrigger("br40","Братеево","4", Vector(-14735.519531 + 600, -9313.416016 - 400, -1478.274414-20))	--у дальнего светофора
-			createTrigger("br3", "Братеево","4",Vector(-14735.519531, -9313.416016 - 1900, -1478.274414-20))		--ближний путь	--расстояние между двумя 1900
-			createTrigger("br33","Братеево", "4",Vector(-14735.519531, -9313.416016 - 1900 - 1900, -1478.274414-20))
-			createTrigger("br333","Братеево","4", Vector(-14735.519531, -9313.416016 - 1900 - 1900 - 1900, -1478.274414-20))
-			createTrigger("br4", "Братеево","4",Vector(-14735.519531 + 600, -9313.416016 - 400 - 1900, -1478.274414-20))
-			createTrigger("br44","Братеево", "4",Vector(-14735.519531 + 600, -9313.416016 - 400 - 1900 - 1900, -1478.274414-20))
-			createTrigger("br444","Братеево", "4",Vector(-14735.519531 + 600, -9313.416016 - 400 - 1900 - 1900 -1900, -1478.274414-20))
-			createTrigger("br2","Братеево", "4",Vector(-14735.519531 + 600, -9313.416016 + 4100, -1478.274414-20))
-			createTrigger("br22","Братеево", "4",Vector(-14735.519531 + 600, -9313.416016 + 4100 + 500, -1478.274414))
-			RoutesAvtooborot("Братеево","4","BR2-1","BR2-2","BR1-1","BR1-2")
-			createTrigger("obnovlenie","Братеево","4", Vector(11817.193359, -405.242218, -1466.181519 + 20-20))
+			createTrigger("TNearDeadSvetofor",StationName,fun,Vector(-774.843201+3150, -6267.464844, -3950))
+			createTrigger("TNearDead1",StationName,fun,Vector(-774.843201+3150+1900*1, -6267.464844, -3950))
+			createTrigger("TNearDead2",StationName,fun,Vector(-774.843201+3150+1900*2, -6267.464844, -3950))
+			createTrigger("TNearDead3",StationName,fun,Vector(-774.843201+3150+1900*3, -6267.464844, -3950))
+			
+			createTrigger("TFarSvetofor",StationName,fun,Vector(-774.843201+6300, -6267+380+260, -3950))
+			createTrigger("TFar1",StationName,fun,Vector(-774.843201+6300+1900*1, -6267+380+260, -3950))
+			createTrigger("TFar2",StationName,fun,Vector(-774.843201+6300+1900*2, -6267+380+260, -3950))
+			createTrigger("TFar3",StationName,fun,Vector(-774.843201+6300+1900*3-600, -6267+380+260, -3950))
+			
+			createTrigger("TNearSvetofor",StationName,fun,Vector(-774.843201+6300, -6267+380, -3950))
+			createTrigger("TNear1",StationName,fun,Vector(-774.843201+6300+1900*1, -6267+380, -3950))
+			createTrigger("TNear2",StationName,fun,Vector(-774.843201+6300+1900*2, -6267+380, -3950))
+			createTrigger("TNear3",StationName,fun,Vector(-774.843201+6300+1900*3-600, -6267+380, -3950))
+			
+			createTrigger("TFarDeadSvetofor",StationName,fun,Vector(-774.843201+3150, -6267+1010, -3950))
+			createTrigger("TFarDead1",StationName,fun,Vector(-774.843201+3150+1900*1, -6267+1010, -3950))
+			createTrigger("TFarDead2",StationName,fun,Vector(-774.843201+3150+1900*2, -6267+1010, -3950))
+			createTrigger("TFarDead3",StationName,fun,Vector(-774.843201+3150+1900*3, -6267+1010, -3950))
+
+			createTrigger("TEnd1",StationName,fun,Vector(-774.843201+700, -6267+1010, -3950))
+			createTrigger("TEnd2",StationName,fun,Vector(-774.843201+700-200, -6267+1010, -3950))
+			
+			AvtooborotTBL[fun][StationName]["RouteToFar"] = "ST1-4"
+			AvtooborotTBL[fun][StationName]["RouteToNear"] = "ST1-3"
+			AvtooborotTBL[fun][StationName]["RouteFromFar"] = "ST4-2"
+			AvtooborotTBL[fun][StationName]["RouteFromNear"] = "ST3-2"
+			AvtooborotTBL[fun][StationName]["RouteFromNearDead"] = "STE-1"
+			AvtooborotTBL[fun][StationName]["RouteFromFarDead"] = "STG-2"
+			
+			
+			StationName = "Братеево"
+			createTrigger("TPeredStation1",StationName,fun,Vector(-14578+10, 1506+200, -1442))
+			createTrigger("TPeredStation2",StationName,fun,Vector(-14578+20, 1506+200+200, -1442))
+			createTrigger("TStationReika",StationName,fun,Vector(-14578+10, 1506, -1442))
+			createTrigger("TStationZaReikoi",StationName,fun,Vector(-14578-160, 1506-5950, -1442))
+			
+			createTrigger("TNearSvetofor",StationName,fun,Vector(-14578-160, 1506-5950-5000, -1442))
+			createTrigger("TNear1",StationName,fun,Vector(-14578-160, 1506-5950-5000-1900*1, -1442))
+			createTrigger("TNear2",StationName,fun,Vector(-14578-160, 1506-5950-5000-1900*2, -1442))
+			createTrigger("TNear3",StationName,fun,Vector(-14578-160, 1506-5950-5000-1900*3, -1442))
+			
+			createTrigger("TFarSvetofor",StationName,fun,Vector(-14578+450, 1506-5950-5400, -1442))
+			createTrigger("TFar1",StationName,fun,Vector(-14578+450, 1506-5950-5400-1900*1, -1442))
+			createTrigger("TFar2",StationName,fun,Vector(-14578+450, 1506-5950-5400-1900*2, -1442))
+			createTrigger("TFar3",StationName,fun,Vector(-14578+450, 1506-5950-5400-1900*3, -1442))
+			
+			createTrigger("TEnd1",StationName,fun,Vector(-14578+450, 1506-6700, -1442))
+			createTrigger("TEnd2",StationName,fun,Vector(-14578+450, 1506-6700+200, -1442))
+			
+			AvtooborotTBL[fun][StationName]["TNearDeadSvetofor"] = {}
+			AvtooborotTBL[fun][StationName]["TNearDead1"] = {}
+			AvtooborotTBL[fun][StationName]["TNearDead2"] = {}
+			AvtooborotTBL[fun][StationName]["TNearDead3"] = {}
+			AvtooborotTBL[fun][StationName]["TFarDeadSvetofor"] = {}
+			AvtooborotTBL[fun][StationName]["TFarDead1"] = {}
+			AvtooborotTBL[fun][StationName]["TFarDead2"] = {}
+			AvtooborotTBL[fun][StationName]["TFarDead3"] = {}
+			
+			AvtooborotTBL[fun][StationName]["RouteToFar"] = "BR2-1"
+			AvtooborotTBL[fun][StationName]["RouteToNear"] = "BR2-2"
+			AvtooborotTBL[fun][StationName]["RouteFromNear"] = "BR1-2"
+			AvtooborotTBL[fun][StationName]["RouteFromFar"] = "BR1-1"
 		end
 		
-		if stringfind(Map,"rural") and stringfind(Map,"29") then
-			createTrigger("st1","МаркетСтрит","4", Vector(-1901.142090, 15205.250000, -16247.982422 + 50))	--станция
-			createTrigger("st30","МаркетСтрит", "4",Vector(-1901.142090 - 7550, 15205.250000, -16247.982422 + 50))	--у ближнего светофора
-			createTrigger("st40","МаркетСтрит", "4",Vector(-1901.142090 - 7550, 15205.250000 - 270, -16247.982422 + 50))	--у дальнего светофора
-			createTrigger("st31","МаркетСтрит", "4",Vector(-1901.142090 - 7550 - 1000*1, 15205.250000, -16247.982422 + 50))		--ближний путь	--расстояние между двумя 1900
-			createTrigger("st32","МаркетСтрит", "4",Vector(-1901.142090 - 7550 - 1000*2, 15205.250000, -16247.982422 + 50))
-			createTrigger("st33","МаркетСтрит", "4",Vector(-1901.142090 - 7550 - 1000*3, 15205.250000, -16247.982422 + 50))
-			createTrigger("st41","МаркетСтрит", "4",Vector(-1901.142090 - 7550 - 1000*1, 15205.250000 - 270, -16247.982422 + 50))
-			createTrigger("st42","МаркетСтрит", "4",Vector(-1901.142090 - 7550 - 1000*2, 15205.250000 - 270, -16247.982422 + 50))
-			createTrigger("st43","МаркетСтрит", "4",Vector(-1901.142090 - 7550 - 1000*3, 15205.250000 - 270, -16247.982422 + 50))
-			createTrigger("st2","МаркетСтрит", "4",Vector(-1901.142090 - 7550 + 2100, 15205.250000 - 270, -16247.982422 + 50))
-			createTrigger("st22","МаркетСтрит", "4",Vector(-1901.142090 - 7550 + 2300, 15205.250000 - 270, -16247.982422 + 50))
-			RoutesAvtooborot("МаркетСтрит","4","MS2-3","MS2-4","MS3-1","MS4-1")
-			
-			createTrigger("Из депо","Роклейк", "2",Vector(-4435.384766, -14238.708008, -13842.546875)) -- на станции
-			createTrigger("Светофор","Роклейк", "2",Vector(-13116.465820, -6903.582031, -13804.361328))
-			createTrigger("Станция1","Роклейк", "2",Vector(-13116.465820, -6903.582031 + 900*1, -13804.361328))
-			createTrigger("Станция2","Роклейк", "2",Vector(-13116.465820, -6903.582031 + 900*2, -13804.361328))
-			createTrigger("Станция3","Роклейк", "2",Vector(-13116.465820, -6903.582031 + 900*3, -13804.361328))
-			createTrigger("Со станции1","Роклейк", "2",Vector(-13116.465820, -6903.582031 - 1200, -13804.361328))
-			createTrigger("Со станции2","Роклейк", "2",Vector(-13116.465820, -6903.582031 - 1200 - 200, -13804.361328))
-			RoutesAvtooborot("Роклейк", "2","RL1-2","RL2-2")
-		end
 		PrintTable(AvtooborotTBL)
 	end
 
@@ -141,88 +145,221 @@ if SERVER then
 	SendAvtooborot(-1)
 	timer.Simple(2, function() createavtooborot() end)
 
-	local function dva(chetiretbl)
-		if IsEntity(chetiretbl[8]) and not IsValid(chetiretbl[8]) then chetiretbl[8] = false end
-		if IsEntity(chetiretbl[9]) and not IsValid(chetiretbl[9]) then chetiretbl[9] = false end
-		
-		if chetiretbl[7].zanyat and not chetiretbl[6].zanyat then																												--если выехал из тупика
-			for k,v in pairs(chetiretbl[7].zanyat.WagonList) do																													--вообще тут лучше сделать через elseif, но я сделал так на всякийслучай
-				if v == chetiretbl[9] then chetiretbl[9] = false end											
-			end
-		end
-		if chetiretbl[3].zanyat or chetiretbl[4].zanyat or chetiretbl[5].zanyat then																											--если состав появился в тупике
-			chetiretbl[9] = chetiretbl[3].zanyat and chetiretbl[3].zanyat or (chetiretbl[4].zanyat and chetiretbl[4].zanyat or chetiretbl[5].zanyat)
-			if not chetiretbl[2].zanyat then 
-				if chetiretbl[8] then
-					for k,v in pairs(chetiretbl[3].zanyat and chetiretbl[3].zanyat.WagonList or (chetiretbl[4].zanyat and chetiretbl[4].zanyat.WagonList or chetiretbl[5].zanyat.WagonList)) do
-						if v == chetiretbl[8] then chetiretbl[8] = false end
-					end
-				end
-				if not chetiretbl[8] then
-					ForAvtooborot(chetiretbl[11])
-				end
-			end			
-		end
-		if chetiretbl[1].zanyat and not chetiretbl[8] then																													--если приехал на станцию
-			if not chetiretbl[9] then				--если оба тупика свободны
-				chetiretbl[8] = chetiretbl[1].zanyat
-				ForAvtooborot(chetiretbl[10])
-			end
-		end
-		return chetiretbl
-	end
-	
 	local function chetire(chetiretbl)
-		if IsEntity(chetiretbl[10 + 2]) and not IsValid(chetiretbl[10 + 2]) then chetiretbl[10 + 2] = false end
-		if IsEntity(chetiretbl[11 + 2]) and not IsValid(chetiretbl[11 + 2]) then chetiretbl[11 + 2] = false end
-		if IsEntity(chetiretbl[12 + 2]) and not IsValid(chetiretbl[12 + 2]) then chetiretbl[12 + 2] = false end
+		if IsEntity(chetiretbl["Station"]) and not IsValid(chetiretbl["Station"]) then chetiretbl["Station"] = false chetiretbl["OpenedFromStation"] = false end
+		if IsEntity(chetiretbl["Near"]) and not IsValid(chetiretbl["Near"]) then chetiretbl["Near"] = false chetiretbl["OpenedFromNear"] = false end
+		if IsEntity(chetiretbl["Far"]) and not IsValid(chetiretbl["Far"]) then chetiretbl["Far"] = false chetiretbl["OpenedFromFar"] = false end
+		if IsEntity(chetiretbl["FarDead"]) and not IsValid(chetiretbl["FarDead"]) then chetiretbl["FarDead"] = false chetiretbl["OpenedFromFarDead"] = false end
+		if IsEntity(chetiretbl["NearDead"]) and not IsValid(chetiretbl["NearDead"]) then chetiretbl["NearDead"] = false chetiretbl["OpenedFromNearDead"] = false end
 		
-		if chetiretbl[9 + 2].zanyat and not chetiretbl[8 + 2].zanyat then																												--если выехал из тупика
-			for k,v in pairs(chetiretbl[9 + 2].zanyat.WagonList) do
-				if v == chetiretbl[11 + 2] then chetiretbl[11 + 2] = false end																														--вообще тут лучше сделать через elseif, но я сделал так на всякийслучай
-				if v == chetiretbl[12 + 2] then chetiretbl[12 + 2] = false end											
+		if chetiretbl["TEnd2"].zanyat and not chetiretbl["TEnd1"].zanyat and (chetiretbl["Near"] or chetiretbl["Far"] or chetiretbl["FarDead"]) then																												--если выехал из тупика
+			for k,v in pairs(chetiretbl["TEnd2"].zanyat.WagonList) do
+				if v == chetiretbl["Near"] then chetiretbl["Near"] = false chetiretbl["OpenedFromNear"] = false end																														--вообще тут лучше сделать через elseif, но я сделал так на всякийслучай
+				if v == chetiretbl["Far"] then chetiretbl["Far"] = false chetiretbl["OpenedFromFar"] = false end											
+				if v == chetiretbl["FarDead"] then chetiretbl["FarDead"] = false chetiretbl["OpenedFromFarDead"] = false end											
 			end
 		end
 		
-		if chetiretbl[5 + 2].zanyat or chetiretbl[6 + 2].zanyat or chetiretbl[7 + 2].zanyat then																											--если состав появился в дальнем тупике
-			chetiretbl[12 + 2] = chetiretbl[5+2].zanyat and chetiretbl[5+2].zanyat or (chetiretbl[6+2].zanyat and chetiretbl[6+2].zanyat or chetiretbl[7+2].zanyat)
-			if not chetiretbl[3].zanyat then 
-				if chetiretbl[10 + 2] then
-					for k,v in pairs(chetiretbl[5+2].zanyat and chetiretbl[5+2].zanyat.WagonList or (chetiretbl[6+2].zanyat and chetiretbl[6+2].zanyat.WagonList or chetiretbl[7+2].zanyat.WagonList)) do
-						if v == chetiretbl[10 + 2] then chetiretbl[10 + 2] = false end
+		if chetiretbl["TStationReika"].zanyat and not chetiretbl["TStationZaReikoi"].zanyat and (chetiretbl["Near"] or chetiretbl["Far"] or chetiretbl["NearDead"]) then																												--если выехал из тупика в неправильном
+			for k,v in pairs(chetiretbl["TStationReika"].zanyat.WagonList) do
+				if v == chetiretbl["Near"] then chetiretbl["Near"] = false chetiretbl["OpenedFromNear"] = false end																														--вообще тут лучше сделать через elseif, но я сделал так на всякийслучай
+				if v == chetiretbl["Far"] then chetiretbl["Far"] = false chetiretbl["OpenedFromFar"] = false end
+				if v == chetiretbl["NearDead"] then chetiretbl["NearDead"] = false chetiretbl["OpenedFromNearDead"] = false end
+			end
+		end
+		
+		if chetiretbl["TPeredStation2"].zanyat and not chetiretbl["TPeredStation1"].zanyat and chetiretbl["Station"] then
+			for k,v in pairs(chetiretbl["TPeredStation2"].zanyat.WagonList) do
+				if v == chetiretbl["Station"] then chetiretbl["Station"] = false chetiretbl["OpenedFromStation"] = false end
+			end
+		end
+		
+		if chetiretbl["TNearDead1"].zanyat or chetiretbl["TNearDead2"].zanyat or chetiretbl["TNearDead3"].zanyat then													--если появился в ближайшем тупике (не оборотном)
+			chetiretbl["NearDead"] = chetiretbl["TNearDead1"].zanyat or chetiretbl["TNearDead2"].zanyat or chetiretbl["TNearDead3"].zanyat
+			if not chetiretbl["TNearDeadSvetofor"].zanyat then
+				if chetiretbl["Station"] then
+					for k,v in pairs(chetiretbl["NearDead"].WagonList) do
+						if v == chetiretbl["Station"] then chetiretbl["Station"] = false chetiretbl["OpenedFromStation"] = false end
 					end
 				end
-				if not chetiretbl[10 + 2] and not chetiretbl[11 + 2] then
-					ForAvtooborot(chetiretbl[15 + 2])
+				if not chetiretbl["Station"] and not chetiretbl["OpenedFromFar"] and not chetiretbl["OpenedFromNear"] then
+					if not chetiretbl["OpenedFromNearDead"] then ForAvtooborot(chetiretbl["RouteFromNearDead"]) chetiretbl["OpenedFromNearDead"] = true end
+				end
+			end
+		end
+		
+		if chetiretbl["TFar1"].zanyat or chetiretbl["TFar2"].zanyat or chetiretbl["TFar3"].zanyat then																											--если состав появился в дальнем тупике
+			chetiretbl["Far"] = chetiretbl["TFar1"].zanyat or chetiretbl["TFar2"].zanyat or chetiretbl["TFar3"].zanyat
+			if not chetiretbl["TFarSvetofor"].zanyat then 
+				if chetiretbl["Station"] then
+					for k,v in pairs(chetiretbl["Far"].WagonList) do
+						if v == chetiretbl["Station"] then 
+							chetiretbl["Station"] = false 
+							chetiretbl["OpenedFromStation"] = false 
+							if chetiretbl["NearDead"] and not chetiretbl["TNearDeadSvetofor"].zanyat and not chetiretbl["TStationReika"].zanyat and not chetiretbl["TStationZaReikoi"].zanyat and not chetiretbl["TPeredStation1"].zanyat and not chetiretbl["TPeredStation2"].zanyat then
+								ForAvtooborot(chetiretbl["RouteFromNearDead"])
+								chetiretbl["OpenedFromNearDead"] = true
+							end
+						end
+					end
+				end
+				if not chetiretbl["Station"] and not chetiretbl["Near"] and not chetiretbl["OpenedFromFarDead"] then
+					if not chetiretbl["OpenedFromFar"] then ForAvtooborot(chetiretbl["RouteFromFar"]) chetiretbl["OpenedFromFar"] = true end
 				end
 			end			
 		end
 			
-		if chetiretbl[2 + 2].zanyat or chetiretbl[3 + 2].zanyat or chetiretbl[4 + 2].zanyat then																										--если состав появился в ближнеи тупике
-			chetiretbl[11 + 2] = chetiretbl[2+2].zanyat and chetiretbl[2+2].zanyat or (chetiretbl[3+2].zanyat and chetiretbl[3+2].zanyat or chetiretbl[4+2].zanyat)
-			if not chetiretbl[2].zanyat then 
-				if chetiretbl[10 + 2] then
-					for k,v in pairs(chetiretbl[2+2].zanyat and chetiretbl[2+2].zanyat.WagonList or (chetiretbl[3+2].zanyat and chetiretbl[3+2].zanyat.WagonList or chetiretbl[4+2].zanyat.WagonList)) do
-						if v == chetiretbl[10 + 2] then chetiretbl[10 + 2] = false end
+		if chetiretbl["TNear1"].zanyat or chetiretbl["TNear2"].zanyat or chetiretbl["TNear3"].zanyat then																										--если состав появился в ближнеи тупике
+			chetiretbl["Near"] = chetiretbl["TNear1"].zanyat or chetiretbl["TNear2"].zanyat or chetiretbl["TNear3"].zanyat
+			if not chetiretbl["TNearSvetofor"].zanyat then 
+				if chetiretbl["Station"] then
+					for k,v in pairs(chetiretbl["Near"].WagonList) do
+						if v == chetiretbl["Station"] then
+							chetiretbl["Station"] = false 
+							chetiretbl["OpenedFromStation"] = false 
+							if chetiretbl["NearDead"] and not chetiretbl["TNearDeadSvetofor"].zanyat and not chetiretbl["TStationReika"].zanyat and not chetiretbl["TStationZaReikoi"].zanyat and not chetiretbl["TPeredStation1"].zanyat and not chetiretbl["TPeredStation2"].zanyat then
+								ForAvtooborot(chetiretbl["RouteFromNearDead"])
+								chetiretbl["OpenedFromNearDead"] = true
+							end
+						end
 					end
 				end
-				if not chetiretbl[10 + 2] and not chetiretbl[12 + 2] then
-					ForAvtooborot(chetiretbl[16 + 2])
+				if not chetiretbl["Station"] and not chetiretbl["Far"] and not chetiretbl["OpenedFromFarDead"] then
+					if not chetiretbl["OpenedFromNear"] then ForAvtooborot(chetiretbl["RouteFromNear"]) chetiretbl["OpenedFromNear"] = true end
 				end
 			end	
 		end
-
-		if chetiretbl[1].zanyat and not chetiretbl[10 + 2] then																													--если приехал на станцию
-			if not chetiretbl[11 + 2] and not chetiretbl[12 + 2] then				--если оба тупика свободны
-				chetiretbl[10 + 2] = chetiretbl[1].zanyat
-				ForAvtooborot(chetiretbl[13 + 2])
-			elseif not chetiretbl[11 + 2] and chetiretbl[12 + 2] then																--если дальний занят и ближний свободен
-				chetiretbl[10 + 2] = chetiretbl[1].zanyat
-				ForAvtooborot(chetiretbl[14 + 2])
+		
+		if chetiretbl["TFarDead1"].zanyat or chetiretbl["TFarDead2"].zanyat or chetiretbl["TFarDead3"].zanyat then													--если появился в дальнем тупике (не оборотном)
+			chetiretbl["FarDead"] = chetiretbl["TFarDead1"].zanyat or chetiretbl["TFarDead2"].zanyat or chetiretbl["TFarDead3"].zanyat
+			if not chetiretbl["TFarDeadSvetofor"].zanyat then
+				if not chetiretbl["OpenedFromFar"] and not chetiretbl["OpenedFromNear"] then
+					if not chetiretbl["OpenedFromFarDead"] then ForAvtooborot(chetiretbl["RouteFromFarDead"]) chetiretbl["OpenedFromFarDead"] = true end
+				end
 			end
 		end
 		
-		return chetiretbl
+		if chetiretbl["TStationReika"].zanyat and not chetiretbl["Station"] and not chetiretbl["TStationZaReikoi"].zanyat then																	--если приехал на станцию
+			if not chetiretbl["Near"] and not chetiretbl["Far"] then				--если оба тупика свободны
+				chetiretbl["Station"] = chetiretbl["TStationReika"].zanyat
+				if not chetiretbl["OpenedFromStation"] then ForAvtooborot(chetiretbl["RouteToFar"]) chetiretbl["OpenedFromStation"] = true end
+			elseif not chetiretbl["Near"] and chetiretbl["Far"] then																--если дальний занят и ближний свободен
+				chetiretbl["Station"] = chetiretbl["TStationReika"].zanyat
+				if not chetiretbl["OpenedFromStation"] then ForAvtooborot(chetiretbl["RouteToNear"]) chetiretbl["OpenedFromStation"] = true end
+			end
+		end
+		
+		--return chetiretbl
+	end
+	
+	local function dva(chetiretbl)
+		if IsEntity(chetiretbl["Station"]) and not IsValid(chetiretbl["Station"]) then chetiretbl["Station"] = false chetiretbl["OpenedFromStation"] = false end
+		--if IsEntity(chetiretbl["Near"]) and not IsValid(chetiretbl["Near"]) then chetiretbl["Near"] = false chetiretbl["OpenedFromNear"] = false end
+		if IsEntity(chetiretbl["Far"]) and not IsValid(chetiretbl["Far"]) then chetiretbl["Far"] = false chetiretbl["OpenedFromFar"] = false end
+		--if IsEntity(chetiretbl["FarDead"]) and not IsValid(chetiretbl["FarDead"]) then chetiretbl["FarDead"] = false chetiretbl["OpenedFromFarDead"] = false end
+		if IsEntity(chetiretbl["NearDead"]) and not IsValid(chetiretbl["NearDead"]) then chetiretbl["NearDead"] = false chetiretbl["OpenedFromNearDead"] = false end
+		
+		if chetiretbl["TEnd2"].zanyat and not chetiretbl["TEnd1"].zanyat and (chetiretbl["Far"]) then																												--если выехал из тупика
+			for k,v in pairs(chetiretbl["TEnd2"].zanyat.WagonList) do
+				--if v == chetiretbl["Near"] then chetiretbl["Near"] = false chetiretbl["OpenedFromNear"] = false end																														--вообще тут лучше сделать через elseif, но я сделал так на всякийслучай
+				if v == chetiretbl["Far"] then chetiretbl["Far"] = false chetiretbl["OpenedFromFar"] = false end											
+				--if v == chetiretbl["FarDead"] then chetiretbl["FarDead"] = false chetiretbl["OpenedFromFarDead"] = false end											
+			end
+		end
+		
+		if chetiretbl["TStationReika"].zanyat and not chetiretbl["TStationZaReikoi"].zanyat and (--[[chetiretbl["Near"] or]] chetiretbl["Far"] or chetiretbl["NearDead"]) then																												--если выехал из тупика в неправильном
+			for k,v in pairs(chetiretbl["TStationReika"].zanyat.WagonList) do
+				--if v == chetiretbl["Near"] then chetiretbl["Near"] = false chetiretbl["OpenedFromNear"] = false end																														--вообще тут лучше сделать через elseif, но я сделал так на всякийслучай
+				if v == chetiretbl["Far"] then chetiretbl["Far"] = false chetiretbl["OpenedFromFar"] = false end
+				if v == chetiretbl["NearDead"] then chetiretbl["NearDead"] = false chetiretbl["OpenedFromNearDead"] = false end
+			end
+		end
+		
+		if chetiretbl["TPeredStation2"].zanyat and not chetiretbl["TPeredStation1"].zanyat and chetiretbl["Station"] then
+			for k,v in pairs(chetiretbl["TPeredStation2"].zanyat.WagonList) do
+				if v == chetiretbl["Station"] then chetiretbl["Station"] = false chetiretbl["OpenedFromStation"] = false print("alo") end
+			end
+		end
+		
+		if chetiretbl["TNearDead1"].zanyat or chetiretbl["TNearDead2"].zanyat or chetiretbl["TNearDead3"].zanyat then													--если появился в ближайшем тупике (не оборотном)
+			chetiretbl["NearDead"] = chetiretbl["TNearDead1"].zanyat or chetiretbl["TNearDead2"].zanyat or chetiretbl["TNearDead3"].zanyat
+			if not chetiretbl["TNearDeadSvetofor"].zanyat then
+				if chetiretbl["Station"] then
+					for k,v in pairs(chetiretbl["NearDead"].WagonList) do
+						if v == chetiretbl["Station"] then chetiretbl["Station"] = false chetiretbl["OpenedFromStation"] = false end
+					end
+				end
+				if not chetiretbl["Station"] and not chetiretbl["OpenedFromFar"] and --[[not chetiretbl["OpenedFromNear"] and]] not chetiretbl["OpenedFromNearDead"] then
+					if not chetiretbl["OpenedFromNearDead"] then ForAvtooborot(chetiretbl["RouteFromNearDead"]) chetiretbl["OpenedFromNearDead"] = true end
+				end
+			end
+		end
+		
+		if chetiretbl["TFar1"].zanyat or chetiretbl["TFar2"].zanyat or chetiretbl["TFar3"].zanyat then																											--если состав появился в дальнем тупике
+			chetiretbl["Far"] = chetiretbl["TFar1"].zanyat or chetiretbl["TFar2"].zanyat or chetiretbl["TFar3"].zanyat
+			if not chetiretbl["TFarSvetofor"].zanyat then 
+				if chetiretbl["Station"] then
+					for k,v in pairs(chetiretbl["Far"].WagonList) do
+						if v == chetiretbl["Station"] then 
+							chetiretbl["Station"] = false 
+							chetiretbl["OpenedFromStation"] = false 
+							if chetiretbl["NearDead"] and not chetiretbl["TNearDeadSvetofor"].zanyat and not chetiretbl["TStationReika"].zanyat and not chetiretbl["TStationZaReikoi"].zanyat and not chetiretbl["TPeredStation1"].zanyat and not chetiretbl["TPeredStation2"].zanyat then
+								ForAvtooborot(chetiretbl["RouteFromNearDead"])
+								chetiretbl["OpenedFromNearDead"] = true
+							end
+						end
+					end
+				end
+				if not chetiretbl["Station"] and --[[not chetiretbl["Near"] and]] not chetiretbl["OpenedFromFar"] and not chetiretbl["OpenedFromFarDead"] then
+					if not chetiretbl["OpenedFromFar"] then ForAvtooborot(chetiretbl["RouteFromFar"]) chetiretbl["OpenedFromFar"] = true end
+				end
+			end			
+		end
+			
+		--[[if chetiretbl["TNear1"].zanyat or chetiretbl["TNear2"].zanyat or chetiretbl["TNear3"].zanyat then																										--если состав появился в ближнеи тупике
+			chetiretbl["Near"] = chetiretbl["TNear1"].zanyat or chetiretbl["TNear2"].zanyat or chetiretbl["TNear3"].zanyat
+			if not chetiretbl["TNearSvetofor"].zanyat then 
+				if chetiretbl["Station"] then
+					for k,v in pairs(chetiretbl["Near"].WagonList) do
+						if v == chetiretbl["Station"] then
+							chetiretbl["Station"] = false 
+							chetiretbl["OpenedFromStation"] = false 
+							if chetiretbl["NearDead"] and not chetiretbl["TNearDeadSvetofor"].zanyat and not chetiretbl["TStationReika"].zanyat and not chetiretbl["TStationZaReikoi"].zanyat and not chetiretbl["TPeredStation1"].zanyat and not chetiretbl["TPeredStation2"].zanyat then
+								ForAvtooborot(chetiretbl["RouteFromNearDead"])
+								chetiretbl["OpenedFromNearDead"] = true
+							end
+						end
+					end
+				end
+				if not chetiretbl["Station"] and not chetiretbl["Far"] and not chetiretbl["OpenedFromNear"]  and not chetiretbl["OpenedFromFarDead"] then
+					ForAvtooborot(chetiretbl["RouteFromNear"])
+					chetiretbl["OpenedFromNear"] = true
+				end
+			end	
+		end
+		
+		if chetiretbl["TFarDead1"].zanyat or chetiretbl["TFarDead2"].zanyat or chetiretbl["TFarDead3"].zanyat then													--если появился в дальнем тупике (не оборотном)
+			chetiretbl["FarDead"] = chetiretbl["TFarDead1"].zanyat or chetiretbl["TFarDead2"].zanyat or chetiretbl["TFarDead3"].zanyat
+			if not chetiretbl["TFarDeadSvetofor"].zanyat then
+				if not chetiretbl["OpenedFromFar"] and not chetiretbl["OpenedFromNear"] and not chetiretbl["OpenedFromFarDead"] then
+					ForAvtooborot(chetiretbl["RouteFromFarDead"])
+					chetiretbl["OpenedFromFarDead"] = true
+				end
+			end
+		end]]
+		
+		if chetiretbl["TStationReika"].zanyat and not chetiretbl["Station"] and not chetiretbl["TStationZaReikoi"].zanyat then																	--если приехал на станцию
+			if --[[not chetiretbl["Near"] and]] not chetiretbl["Far"] and not chetiretbl["OpenedFromStation"] then				--если оба тупика свободны
+				chetiretbl["Station"] = chetiretbl["TStationReika"].zanyat
+				if not chetiretbl["OpenedFromStation"] then ForAvtooborot(chetiretbl["RouteToFar"]) chetiretbl["OpenedFromStation"] = true end
+			--[[elseif not chetiretbl["Near"] and chetiretbl["Far"] and not chetiretbl["OpenedFromStation"] then																--если дальний занят и ближний свободен
+				chetiretbl["Station"] = chetiretbl["TStationReika"].zanyat
+				ForAvtooborot(chetiretbl["RouteToNear"])
+				chetiretbl["OpenedFromStation"] = true]]
+			end
+		end
+		
+		--return chetiretbl
 	end
 	
 	function UpdateAvtooborot()
@@ -230,18 +367,28 @@ if SERVER then
 		
 		if AvtooborotTBL["4"] then
 			for k,v in pairs(AvtooborotTBL["4"]) do
-				v = chetire(v)
+				--v = chetire(v)
+				chetire(v)
 			end
 			
 			if AvtooborotTBL["4"]["Братеево"] then			--дополнительное условие для братеево. Чтобы по умолчанию стрелка открывалась по отклюнению
-				if not AvtooborotTBL["4"]["Братеево"][12] and not AvtooborotTBL["4"]["Братеево"][13] and not AvtooborotTBL["4"]["Братеево"][14] then ForAvtooborot(AvtooborotTBL["4"]["Братеево"][15]) end	-- значение на братеево по умолчанию
-				if not AvtooborotTBL["4"]["Братеево"][13] and not AvtooborotTBL["4"]["Братеево"][12] and AvtooborotTBL["4"]["Братеево"][14] then ForAvtooborot(AvtooborotTBL["4"]["Братеево"][16]) end
+				if not AvtooborotTBL["4"]["Братеево"]["Station"] and not AvtooborotTBL["4"]["Братеево"]["Near"] and not AvtooborotTBL["4"]["Братеево"]["Far"] --and not AvtooborotTBL["4"]["Братеево"]["OpenedFromStation"] 
+				then
+					ForAvtooborot(AvtooborotTBL["4"]["Братеево"]["RouteToFar"],true)
+					AvtooborotTBL["4"]["Братеево"]["OpenedFromStation"] = true
+				end	-- значение на братеево по умолчанию
+				if not AvtooborotTBL["4"]["Братеево"]["Near"] and not AvtooborotTBL["4"]["Братеево"]["Station"] and AvtooborotTBL["4"]["Братеево"]["Far"] --and not AvtooborotTBL["4"]["Братеево"]["OpenedFromStation"] 
+				then 
+					ForAvtooborot(AvtooborotTBL["4"]["Братеево"]["RouteToNear"],true)
+					AvtooborotTBL["4"]["Братеево"]["OpenedFromStation"] = true
+				end
 			end
 		end
 		
 		if AvtooborotTBL["2"] then
 			for k,v in pairs(AvtooborotTBL["2"]) do
-				v = dva(v)
+				--v = dva(v)
+				dva(v)
 			end
 			
 			if AvtooborotTBL["2"]["Роклейк"] then		--дополнительное условие для роклейка. Чтобы по умолчанию стрелка открывалась по отклюнению

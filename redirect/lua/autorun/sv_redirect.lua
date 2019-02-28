@@ -11,20 +11,20 @@ end
 
 hook.Add("PlayerInitialSpawn","SpawnRedirect",function(ply)
 	timer.Simple(1, function()
-		SendToWebServer({ip = game.GetIPAddress(),count = #player.GetAll(),maxx = game.MaxPlayers()},WebServerUrl,"PlayerCount")
+		SendToWebServer({ip = game.GetIPAddress(),count = player.GetCount(),maxx = game.MaxPlayers()},WebServerUrl,"PlayerCount")
 		if ply:GetUserGroup() == "superadmin" then return
-		elseif game.MaxPlayers() == #player.GetAll() then ulx.redirect(ply)
+		elseif game.MaxPlayers() == player.GetCount() then ulx.redirect(ply)
 		end
 	end)
 end)
 
 hook.Add("PlayerConnect","RedirectConnect",function()
-	SendToWebServer({ip = game.GetIPAddress(),count = #player.GetAll(),maxx = game.MaxPlayers()},WebServerUrl,"PlayerCount")
+	SendToWebServer({ip = game.GetIPAddress(),count = player.GetCount(),maxx = game.MaxPlayers()},WebServerUrl,"PlayerCount")
 end)
 
 hook.Add("PlayerDisconnected","RedirectDisconnect",function()
 	timer.Simple(1,function()
-		SendToWebServer({ip = game.GetIPAddress(),count = #player.GetAll(),maxx = game.MaxPlayers()},WebServerUrl,"PlayerCount")
+		SendToWebServer({ip = game.GetIPAddress(),count = player.GetCount(),maxx = game.MaxPlayers()},WebServerUrl,"PlayerCount")
 	end)
 end)
 
