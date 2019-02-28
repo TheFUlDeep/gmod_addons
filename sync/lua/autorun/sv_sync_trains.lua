@@ -376,7 +376,8 @@ hook.Add("MetrostroiChangedSwitch", "SyncSwitches", function(self,AlternateTrack
 end)
 
 
-function ForAvtooborot(route)
+function ForAvtooborot(route,hidenotif)
+	if not hidenotif then ulx.fancyLog("[АВТООБОРОТ] Собираю маршрут #s",route) end
 	OpenRoute(route)
 	table.insert(RoutesTBL,1,{comm = "!sopen "..route, OsTime = os.clock()})
 	--PrintTable(SopensTBL)
