@@ -60,7 +60,7 @@ if SERVER then
 				if k == HostName or (v.map and v.map ~= Map) then continue end
 				if not v.MainTable then continue end
 				for k1,v1 in pairs(v.MainTable) do
-					v1.ply = "["..(k).."] "..v1.ply
+					v1.ply = "["..(k).."] "..(v1.ply)
 					table.insert(tbl2,1,v1)
 				end
 			end
