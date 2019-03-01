@@ -50,7 +50,7 @@ local function GetFromWebServer(url,typ)
 	end
 	)
 	local tbl2 = {}
-	if not outputTBL[typ] or not istable(outputTBL[typ]) then return {} end
+	if not outputTBL[typ] then return {} end
 	for k,v in pairs(outputTBL[typ]) do
 		if k == HostName or (v.map and v.map ~= Map) then continue end
 		if not v.MainTable then continue end
@@ -76,7 +76,7 @@ local function SendSyncedTrains(arg)
 				model = v1:GetModel(),
 				pos = v1:GetPos(),
 				ang = v1:GetAngles(),
-				Owner = v1:GetOwner()
+				Owner = v1:CPPIGetOwner():Nick()
 			}
 			--[[if stringfind(v1:GetClass(),"base") then continue end
 			if not v1.ClientEnts then continue end
@@ -112,7 +112,7 @@ local function CreateSyncedTrain(index)
 	ent:SetAngles(GetTrainsTBLL[index].ang)
 	ent:SetPersistent(true)
 	ent:SetMoveType(MOVETYPE_FLY)
-	ent:SetNW2String("Owner",GetTrainsTBLL[index].Owner,"N/A Owner")
+	ent:SetNWString("Owner",GetTrainsTBLL[index].Owner)
 	--ent:SetNW2Bool("IsSyncedTrain",true)
 	--ent:SetCollisionGroup(COLLISION_GROUP_NONE)
 	ent:Spawn()
@@ -383,8 +383,9 @@ function ForAvtooborot(route,hidenotif)
 	--PrintTable(SopensTBL)
 end
 
-MetrostroiSyncEnabled = false
-local function SyncTrainsThink()
+MetrostroiSyncEnabled = true
+hook.Remove("Think","SyncTrainsThink")
+function SyncTrainsThink()
 	hook.Add("Think","SyncTrainsThink", function() 
 		if not MetrostroiSyncEnabled then hook.Remove("Think","SyncTrainsThink") end
 		if lasttime + interval > os.clock() then return end
@@ -401,107 +402,5 @@ local function SyncTrainsThink()
 		GetSyncedSwitches(nil)
 	end)
 end
-
 SyncTrainsThink()
 
-
-
---[[										--код передатчика
-<?php
-function getUserIP()
-{
-    // Get real visitor IP behind CloudFlare network
-    if (isset($_SERVER["HTTP_CF_CONNECTING_IP"])) {
-              $_SERVER['REMOTE_ADDR'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
-              $_SERVER['HTTP_CLIENT_IP'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
-    }
-    $client  = @$_SERVER['HTTP_CLIENT_IP'];
-    $forward = @$_SERVER['HTTP_X_FORWARDED_FOR'];
-    $remote  = $_SERVER['REMOTE_ADDR'];
-
-    if(filter_var($client, FILTER_VALIDATE_IP))
-    {
-        $ip = $client;
-    }
-    elseif(filter_var($forward, FILTER_VALIDATE_IP))
-    {
-        $ip = $forward;
-    }
-    else
-    {
-        $ip = $remote;
-    }
-
-    return $ip;
-}
-
-
-//echo $hostname
-
-
-
-
-
-
-if (getUserIP() == gethostbyname("metronorank.ddns.net"))
-{
-	//unlink($fname);
-	//clearstatcache();
-	$gettyp = $_GET["typ"];
-	$posttyp = $_POST["typ"];
-	global $typ;
-	if ($gettyp) $typ = $gettyp; elseif ($posttyp) $typ = $posttyp;
-	if ($typ)
-	{
-		$MainTable = $_POST["MainTable"];
-		$server = $_POST["server"];
-		$map = $_POST["map"];
-		global $fname;
-		$fname = "O:\denwer_tmp\\" . $typ . ".txt";
-		global $a;
-		if ($MainTable)
-		{
-			if ($server)
-			{
-				if ($map)
-				{
-					if (file_exists($fname) == true)
-					{
-						exec('icacls $fname /q /c /r');
-						$a = file_get_contents($fname);	
-						$a = json_decode($a,TRUE);
-					}
-					
-					$b = array(
-						$server => array(
-							"map" => $map,	
-							"MainTable" => json_decode($MainTable)
-						)
-					);
-					
-					if (is_array($a) == true)
-					{
-						if ($a[$server])
-						{
-							$a[$server] = $b[$server];
-						}
-						else
-						{
-							$a = array_merge($a,$b);
-						}
-					}
-					else $a = $b;
-					file_put_contents($fname,json_encode($a));
-				}
-			}
-		}
-
-		if (file_exists($fname) == true)
-		{
-			echo file_get_contents($fname);	
-		}
-	}
-}
-else echo "access denied";
-?>
- ]]

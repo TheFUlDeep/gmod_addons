@@ -99,7 +99,8 @@ if SERVER then
 	
 	local interval = 0.5
 	local lasttime = os.clock()
-	local function SyncChatThink()
+	hook.Remove("Think","SyncChatThink")
+	function SyncChatThink()
 		hook.Add("Think","SyncChatThink",function() 
 			if not MetrostroiSyncEnabled then hook.Remove("Think","SyncChatThink") end
 			if lasttime + interval > os.clock() then return end
