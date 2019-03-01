@@ -14,7 +14,7 @@ local function GetNewTrains()
 		--if not v:GetNW2Bool("IsSyncedTrain",false) then continue end
 		local model = v:GetModel()
 		if model == "models/props_lab/reciever01a.mdl" then continue end
-		table.insert(NewTrainsTBL,1,{model = v:GetModel(), ent = v, })			-- в будущем еще v:GetNW2Bool("headlights") и т.п.
+		table.insert(NewTrainsTBL,1,{model = v:GetModel(), ent = v})			-- в будущем еще v:GetNW2Bool("headlights") и т.п.
 	end
 end
 
@@ -134,10 +134,10 @@ local function UpdateTrains()
 	UpdatePositions()
 end
 
-hook.Add("Think","DrawSyncedTrains",function()
+--[[hook.Add("Think","DrawSyncedTrains",function()
 	GetNewTrains()
-	--UpdateTrains()
-end)
+	UpdateTrains()
+end)]]
 
 hook.Add("HUDPaint","Draw SyncedTrain's owner",function() 
 	if not IsValid(LocalPlayer()) then return end
@@ -145,7 +145,6 @@ hook.Add("HUDPaint","Draw SyncedTrain's owner",function()
 	if not IsValid(ent) then return end
 	if ent:GetClass() ~= "gmod_subway_base" then return end
 	local Owner = ent:GetNWString("Owner","N/A Owner")
-	print(Owner)
 	local w1,h1 = surface.GetTextSize(Owner)
 	draw.RoundedBox(6, 5, ScrH()/2 - 250 - 3, w1*1.8, h1 + 10, Color(0, 0, 0, 150))
 	draw.SimpleText(Owner, "ChatFont",10, ScrH()/2 - 250, Color(255, 255, 255, 255),TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP)
