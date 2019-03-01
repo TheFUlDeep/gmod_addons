@@ -2,7 +2,7 @@
 if SERVER then
 	local WebServerUrl = "http://metronorank.ddns.net/sync/"
 	
-	local function GetFromWebServer(url,typ)
+	local function GetFromWebServer(url,typ,ply)
 		http.Fetch( 
 		url.."?typ="..typ,
 		function (body)
@@ -31,7 +31,7 @@ if SERVER then
 	end	
 	
 	function ulx.redirect(ply)
-		GetFromWebServer(WebServerUrl,"PlayerCount")
+		GetFromWebServer(WebServerUrl,"PlayerCount",ply)
 		--print(GetHostName())
 		--print(redirectip)
 	end
