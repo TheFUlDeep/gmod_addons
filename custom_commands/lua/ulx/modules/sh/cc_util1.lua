@@ -2391,9 +2391,16 @@ function MaximumWagons(ply,self)
 	local Rank = ply:GetUserGroup()
 	local maximum = 6
 	local MetrostroiTrainCount = GetGlobalInt("metrostroi_train_count")
-	if MetrostroiTrainCount > 12 then maximum = 4 end
-	if MetrostroiTrainCount > 21 then maximum = 3 end
-	if MetrostroiTrainCount > 30 then maximum = 2 end
+	local MetrostroiMaxWagons = GetGlobalInt("metrostroi_maxwagons")
+	if MetrostroiTrainCount <= 0 then MetrostroiTrainCount = 1 end
+	if MetrostroiMaxWagons <= 0 then MetrostroiMaxWagons = 1 end
+	if MetrostroiMaxWagons <= MetrostroiTrainCount then return 0 end
+	local percent = MetrostroiTrainCount / MetrostroiMaxWagons 
+	if percent < 0.25 then maximum = 6
+	elseif percent < 0.5 then maximum = 4
+	elseif percent < 0.75 then maximum = 3
+	else maximum = 2
+	end
 	if Rank == "superadmin" then maximum = 6 end
 	if maximum < 4 and (Rank == "operator" or Rank == "admin" or Rank == "zamtsar" or Rank == "tsar") then maximum = 4 end
 	if (stringfind(Map,"mus_crimson_line") or stringfind(Map, "orange")) and maximum > 3 then maximum = 3 end
