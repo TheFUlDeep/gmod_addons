@@ -170,7 +170,7 @@ local function OverWriteUlxCommands()
 		end
 		SetBan(target_ply:SteamID(),target_ply:Nick(),WhoBannedSteamID,WhoBanned,reason,minutes)
 		if IsValid(target_ply) then target_ply:Kick("ВЫ ЗАБАНЕНЫ\nЗабанил "..WhoBanned..", его SteamID: "..WhoBannedSteamID.."\nПричина: "..reason.."\nДлительность: "..minutes.." мин.") end
-		ulx.fancyLogAdmin(calling_ply,"#A забанил игрока #T на #s мин.. Причина #s",target_ply,minutes,reason)
+		ulx.fancyLogAdmin(calling_ply,"#A забанил игрока #T на #i мин.. Причина #s",target_ply,minutes,reason)
 	end
 	local ban = ulx.command( CATEGORY_NAME, "ulx ban", ulx.ban, "!ban", false, false, true )
 	ban:addParam{ type=ULib.cmds.PlayerArg }
