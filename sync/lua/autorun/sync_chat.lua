@@ -60,6 +60,7 @@ if SERVER then
 				if k == HostName or (v.map and v.map ~= Map) then continue end
 				if not v.MainTable then continue end
 				for k1,v1 in pairs(v.MainTable) do
+					v1.ply = "["..(k).."] "..v1.ply
 					table.insert(tbl2,1,v1)
 				end
 			end
@@ -98,12 +99,15 @@ if SERVER then
 	
 	local interval = 0.5
 	local lasttime = os.clock()
-	local ChatSyncEnabled = false
-	hook.Add("Think","SyncChatThink",function() 
-		if not ChatSyncEnabled or lasttime + interval > os.clock() then return end
-		lasttime = os.clock()
-		GetFromWebServer(WebServerUrl,WebServerTyp)
-	end)
+	local function SyncChatThink()
+		hook.Add("Think","SyncChatThink",function() 
+			if not MetrostroiSyncEnabled then hook.Remove("Think","SyncChatThink") end
+			if lasttime + interval > os.clock() then return end
+			lasttime = os.clock()
+			GetFromWebServer(WebServerUrl,WebServerTyp)
+		end)
+	end
+	SyncChatThink()
 end
 
 if CLIENT then

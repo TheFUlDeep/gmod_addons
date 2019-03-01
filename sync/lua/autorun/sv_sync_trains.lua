@@ -383,21 +383,26 @@ function ForAvtooborot(route,hidenotif)
 	--PrintTable(SopensTBL)
 end
 
-local MetrostroiSyncEnabled = false
-hook.Add("Think","SyncTrainsThink", function() 
-	if not MetrostroiSyncEnabled or lasttime + interval > os.clock() then return end
-	lasttime = os.clock()
-	SendSyncedTrains(nil)
-	GetSyncedTrains(nil)
-	
-	CheckRoutes(nil)
-	SendSyncedRoutes(nil)
-	GetSyncedRoutes(nil)
-	
-	CheckSwitchesTBL(nil)
-	SendSyncedSwitches(nil)
-	GetSyncedSwitches(nil)
-end)
+MetrostroiSyncEnabled = false
+local function SyncTrainsThink()
+	hook.Add("Think","SyncTrainsThink", function() 
+		if not MetrostroiSyncEnabled then hook.Remove("Think","SyncTrainsThink") end
+		if lasttime + interval > os.clock() then return end
+		lasttime = os.clock()
+		SendSyncedTrains(nil)
+		GetSyncedTrains(nil)
+		
+		CheckRoutes(nil)
+		SendSyncedRoutes(nil)
+		GetSyncedRoutes(nil)
+		
+		CheckSwitchesTBL(nil)
+		SendSyncedSwitches(nil)
+		GetSyncedSwitches(nil)
+	end)
+end
+
+SyncTrainsThink()
 
 
 

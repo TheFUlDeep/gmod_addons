@@ -426,6 +426,6 @@ if CLIENT then
 		if AvtooborotEnabled == 1 then text = "Автооборот: включен" else text = "Автооборот: выключен" end
 		w1,h1 = surface.GetTextSize(text)
 		draw.RoundedBox(6, ScrW() - w1 - 32, ScrH()/2 - 250 - 4, w1 + 20, h1 + 10, Color(0, 0, 0, 150))
-		draw.SimpleText(text, "ChatFont",ScrW() - 15, ScrH()/2 - 250, Color(255, 255, 255, 255),TEXT_ALIGN_RIGHT,TEXT_ALIGN_TOP)
+		draw.SimpleText(text, "ChatFont",ScrW() - 20, ScrH()/2 - 250, Color(255, 255, 255, 255),TEXT_ALIGN_RIGHT,TEXT_ALIGN_TOP)
 	end)
 end
