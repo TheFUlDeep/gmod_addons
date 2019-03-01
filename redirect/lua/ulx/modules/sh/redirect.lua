@@ -2,41 +2,36 @@
 if SERVER then
 	local WebServerUrl = "http://metronorank.ddns.net/sync/"
 	
-	local outputTBL = {}
 	local function GetFromWebServer(url,typ)
 		http.Fetch( 
 		url.."?typ="..typ,
 		function (body)
-			outputTBL[typ] = {}
+			local outputTBL = {}
 			if body then
-				outputTBL[typ] = util.JSONToTable(body)
+				outputTBL = util.JSONToTable(body)
 			end
-		end,
-		function()
-			outputTBL[typ] = {}
+			if not outputTBL then return end
+			local tbl2 = {}
+			for k,v in pairs(outputTBL) do
+				if not v.MainTable then continue end
+				table.insert(tbl2,1,v.MainTable)
+			end
+			if not tbl2 then return end
+			for k,v in pairs(tbl2) do
+				if not v.ip or not v.count or not v.maxx or v.password then continue end
+				if v.ip:find("0.0.0.0") then continue end
+				if v.ip ~= game.GetIPAddress() and v.count < v.maxx then 
+					ply:SendLua([[LocalPlayer():ConCommand('connect ]]..tostring(v.ip)..[[')]])
+					ulx.fancyLogAdmin(ply, true, "#A был перенаправлен на другой сервер")
+					break
+				end
+			end
 		end
 		)
-		local tbl2 = {}
-		if not outputTBL[typ] or not istable(outputTBL[typ]) then return {} end
-		for k,v in pairs(outputTBL[typ]) do
-			if not v.MainTable then continue end
-			table.insert(tbl2,1,v.MainTable)
-		end
-		return tbl2
 	end	
 	
 	function ulx.redirect(ply)
-		local PlayerCount = GetFromWebServer(WebServerUrl,"PlayerCount")
-		if not PlayerCount then return end
-		for k,v in pairs(PlayerCount) do
-			if not v.ip or not v.count or not v.maxx or v.password then continue end
-			if v.ip:find("0.0.0.0") then continue end
-			if v.ip ~= game.GetIPAddress() and v.count < v.maxx then 
-				ply:SendLua([[LocalPlayer():ConCommand('connect ]]..tostring(v.ip)..[[')]])
-				ulx.fancyLogAdmin(ply, true, "#A был перенаправлен на другой сервер")
-				break
-			end
-		end
+		GetFromWebServer(WebServerUrl,"PlayerCount")
 		--print(GetHostName())
 		--print(redirectip)
 	end
