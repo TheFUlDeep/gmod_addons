@@ -1,4 +1,3 @@
-if CLIENT then return end
 if SERVER then return end
 
 for k,v in pairs(ents.GetAll()) do
@@ -135,18 +134,18 @@ local function UpdateTrains()
 	UpdatePositions()
 end
 
-hook.Add("Think","DrawSyncedTrains",function()
+--[[hook.Add("Think","DrawSyncedTrains",function()
 	GetNewTrains()
 	UpdateTrains()
-end)
+end)]]
 
 hook.Add("HUDPaint","Draw SyncedTrain's owner",function() 
 	if not IsValid(LocalPlayer()) then return end
 	local ent = LocalPlayer():GetEyeTrace().Entity
 	if not IsValid(ent) then return end
-	if ent:Getclass() ~= "gmod_subway_base" then return end
-	local Owner = ent:GetNW2String("Owner","N/A Owner")
+	if ent:GetClass() ~= "gmod_subway_base" then return end
+	local Owner = ent:GetNWString("Owner","N/A Owner")
 	local w1,h1 = surface.GetTextSize(Owner)
-	draw.RoundedBox(6, ScrW() - w1 - 32, ScrH()/2 - 250 - 4, w1 + 20, h1 + 10, Color(0, 0, 0, 150))
-	draw.SimpleText(text, "ChatFont",ScrW() - 15, ScrH()/2 - 250, Color(255, 255, 255, 255),TEXT_ALIGN_RIGHT,TEXT_ALIGN_TOP)
+	draw.RoundedBox(6, 5, ScrH()/2 - 250 - 3, w1*1.8, h1 + 10, Color(0, 0, 0, 150))
+	draw.SimpleText(Owner, "ChatFont",10, ScrH()/2 - 250, Color(255, 255, 255, 255),TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP)
 end)
