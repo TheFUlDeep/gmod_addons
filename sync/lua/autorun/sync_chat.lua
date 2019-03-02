@@ -9,11 +9,11 @@ if SERVER then
 	end
 	
 	local function CheckTableSize(tbl)
-		if tbl and table.Count(tbl) > 20 then
+		if tbl and table.Count(tbl) > 100 then
 			local i = 0
 			for k,v in pairs(tbl) do
 				i = i + 1
-				if i > 20 then tbl[k] = nil end
+				if i > 100 then tbl[k] = nil end
 			end
 		end
 	end
