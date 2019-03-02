@@ -13,16 +13,16 @@ if SERVER then
 			function (body)
 				if not body or body == "" then return end
 				body = util.JSONToTable(body)
-				if body.Rank then body = body.Rank else return end
+				if not body.Rank then return end
 				--print(body)
 				if not IsValid(player.GetBySteamID(SteamID)) then return end
 				local ply = player.GetBySteamID(SteamID)
 				local Rank = ply:GetUserGroup()
-				if Rank == body then return end
-				if body == "user" then 
-					RunConsoleCommand("ulx","removeuserid",SteamID,body)
+				if Rank == body.Rank then return end
+				if body.Rank == "user" then 
+					RunConsoleCommand("ulx","removeuserid",SteamID,body.Rank)
 				else
-					RunConsoleCommand("ulx","adduserid",SteamID,body)
+					RunConsoleCommand("ulx","adduserid",SteamID,body.Rank)
 				end
 				--print("Setting rank "..body.." to "..ply:Nick())
 			end
@@ -111,6 +111,7 @@ if SERVER then
 		--PrintTable(ULib.ucl.groups)
 	--local function OverWriteUlxCommands()
 	--PrintTable(CheckIfBanned("STEAM_0:1:37134658"))
+	
 end
 
 local function OverWriteUlxCommands()
