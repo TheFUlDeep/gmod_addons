@@ -129,6 +129,7 @@ local function DeleteSyncedTrain(index)
 	end
 end
 
+local shetchik3 = 0
 local function GetSyncedTrains(arg)
 	GetTrainsTBLL = GetFromWebServer(WebServerUrl,"trains")
 	if not GetTrainsTBLL then
@@ -143,7 +144,15 @@ local function GetSyncedTrains(arg)
 	end
 	
 	for k,v in pairs(SyncedTrainsTBL) do
-		if not GetTrainsTBLL[k] then DeleteSyncedTrain(k) end
+		if not GetTrainsTBLL[k] then 
+			if shetchik3 == 3 then
+				DeleteSyncedTrain(k) 
+				shetchik3 = 0
+			else
+				shetchik3 = shetchik3 + 1
+				break
+			end
+		end
 	end
 	
 	for k,v in pairs(GetTrainsTBLL) do
