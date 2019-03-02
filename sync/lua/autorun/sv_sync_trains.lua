@@ -76,15 +76,15 @@ local function SendSyncedTrains(arg)
 	end
 end
 
-local function CreateSyncedTrain(index,GetTrainsTBLL)
-	--PrintTable(GetTrainsTBLL)
+local function CreateSyncedTrain(tbl,index)
+	--PrintTable(tbl)
 	local ent = ents.Create( "gmod_subway_base" )
 	ent.name = "SyncedTrain"
-	ent:SetPos(GetTrainsTBLL[index].pos)
-	ent:SetAngles(GetTrainsTBLL[index].ang)
+	ent:SetPos(tbl.pos)
+	ent:SetAngles(tbl.ang)
 	ent:SetPersistent(true)
 	ent:SetMoveType(MOVETYPE_FLY)
-	ent:SetNWString("Owner",GetTrainsTBLL[index].Owner)
+	ent:SetNWString("Owner",tbl.Owner)
 	--ent:SetNW2Bool("IsSyncedTrain",true)
 	--ent:SetCollisionGroup(COLLISION_GROUP_NONE)
 	ent:Spawn()
@@ -110,7 +110,7 @@ local function GetSyncedTrains2(GetTrainsTBLL)
 	end
 	
 	for k,v in pairs(GetTrainsTBLL) do
-		if not SyncedTrainsTBL[k] or not IsValid(SyncedTrainsTBL[k]) then CreateSyncedTrain(k,GetTrainsTBLL) end
+		if not SyncedTrainsTBL[k] or not IsValid(SyncedTrainsTBL[k]) then CreateSyncedTrain(GetTrainsTBLL[k],k) end
 	end
 	
 	for k,v in pairs(SyncedTrainsTBL) do
