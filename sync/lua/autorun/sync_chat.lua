@@ -13,7 +13,7 @@ if SERVER then
 			local i = 0
 			for k,v in pairs(tbl) do
 				i = i + 1
-				if i > 20 then tbl[k] = nil
+				if i > 20 then tbl[k] = nil end
 			end
 		end
 	end
