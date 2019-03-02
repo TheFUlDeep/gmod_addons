@@ -4,16 +4,16 @@ if SERVER then
 	local Map = game.GetMap()
 	local WebServerUrl = "http://metronorank.ddns.net/sync/"
 	local function SendToWebServer(tbl,url,typ)
-		local TableToSend = {MainTable = util.TableToJSON(tbl), server = HostName, map = Map,typ = typ}
+		local TableToSend = {MainTable = util.TableToJSON(tbl), server = GetHostName(), map = Map,typ = typ}
 		http.Post(url, TableToSend)
 	end
 	
 	local function CheckTableSize(tbl)
-		if tbl and table.Count(tbl) > 20 then
+		if tbl and table.Count(tbl) > 100 then
 			local i = 0
 			for k,v in pairs(tbl) do
 				i = i + 1
-				if i > 20 then tbl[k] = nil end
+				if i > 100 then tbl[k] = nil end
 			end
 		end
 	end
@@ -61,7 +61,7 @@ if SERVER then
 			if not tbl then return end
 			local tbl2 = {}
 			for k,v in pairs(tbl) do
-				if k == HostName or (v.map and v.map ~= Map) then continue end
+				if k == GetHostName() or (v.map and v.map ~= Map) then continue end
 				if not v.MainTable then continue end
 				for k1,v1 in pairs(v.MainTable) do
 					v1.ply = "["..(k).."] "..(v1.ply)

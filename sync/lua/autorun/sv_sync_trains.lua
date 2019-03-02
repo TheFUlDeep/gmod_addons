@@ -31,7 +31,7 @@ local HostName = GetHostName()
 local Map = game.GetMap()
 local WebServerUrl = "http://metronorank.ddns.net/sync/"
 local function SendToWebServer(tbl,url,typ)
-	local TableToSend = {MainTable = util.TableToJSON(tbl), server = HostName, map = Map,typ = typ}
+	local TableToSend = {MainTable = util.TableToJSON(tbl), server = GetHostName(), map = Map,typ = typ}
 	http.Post(url, TableToSend)
 end
 
@@ -52,7 +52,7 @@ local function GetFromWebServer(url,typ)
 	if not outputTBL[typ] then return {} end
 	local tbl2 = {}
 	for k,v in pairs(outputTBL[typ]) do
-		if k == HostName or (v.map and v.map ~= Map) then continue end
+		if k == GetHostName() or (v.map and v.map ~= Map) then continue end
 		if not v.MainTable then continue end
 		for k1,v1 in pairs(v.MainTable) do
 			table.insert(tbl2,1,v1)
