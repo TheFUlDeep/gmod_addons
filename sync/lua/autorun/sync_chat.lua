@@ -116,7 +116,7 @@ if SERVER then
 	
 	hook.Add("PlayerConnect","SyncChatPlayerConnect",function(nick)
 		table.insert(ChatTBL,1,{ply = nick,msg = "присоединяется",OsTime = os.clock()})
-		CheckTableSize(ChatTBL)
+		CheckTableSize(ChatTBL,5)
 		SendChatTBL()
 	end)
 	
