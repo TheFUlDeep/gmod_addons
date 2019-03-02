@@ -145,7 +145,7 @@ hook.Add("HUDPaint","Draw SyncedTrain's owner",function()
 	if not IsValid(ent) then return end
 	if ent:GetClass() ~= "gmod_subway_base" then return end
 	local Owner = ent:GetNWString("Owner","N/A Owner")
-	local w1,h1 = surface.GetTextSize(Owner)
-	draw.RoundedBox(6, 5, ScrH()/2 - 250 - 3, w1*1.8, h1 + 10, Color(0, 0, 0, 150))
+	--local w1,h1 = surface.GetTextSize(Owner)
+	--draw.RoundedBox(6, 5, ScrH()/2 - 250 - 3, w1*1.8, h1 + 10, Color(0, 0, 0, 150))
 	draw.SimpleText(Owner, "ChatFont",10, ScrH()/2 - 250, Color(255, 255, 255, 255),TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP)
 end)
