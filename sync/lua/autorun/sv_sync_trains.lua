@@ -4,10 +4,7 @@ local interval = 0.5
 local lasttime = os.clock()
 local SyncedTrainsTBL = {}
 local RoutesTBL = {}
-local GetTrainsTBLL = {}
-local GetSyncedRoutesTbl = {}
 local SwitchesTBL = {}
-local GetSyncedSwitchesTbl = {}
 local TrainsTBL = {}
 local CurTime = os.clock()
 
@@ -33,32 +30,6 @@ local WebServerUrl = "http://metronorank.ddns.net/sync/"
 local function SendToWebServer(tbl,url,typ)
 	local TableToSend = {MainTable = util.TableToJSON(tbl), server = HostName, map = Map,typ = typ}
 	http.Post(url, TableToSend)
-end
-
-local outputTBL = {}
-local function GetFromWebServer(url,typ)
-	http.Fetch( 
-	url.."?typ="..typ,
-	function (body)
-		outputTBL[typ] = {}
-		if body then
-			outputTBL[typ] = util.JSONToTable(body)
-		end
-	end,
-	function()
-		outputTBL[typ] = {}
-	end
-	)
-	local tbl2 = {}
-	if not outputTBL[typ] then return {} end
-	for k,v in pairs(outputTBL[typ]) do
-		if k == HostName or (v.map and v.map ~= Map) then continue end
-		if not v.MainTable then continue end
-		for k1,v1 in pairs(v.MainTable) do
-			table.insert(tbl2,1,v1)
-		end
-	end
-	return tbl2
 end
 
 local shetchik0 = true
@@ -105,14 +76,15 @@ local function SendSyncedTrains(arg)
 	end
 end
 
-local function CreateSyncedTrain(index)
+local function CreateSyncedTrain(tbl,index)
+	--PrintTable(tbl)
 	local ent = ents.Create( "gmod_subway_base" )
 	ent.name = "SyncedTrain"
-	ent:SetPos(GetTrainsTBLL[index].pos)
-	ent:SetAngles(GetTrainsTBLL[index].ang)
+	ent:SetPos(tbl.pos)
+	ent:SetAngles(tbl.ang)
 	ent:SetPersistent(true)
 	ent:SetMoveType(MOVETYPE_FLY)
-	ent:SetNWString("Owner",GetTrainsTBLL[index].Owner)
+	ent:SetNWString("Owner",tbl.Owner)
 	--ent:SetNW2Bool("IsSyncedTrain",true)
 	--ent:SetCollisionGroup(COLLISION_GROUP_NONE)
 	ent:Spawn()
@@ -129,8 +101,7 @@ local function DeleteSyncedTrain(index)
 	end
 end
 
-local function GetSyncedTrains(arg)
-	GetTrainsTBLL = GetFromWebServer(WebServerUrl,"trains")
+local function GetSyncedTrains2(GetTrainsTBLL)
 	if not GetTrainsTBLL then
 		for k,v in pairs(SyncedTrainsTBL) do
 			if IsValid(v) then v:Remove() end 
@@ -139,7 +110,7 @@ local function GetSyncedTrains(arg)
 	end
 	
 	for k,v in pairs(GetTrainsTBLL) do
-		if not SyncedTrainsTBL[k] or not IsValid(SyncedTrainsTBL[k]) then CreateSyncedTrain(k) end
+		if not SyncedTrainsTBL[k] or not IsValid(SyncedTrainsTBL[k]) then CreateSyncedTrain(GetTrainsTBLL[k],k) end
 	end
 	
 	for k,v in pairs(SyncedTrainsTBL) do
@@ -160,6 +131,19 @@ local function GetSyncedTrains(arg)
 			end
 		end
 	end
+end
+
+local function ConvertTBL(tbl)
+	if not tbl then return {} end
+	local tbl2 = {}
+	for k,v in pairs(tbl) do
+		if k == HostName or (v.map and v.map ~= Map) then continue end
+		if not v.MainTable then continue end
+		for k1,v1 in pairs(v.MainTable) do
+			table.insert(tbl2,1,v1)
+		end
+	end
+	return tbl2
 end
 
 local function OpenRoute(str)
@@ -186,11 +170,10 @@ local function CheckRoutes(arg)
 	end
 end
 
-local function GetSyncedRoutes(arg)
-	GetSyncedRoutesTbl = GetFromWebServer(WebServerUrl,"routes")
-	if not GetSyncedRoutesTbl then return end
+local function GetSyncedRoutes(tbl)
+	if not tbl then return end
 	local comm
-	for key1,value1 in pairs(GetSyncedRoutesTbl) do
+	for key1,value1 in pairs(tbl) do
 		if not value1.comm then continue end
 			print("route "..(value1.comm))
 		for key,value in pairs(ents.FindByClass("gmod_track_signal")) do
@@ -305,10 +288,9 @@ local function SetSwitchState(name,state)
 	end
 end
 
-local function GetSyncedSwitches(arg)
-	GetSyncedSwitchesTbl = GetFromWebServer(WebServerUrl,"switches")
-	if not GetSyncedSwitchesTbl then return end
-	for k,v in pairs(GetSyncedSwitchesTbl) do
+local function GetSyncedSwitches(tbl)
+	if not tbl then return end
+	for k,v in pairs(tbl) do
 		if not v.name then continue end
 			SetSwitchState(v.name,v.state)
 			print("switch "..(v.name))
@@ -375,6 +357,29 @@ hook.Add("MetrostroiChangedSwitch", "SyncSwitches", function(self,AlternateTrack
 	table.insert(SwitchesTBL,1,{name = self.Name,state = state,OsTime = os.clock()})
 end)
 
+local function GetFromWebServer(url,typ)
+	local outputTBL = {}
+	http.Fetch( 
+		url.."?typ="..typ,
+		function (body)
+			if body then
+				outputTBL = util.JSONToTable(body)
+			end
+			outputTBL = ConvertTBL(outputTBL)
+			if typ == "trains" then GetSyncedTrains2(outputTBL)
+			elseif typ == "switches" then GetSyncedSwitches(outputTBL)
+			elseif typ == "routes" then GetSyncedRoutes(outputTBL)
+			end
+		end,
+		function()
+			outputTBL = {}
+			if typ == "trains" then GetSyncedTrains(outputTBL)
+			elseif typ == "switches" then GetSyncedSwitches(outputTBL)
+			elseif typ == "routes" then GetSyncedRoutes(outputTBL)
+			end
+		end
+	)
+end
 
 function ForAvtooborot(route,hidenotif)
 	if not hidenotif then ulx.fancyLog("[АВТООБОРОТ] Собираю маршрут #s",route) end
@@ -390,16 +395,16 @@ function SyncTrainsThink()
 		if not MetrostroiSyncEnabled then hook.Remove("Think","SyncTrainsThink") end
 		if lasttime + interval > os.clock() then return end
 		lasttime = os.clock()
-		SendSyncedTrains(nil)
-		GetSyncedTrains(nil)
+		SendSyncedTrains()
+		GetFromWebServer(WebServerUrl,"trains")
 		
-		CheckRoutes(nil)
-		SendSyncedRoutes(nil)
-		GetSyncedRoutes(nil)
+		CheckRoutes()
+		SendSyncedRoutes()
+		GetFromWebServer(WebServerUrl,"routes")
 		
-		CheckSwitchesTBL(nil)
-		SendSyncedSwitches(nil)
-		GetSyncedSwitches(nil)
+		CheckSwitchesTBL()
+		SendSyncedSwitches()
+		GetFromWebServer(WebServerUrl,"switches")
 	end)
 end
 SyncTrainsThink()
