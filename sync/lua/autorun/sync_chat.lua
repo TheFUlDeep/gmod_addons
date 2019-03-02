@@ -42,6 +42,9 @@ if SERVER then
 			--PrintTable(GetChatTBLL)
 			SendChatToClients(GetChatTBLL)
 			for k,v in pairs(GetChatTBLL) do
+				print((v.ply)..": "..(v.msg))
+			end
+			for k,v in pairs(GetChatTBLL) do
 				table.insert(WasInChatTBL,1,v)
 			end
 		CheckTableSize(WasInChatTBL)
@@ -93,7 +96,26 @@ if SERVER then
 	hook.Add("PlayerSay","SyncChatPlayerSay",function(ply,msg)
 		table.insert(ChatTBL,1,{ply = ply:Nick(),msg = msg,OsTime = os.clock()})
 		CheckTableSize(ChatTBL)
-		--PrintTable(ChatTBL)
+		SendChatTBL()
+	end)
+	
+	hook.Add("PlayerDisconnected","SyncChatPlayerDisconnected",function(ply)
+		table.insert(ChatTBL,1,{ply = ply:Nick(),msg = "вышел с сервера. Его SteamID: "..ply:SteamID(),OsTime = os.clock()})
+		CheckTableSize(ChatTBL)
+		SendChatTBL()
+	end)
+	
+	hook.Add("PlayerInitialSpawn","SyncChatPlayerInitialSpawn",function(ply)
+		timer.Simple(1,function()
+			table.insert(ChatTBL,1,{ply = ply:Nick(),msg = "завершает загрузку.",OsTime = os.clock()})
+			CheckTableSize(ChatTBL)
+			SendChatTBL()
+		end)
+	end)
+	
+	hook.Add("PlayerConnect","SyncChatPlayerConnect",function(nick)
+		table.insert(ChatTBL,1,{ply = nick,msg = "присоединяется",OsTime = os.clock()})
+		CheckTableSize(ChatTBL)
 		SendChatTBL()
 	end)
 	
