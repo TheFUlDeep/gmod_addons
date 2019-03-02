@@ -8,12 +8,12 @@ if SERVER then
 		http.Post(url, TableToSend)
 	end
 	
-	local function CheckTableSize(tbl)
-		if tbl and table.Count(tbl) > 100 then
+	local function CheckTableSize(tbl,k1)
+		if tbl and table.Count(tbl) > k1 then
 			local i = 0
 			for k,v in pairs(tbl) do
 				i = i + 1
-				if i > 100 then tbl[k] = nil end
+				if i > k1 then tbl[k] = nil end
 			end
 		end
 	end
@@ -48,7 +48,7 @@ if SERVER then
 			for k,v in pairs(GetChatTBLL) do
 				table.insert(WasInChatTBL,1,v)
 			end
-		CheckTableSize(WasInChatTBL)
+		CheckTableSize(WasInChatTBL,100)
 		end
 	end
 	
@@ -96,20 +96,20 @@ if SERVER then
 	
 	hook.Add("PlayerSay","SyncChatPlayerSay",function(ply,msg)
 		table.insert(ChatTBL,1,{ply = ply:Nick(),msg = msg,OsTime = os.clock()})
-		CheckTableSize(ChatTBL)
+		CheckTableSize(ChatTBL,5)
 		SendChatTBL()
 	end)
 	
 	hook.Add("PlayerDisconnected","SyncChatPlayerDisconnected",function(ply)
 		table.insert(ChatTBL,1,{ply = ply:Nick(),msg = "вышел с сервера. Его SteamID: "..ply:SteamID(),OsTime = os.clock()})
-		CheckTableSize(ChatTBL)
+		CheckTableSize(ChatTBL,5)
 		SendChatTBL()
 	end)
 	
 	hook.Add("PlayerInitialSpawn","SyncChatPlayerInitialSpawn",function(ply)
 		timer.Simple(1,function()
 			table.insert(ChatTBL,1,{ply = ply:Nick(),msg = "завершает загрузку.",OsTime = os.clock()})
-			CheckTableSize(ChatTBL)
+			CheckTableSize(ChatTBL,5)
 			SendChatTBL()
 		end)
 	end)
