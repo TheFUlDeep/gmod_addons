@@ -40,7 +40,7 @@ local function GetFromWebServer(url,typ)
 	http.Fetch( 
 	url.."?typ="..typ,
 	function (body)
-		outputTBL[typ] = {}
+		--outputTBL[typ] = {}
 		if body then
 			outputTBL[typ] = util.JSONToTable(body)
 		end
@@ -49,8 +49,8 @@ local function GetFromWebServer(url,typ)
 		outputTBL[typ] = {}
 	end
 	)
-	local tbl2 = {}
 	if not outputTBL[typ] then return {} end
+	local tbl2 = {}
 	for k,v in pairs(outputTBL[typ]) do
 		if k == HostName or (v.map and v.map ~= Map) then continue end
 		if not v.MainTable then continue end
