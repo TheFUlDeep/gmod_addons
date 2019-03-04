@@ -1,6 +1,6 @@
 --if CLIENT then return end
+local WebServerUrl = "http://metronorank.ddns.net/sync/ranks/"
 if SERVER then
-	local WebServerUrl = "http://metronorank.ddns.net/sync/ranks/"
 	local function SendRankToWebServer(url,SteamID,Nick,Rank)
 		if not url or not SteamID or not Rank then return end
 		if not Nick then Nick = "Unknown" end
