@@ -139,7 +139,7 @@ if SERVER then
 		end
 		
 		if Map:find("surface") then
-			local StationName = "1"
+			local StationName = "Площадь Восстания"
 			local fun = "4"
 			
 			createTrigger("TPeredStation1",StationName,fun,Vector(12780, 2998-500, -1090))
@@ -173,6 +173,42 @@ if SERVER then
 			AvtooborotTBL[fun][StationName]["TFarDead1"] = {}
 			AvtooborotTBL[fun][StationName]["TFarDead2"] = {}
 			AvtooborotTBL[fun][StationName]["TFarDead3"] = {}
+			
+			
+			StationName = "Советская"
+			createTrigger("TPeredStation1",StationName,fun,Vector(-15507, 5707, 190))
+			createTrigger("TPeredStation2",StationName,fun,Vector(-15507, 5707-200, 190))
+			
+			createTrigger("TStationReika",StationName,fun,Vector(-15507, 5707+1900, 190))
+			createTrigger("TStationZaReikoi",StationName,fun,Vector(-15507, 5707+1900+500, 190))
+			
+			createTrigger("TNearSvetofor",StationName,fun,Vector(-15507, 5707+1900+500+2900, 190))
+			createTrigger("TNear1",StationName,fun,Vector(-15507, 5707+1900+500+2900+1900*1, 190))
+			createTrigger("TNear2",StationName,fun,Vector(-15507, 5707+1900+500+2900+1900*2, 190))
+			createTrigger("TNear3",StationName,fun,Vector(-15507, 5707+1900+500+2900+1900*2.2, 190))
+			
+			createTrigger("TFarSvetofor",StationName,fun,Vector(-15507-270, 5707+1900+500+2900, 190))
+			createTrigger("TFar1",StationName,fun,Vector(-15507-270, 5707+1900+500+2900+1900*1, 190))
+			createTrigger("TFar2",StationName,fun,Vector(-15507-270, 5707+1900+500+2900+1900*2, 190))
+			createTrigger("TFar3",StationName,fun,Vector(-15507-270, 5707+1900+500+2900+1900*2.2, 190))
+			
+			createTrigger("TEnd1",StationName,fun,Vector(-15507-270, 5707+1900+1200, 190))
+			createTrigger("TEnd2",StationName,fun,Vector(-15507-270, 5707+1900+1200-200, 190))
+			
+			AvtooborotTBL[fun][StationName]["RouteToFar"] = "SV1-4"
+			AvtooborotTBL[fun][StationName]["RouteToNear"] = "SV1-3"
+			AvtooborotTBL[fun][StationName]["RouteFromNear"] = "SV3-2"
+			AvtooborotTBL[fun][StationName]["RouteFromFar"] = "SV4-2"
+			
+			AvtooborotTBL[fun][StationName]["TNearDeadSvetofor"] = {}
+			AvtooborotTBL[fun][StationName]["TNearDead1"] = {}
+			AvtooborotTBL[fun][StationName]["TNearDead2"] = {}
+			AvtooborotTBL[fun][StationName]["TNearDead3"] = {}
+			AvtooborotTBL[fun][StationName]["TFarDeadSvetofor"] = {}
+			AvtooborotTBL[fun][StationName]["TFarDead1"] = {}
+			AvtooborotTBL[fun][StationName]["TFarDead2"] = {}
+			AvtooborotTBL[fun][StationName]["TFarDead3"] = {}
+			
 		end
 		
 		PrintTable(AvtooborotTBL)
