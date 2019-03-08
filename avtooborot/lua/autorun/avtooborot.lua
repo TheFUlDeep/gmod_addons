@@ -138,6 +138,43 @@ if SERVER then
 			AvtooborotTBL[fun][StationName]["RouteFromFar"] = "BR1-1"
 		end
 		
+		if Map:find("surface") then
+			local StationName = "1"
+			local fun = "4"
+			
+			createTrigger("TPeredStation1",StationName,fun,Vector(12780, 2998-500, -1090))
+			createTrigger("TPeredStation2",StationName,fun,Vector(12780, 2998-500-200, -1090))
+			createTrigger("TStationReika",StationName,fun,Vector(12780, 2998, -1090))
+			createTrigger("TStationZaReikoi",StationName,fun,Vector(12780, 2998+400, -1090))
+			
+			createTrigger("TNearSvetofor",StationName,fun,Vector(12780-60, 2998+7600, -1090))
+			createTrigger("TNear1",StationName,fun,Vector(12780-60, 2998+7600+1900*1, -1090))
+			createTrigger("TNear2",StationName,fun,Vector(12780-60, 2998+7600+1900*2, -1090))
+			createTrigger("TNear3",StationName,fun,Vector(12780-60, 2998+7600+1900*2.2, -1090))
+			
+			createTrigger("TFarSvetofor",StationName,fun,Vector(12780-60-270, 2998+7600, -1090))
+			createTrigger("TFar1",StationName,fun,Vector(12780-60-270, 2998+7600+1900*1, -1090))
+			createTrigger("TFar2",StationName,fun,Vector(12780-60-270, 2998+7600+1900*2, -1090))
+			createTrigger("TFar3",StationName,fun,Vector(12780-60-270, 2998+7600+1900*2.2, -1090))
+			
+			createTrigger("TEnd1",StationName,fun,Vector(12780-60-270, 2998+7600-2090, -1090))
+			createTrigger("TEnd2",StationName,fun,Vector(12780-60-270, 2998+7600-2090-200, -1090))
+			
+			AvtooborotTBL[fun][StationName]["RouteToFar"] = "PR2-3"
+			AvtooborotTBL[fun][StationName]["RouteToNear"] = "PR2-4"
+			AvtooborotTBL[fun][StationName]["RouteFromNear"] = "PR4-1"
+			AvtooborotTBL[fun][StationName]["RouteFromFar"] = "PR3-1"
+			
+			AvtooborotTBL[fun][StationName]["TNearDeadSvetofor"] = {}
+			AvtooborotTBL[fun][StationName]["TNearDead1"] = {}
+			AvtooborotTBL[fun][StationName]["TNearDead2"] = {}
+			AvtooborotTBL[fun][StationName]["TNearDead3"] = {}
+			AvtooborotTBL[fun][StationName]["TFarDeadSvetofor"] = {}
+			AvtooborotTBL[fun][StationName]["TFarDead1"] = {}
+			AvtooborotTBL[fun][StationName]["TFarDead2"] = {}
+			AvtooborotTBL[fun][StationName]["TFarDead3"] = {}
+		end
+		
 		PrintTable(AvtooborotTBL)
 	end
 
