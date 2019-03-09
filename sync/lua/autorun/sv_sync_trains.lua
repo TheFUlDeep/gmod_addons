@@ -71,12 +71,16 @@ local function SendSyncedTrains(arg)
 			if not IsValid(v1) then continue end
 			i = i + 1
 			p = 0
+			local Owner = "N/A"
+			if v1:CPPIGetOwner() then
+				Owner = v1:CPPIGetOwner():Nick()
+			end
 			TrainsTBLL[i] = {
 				OsTime = os.clock(),
 				model = v1:GetModel(),
 				pos = v1:GetPos(),
 				ang = v1:GetAngles(),
-				Owner = v1:CPPIGetOwner():Nick()
+				Owner = Owner
 			}
 			--[[if stringfind(v1:GetClass(),"base") then continue end
 			if not v1.ClientEnts then continue end
@@ -413,4 +417,3 @@ function SyncTrainsThink()
 	end)
 end
 SyncTrainsThink()
-
