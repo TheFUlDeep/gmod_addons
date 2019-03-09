@@ -75,7 +75,7 @@ if SERVER then
 				local BanDate = os.date("%H:%M:%S %d/%m/%Y",body.BanDate)
 				local UnBanDate = "никогда"
 				if body.UnBanDate ~= "perma" then UnBanDate = os.date("%H:%M:%S %d/%m/%Y",body.UnBanDate) end
-				game.KickID(SteamID,"ВЫ ЗАБАНЕНЫ\nЗабанил "..(body.WhoBanned).." его SteamID: "..(body.WhoBannedID).."\nПричина: "..(body.Reason).."\nДата бана: "..BanDate.."\nДата разбана: "..UnBanDate)
+				game.KickID(SteamID,"ВЫ ЗАБАНЕНЫ\nЗабанил "..(body.WhoBanned)..", его SteamID: "..(body.WhoBannedID).."\nПричина: "..(body.Reason).."\nДата бана: "..BanDate.."\nДата разбана: "..UnBanDate)
 				--[[if BansTBL[SteamID].Nick == "Unknown" then				--вообще можно еще сделать проверку и обновление ника, но мне лень
 					
 				end]]
