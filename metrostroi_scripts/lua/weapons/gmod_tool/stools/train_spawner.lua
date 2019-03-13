@@ -425,7 +425,7 @@ function TOOL:LeftClick(trace)
 		local ply = self:GetOwner()
 		
 	--self.Settings.WagNum = 6
-	if (self.Train.ClassName == "gmod_subway_81-703" or self.Train.ClassName == "gmod_subway_em508" or self.Train.ClassName == "gmod_subway_81-702") and ply:GetUserGroup() == "user" then ULib.tsayError( ply, "Тебе нельзя спавнить этот состав", true ) return end
+	--if (self.Train.ClassName == "gmod_subway_81-703" or self.Train.ClassName == "gmod_subway_em508" or self.Train.ClassName == "gmod_subway_81-702") and ply:GetUserGroup() == "user" then ULib.tsayError( ply, "Тебе нельзя спавнить этот состав", true ) return end
 	--if self.Train.ClassName == "gmod_subway_81-717_6" and ply:GetUserGroup() ~= "superadmin"  then ULib.tsayError( ply, "Тебе нельзя спавнить этот состав", true ) return end
 	if self.Train.ClassName == "gmod_subway_81-740.4" then self.Settings.WagNum = 2 end --только 2 вагона для русича
 
