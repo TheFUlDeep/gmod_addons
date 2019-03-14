@@ -2298,13 +2298,14 @@ if CLIENT then
 		if ( typ == "joinleave" ) then return true end
 	end)
 end
+
 if SERVER then
 --[[============================= ФОНАРИК В КАБИНЕ ==========================]]
-	hook.Add("PlayerButtonDown", "Flashlight", function(ply,key)
+	hook.Add("KeyPress", "FlashlightInCabin", function(ply,key)
 		if ply:InVehicle() then
-			 if key == KEY_8 then
-				if	ply:FlashlightIsOn() then ply:Flashlight(false)
-				else ply:Flashlight(true)
+			 if ply:KeyPressed(IN_WALK) and ply:KeyPressed(IN_SPEED) then
+				if	ply:FlashlightIsOn() then timer.Simple(0.1,function() ply:Flashlight(false) end)
+				else timer.Simple(0.1,function() ply:Flashlight(true) end)
 				end
 			end
 		end
