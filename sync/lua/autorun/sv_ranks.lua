@@ -18,13 +18,19 @@ if SERVER then
 				if not IsValid(player.GetBySteamID(SteamID)) then return end
 				local ply = player.GetBySteamID(SteamID)
 				local Rank = ply:GetUserGroup()
-				if Rank == body.Rank then return end
-				if body.Rank == "user" then 
-					RunConsoleCommand("ulx","removeuserid",SteamID,body.Rank)
-				else
-					RunConsoleCommand("ulx","adduserid",SteamID,body.Rank)
+				if Rank ~= body.Rank then
+					if body.Rank == "user" then 
+						RunConsoleCommand("ulx","removeuserid",SteamID,body.Rank)
+					else
+						RunConsoleCommand("ulx","adduserid",SteamID,body.Rank)
+					end
 				end
 				--print("Setting rank "..body.." to "..ply:Nick())
+				timer.Simple(0.1, function()
+					if not IsValid(player.GetBySteamID(SteamID)) then return end
+					SendRankToWebServer(WebServerUrl,ply:SteamID(),ply:Nick(),ply:GetUserGroup())
+					print("Saving rank "..ply:GetUserGroup().." to "..ply:Nick())
+				end)
 			end
 		)
 	end
@@ -39,15 +45,6 @@ if SERVER then
 			CheckUserRank(ply)
 		end)
 	end)
-
-	hook.Add("PlayerInitialSpawn","SyncRanksInitialSpawn2",function(ply)
-		timer.Simple(2,function()
-			if not IsValid(ply) then return end
-			SendRankToWebServer(WebServerUrl,ply:SteamID(),ply:Nick(),ply:GetUserGroup())
-			print("Saving rank "..ply:GetUserGroup().." to "..ply:Nick())
-		end)
-	end)
-
 
 	local function CheckRanks()
 		--print("Checking Ranks")
