@@ -226,24 +226,40 @@ if SERVER then
 		if IsEntity(chetiretbl["NearDead"]) and not IsValid(chetiretbl["NearDead"]) then chetiretbl["NearDead"] = false chetiretbl["OpenedFromNearDead"] = false end
 		
 		if chetiretbl["TEnd2"].zanyat and not chetiretbl["TEnd1"].zanyat and (chetiretbl["Near"] or chetiretbl["Far"] or chetiretbl["FarDead"]) then																												--если выехал из тупика
-			for k,v in pairs(chetiretbl["TEnd2"].zanyat.WagonList) do
-				if v == chetiretbl["Near"] then chetiretbl["Near"] = false chetiretbl["OpenedFromNear"] = false end																														--вообще тут лучше сделать через elseif, но я сделал так на всякийслучай
-				if v == chetiretbl["Far"] then chetiretbl["Far"] = false chetiretbl["OpenedFromFar"] = false end											
-				if v == chetiretbl["FarDead"] then chetiretbl["FarDead"] = false chetiretbl["OpenedFromFarDead"] = false end											
+			if not chetiretbl["TEnd2"].zanyat.WagonList	then																							--если нет таблицы wagonlist
+				if chetiretbl["TEnd2"].zanyat == chetiretbl["Near"] then chetiretbl["Near"] = false chetiretbl["OpenedFromNear"] = false end																														--вообще тут лучше сделать через elseif, но я сделал так на всякийслучай
+				if chetiretbl["TEnd2"].zanyat == chetiretbl["Far"] then chetiretbl["Far"] = false chetiretbl["OpenedFromFar"] = false end											
+				if chetiretbl["TEnd2"].zanyat == chetiretbl["FarDead"] then chetiretbl["FarDead"] = false chetiretbl["OpenedFromFarDead"] = false end	
+			else
+				for k,v in pairs(chetiretbl["TEnd2"].zanyat.WagonList) do
+					if v == chetiretbl["Near"] then chetiretbl["Near"] = false chetiretbl["OpenedFromNear"] = false end																														--вообще тут лучше сделать через elseif, но я сделал так на всякийслучай
+					if v == chetiretbl["Far"] then chetiretbl["Far"] = false chetiretbl["OpenedFromFar"] = false end											
+					if v == chetiretbl["FarDead"] then chetiretbl["FarDead"] = false chetiretbl["OpenedFromFarDead"] = false end											
+				end
 			end
 		end
 		
 		if chetiretbl["TStationReika"].zanyat and not chetiretbl["TStationZaReikoi"].zanyat and (chetiretbl["Near"] or chetiretbl["Far"] or chetiretbl["NearDead"]) then																												--если выехал из тупика в неправильном
-			for k,v in pairs(chetiretbl["TStationReika"].zanyat.WagonList) do
-				if v == chetiretbl["Near"] then chetiretbl["Near"] = false chetiretbl["OpenedFromNear"] = false end																														--вообще тут лучше сделать через elseif, но я сделал так на всякийслучай
-				if v == chetiretbl["Far"] then chetiretbl["Far"] = false chetiretbl["OpenedFromFar"] = false end
-				if v == chetiretbl["NearDead"] then chetiretbl["NearDead"] = false chetiretbl["OpenedFromNearDead"] = false end
+			if not chetiretbl["TStationReika"].zanyat.WagonList then 
+				if chetiretbl["TStationReika"].zanyat == chetiretbl["Near"] then chetiretbl["Near"] = false chetiretbl["OpenedFromNear"] = false end																														--вообще тут лучше сделать через elseif, но я сделал так на всякийслучай
+				if chetiretbl["TStationReika"].zanyat == chetiretbl["Far"] then chetiretbl["Far"] = false chetiretbl["OpenedFromFar"] = false end
+				if chetiretbl["TStationReika"].zanyat == chetiretbl["NearDead"] then chetiretbl["NearDead"] = false chetiretbl["OpenedFromNearDead"] = false end
+			else
+				for k,v in pairs(chetiretbl["TStationReika"].zanyat.WagonList) do
+					if v == chetiretbl["Near"] then chetiretbl["Near"] = false chetiretbl["OpenedFromNear"] = false end																														--вообще тут лучше сделать через elseif, но я сделал так на всякийслучай
+					if v == chetiretbl["Far"] then chetiretbl["Far"] = false chetiretbl["OpenedFromFar"] = false end
+					if v == chetiretbl["NearDead"] then chetiretbl["NearDead"] = false chetiretbl["OpenedFromNearDead"] = false end
+				end
 			end
 		end
 		
 		if chetiretbl["TPeredStation2"].zanyat and not chetiretbl["TPeredStation1"].zanyat and chetiretbl["Station"] then
-			for k,v in pairs(chetiretbl["TPeredStation2"].zanyat.WagonList) do
-				if v == chetiretbl["Station"] then chetiretbl["Station"] = false chetiretbl["OpenedFromStation"] = false end
+			if not chetiretbl["TPeredStation2"].zanyat.WagonList then
+				if chetiretbl["TPeredStation2"].zanyat == chetiretbl["Station"] then chetiretbl["Station"] = false chetiretbl["OpenedFromStation"] = false end
+			else
+				for k,v in pairs(chetiretbl["TPeredStation2"].zanyat.WagonList) do
+					if v == chetiretbl["Station"] then chetiretbl["Station"] = false chetiretbl["OpenedFromStation"] = false end
+				end
 			end
 		end
 		
@@ -251,8 +267,12 @@ if SERVER then
 			chetiretbl["NearDead"] = chetiretbl["TNearDead1"].zanyat or chetiretbl["TNearDead2"].zanyat or chetiretbl["TNearDead3"].zanyat
 			if not chetiretbl["TNearDeadSvetofor"].zanyat then
 				if chetiretbl["Station"] then
-					for k,v in pairs(chetiretbl["NearDead"].WagonList) do
-						if v == chetiretbl["Station"] then chetiretbl["Station"] = false chetiretbl["OpenedFromStation"] = false end
+					if not chetiretbl["NearDead"].WagonList then
+						if chetiretbl["NearDead"] == chetiretbl["Station"] then chetiretbl["Station"] = false chetiretbl["OpenedFromStation"] = false end
+					else
+						for k,v in pairs(chetiretbl["NearDead"].WagonList) do
+							if v == chetiretbl["Station"] then chetiretbl["Station"] = false chetiretbl["OpenedFromStation"] = false end
+						end
 					end
 				end
 				if not chetiretbl["Station"] and not chetiretbl["OpenedFromFar"] and not chetiretbl["OpenedFromNear"] then
@@ -265,13 +285,24 @@ if SERVER then
 			chetiretbl["Far"] = chetiretbl["TFar1"].zanyat or chetiretbl["TFar2"].zanyat or chetiretbl["TFar3"].zanyat
 			if not chetiretbl["TFarSvetofor"].zanyat then 
 				if chetiretbl["Station"] then
-					for k,v in pairs(chetiretbl["Far"].WagonList) do
-						if v == chetiretbl["Station"] then 
+					if not chetiretbl["Far"].WagonList then
+						if chetiretbl["Far"] == chetiretbl["Station"] then 
 							chetiretbl["Station"] = false 
 							chetiretbl["OpenedFromStation"] = false 
 							if chetiretbl["NearDead"] and not chetiretbl["TNearDeadSvetofor"].zanyat and not chetiretbl["TStationReika"].zanyat and not chetiretbl["TStationZaReikoi"].zanyat and not chetiretbl["TPeredStation1"].zanyat and not chetiretbl["TPeredStation2"].zanyat then
 								ForAvtooborot(chetiretbl["RouteFromNearDead"])
 								chetiretbl["OpenedFromNearDead"] = true
+							end
+						end
+					else
+						for k,v in pairs(chetiretbl["Far"].WagonList) do
+							if v == chetiretbl["Station"] then 
+								chetiretbl["Station"] = false 
+								chetiretbl["OpenedFromStation"] = false 
+								if chetiretbl["NearDead"] and not chetiretbl["TNearDeadSvetofor"].zanyat and not chetiretbl["TStationReika"].zanyat and not chetiretbl["TStationZaReikoi"].zanyat and not chetiretbl["TPeredStation1"].zanyat and not chetiretbl["TPeredStation2"].zanyat then
+									ForAvtooborot(chetiretbl["RouteFromNearDead"])
+									chetiretbl["OpenedFromNearDead"] = true
+								end
 							end
 						end
 					end
@@ -286,13 +317,24 @@ if SERVER then
 			chetiretbl["Near"] = chetiretbl["TNear1"].zanyat or chetiretbl["TNear2"].zanyat or chetiretbl["TNear3"].zanyat
 			if not chetiretbl["TNearSvetofor"].zanyat then 
 				if chetiretbl["Station"] then
-					for k,v in pairs(chetiretbl["Near"].WagonList) do
-						if v == chetiretbl["Station"] then
+					if not chetiretbl["Near"].WagonList then
+						if chetiretbl["Near"] == chetiretbl["Station"] then
 							chetiretbl["Station"] = false 
 							chetiretbl["OpenedFromStation"] = false 
 							if chetiretbl["NearDead"] and not chetiretbl["TNearDeadSvetofor"].zanyat and not chetiretbl["TStationReika"].zanyat and not chetiretbl["TStationZaReikoi"].zanyat and not chetiretbl["TPeredStation1"].zanyat and not chetiretbl["TPeredStation2"].zanyat then
 								ForAvtooborot(chetiretbl["RouteFromNearDead"])
 								chetiretbl["OpenedFromNearDead"] = true
+							end
+						end
+					else
+						for k,v in pairs(chetiretbl["Near"].WagonList) do
+							if v == chetiretbl["Station"] then
+								chetiretbl["Station"] = false 
+								chetiretbl["OpenedFromStation"] = false 
+								if chetiretbl["NearDead"] and not chetiretbl["TNearDeadSvetofor"].zanyat and not chetiretbl["TStationReika"].zanyat and not chetiretbl["TStationZaReikoi"].zanyat and not chetiretbl["TPeredStation1"].zanyat and not chetiretbl["TPeredStation2"].zanyat then
+									ForAvtooborot(chetiretbl["RouteFromNearDead"])
+									chetiretbl["OpenedFromNearDead"] = true
+								end
 							end
 						end
 					end
