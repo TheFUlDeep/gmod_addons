@@ -423,7 +423,11 @@ function TOOL:LeftClick(trace)
     if SERVER then
 
 		local ply = self:GetOwner()
-		
+		if ply:GetUserGroup() == "user" and (self.Train.ClassName == "gmod_subway_81-703" or self.Train.ClassName == "gmod_subway_em508" or self.Train.ClassName == "gmod_subway_81-702") then
+			for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
+				if IsValid(v) and v.TwoToSix then ULib.tsayError( ply, "Тебе нельзя спавнить этот состав", true ) return end
+			end
+		end
 	--self.Settings.WagNum = 6
 	--if (self.Train.ClassName == "gmod_subway_81-703" or self.Train.ClassName == "gmod_subway_em508" or self.Train.ClassName == "gmod_subway_81-702") and ply:GetUserGroup() == "user" then ULib.tsayError( ply, "Тебе нельзя спавнить этот состав", true ) return end
 	--if self.Train.ClassName == "gmod_subway_81-717_6" and ply:GetUserGroup() ~= "superadmin"  then ULib.tsayError( ply, "Тебе нельзя спавнить этот состав", true ) return end
