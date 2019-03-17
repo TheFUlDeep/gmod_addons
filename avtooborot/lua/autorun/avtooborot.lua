@@ -230,11 +230,13 @@ if SERVER then
 				if chetiretbl["TEnd2"].zanyat == chetiretbl["Near"] then chetiretbl["Near"] = false chetiretbl["OpenedFromNear"] = false end																														--вообще тут лучше сделать через elseif, но я сделал так на всякийслучай
 				if chetiretbl["TEnd2"].zanyat == chetiretbl["Far"] then chetiretbl["Far"] = false chetiretbl["OpenedFromFar"] = false end											
 				if chetiretbl["TEnd2"].zanyat == chetiretbl["FarDead"] then chetiretbl["FarDead"] = false chetiretbl["OpenedFromFarDead"] = false end	
+				if chetiretbl["TEnd2"].zanyat == chetiretbl["Station"] then chetiretbl["Station"] = false chetiretbl["OpenedFromStation"] = false end	
 			else
 				for k,v in pairs(chetiretbl["TEnd2"].zanyat.WagonList) do
 					if v == chetiretbl["Near"] then chetiretbl["Near"] = false chetiretbl["OpenedFromNear"] = false end																														--вообще тут лучше сделать через elseif, но я сделал так на всякийслучай
 					if v == chetiretbl["Far"] then chetiretbl["Far"] = false chetiretbl["OpenedFromFar"] = false end											
 					if v == chetiretbl["FarDead"] then chetiretbl["FarDead"] = false chetiretbl["OpenedFromFarDead"] = false end											
+					if v == chetiretbl["Station"] then chetiretbl["Station"] = false chetiretbl["OpenedFromStation"] = false end											
 				end
 			end
 		end
