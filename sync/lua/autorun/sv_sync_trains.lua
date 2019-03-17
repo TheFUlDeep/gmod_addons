@@ -35,7 +35,24 @@ local function SendToWebServer(tbl,url,typ)
 	http.Post(url, TableToSend)
 end
 
+--[[local function table.Compare( tbl1, tbl2 )
+	if not tbl1 and not tbl2 then return true
+	elseif not tbl1 or not tbl2 then return false
+	end
+	for k, v in pairs( tbl1 ) do
+		if ( type(v) == "table" and type(tbl2[k]) == "table" ) then
+			if ( !table.Compare( v, tbl2[k] ) ) then
+				return false
+			end
+		elseif ( v != tbl2[k] ) then
+			return false
+		end
+	end
+end]]
+
+local shetchik4 = 0
 local outputTBL = {}
+local LastOutputTBL = {}
 local function GetFromWebServer(url,typ)
 	http.Fetch( 
 	url.."?typ="..typ,
@@ -50,10 +67,25 @@ local function GetFromWebServer(url,typ)
 	end
 	)
 	if not outputTBL[typ] then return {} end
+	if shetchik4 == 10 then
+		shetchik4 = 0
+		for k,v in pairs(outputTBL[typ]) do
+			if k == GetHostName() or (v.map and v.map ~= Map) then continue end
+			if not v.MainTable then continue end	
+			if (outputTBL[typ][k] and LastOutputTBL[typ][k] and table.ToString(outputTBL[typ][k]) == table.ToString(LastOutputTBL[typ][k])) or (not LastOutputTBL[typ][k] and not outputTBL[typ][k]) then
+				outputTBL[typ][k] = nil
+			else
+				if not LastOutputTBL[typ] then LastOutputTBL[typ] = {} end
+				LastOutputTBL[typ][k] = outputTBL[typ][k]
+			end
+		end
+	else
+		shetchik4 = shetchik4 + 1
+	end
 	local tbl2 = {}
 	for k,v in pairs(outputTBL[typ]) do
 		if k == GetHostName() or (v.map and v.map ~= Map) then continue end
-		if not v.MainTable then continue end
+		if not v.MainTable then continue end		
 		for k1,v1 in pairs(v.MainTable) do
 			table.insert(tbl2,1,v1)
 		end

@@ -2412,6 +2412,16 @@ function MaximumWagons(ply,self)
 	end
 	return maximum
 end
+
+if SERVER then
+	hook.Add("PlayerInitialSpawn","FindTwoToSix",function()
+		hook.Remove("PlayerInitialSpawn","FindTwoToSix")
+		print("Seaching for TwoToSix in signals...")
+		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
+			if IsValid(v) and v.TwoToSix then print("Found TwoToSix in signals!") TwoToSixInSignals = true return end
+		end
+	end)
+end
 --используй table.insert только если ключи не числа
 --ply.InMetrostroiTrain
 --[[============================= УДАЛЕНИЕ НЕНУЖНЫХ ВКЛАДОК ИЗ SPAWNMENU ==========================]]
