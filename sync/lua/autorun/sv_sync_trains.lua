@@ -35,7 +35,7 @@ local function SendToWebServer(tbl,url,typ)
 	http.Post(url, TableToSend)
 end
 
-local function table.Compare( tbl1, tbl2 )
+--[[local function table.Compare( tbl1, tbl2 )
 	if not tbl1 and not tbl2 then return true
 	elseif not tbl1 or not tbl2 then return false
 	end
@@ -48,7 +48,7 @@ local function table.Compare( tbl1, tbl2 )
 			return false
 		end
 	end
-end
+end]]
 
 local shetchik4 = 0
 local outputTBL = {}
