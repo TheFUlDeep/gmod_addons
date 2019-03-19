@@ -90,7 +90,7 @@ if SERVER then
 		CheckIfBanned(SteamID)
 	end)
 	
-	--[[local function CheckingIfBanned()
+	local function CheckingIfBanned()
 		--print("Checking Ranks")
 		local i = 0
 		for k,v in pairs(player.GetAll()) do
@@ -102,7 +102,7 @@ if SERVER then
 		end
 		timer.Simple(60,function() CheckingIfBanned() end)
 	end
-	CheckingIfBanned()]]
+	CheckingIfBanned()
 		
 		--SendRankToWebServer(WebServerUrl,"SteamID","Nick","user1")
 		--ulx.adduserid(nil,"STEAM_0:1:37134658","superadmin")
