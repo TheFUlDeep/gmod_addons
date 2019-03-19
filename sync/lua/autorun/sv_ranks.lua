@@ -11,23 +11,25 @@ if SERVER then
 		http.Fetch( 
 			url.."?SteamID="..SteamID,
 			function (body)
-				if not body or body == "" then return end
-				body = util.JSONToTable(body)
-				if not body.Rank then return end
-				--print(body)
-				if not IsValid(player.GetBySteamID(SteamID)) then return end
 				local ply = player.GetBySteamID(SteamID)
-				local Rank = ply:GetUserGroup()
-				if Rank ~= body.Rank then
-					if body.Rank == "user" then 
-						RunConsoleCommand("ulx","removeuserid",SteamID,body.Rank)
-					else
-						RunConsoleCommand("ulx","adduserid",SteamID,body.Rank)
+				if body and body ~= "" then
+					body = util.JSONToTable(body)
+					if body and body.Rank then
+						--print(body)
+						if not IsValid(player.GetBySteamID(SteamID)) then return end						
+						local Rank = ply:GetUserGroup()
+						if Rank ~= body.Rank then
+							if body.Rank == "user" then 
+								RunConsoleCommand("ulx","removeuserid",SteamID,body.Rank)
+							else
+								RunConsoleCommand("ulx","adduserid",SteamID,body.Rank)
+							end
+						end
 					end
 				end
 				--print("Setting rank "..body.." to "..ply:Nick())
 				timer.Simple(0.1, function()
-					if not IsValid(player.GetBySteamID(SteamID)) then return end
+					if not IsValid(ply) then return end
 					SendRankToWebServer(WebServerUrl,ply:SteamID(),ply:Nick(),ply:GetUserGroup())
 					print("Saving rank "..ply:GetUserGroup().." to "..ply:Nick())
 				end)
@@ -88,7 +90,7 @@ if SERVER then
 		CheckIfBanned(SteamID)
 	end)
 	
-	local function CheckingIfBanned()
+	--[[local function CheckingIfBanned()
 		--print("Checking Ranks")
 		local i = 0
 		for k,v in pairs(player.GetAll()) do
@@ -100,7 +102,7 @@ if SERVER then
 		end
 		timer.Simple(60,function() CheckingIfBanned() end)
 	end
-	CheckingIfBanned()
+	CheckingIfBanned()]]
 		
 		--SendRankToWebServer(WebServerUrl,"SteamID","Nick","user1")
 		--ulx.adduserid(nil,"STEAM_0:1:37134658","superadmin")
