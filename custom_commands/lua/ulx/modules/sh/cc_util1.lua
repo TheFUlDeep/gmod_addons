@@ -54,13 +54,13 @@ if SERVER then
 	function ulx.discord(calling_ply)
 		local discord = "https://discord.gg/p4mJVKr"
 		--local ply = tostring(calling_ply:Nick())
-		ulx.fancyLog(false, "Наш дискорд: #s", discord)
+		ulx.fancyLogAdmin(calling_ply, false, "#A, вот ссылка на наш дискорд: #s", discord)
 		--ULib.tsayColor(nil, true, discord, Color(255,255,255,255))
 		--ULib.tsay(nil, "Наш дискорд: https://discord.gg/p4mJVKr", true)
 	end
 end
 local discord = ulx.command("Menus", "ulx discord", ulx.discord, "!discord")
-discord:defaultAccess(ULib.ACCESS_SUPERADMIN)
+discord:defaultAccess(ULib.ACCESS_ALL)
 discord:help("Показать в чате ссылку на дискорд")
 
 --[[	local function ulx.discotdgui()
