@@ -50,9 +50,9 @@ end
 	end
 end]]
 
-local shetchik4 = 0
+--local shetchik4 = 0
 local outputTBL = {}
-local LastOutputTBL = {}
+--local LastOutputTBL = {}
 local function GetFromWebServer(url,typ)
 	http.Fetch( 
 	url.."?typ="..typ,
@@ -67,21 +67,23 @@ local function GetFromWebServer(url,typ)
 	end
 	)
 	if not outputTBL[typ] then return {} end
-	if shetchik4 == 10 then
+	--[[if shetchik4 == 10 then
 		shetchik4 = 0
 		for k,v in pairs(outputTBL[typ]) do
 			if k == GetHostName() or (v.map and v.map ~= Map) then continue end
-			if not v.MainTable then continue end	
-			if (outputTBL[typ][k] and LastOutputTBL[typ][k] and table.ToString(outputTBL[typ][k]) == table.ToString(LastOutputTBL[typ][k])) or (not LastOutputTBL[typ][k] and not outputTBL[typ][k]) then
-				outputTBL[typ][k] = nil
-			else
-				if not LastOutputTBL[typ] then LastOutputTBL[typ] = {} end
-				LastOutputTBL[typ][k] = outputTBL[typ][k]
+			if not v.MainTable then continue end
+			if LastOutputTBL[typ] and outputTBL[typ] then
+				if (outputTBL[typ][k] and LastOutputTBL[typ][k] and table.ToString(outputTBL[typ][k]) == table.ToString(LastOutputTBL[typ][k])) or (not LastOutputTBL[typ][k] and not outputTBL[typ][k]) then
+					outputTBL[typ][k] = nil
+				else
+					if not LastOutputTBL[typ] then LastOutputTBL[typ] = {} end
+					LastOutputTBL[typ][k] = outputTBL[typ][k]
+				end
 			end
 		end
 	else
 		shetchik4 = shetchik4 + 1
-	end
+	end]]
 	local tbl2 = {}
 	for k,v in pairs(outputTBL[typ]) do
 		if k == GetHostName() or (v.map and v.map ~= Map) then continue end
@@ -104,7 +106,7 @@ local function SendSyncedTrains(arg)
 			i = i + 1
 			p = 0
 			local Owner = "N/A"
-			if v1:CPPIGetOwner() then
+			if IsValid(v1:CPPIGetOwner()) then
 				Owner = v1:CPPIGetOwner():Nick()
 			end
 			TrainsTBLL[i] = {
