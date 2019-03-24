@@ -228,7 +228,7 @@ end
 local function CheckRoutes(arg)
 	if not RoutesTBL then return end
 	for k,v in pairs(RoutesTBL) do
-		if v.OsTime + interval  < os.clock() then 
+		if v.OsTime + interval * 2  < os.clock() then 
 			RoutesTBL[k] = nil
 		end
 	end
@@ -366,7 +366,7 @@ end
 local function CheckSwitchesTBL(arg)
 	if SwitchesTBL then
 		for k,v in pairs(SwitchesTBL) do
-			if v.OsTime + interval < os.clock() then 
+			if v.OsTime + interval * 2 < os.clock() then 
 				SwitchesTBL[k] = nil
 			end
 		end
@@ -404,7 +404,7 @@ local function SendSyncedRoutes(arg)
 end
 
 for k,v in pairs(ents.FindByClass("gmod_subway_base")) do
-	if IsValid(v) and v.name == "SyncedTrain" then v:Remove() end
+	if IsValid(v) and v.name and v.name == "SyncedTrain" then v:Remove() end
 end
 
 for k,v in pairs(ents.FindByClass("gmod_button")) do
@@ -431,11 +431,16 @@ function ForAvtooborot(route,hidenotif)
 	--PrintTable(SopensTBL)
 end
 
-MetrostroiSyncEnabled = true
+MetrostroiSyncEnabled = false
 hook.Remove("Think","SyncTrainsThink")
 function SyncTrainsThink()
 	hook.Add("Think","SyncTrainsThink", function() 
-		if not MetrostroiSyncEnabled then hook.Remove("Think","SyncTrainsThink") end
+		if not MetrostroiSyncEnabled then 
+			hook.Remove("Think","SyncTrainsThink") 
+			for k,v in pairs(ents.FindByClass("gmod_subway_base")) do
+				if IsValid(v) and v.name and v.name == "SyncedTrain" then v:Remove() end
+			end
+		end
 		if lasttime + interval > os.clock() then return end
 		lasttime = os.clock()
 		SendSyncedTrains(nil)
@@ -450,4 +455,4 @@ function SyncTrainsThink()
 		GetSyncedSwitches(nil)
 	end)
 end
-SyncTrainsThink()
+timer.Simple(0,function() SyncTrainsThink() end)
