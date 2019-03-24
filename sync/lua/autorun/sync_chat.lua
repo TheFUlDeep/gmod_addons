@@ -131,7 +131,7 @@ if SERVER then
 			GetFromWebServer(WebServerUrl,WebServerTyp)
 		end)
 	end
-	SyncChatThink()
+	timer.Simple(0,function() SyncChatThink() end)
 end
 
 if CLIENT then
