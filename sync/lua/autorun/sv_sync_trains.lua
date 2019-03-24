@@ -109,7 +109,7 @@ local function SendSyncedTrains(arg)
 			if IsValid(v1:CPPIGetOwner()) then
 				Owner = v1:CPPIGetOwner():Nick()
 			end
-			TrainsTBLL[i] = {
+			TrainsTBLL[(GetHostName())..tostring(v1)] = {
 				OsTime = os.clock(),
 				model = v1:GetModel(),
 				pos = v1:GetPos(),
@@ -130,7 +130,7 @@ local function SendSyncedTrains(arg)
 		end
 	end
 	TrainsTBL = TrainsTBLL
-	if not TrainsTBL or #TrainsTBL == 0 then 
+	if not TrainsTBL or table.Count(TrainsTBL) == 0 then 
 		if shetchik0 then
 			SendToWebServer(TrainsTBL, WebServerUrl,"trains")
 			shetchik0 = false
