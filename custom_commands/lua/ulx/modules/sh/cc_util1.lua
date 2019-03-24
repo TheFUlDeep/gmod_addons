@@ -714,10 +714,11 @@ if SERVER then
 	end)
 
 	--[[ ======================================= УВЕДОМЛЕНИЕ О ЗАПРЕТЕ ПЕРЕВОДА СТРЕЛОК ПРИ ДЦХ (и чатсаунды) ======================================= ]]
-	hook.Add("PlayerSay", "PlayerSayExample", function(ply, text, team)
+	hook.Add("PlayerSay", "SopenScloseControl", function(ply, text, team)
+		local Rank = ply:GetUserGroup()
 		if  Metrostroi.ActiveDispatcher ~= nil
 			--and avtooborot == 0
-			and ply:GetUserGroup() == "user"
+			and Rank == "user"
 			and ply ~= Metrostroi.ActiveDispatcher
 			and ply ~= Metrostroi.ActiveDSCP1
 			and ply ~= Metrostroi.ActiveDSCP2
@@ -733,7 +734,13 @@ if SERVER then
 				elseif string.match(text, "!sclps") == "!sclps" then ULib.tsayError(ply, "На посту ДЦХ. Не трогай стрелки") return "" 
 				end
 		end
-		--if text:find("!sclose") and not text:find("-") then return "" end
+		if text:find("!sclose") and Rank ~= "superadmin" then
+			local strsub = string.sub(text,9)
+			if tonumber(strsub) then return "" end
+			for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
+				if v.Name and stringfind(strsub,v.Name,true) then return "" end
+			end
+		end
 	if string.match(bigrustosmall(text), "goto") ~= "goto" and string.match(bigrustosmall(text), "station") ~= "station" and string.match(bigrustosmall(text), "sopen") ~= "sopen" and ply:GetUserGroup() ~= "user" then
 		--math.randomseed(os.time())
 		local chatrand = math.random(1,3)
