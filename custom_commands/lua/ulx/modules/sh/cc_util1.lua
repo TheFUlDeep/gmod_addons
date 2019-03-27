@@ -1429,12 +1429,181 @@ function MaximumWagons(ply,self)
 	return maximum
 end
 
+
+--[[============================= ПОИСК 2/6 В СИГНАЛКЕ ==========================]]
 if SERVER then
 	hook.Add("PlayerInitialSpawn","FindTwoToSix",function()
 		hook.Remove("PlayerInitialSpawn","FindTwoToSix")
 		print("Seaching for TwoToSix in signals...")
 		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
 			if IsValid(v) and v.TwoToSix then print("Found TwoToSix in signals!") TwoToSixInSignals = true return end
+		end
+	end)
+end
+
+
+--[[============================= ОТОБРАЖЕНИЕ ВСЕХ ИНТЕРВАЛЬНЫХ ЧАСОВ ==========================]]
+if SERVER then
+	local function FindNearestStation(vector)
+		local StationName
+		local dist
+		local NearestStation = {}
+		if not Metrostroi.StationConfigurations then return false end
+		for k,v in pairs(Metrostroi.StationConfigurations) do
+			--k - индекс станции
+			--v - names и positions
+			if not v.positions or not v.positions[1] or not v.positions[1][1] then continue end
+			if not v.names or not v.names[1] then StationName = k else StationName = v.names[1] end
+			dist = vector:DistToSqr(v.positions[1][1])
+			if not NearestStation["dist"] or NearestStation["dist"] > dist then NearestStation["dist"] = dist NearestStation["StationName"] = StationName end
+		end
+	return NearestStation["StationName"] or false
+	end
+	
+	local function FindAnotherSignalOnSameTrack(signal)
+		local track = signal.TrackPosition.path and signal.TrackPosition.path.id or 0
+		if track == 0 then return false end
+		local curtrack
+		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
+			if not IsValid(v) or v == signal or not v.Name then continue end
+			curtrack = v.TrackPosition.path and v.TrackPosition.path.id or 0
+			if curtrack == 0 then continue end
+			if curtrack == track then
+				local strsub = string.sub(v.Name,-1)
+				local strsub1 = string.sub(v.Name,-2,-2)
+				if tonumber(strsub) then
+					return strsub
+				elseif tonumber(strsub1)  then
+					return strsub1
+				else
+					continue
+				end
+			end
+		end
+	end
+	
+	local function FindNearestSignal(vector)
+		local mindist
+		local curdist
+		local NearestSignal
+		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
+			if not IsValid(v) or not v.Name then continue end
+			curdist = vector:DistToSqr(v:GetPos())
+			if not curdist then continue end
+			if not mindist or mindist > curdist then mindist = curdist NearestSignal = v end
+		end
+		if NearestSignal then
+			--if FindNearestStation(NearestSignal:GetPos()):find("Анти") then print(NearestSignal.Name) end
+			local strsub = string.sub(NearestSignal.Name,-1)
+			local strsub1 = string.sub(NearestSignal.Name,-2,-2)
+			if tonumber(strsub) then
+				return strsub
+			elseif tonumber(strsub1) then
+				return strsub1
+			else
+				local signal = FindAnotherSignalOnSameTrack(NearestSignal)
+				if signal then return signal end
+			end
+		else
+			return nil
+		end
+	end
+	
+	local StationsCfg = {}
+	local function GenerateStationsCfg()
+		local i = 0
+		for k,v in pairs(ents.FindByClass("gmod_track_clock_interval")) do
+			if not IsValid(v) then continue end
+			i = i + 1
+			local vector = v:GetPos()
+			local Station = FindNearestStation(vector) or ""
+			local Path = FindNearestSignal(vector) % 2 == 0 and 2 or 1
+			if not StationsCfg[i] then StationsCfg[i] = {} end
+			StationsCfg[i]["ent"] = v
+			StationsCfg[i]["name"] = Station..". Путь: "..Path..". Интервал: "
+		end
+	end
+
+	local function GetIntervalTime(ent)
+		local time = math.floor(Metrostroi.GetSyncTime() - (ent:GetIntervalResetTime() + GetGlobalFloat("MetrostroiTY")))
+		if time < 0 or time > 60 * 9 + 59 then time = 0 end
+		local minutes = math.floor(time / 60)
+		local seconds = math.floor(time) - minutes * 60
+		if seconds < 10 then seconds = "0"..seconds end
+		return minutes..":"..seconds
+	end
+	
+	util.AddNetworkString("SendIntervalsNetworkString")	
+	local timestamp = 0
+	local IntervalsTbl = {}
+	local IntervalsEnabled = true
+	local function EnableIntervalClocks()
+		hook.Add("Think","SendIntevals",function() 
+			if not IntervalsEnabled then hook.Remove("Think","SendIntevals") return end
+			if CurTime() - timestamp < 2 then return end
+			timestamp = CurTime()
+			if not StationsCfg[1] then GenerateStationsCfg() return end
+			for i = 1, #StationsCfg do
+				IntervalsTbl[i] = GetIntervalTime(StationsCfg[i]["ent"])
+			end
+			net.Start("SendIntervalsNetworkString")
+			net.WriteTable(IntervalsTbl)
+			net.Broadcast()
+		end)
+	end
+	EnableIntervalClocks()
+	
+	util.AddNetworkString("SendStationsCfgNetworkString")
+	local function SendStationsCfgToClient(ply)
+		if not IsValid(ply) then return end
+		if not StationsCfg[1] then GenerateStationsCfg() end
+		if StationsCfg[1] and StationsCfg[1]["name"] then
+			local tbl = {}
+			for i = 1, #StationsCfg do
+				tbl[i] = StationsCfg[i]["name"]
+			end
+			net.Start("SendStationsCfgNetworkString")
+			net.WriteTable(tbl)
+			net.Send(ply)
+		end
+	end
+	
+	hook.Add("PlayerInitialSpawn","SendStationsCfgOnSpawn",function(ply) 
+		timer.Simple(1,function()
+			SendStationsCfgToClient(ply)
+		end)
+	end)
+	
+	timer.Simple(1,function()
+		for k,v in pairs(player.GetAll()) do
+			SendStationsCfgToClient(v)
+		end
+	end)
+end
+
+
+if CLIENT then	
+	CreateClientConVar("showintervalclocks","0",false,false,"")
+	local StationsCfg = {}
+	local IntervalsTbl = {}
+	
+	net.Receive("SendIntervalsNetworkString",function() 
+		IntervalsTbl = net.ReadTable()
+	end)
+	
+	net.Receive("SendStationsCfgNetworkString",function() 
+		StationsCfg = net.ReadTable()
+	end)
+	
+	local timestamp = 0
+	local h = 10
+	CreateClientConVar("showintervalclocks","0",false,false,"")
+	hook.Add("HUDPaint","ShowingIntervalClocks",function()
+		if GetConVar("showintervalclocks"):GetInt() == 0 then return end
+		if StationsCfg[1] and IntervalsTbl[1] then
+			for i = 1, #StationsCfg do
+				draw.SimpleText(StationsCfg[i]..IntervalsTbl[i],"ChatFont",0,0 + (h + 5) * i,Color(255,255,255,150),TEXT_ALIGN_LEFT,TEXT_ALIGN_BOTTOM)
+			end
 		end
 	end)
 end
