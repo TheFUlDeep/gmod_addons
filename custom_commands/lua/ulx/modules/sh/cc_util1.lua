@@ -917,7 +917,7 @@ if SERVER then
 		local MinDist
 		local NearestSignal
 		local SignalPos
-		local wLimit = 2000		-- возможно это многовато
+		local wLimit = 300		-- возможно это многовато
 		local DistLimit = PlatformLen and PlatformLen or 4000
 		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
 		--for k,v in pairs(ents.FindInSphere(vector,4000)) do
@@ -940,7 +940,7 @@ if SERVER then
 		local MinDist
 		local dist
 		local radius = 4000
-		local wLimit = 300
+		local wLimit = 400
 		local Nearest
 		for k,v in pairs(Metrostroi.StationConfigurations) do						--поиск ближайшей станции в плоскости и в ограниченной высоте
 			if not v.positions or not v.positions[1] or not v.positions[1][1] then continue else StationPos = v.positions[1][1] end
