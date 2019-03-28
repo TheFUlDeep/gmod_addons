@@ -917,13 +917,14 @@ if SERVER then
 		local MinDist
 		local NearestSignal
 		local SignalPos
-		local wLimit = 300		-- возможно это многовато
-		local DistLimit = PlatformLen and PlatformLen + 200 or 4000
+		local wLimit = 2000		-- возможно это многовато
+		local DistLimit = PlatformLen and PlatformLen or 4000
 		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
 		--for k,v in pairs(ents.FindInSphere(vector,4000)) do
 			if not IsValid(v) --[[or v:GetClass() ~= "gmod_track_signal"]] or v.TrackPosition.path.id ~= TrackID then continue end
 			SignalPos = v:GetPos()
-			--print(v.Name)
+			--print(SignalPos.z)
+			--print(vector.z)
 			if math.abs(SignalPos.z - vector.z) > wLimit then continue end
 			CurDist = math.Distance(SignalPos.x,SignalPos.y,vector.x,vector.y)
 			if CurDist > DistLimit then continue end
@@ -932,7 +933,7 @@ if SERVER then
 		return NearestSignal
 	end
 	
-	local function SecondMethod(vector)
+	local function SecondMethod(vector,arg)
 		local StationName
 		local StationPos
 		local NearestStation
@@ -951,7 +952,7 @@ if SERVER then
 				if dist > radius then Nearest = true else Nearest = false end
 			end
 		end
-		if Nearest then Nearest = " (ближайшая в плоскости)" else Nearest = "" end
+		if Nearest and not arg then Nearest = " (ближайшая в плоскости)" else Nearest = "" end
 		return NearestStation..Nearest or ""
 	end
 	
@@ -962,18 +963,24 @@ if SERVER then
 		local Signal
 		local MinDist
 		local NearestSignal
-		local DistLimit = 50
+		local PlatformLen
+		local NearestPlatformLen
 		for k,v in pairs(ents.FindByClass("gmod_track_platform")) do
 			if not IsValid(v) then continue end
-			Signal = FindNearestSignalWithTrackID(v:GetPos(),TrackID,v.PlatformDir:Length())
+			PlatformLen = v.PlatformDir:Length()
+			Signal = FindNearestSignalWithTrackID(v:GetPos(),TrackID,PlatformLen)
+			if not Signal then continue end
 			CurDist = math.abs(PositionOnTrack - Signal.TrackPosition.x)
 			--print(SecondMethod(v:GetPos()))
 			--print(Signal.Name)
 			--print(CurDist)
-			if not MinDist or MinDist > CurDist then MinDist = CurDist NearestSignal = Signal end
+			if not MinDist or MinDist > CurDist then MinDist = CurDist NearestSignal = Signal NearestPlatformLen = PlatformLen / 64 / 1.5 end
 		end
-		if MinDist and MinDist > DistLimit then DistLimit = " (ближайшая по треку)" else DistLimit = "" end
-		return NearestSignal and SecondMethod(NearestSignal:GetPos())..DistLimit or nil
+		--print(NearestPlatformLen)
+		print(NearestSignal.Name)
+		--print(MinDist)
+		if MinDist and MinDist > NearestPlatformLen then NearestPlatformLen = " (ближайшая по треку)" else NearestPlatformLen = "" end
+		return NearestSignal and SecondMethod(NearestSignal:GetPos(),true)..NearestPlatformLen or nil
 	end
 
 		-----------------ОПРЕДЕЛЕНИЕ МЕСТА ВЕКТОРА ОТНОСИТЕЛЬНО СТАНЦИЙ------------------------------------------------------
