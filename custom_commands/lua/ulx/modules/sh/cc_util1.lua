@@ -900,22 +900,6 @@ if SERVER then
 		end
 	end
 	end)
-
-	--[[local function FindNearestStation(vector)						-- поиск самой ближайшей станции в пространстве
-		local StationName
-		local dist
-		local NearestStation = {}
-		if not Metrostroi.StationConfigurations then return false end
-		for k,v in pairs(Metrostroi.StationConfigurations) do
-			--k - индекс станции
-			--v - names и positions
-			if not v.positions or not v.positions[1] or not v.positions[1][1] then continue end
-			if not v.names or not v.names[1] then StationName = k else StationName = v.names[1] end
-			dist = vector:DistToSqr(v.positions[1][1])
-			if not NearestStation["dist"] or NearestStation["dist"] > dist then NearestStation["dist"] = dist NearestStation["StationName"] = StationName end
-		end
-	return NearestStation["StationName"] or false
-	end
 	
 	local function GetPositionOnTrack(vector)
 		local PositionOnTrack
@@ -928,73 +912,27 @@ if SERVER then
 		return PositionOnTrack,TrackID
 	end
 	
-	local function FindNearestSignalWithTrackID(vector,TrackID)
+	local function FindNearestSignalWithTrackID(vector,TrackID,PlatformLen)
 		local CurDist
 		local MinDist
 		local NearestSignal
 		local SignalPos
-		local wLimit = 500
-		for k,v in pairs(ents.FindInSphere(vector,5000)) do
-			if not IsValid(v) or (v.TrackPosition and v.TrackPosition.path and v.TrackPosition.path.id or -1) ~= TrackID then continue end
+		local wLimit = 300		-- возможно это многовато
+		local DistLimit = PlatformLen and PlatformLen + 200 or 4000
+		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
+		--for k,v in pairs(ents.FindInSphere(vector,4000)) do
+			if not IsValid(v) --[[or v:GetClass() ~= "gmod_track_signal"]] or v.TrackPosition.path.id ~= TrackID then continue end
 			SignalPos = v:GetPos()
-			if math.abs(SignalPos.y - vector.y) > wLimit then continue end
-			print(v.Name)
+			--print(v.Name)
+			if math.abs(SignalPos.z - vector.z) > wLimit then continue end
 			CurDist = math.Distance(SignalPos.x,SignalPos.y,vector.x,vector.y)
+			if CurDist > DistLimit then continue end
 			if not MinDist or MinDist > CurDist then MinDist = CurDist NearestSignal = v end
 		end
 		return NearestSignal
-	end]]
-	
-	--[[local function FinNearestStationByTrack(vector)
-		local PositionOnTrack,TrackID = GetPositionOnTrack(vector)		-- cсначала смотрим, на каком треке стоит паравоз
-		if PositionOnTrack then
-			local StationName
-			local StationPos
-			local TrackMinDist
-			local dist2
-			local wLimit = 200
-			local SignalPos
-			local NearestSignal
-			local NearestSignal2
-			local MaxDist2 = 100
-			local Nearest = false
-			local Nearest2 = Nearest
-			local NearestStation
-			for k,v in pairs(Metrostroi.StationConfigurations) do
-				if not v.positions or not v.positions[1] or not v.positions[1][1] then continue else StationPos = v.positions[1][1] end
-				if not v.names or not v.names[1] then StationName = k else StationName = v.names[1] end
-				local dist
-				local MinDist
-				for k1,v1 in pairs(ents.FindByClass("gmod_track_signal")) do				-- на каждой станции ищем ближайший к ней светофор (сигнал) на том же треке, на котором ставится паравоз
-					if not IsValid(v1) or (v1.TrackPosition.path and v1.TrackPosition.path.id ~= TrackID) then continue end
-					SignalPos = v1:GetPos()
-					if math.abs(SignalPos.y - StationPos.y) > wLimit then continue end
-					dist = math.Distance(StationPos.x,StationPos.y,SignalPos.x,SignalPos.y)
-					if not MinDist or MinDist > dist then NearestSignal = v1 end
-				end
-				if not NearestSignal then continue end
-				print(StationName)
-				print(NearestSignal.Name)
-				dist2 = math.abs(PositionOnTrack - NearestSignal.TrackPosition.x)			-- из ближайших к станциям сигналов ищу ближайший сигнал по треку к паравозу
-				if dist2 > MaxDist2 then Nearest = true else Nearest = false end
-				if not TrackMinDist or TrackMinDist > dist2 then TrackMinDist = dist2 NearestSignal2 = NearestSignal Nearest2 = Nearest end
-			end
-			NearestStation = FindNearestStation(NearestSignal2:GetPos())				-- к самому ближнему сигналу (который с свою очередь самый ближний к станции) ищу самую ближнюю станцию
-			if NearestStation then
-				if Nearest2 then return NearestStation.." (ближайшая в плоскости)"
-				else
-					return NearestStation
-				end
-			else
-				return nil
-			end
-		else
-			return nil
-		end
-	end]]
+	end
 	
 	local function SecondMethod(vector)
-		print("second method")
 		local StationName
 		local StationPos
 		local NearestStation
@@ -1016,32 +954,43 @@ if SERVER then
 		if Nearest then Nearest = " (ближайшая в плоскости)" else Nearest = "" end
 		return NearestStation..Nearest or ""
 	end
+	
+	local function FirstMethod(vector)
+		local PositionOnTrack,TrackID = GetPositionOnTrack(vector)
+		if not PositionOnTrack or not TrackID then print("Can't detect track") return nil end
+		local CurDist
+		local Signal
+		local MinDist
+		local NearestSignal
+		local DistLimit = 50
+		for k,v in pairs(ents.FindByClass("gmod_track_platform")) do
+			if not IsValid(v) then continue end
+			Signal = FindNearestSignalWithTrackID(v:GetPos(),TrackID,v.PlatformDir:Length())
+			CurDist = math.abs(PositionOnTrack - Signal.TrackPosition.x)
+			--print(SecondMethod(v:GetPos()))
+			--print(Signal.Name)
+			--print(CurDist)
+			if not MinDist or MinDist > CurDist then MinDist = CurDist NearestSignal = Signal end
+		end
+		if MinDist and MinDist > DistLimit then DistLimit = " (ближайшая по треку)" else DistLimit = "" end
+		return NearestSignal and SecondMethod(NearestSignal:GetPos())..DistLimit or nil
+	end
 
 		-----------------ОПРЕДЕЛЕНИЕ МЕСТА ВЕКТОРА ОТНОСИТЕЛЬНО СТАНЦИЙ------------------------------------------------------
 	local function detectstation(vector)
 		if not Metrostroi.StationConfigurations then return "" end
-		
-		return SecondMethod(vector)
-
-		--local Station1 = FinNearestStationByTrack(vector)
-		--if Station1 then return Station1 end
-		--print(NearestStation)
-		--if stringfind(NearestStation,"депо",true) then
-			--results = Metrostroi.GetPositionOnTrack(vector)
-			--if results and #results > 0 then
-				--print(results[1]["path"]["id"])
-				--print(results[1].x)
-				--print(vector)
-				--print(results[1].y)
-			--end
-		--end
-		--if MinDist > radius then NearestStation = "" end
-		--results = Metrostroi.GetPositionOnTrack(vector)
-		--if results and #results > 0 then
-			--print(results[1]["path"]["id"])
-			--print(results[1].x)
-		--end
+		local Station = FirstMethod(vector)
+		if not Station then 
+			print("second method")
+			return SecondMethod(vector)
+		else
+			return Station
+		end
 	end
+	
+	--[[for k,v in pairs(player.GetAll()) do
+		print(detectstation(v:GetPos()))
+	end]]
 
 
 	-------------------------УВЕДОМЛЕНИЕ О СПАВНЕ СОСТАВА В ЧАТ (само использование функции нужно прописать в trains_spawner.lua)--------------------------------
@@ -1274,7 +1223,7 @@ if SERVER then
 			for k1,v1 in pairs(routes) do
 				if v1[1] == v[1] and v1[3] ~= v[3] and v1[1] ~= "0" then 
 					ulx.fancyLogAdmin(v1[2],"#A и #T имеют одинаковые номера маршрутов!", v[2])
-					print(v1[2]:Nick().." i "..v[2]:Nick())
+					--print(v1[2]:Nick().." i "..v[2]:Nick())
 					for k2,v2 in pairs(routes) do
 						if v2[1] == v1[1] then routes[k2] = nil break
 						elseif v2[1] == v[1] then routes[k2] = nil break
@@ -1630,13 +1579,14 @@ if SERVER then
 			StationsCfg[i]["ent"] = v
 			StationsCfg[i]["name"] = Station..". Путь: "..Path..". Интервал: "
 		end
-		--[[for i = 1, #StationsCfg do
-			if not StationsCfg[i] then continue end
-			for j = 1, #StationsCfg do
-				if not StationsCfg[j] then continue end
-				if StationsCfg[i]["ent"]:GetPos():DistToSqr(StationsCfg[j]["ent"]:GetPos()) < 300 then StationsCfg[j] = nil end
+		
+		local pos
+		for k,v in pairs(StationsCfg) do
+			pos = v["ent"]:GetPos()
+			for k1,v1 in pairs(StationsCfg) do
+				if v1["ent"] and v1["ent"] ~= v["ent"] and pos:DistToSqr(v1["ent"]:GetPos()) < 300 * 300 then StationsCfg[k1] = nil end
 			end
-		end]]
+		end
 	end
 
 	local function GetIntervalTime(ent)
@@ -1690,6 +1640,11 @@ if SERVER then
 		for k,v in pairs(player.GetAll()) do
 			SendStationsCfgToClient(v)
 		end
+		--[[for k,v in pairs(player.GetAll()) do
+			for k1,v1 in pairs(StationsCfg) do
+				v:SetPos(v1["ent"]:GetPos())
+			end
+		end]]
 	end)
 end
 
@@ -1723,13 +1678,16 @@ if CLIENT then
 		if CurTime() - timestamp >= 1 and IntervalsTbl[1] then
 			timestamp = CurTime()
 			for i = 1, #IntervalsTbl do
+				if not IntervalsTbl[i] then continue end
 				IntervalsTbl[i] = IntervalsTbl[i] + 1
 			end
 		end
+		local j = 0
 		if StationsCfg[1] and IntervalsTbl[1] then
 			for i = 1, #StationsCfg do
-				if not StationsCfg[i] then continue end
-				draw.SimpleText(StationsCfg[i]..NumberToString(IntervalsTbl[i]),"ChatFont",0,0 + (h + 5) * i,Color(255,255,255,150),TEXT_ALIGN_LEFT,TEXT_ALIGN_BOTTOM)
+				if not StationsCfg[i] or stringfind(StationsCfg[i],"депо",true) then continue end
+				j = j + 1
+				draw.SimpleText(StationsCfg[i]..NumberToString(IntervalsTbl[i]),"ChatFont",0,0 + (h + 5) * j,Color(255,255,255,150),TEXT_ALIGN_LEFT,TEXT_ALIGN_BOTTOM)
 			end
 		end
 	end)
