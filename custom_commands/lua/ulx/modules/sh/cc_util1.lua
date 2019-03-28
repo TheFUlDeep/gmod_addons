@@ -606,6 +606,7 @@ traintp:defaultAccess(ULib.ACCESS_OPERATOR)
 traintp:help("Телепортироваться к составу")
 
 if SERVER then
+	local Map = game.GetMap()
 	--if game.GetMap() == "gm_mus_crimson_line_tox_v9_21" or game.GetMap() == "gm_metro_crossline_c4" or game.GetMap() == "gm_mus_orange_metro_h" or game.GetMap() == "gm_smr_first_line_v2" or game.GetMap() == "gm_metrostroi_b50" then switchwaittime = 2.5 else switchwaittime = 5.5 end
 	--[[ ======================================= ЗАПОМИНАЕМ, КТО ПОСЛЕДНИЙ ИСПОЛЬЗОВАЛ !sopen ======================================= ]]
 	--[[hook.Add("PlayerSay", "SwitchCheck1", function(ply, text, team)
@@ -922,18 +923,19 @@ if SERVER then
 			end
 		end
 		if Nearest and not arg then Nearest = " (ближайшая в плоскости)" else Nearest = "" end
-		return NearestStation..Nearest or ""
+		return NearestStation and NearestStation..Nearest or ""
 	end
 	
-	local function FindTrackInSquare(vector,TrackID,radiuss)
+	local function FindTrackInSquare(vector,TrackID)
 		local i,j,k
-		local radius = radiuss or 7000
-		local step = 500 	-- возможно это число надо будет сделать поменьше
+		local radius = 2000
+		local wLimit = 500
+		local step = 400
 		local out = {}
 		local n = 0
 		for i = -radius/2,radius/2,step do
 			for j = -radius/2,radius/2,step do
-				for k = -radius/2,radius/2,step do
+				for k = -wLimit/2,wLimit/2, 250 do
 					local results = Metrostroi.GetPositionOnTrack(vector + Vector(i,j,k))
 					--print(ent:GetPos() + Vector(i,j,k))
 					if #results > 0 then
@@ -1023,7 +1025,7 @@ if SERVER then
 	local function detectstation(vector)
 		if not Metrostroi.StationConfigurations then return "" end
 		local Station
-		if not Station then Station = FirstMethod(vector) end
+		if not Station --[[and not Map:find("loopl")]] then Station = FirstMethod(vector) end
 		if not Station then Station = ThirdMethod(vector) end
 		if not Station then Station = SecondMethod(vector) end
 		return Station or ""
