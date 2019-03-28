@@ -439,10 +439,10 @@ function SyncTrainsThink()
 			SendToWebServer({},WebServerUrl,"trains")
 			SendToWebServer({},WebServerUrl,"routes")
 			SendToWebServer({},WebServerUrl,"switches")
-			hook.Remove("Think","SyncTrainsThink") 
 			for k,v in pairs(ents.FindByClass("gmod_subway_base")) do
 				if IsValid(v) and v.name and v.name == "SyncedTrain" then v:Remove() end
 			end
+			hook.Remove("Think","SyncTrainsThink") 
 		end
 		if lasttime + interval > os.clock() then return end
 		lasttime = os.clock()
