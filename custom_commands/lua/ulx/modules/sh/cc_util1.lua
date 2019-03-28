@@ -901,39 +901,8 @@ if SERVER then
 	end
 	end)
 	
-	local function GetPositionOnTrack(vector)
-		local PositionOnTrack
-		local TrackID
-		local results = Metrostroi.GetPositionOnTrack(vector)
-		if results and #results > 0 then
-			PositionOnTrack = results[1]["x"]
-			TrackID = results[1]["path"]["id"]
-		end
-		return PositionOnTrack,TrackID
-	end
-	
-	local function FindNearestSignalWithTrackID(vector,TrackID,PlatformLen)
-		local CurDist
-		local MinDist
-		local NearestSignal
-		local SignalPos
-		local wLimit = 300		-- возможно это многовато
-		local DistLimit = PlatformLen and PlatformLen or 4000
-		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
-		--for k,v in pairs(ents.FindInSphere(vector,4000)) do
-			if not IsValid(v) --[[or v:GetClass() ~= "gmod_track_signal"]] or v.TrackPosition.path.id ~= TrackID then continue end
-			SignalPos = v:GetPos()
-			--print(SignalPos.z)
-			--print(vector.z)
-			if math.abs(SignalPos.z - vector.z) > wLimit then continue end
-			CurDist = math.Distance(SignalPos.x,SignalPos.y,vector.x,vector.y)
-			if CurDist > DistLimit then continue end
-			if not MinDist or MinDist > CurDist then MinDist = CurDist NearestSignal = v end
-		end
-		return NearestSignal
-	end
-	
 	local function SecondMethod(vector,arg)
+		print("second method")
 		local StationName
 		local StationPos
 		local NearestStation
@@ -956,43 +925,108 @@ if SERVER then
 		return NearestStation..Nearest or ""
 	end
 	
-	local function FirstMethod(vector)
-		local PositionOnTrack,TrackID = GetPositionOnTrack(vector)
-		if not PositionOnTrack or not TrackID then print("Can't detect track") return nil end
-		local CurDist
-		local Signal
-		local MinDist
-		local NearestSignal
-		local PlatformLen
-		local NearestPlatformLen
-		for k,v in pairs(ents.FindByClass("gmod_track_platform")) do
-			if not IsValid(v) then continue end
-			PlatformLen = v.PlatformDir:Length()
-			Signal = FindNearestSignalWithTrackID(v:GetPos(),TrackID,PlatformLen)
-			if not Signal then continue end
-			CurDist = math.abs(PositionOnTrack - Signal.TrackPosition.x)
-			--print(SecondMethod(v:GetPos()))
-			--print(Signal.Name)
-			--print(CurDist)
-			if not MinDist or MinDist > CurDist then MinDist = CurDist NearestSignal = Signal NearestPlatformLen = PlatformLen / 64 / 1.5 end
+	local function FindTrackInSquare(vector,TrackID,radiuss)
+		local i,j,k
+		local radius = radiuss or 7000
+		local step = 500 	-- возможно это число надо будет сделать поменьше
+		local out = {}
+		local n = 0
+		for i = -radius/2,radius/2,step do
+			for j = -radius/2,radius/2,step do
+				for k = -radius/2,radius/2,step do
+					local results = Metrostroi.GetPositionOnTrack(vector + Vector(i,j,k))
+					--print(ent:GetPos() + Vector(i,j,k))
+					if #results > 0 then
+						if TrackID then
+							if results[1]["path"]["id"] ~= TrackID then continue end
+						end
+						n = n + 1
+						if not out[n] then out[n] = {} end
+						out[n]["vector"] = Metrostroi.GetTrackPosition(results[1]["path"],results[1]["x"])
+						out[n]["trakcpos"] = results[1]["x"]
+						out[n]["trackid"] = results[1]["path"]["id"]
+						--return out[n]
+					end
+				end
+			end
 		end
-		--print(NearestPlatformLen)
-		--print(NearestSignal.Name)
+		--PrintTable(out)
+		if not out[1] then return nil end
+		local MinDist,CurDist,Resault
+		for k,v in pairs(out) do								-- из всех треков ищу ближайший, чтобы не зацепить те, что далеко
+			CurDist = v["vector"]:DistToSqr(vector)
+			if not MinDist or MinDist > CurDist then MinDist = CurDist Resault = k end
+		end
+		--if out[Resault] then PrintTable(out[Resault]) end
+		return(out[Resault])
+	end
+	
+	
+	local function FirstMethod(vector)
+		print("first method")
+		local Track = FindTrackInSquare(vector)
+		if not Track or not Track.trackid then return nil end
+		--PrintTable(Track)
+		local CurDist,MinDist,--[[MinVec,]]NearestPlatform--,mintbl
+		for k,v in pairs(ents.FindByClass("gmod_track_platform")) do
+			local PlatformPos = v:GetPos()
+			local tbl = FindTrackInSquare(PlatformPos,Track.trackid)
+			if not tbl then continue end
+			--PrintTable(tbl)
+			CurDist = math.abs(Track.trakcpos - tbl.trakcpos)
+			--print(CurDist)
+			if not MinDist or MinDist > CurDist then MinDist = CurDist --[[MinVec = tbl.vector]] NearestPlatform = v --[[mintbl = tbl]] end
+		end
+		--PrintTable(mintbl)
 		--print(MinDist)
-		if MinDist and MinDist > NearestPlatformLen then NearestPlatformLen = " (ближайшая по треку)" else NearestPlatformLen = "" end
-		return NearestSignal and SecondMethod(NearestSignal:GetPos(),NearestPlatformLen ~= "")..NearestPlatformLen or nil
+		if not NearestPlatform then return nil end
+		local PlatformPos = NearestPlatform:GetPos()
+		local StationName,StationPos,NearestStation,MinDis2
+		local PlatformLen = NearestPlatform.PlatformDir:Length()
+		if MinDist > PlatformLen / 1.5 / 64 then MinDist = " (ближайшая по треку)" else MinDist = "" end
+		for k,v in pairs(Metrostroi.StationConfigurations) do
+			if not v.positions or not v.positions[1] or not v.positions[1][1] then continue else StationPos = v.positions[1][1] end
+			if not v.names or not v.names[1] then StationName = k else StationName = v.names[1] end
+			CurDist = StationPos:DistToSqr(PlatformPos)
+			--if math.abs(StationPos.z - PlatformPos.z) > 300 then continue end
+			--CurDist = math.Distance(StationPos.x,StationPos.y,PlatformPos.x,PlatformPos.y)
+			--print(CurDist)
+			if not MinDis2 or MinDis2 > CurDist then MinDis2 = CurDist NearestStation = StationName end
+		end
+		return NearestStation and NearestStation..MinDist or nil
+	end
+	
+	local function ThirdMethod(vector)
+		print("third method")
+		local Track = FindTrackInSquare(vector)
+		if not Track or not Track.trackid then return nil end
+		local StationName,StationPos,CurDist,MinDist,NearestStation
+		for k,v in pairs(Metrostroi.StationConfigurations) do
+			if not v.positions or not v.positions[1] or not v.positions[1][1] then continue else StationPos = v.positions[1][1] end
+			if not v.names or not v.names[1] then StationName = k else StationName = v.names[1] end
+			local tbl = FindTrackInSquare(StationPos,Track.trackid)
+			--print(StationName)
+			--print(Track.trackid)
+			if not tbl then continue end
+			--PrintTable(tbl)
+			CurDist = math.abs(Track.trakcpos - tbl.trakcpos)
+			if not MinDist or MinDist > CurDist then MinDist = CurDist NearestStation = StationName end
+		end
+		if MinDist and NearestStation then
+			return MinDist < 4000 / 1.5 / 64 and NearestStation or NearestStation.." (ближайшая по треку)" or nil
+		else 
+			return nil 
+		end
 	end
 
 		-----------------ОПРЕДЕЛЕНИЕ МЕСТА ВЕКТОРА ОТНОСИТЕЛЬНО СТАНЦИЙ------------------------------------------------------
 	local function detectstation(vector)
 		if not Metrostroi.StationConfigurations then return "" end
-		local Station = FirstMethod(vector)
-		if not Station then 
-			print("second method")
-			return SecondMethod(vector)
-		else
-			return Station
-		end
+		local Station
+		if not Station then Station = FirstMethod(vector) end
+		if not Station then Station = ThirdMethod(vector) end
+		if not Station then Station = SecondMethod(vector) end
+		return Station or ""
 	end
 	
 	--[[for k,v in pairs(player.GetAll()) do
@@ -1061,7 +1095,7 @@ if SERVER then
 	--[[============================= РАЗРЕШЕНИЕ СПАВНА ТОЛЬКО В ОПРЕДЕЛЕННЫХ МЕСТАХ ==========================]]
 	hook.Add("CanTool", "AllowSpawnTrain", function(ply, tr, tool)
 		if tool ~= "train_spawner" then return end
-		local ourstation = bigrustosmall(detectstation(tr.HitPos))
+		local ourstation = bigrustosmall(SecondMethod(tr.HitPos))
 		if Metrostroi.ActiveDispatcher ~= nil
 			and string.match(ourstation, "пто") ~= "пто"
 			and string.match(ourstation, "депо") ~= "депо"
@@ -1241,9 +1275,15 @@ if SERVER then
 		end
 	end
 	
+	local timestamp = 0
+	local IsRoutesCheckingEnabled = true
 	local function CheckRoutes()
-		findroutes()
-		timer.Simple(60, function() CheckRoutes() end)
+		hook.Add("Think","CheckingRoutesThink",function() 
+			if not IsRoutesCheckingEnabled then hook.Remove("Think","CheckingRoutesThink") return end
+			if CurTime() - timestamp < 60 then return end
+			timestamp = CurTime()
+			findroutes()
+		end)
 	end
 	CheckRoutes()
 
