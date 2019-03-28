@@ -977,10 +977,10 @@ if SERVER then
 			if not MinDist or MinDist > CurDist then MinDist = CurDist NearestSignal = Signal NearestPlatformLen = PlatformLen / 64 / 1.5 end
 		end
 		--print(NearestPlatformLen)
-		print(NearestSignal.Name)
+		--print(NearestSignal.Name)
 		--print(MinDist)
 		if MinDist and MinDist > NearestPlatformLen then NearestPlatformLen = " (ближайшая по треку)" else NearestPlatformLen = "" end
-		return NearestSignal and SecondMethod(NearestSignal:GetPos(),true)..NearestPlatformLen or nil
+		return NearestSignal and SecondMethod(NearestSignal:GetPos(),NearestPlatformLen ~= "")..NearestPlatformLen or nil
 	end
 
 		-----------------ОПРЕДЕЛЕНИЕ МЕСТА ВЕКТОРА ОТНОСИТЕЛЬНО СТАНЦИЙ------------------------------------------------------
