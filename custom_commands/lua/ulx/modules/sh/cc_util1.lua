@@ -930,12 +930,12 @@ if SERVER then
 		local i,j,k
 		local radius = 2000
 		local wLimit = 500
-		local step = 400
+		local step = 100
 		local out = {}
 		local n = 0
 		for i = -radius/2,radius/2,step do
 			for j = -radius/2,radius/2,step do
-				for k = -wLimit/2,wLimit/2, 250 do
+				for k = -wLimit/2,wLimit/2,step do
 					local results = Metrostroi.GetPositionOnTrack(vector + Vector(i,j,k))
 					--print(ent:GetPos() + Vector(i,j,k))
 					if #results > 0 then
@@ -963,70 +963,92 @@ if SERVER then
 		return(out[Resault])
 	end
 	
-	
-	local function FirstMethod(vector)
-		print("first method")
-		local Track = FindTrackInSquare(vector)
-		if not Track or not Track.trackid then return nil end
-		--PrintTable(Track)
-		local CurDist,MinDist,--[[MinVec,]]NearestPlatform--,mintbl
-		for k,v in pairs(ents.FindByClass("gmod_track_platform")) do
-			local PlatformPos = v:GetPos()
-			local tbl = FindTrackInSquare(PlatformPos,Track.trackid)
-			if not tbl then continue end
-			--PrintTable(tbl)
-			CurDist = math.abs(Track.trakcpos - tbl.trakcpos)
-			--print(CurDist)
-			if not MinDist or MinDist > CurDist then MinDist = CurDist --[[MinVec = tbl.vector]] NearestPlatform = v --[[mintbl = tbl]] end
-		end
-		--PrintTable(mintbl)
-		--print(MinDist)
-		if not NearestPlatform then return nil end
-		local PlatformPos = NearestPlatform:GetPos()
-		local StationName,StationPos,NearestStation,MinDis2
-		local PlatformLen = NearestPlatform.PlatformDir:Length()
-		if MinDist > PlatformLen / 1.5 / 64 then MinDist = " (ближайшая по треку)" else MinDist = "" end
+	local function FindNearestStation(vector)
+		local StationName,StationPos,CurDist,MinDist,NearestStationName
 		for k,v in pairs(Metrostroi.StationConfigurations) do
 			if not v.positions or not v.positions[1] or not v.positions[1][1] then continue else StationPos = v.positions[1][1] end
 			if not v.names or not v.names[1] then StationName = k else StationName = v.names[1] end
-			CurDist = StationPos:DistToSqr(PlatformPos)
-			--if math.abs(StationPos.z - PlatformPos.z) > 300 then continue end
-			--CurDist = math.Distance(StationPos.x,StationPos.y,PlatformPos.x,PlatformPos.y)
-			--print(CurDist)
-			if not MinDis2 or MinDis2 > CurDist then MinDis2 = CurDist NearestStation = StationName end
+			CurDist = vector:DistToSqr(StationPos)
+			if not MinDist or MinDist > CurDist then MinDist = CurDist NearestStationName = StationName end
 		end
-		return NearestStation and NearestStation..MinDist or nil
+		return NearestStationName
 	end
 	
-	local function ThirdMethod(vector)
-		print("third method")
-		local Track = FindTrackInSquare(vector)
-		if not Track or not Track.trackid then return nil end
-		local StationName,StationPos,CurDist,MinDist,NearestStation
+	local FirstMethodTbl = {}
+	local function GenerateTblForFirstMethod()
+		local i = 0
+		for k,v in pairs(ents.FindByClass("gmod_track_platform")) do
+			if not IsValid(v) then continue end
+			i = i + 1
+			if not FirstMethodTbl[i] then FirstMethodTbl[i] = {} end
+			local PlatformPos = v:GetPos()
+			local Track = FindTrackInSquare(PlatformPos)
+			if not Track then continue end
+			FirstMethodTbl[i].vector = Track.vector
+			FirstMethodTbl[i].trakcpos = Track.trakcpos
+			FirstMethodTbl[i].trackid = Track.trackid
+			--FirstMethodTbl[i].PlatformPos = PlatformPos
+			FirstMethodTbl[i].PlatformLen = v.PlatformDir:Length()
+			FirstMethodTbl[i].StationName = FindNearestStation(PlatformPos)
+		end
+		--if FirstMethodTbl[1] then PrintTable(FirstMethodTbl) end
+	end
+	
+	hook.Add("PlayerInitialSpawn","GenerateTblForFirstMethod",function() 
+		hook.Remove("PlayerInitialSpawn","GenerateTblForFirstMethod")
+		GenerateTblForFirstMethod()
+	end)
+	
+	local ThirdMethodTbl = {}
+	local function GenerateTblForThirdMethod()
+		local StationName,StationPos,CurDist,MinDist,NearestStationName
+		local i = 0
 		for k,v in pairs(Metrostroi.StationConfigurations) do
 			if not v.positions or not v.positions[1] or not v.positions[1][1] then continue else StationPos = v.positions[1][1] end
 			if not v.names or not v.names[1] then StationName = k else StationName = v.names[1] end
-			local tbl = FindTrackInSquare(StationPos,Track.trackid)
-			--print(StationName)
-			--print(Track.trackid)
-			if not tbl then continue end
-			--PrintTable(tbl)
-			CurDist = math.abs(Track.trakcpos - tbl.trakcpos)
-			if not MinDist or MinDist > CurDist then MinDist = CurDist NearestStation = StationName end
+			i = i + 1
+			if not ThirdMethodTbl[i] then ThirdMethodTbl[i] = {} end
+			local Track = FindTrackInSquare(StationPos)
+			if not Track then continue end
+			ThirdMethodTbl[i].vector = Track.vector
+			ThirdMethodTbl[i].trakcpos = Track.trakcpos
+			ThirdMethodTbl[i].trackid = Track.trackid
+			ThirdMethodTbl[i].PlatformLen = 4000
+			ThirdMethodTbl[i].StationName = FindNearestStation(StationPos)
 		end
-		if MinDist and NearestStation then
-			return MinDist < 4000 / 1.5 / 64 and NearestStation or NearestStation.." (ближайшая по треку)" or nil
-		else 
-			return nil 
+		--if ThirdMethodTbl[1] then PrintTable(ThirdMethodTbl) end
+	end
+	
+	hook.Add("PlayerInitialSpawn","GenerateTblForSecondMethod",function() 
+		hook.Remove("PlayerInitialSpawn","GenerateTblForSecondMethod")
+		GenerateTblForThirdMethod()
+	end)
+	
+	GenerateTblForFirstMethod()
+	GenerateTblForThirdMethod()
+	
+	local function FirstMethod(vector,tbl)
+		print("first method")
+		if not tbl[1] then return nil end
+		local Track = FindTrackInSquare(vector)
+		if not Track or not Track.trackid then return nil end
+		local CurDist,MinDist,FieldKey
+		for k,v in pairs(tbl) do
+			if v.trackid ~= Track.trackid then continue end
+			CurDist = math.abs(Track.trakcpos - v.trakcpos)
+			if not MinDist or MinDist > CurDist then MinDist = CurDist FieldKey = k end
 		end
+		if not FieldKey or not MinDist then return nil end
+		if MinDist > tbl[FieldKey].PlatformLen / 1.5 / 64 then MinDist = " (ближайшая по треку)" else MinDist = "" end
+		return tbl[FieldKey].StationName and tbl[FieldKey].StationName..MinDist or nil
 	end
 
 		-----------------ОПРЕДЕЛЕНИЕ МЕСТА ВЕКТОРА ОТНОСИТЕЛЬНО СТАНЦИЙ------------------------------------------------------
 	local function detectstation(vector)
 		if not Metrostroi.StationConfigurations then return "" end
 		local Station
-		if not Station --[[and not Map:find("loopl")]] then Station = FirstMethod(vector) end
-		if not Station then Station = ThirdMethod(vector) end
+		if not Station then Station = FirstMethod(vector,FirstMethodTbl) end
+		if not Station then Station = FirstMethod(vector,ThirdMethodTbl) end
 		if not Station then Station = SecondMethod(vector) end
 		return Station or ""
 	end
