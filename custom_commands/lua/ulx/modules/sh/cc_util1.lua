@@ -926,11 +926,11 @@ if SERVER then
 		return NearestStation and NearestStation..Nearest or ""
 	end
 	
-	local function FindTrackInSquare(vector,TrackID)
+	local function FindTrackInSquare(vector,TrackID,customraduis,customwlimit,customstep)
 		local i,j,k
-		local radius = 2000
-		local wLimit = 500
-		local step = 100
+		local radius = customraduis or 2000
+		local wLimit = customwlimit or 500
+		local step = customstep or 100
 		local out = {}
 		local n = 0
 		for i = -radius/2,radius/2,step do
@@ -1027,15 +1027,13 @@ if SERVER then
 	GenerateTblForFirstMethod()
 	GenerateTblForThirdMethod()
 	
-	local function FirstMethod(vector,tbl)
+	local function FirstMethod(PosOnTrack,TrackID,tbl)
 		print("first method")
 		if not tbl[1] then return nil end
-		local Track = FindTrackInSquare(vector)
-		if not Track or not Track.trackid then return nil end
 		local CurDist,MinDist,FieldKey
 		for k,v in pairs(tbl) do
-			if v.trackid ~= Track.trackid then continue end
-			CurDist = math.abs(Track.trakcpos - v.trakcpos)
+			if v.trackid ~= TrackID then continue end
+			CurDist = math.abs(PosOnTrack - v.trakcpos)
 			if not MinDist or MinDist > CurDist then MinDist = CurDist FieldKey = k end
 		end
 		if not FieldKey or not MinDist then return nil end
@@ -1047,8 +1045,11 @@ if SERVER then
 	local function detectstation(vector)
 		if not Metrostroi.StationConfigurations then return "" end
 		local Station
-		if not Station then Station = FirstMethod(vector,FirstMethodTbl) end
-		if not Station then Station = FirstMethod(vector,ThirdMethodTbl) end
+		local Track = FindTrackInSquare(vector,nil,100,100,100)
+		if Track then
+			if not Station then Station = FirstMethod(Track.trakcpos,Track.trackid,FirstMethodTbl) end
+			if not Station then Station = FirstMethod(Track.trakcpos,Track.trackid,ThirdMethodTbl) end
+		end
 		if not Station then Station = SecondMethod(vector) end
 		return Station or ""
 	end
@@ -1119,7 +1120,7 @@ if SERVER then
 	--[[============================= РАЗРЕШЕНИЕ СПАВНА ТОЛЬКО В ОПРЕДЕЛЕННЫХ МЕСТАХ ==========================]]
 	hook.Add("CanTool", "AllowSpawnTrain", function(ply, tr, tool)
 		if tool ~= "train_spawner" then return end
-		local ourstation = bigrustosmall(SecondMethod(tr.HitPos))
+		local ourstation = bigrustosmall(detectstation(tr.HitPos))
 		if Metrostroi.ActiveDispatcher ~= nil
 			and string.match(ourstation, "пто") ~= "пто"
 			and string.match(ourstation, "депо") ~= "депо"
