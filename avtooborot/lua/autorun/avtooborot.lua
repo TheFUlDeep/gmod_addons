@@ -289,7 +289,7 @@ if SERVER then
 	SendAvtooborot(-1)
 	timer.Simple(2, function() createavtooborot() end)
 
-	local function chetire(chetiretbl) --БАГ - если паравоз уедет со станциии и за ним сразу же заспавнится другой до того, как занятость очистится, маршрут не маоберется, так как не сброситя openedfrom..
+	local function chetire(chetiretbl) --БАГ - если паравоз уедет из тупика, и за ним сразу же заспавнится другой до того, как занятость очистится, маршрут не маоберется, так как не сброситя openedfrom..
 		if IsEntity(chetiretbl["Station"]) and not IsValid(chetiretbl["Station"]) then chetiretbl["Station"] = false chetiretbl["OpenedFromStation"] = false end
 		if IsEntity(chetiretbl["Near"]) and not IsValid(chetiretbl["Near"]) then chetiretbl["Near"] = false chetiretbl["OpenedFromNear"] = false end
 		if IsEntity(chetiretbl["Far"]) and not IsValid(chetiretbl["Far"]) then chetiretbl["Far"] = false chetiretbl["OpenedFromFar"] = false end
@@ -440,7 +440,7 @@ if SERVER then
 		--return chetiretbl
 	end
 	
-	local function dva(chetiretbl) --БАГ - если паравоз уедет со станциии и за ним сразу же заспавнится другой до того, как занятость очистится, маршрут не маоберется, так как не сброситя openedfrom..
+	local function dva(chetiretbl) --БАГ - если паравоз уедет из тупика, и за ним сразу же заспавнится другой до того, как занятость очистится, маршрут не маоберется, так как не сброситя openedfrom..
 		if IsEntity(chetiretbl["Station"]) and not IsValid(chetiretbl["Station"]) then chetiretbl["Station"] = false chetiretbl["OpenedFromStation"] = false end
 		--if IsEntity(chetiretbl["Near"]) and not IsValid(chetiretbl["Near"]) then chetiretbl["Near"] = false chetiretbl["OpenedFromNear"] = false end
 		if IsEntity(chetiretbl["Far"]) and not IsValid(chetiretbl["Far"]) then chetiretbl["Far"] = false chetiretbl["OpenedFromFar"] = false end
