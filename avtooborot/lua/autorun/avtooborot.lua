@@ -69,7 +69,7 @@ if SERVER then
 	local fun
 		if Map:find("neocrims") then
 			StationName = "Сталинская"
-			fun = "4"
+			fun = "6"
 			createTrigger("TPeredStation1",StationName,fun,Vector(-4136.666504, -6264.695313, -3950))
 			createTrigger("TPeredStation2",StationName,fun,Vector(-4136.666504-200, -6264.695313, -3950))
 			createTrigger("TStationReika",StationName,fun,Vector(-774.843201, -6267.464844, -3950))
@@ -142,7 +142,7 @@ if SERVER then
 		
 		if Map:find("surface") then
 			StationName = "Площадь Восстания"
-			fun = "4"
+			fun = "6"
 			
 			createTrigger("TPeredStation1",StationName,fun,Vector(12780, 2998-500, -1090))
 			createTrigger("TPeredStation2",StationName,fun,Vector(12780, 2998-500-200, -1090))
@@ -245,7 +245,7 @@ if SERVER then
 			AvtooborotTBL[fun][StationName]["RouteFromFar"] = "RL2-2"
 			
 			StationName = "Сад"
-			fun = "4"
+			fun = "6"
 			
 			createTrigger("TStationReika",StationName,fun,Vector(-1769, 15216-20, -16186))
 			createTrigger("TStationZaReikoi",StationName,fun,Vector(-1769-650, 15216-20, -16186))
@@ -289,7 +289,7 @@ if SERVER then
 	SendAvtooborot(-1)
 	timer.Simple(2, function() createavtooborot() end)
 
-	local function chetire(chetiretbl)
+	local function chetire(chetiretbl) --БАГ - если паравоз уедет со станциии и за ним сразу же заспавнится другой до того, как занятость очистится, маршрут не маоберется, так как не сброситя openedfrom..
 		if IsEntity(chetiretbl["Station"]) and not IsValid(chetiretbl["Station"]) then chetiretbl["Station"] = false chetiretbl["OpenedFromStation"] = false end
 		if IsEntity(chetiretbl["Near"]) and not IsValid(chetiretbl["Near"]) then chetiretbl["Near"] = false chetiretbl["OpenedFromNear"] = false end
 		if IsEntity(chetiretbl["Far"]) and not IsValid(chetiretbl["Far"]) then chetiretbl["Far"] = false chetiretbl["OpenedFromFar"] = false end
@@ -440,7 +440,7 @@ if SERVER then
 		--return chetiretbl
 	end
 	
-	local function dva(chetiretbl)
+	local function dva(chetiretbl) --БАГ - если паравоз уедет со станциии и за ним сразу же заспавнится другой до того, как занятость очистится, маршрут не маоберется, так как не сброситя openedfrom..
 		if IsEntity(chetiretbl["Station"]) and not IsValid(chetiretbl["Station"]) then chetiretbl["Station"] = false chetiretbl["OpenedFromStation"] = false end
 		--if IsEntity(chetiretbl["Near"]) and not IsValid(chetiretbl["Near"]) then chetiretbl["Near"] = false chetiretbl["OpenedFromNear"] = false end
 		if IsEntity(chetiretbl["Far"]) and not IsValid(chetiretbl["Far"]) then chetiretbl["Far"] = false chetiretbl["OpenedFromFar"] = false end
@@ -583,32 +583,150 @@ if SERVER then
 		--return chetiretbl
 	end
 	
+	local function CheckVhod(tbl,ent) -- если паравоз приехал со входа, или вход не занят, то функция возвращает true
+		if tbl["Vhod"] then
+			if ent.WagonList then
+				for k,v in pairs(ent.WagonList) do
+					if v == tbl["Vhod"] then tbl["Vhod"] = false return true end
+				end
+			elseif ent == tbl["Vhod"] then tbl["Vhod"] = false return true
+			end
+			return false
+		else 
+			return true
+		end
+	end
+	
+	local function pyat(tbl) --БАГ - если паравоз уедет со станциии и за ним сразу же заспавнится другой до того, как занятость очистится, маршрут не соберется, так как не сброситя openedfrom..
+		--очистка недоступных ентити
+		if IsEntity(chetiretbl["Centre"]) and not IsValid(chetiretbl["Centre"]) then chetiretbl["Centre"] = false chetiretbl["OpenedFromCentre"] = false end
+		if IsEntity(chetiretbl["Left"]) and not IsValid(chetiretbl["Left"]) then chetiretbl["Left"] = false chetiretbl["OpenedFromLeft"] = false end
+		if IsEntity(chetiretbl["Right"]) and not IsValid(chetiretbl["Right"]) then chetiretbl["Right"] = false chetiretbl["OpenedFromRight"] = false end
+		if IsEntity(chetiretbl["Vhod"]) and not IsValid(chetiretbl["Vhod"]) then chetiretbl["Vhod"] = false --[[chetiretbl["OpenedFromVhod"] = false]] end
+		
+		--очистка уехавших ентити в правильном направлении
+		if not tbl["TVihod1"].zanyat and tbl["TVihod2"].zanyat then
+			if not tbl["TVihod2"].zanyat.WagonList then
+				if tbl["TVihod2"].zanyat == tbl["Centre"] then tbl["Centre"] = false tbl["OpenedFromCentre"] = false end
+				if tbl["TVihod2"].zanyat == tbl["Left"] then tbl["Left"] = false tbl["OpenedFromLeft"] = false end
+				if tbl["TVihod2"].zanyat == tbl["Right"] then tbl["Right"] = false tbl["OpenedFromRight"] = false end
+				if tbl["TVihod2"].zanyat == tbl["Vhod"] then tbl["Vhod"] = false --[[tbl["OpenedFromVhod"] = false]] end
+			else
+				for k,v in pairs(tbl["TVihod2"].zanyat.WagonList) do
+					if v == tbl["Centre"] then tbl["Centre"] = false tbl["OpenedFromCetre"] = false end				-- вообще тут в каждом условии можно добавить break, но я не буду на всякий случай
+					if v == tbl["Left"] then tbl["Left"] = false tbl["OpenedFromLeft"] = false end
+					if v == tbl["Right"] then tbl["Right"] = false tbl["OpenedFromRight"] = false end
+					if v == tbl["Vhod"] then tbl["Vhod"] = false --[[tbl["OpenedFromVhod"] = false]] end
+				end
+			end
+		end
+		
+		--очистка уехавших ентити в неправильном направлении
+		if not tbl["TVihodWrong1"].zanyat and tbl["TVihodWrong2"].zanyat then
+			if not tbl["TVihodWrong2"].zanyat.WagonList then
+				if tbl["TVihodWrong2"].zanyat == tbl["Centre"] then tbl["Centre"] = false tbl["OpenedFromCetre"] = false end
+				if tbl["TVihodWrong2"].zanyat == tbl["Left"] then tbl["Left"] = false tbl["OpenedFromLeft"] = false end
+				if tbl["TVihodWrong2"].zanyat == tbl["Right"] then tbl["Right"] = false tbl["OpenedFromRight"] = false end
+				if tbl["TVihodWrong2"].zanyat == tbl["Vhod"] then tbl["Vhod"] = false --[[tbl["OpenedFromVhod"] = false]] end
+			else
+				for k,v in pairs(tbl["TVihodWrong2"].zanyat.WagonList) do
+					if v == tbl["Centre"] then tbl["Centre"] = false tbl["OpenedFromCetre"] = false end				-- вообще тут в каждом условии можно добавить break, но я не буду на всякий случай
+					if v == tbl["Left"] then tbl["Left"] = false tbl["OpenedFromLeft"] = false end
+					if v == tbl["Right"] then tbl["Right"] = false tbl["OpenedFromRight"] = false end
+					if v == tbl["Vhod"] then tbl["Vhod"] = false --[[tbl["OpenedFromVhod"] = false]] end
+				end
+			end
+		end
+		
+		--занятость
+		if tbl["TCentre1"].zanyat or tbl["TCentre2"].zanyat or tbl["TCentre3"].zanyat then
+			tbl["Centre"] = tbl["TCentre1"].zanyat or tbl["TCentre2"].zanyat or tbl["TCentre3"].zanyat
+		end
+		if tbl["TLeft1"].zanyat or tbl["TLeft2"].zanyat or tbl["TLeft3"].zanyat then
+			tbl["Left"] = tbl["TLeft1"].zanyat or tbl["TLeft2"].zanyat or tbl["TLeft3"].zanyat
+		end
+		if tbl["TRight1"].zanyat or tbl["TRight2"].zanyat or tbl["TRight3"].zanyat then
+			tbl["Right"] = tbl["TRight1"].zanyat or tbl["TRight2"].zanyat or tbl["TRight3"].zanyat then
+		end
+		
+		--сбор мрашрута со станций
+		--сбор с левого пути
+		if tbl["Left"] and not tbl["TLeftSvetofor"] and not tbl["OpenedFromCentre"] and not tbl["OpenedFromRight"] and not tbl["OpenedFromLeft"] then
+			if CheckVhod(tbl,tbl["Left"]) then
+				tbl["OpenedFromVhod"] = false
+				tbl["OpenedFromLeft"] = true
+				ForAvtooborot(tbl["RouteFromLeft"])
+			end
+		end
+		--сбор с центрального пути
+		if tbl["Centre"] and not tbl["TCentreSvetofor"] and not tbl["OpenedFromCentre"] and not tbl["OpenedFromRight"] and not tbl["OpenedFromLeft"] then
+			if CheckVhod(tbl,tbl["Centre"]) then
+				tbl["OpenedFromVhod"] = false
+				tbl["OpenedFromCentre"] = true
+				ForAvtooborot(tbl["RouteFromCentre"])
+			end
+		end
+		--сбор с правого пути
+		if tbl["Right"] and not tbl["TRightSvetofor"] and not tbl["OpenedFromCentre"] and not tbl["OpenedFromRight"] and not tbl["OpenedFromLeft"] then
+			if CheckVhod(tbl,tbl["Right"]) then
+				tbl["OpenedFromVhod"] = false
+				tbl["OpenedFromRight"] = true
+				ForAvtooborot(tbl["RouteFromRight"])
+			end
+		end
+		
+		--этот параметр не даст собрать маршрут со станции, если есть заезжающий паравоз
+		--то есть, когда в tbl["Vhod"] есть ентити - это значит, что это ентити едет по стрелкам
+		if not tbl["Vhod"] and tbl["TVhod"].zanyat then tbl["Vhod"] = tbl["TVhod"].zanyat end
+		
+		--сбор маршрута на станции
+		--сбор на левый путь
+		if not tbl["Left"] and not tbl["Right"] and not tbl["Centre"] and not tbl["OpenedFromVhod"] then
+			tbl["OpenedFromVhod"] = true
+			ForAvtooborot(tbl["RouteToLeft"])
+		end
+		--сбор на средний путь
+		if tbl["Left"] and not tbl["Right"] and not tbl["Centre"] and not tbl["OpenedFromVhod"] then
+			tbl["OpenedFromVhod"] = true
+			ForAvtooborot(tbl["RouteToCentre"])
+		end
+		--сбор на правый путь
+		if tbl["Centre"] and not tbl["Right"] and not tbl["OpenedFromVhod"] then
+			tbl["OpenedFromVhod"] = true
+			ForAvtooborot(tbl["RouteToRight"])
+		end
+	end
+	
 	function UpdateAvtooborot()
 		if AvtooborotEnabled ~= 1 then return end
 		
-		if AvtooborotTBL["4"] then
-			for k,v in pairs(AvtooborotTBL["4"]) do
-				--v = chetire(v)
+		if AvtooborotTBL["6"] then
+			for k,v in pairs(AvtooborotTBL["6"]) do
 				chetire(v)
 			end
 			
-			if AvtooborotTBL["4"]["Братеево"] then			--дополнительное условие для братеево. Чтобы по умолчанию стрелка открывалась по отклюнению
-				if not AvtooborotTBL["4"]["Братеево"]["Station"] and not AvtooborotTBL["4"]["Братеево"]["Near"] and not AvtooborotTBL["4"]["Братеево"]["Far"] --and not AvtooborotTBL["4"]["Братеево"]["OpenedFromStation"] 
+			if AvtooborotTBL["6"]["Братеево"] then			--дополнительное условие для братеево. Чтобы по умолчанию стрелка открывалась по отклюнению
+				if not AvtooborotTBL["6"]["Братеево"]["Station"] and not AvtooborotTBL["6"]["Братеево"]["Near"] and not AvtooborotTBL["6"]["Братеево"]["Far"] --and not AvtooborotTBL["4"]["Братеево"]["OpenedFromStation"] 
 				then
-					ForAvtooborot(AvtooborotTBL["4"]["Братеево"]["RouteToFar"],true)
-					AvtooborotTBL["4"]["Братеево"]["OpenedFromStation"] = true
+					ForAvtooborot(AvtooborotTBL["6"]["Братеево"]["RouteToFar"],true)
+					AvtooborotTBL["6"]["Братеево"]["OpenedFromStation"] = true
 				end	-- значение на братеево по умолчанию
-				if not AvtooborotTBL["4"]["Братеево"]["Near"] and not AvtooborotTBL["4"]["Братеево"]["Station"] and AvtooborotTBL["4"]["Братеево"]["Far"] --and not AvtooborotTBL["4"]["Братеево"]["OpenedFromStation"] 
+				if not AvtooborotTBL["6"]["Братеево"]["Near"] and not AvtooborotTBL["6"]["Братеево"]["Station"] and AvtooborotTBL["6"]["Братеево"]["Far"] --and not AvtooborotTBL["4"]["Братеево"]["OpenedFromStation"] 
 				then 
-					ForAvtooborot(AvtooborotTBL["4"]["Братеево"]["RouteToNear"],true)
-					AvtooborotTBL["4"]["Братеево"]["OpenedFromStation"] = true
+					ForAvtooborot(AvtooborotTBL["6"]["Братеево"]["RouteToNear"],true)
+					AvtooborotTBL["6"]["Братеево"]["OpenedFromStation"] = true
 				end
+			end
+		end
+		
+		if AvtooborotTBL["5"] then
+			for k,v in pairs(AvtooborotTBL["5"]) do
+				pyat(v)
 			end
 		end
 		
 		if AvtooborotTBL["2"] then
 			for k,v in pairs(AvtooborotTBL["2"]) do
-				--v = dva(v)
 				dva(v)
 			end
 			
