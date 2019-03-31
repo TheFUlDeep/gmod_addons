@@ -926,16 +926,19 @@ if SERVER then
 		return NearestStation and NearestStation..Nearest or ""
 	end
 	
-	local function FindTrackInSquare(vector,TrackID,customraduis,customwlimit,customstep)
+	function FindTrackInSquare(vector,TrackID,customraduis,customwlimit,customstep,autoscale,donotclear)		-- При большом радиусе и маленьком шаге эта функция очень тяжелая
+		if customraduis and customraduis > 20000 then return nil end
+		--if customwlimit and customwlimit > 1000 then return nil end		-- не знаю, нужны ли эти два условия
+		--if customstep and customstep > 100 then customstep = 100 end		-- хотел добавить это, потому что при слишком большом шаге функция просто перепрыгнет трек и не найдет его
 		local i,j,k
-		local radius = customraduis or 2000
-		local wLimit = customwlimit or 500
+		local radius = customraduis or 1000
+		local wLimit = customwlimit or 250
 		local step = customstep or 100
 		local out = {}
 		local n = 0
-		for i = -radius/2,radius/2,step do
-			for j = -radius/2,radius/2,step do
-				for k = -wLimit/2,wLimit/2,step do
+		for i = -radius,radius,step do
+			for j = -radius,radius,step do
+				for k = -wLimit,wLimit,step do
 					local results = Metrostroi.GetPositionOnTrack(vector + Vector(i,j,k))
 					--print(ent:GetPos() + Vector(i,j,k))
 					if #results > 0 then
@@ -947,20 +950,33 @@ if SERVER then
 						out[n]["vector"] = Metrostroi.GetTrackPosition(results[1]["path"],results[1]["x"])
 						out[n]["trakcpos"] = results[1]["x"]
 						out[n]["trackid"] = results[1]["path"]["id"]
-						--return out[n]
 					end
 				end
 			end
 		end
 		--PrintTable(out)
-		if not out[1] then return nil end
 		local MinDist,CurDist,Resault
-		for k,v in pairs(out) do								-- из всех треков ищу ближайший, чтобы не зацепить те, что далеко
-			CurDist = v["vector"]:DistToSqr(vector)
-			if not MinDist or MinDist > CurDist then MinDist = CurDist Resault = k end
+		if donotclear or autoscale then
+			if table.Count(out) > 1 then
+				for k,v in pairs(out) do
+					for k1,v1 in pairs(out) do
+						if v1.trackid == v.trackid and k ~= k1 then out[k1] = nil end
+					end
+				end
+			end
+			if autoscale then
+				if table.Count(out) < autoscale then return FindTrackInSquare(vector,TrackID or nil,radius + step,wLimit,step,autoscale) else return out end
+			end
+			if donotclear then return out end
+		else
+			if table.Count(out) < 1 then return nil end
+			for k,v in pairs(out) do								-- из всех треков ищу ближайший, чтобы не зацепить те, что далеко
+				CurDist = v["vector"]:DistToSqr(vector)
+				if not MinDist or MinDist > CurDist then MinDist = CurDist Resault = k end
+			end
+			return(out[Resault])
 		end
 		--if out[Resault] then PrintTable(out[Resault]) end
-		return(out[Resault])
 	end
 	
 	local function FindNearestStation(vector)
@@ -979,17 +995,21 @@ if SERVER then
 		local i = 0
 		for k,v in pairs(ents.FindByClass("gmod_track_platform")) do
 			if not IsValid(v) then continue end
-			i = i + 1
-			if not FirstMethodTbl[i] then FirstMethodTbl[i] = {} end
 			local PlatformPos = v:GetPos()
-			local Track = FindTrackInSquare(PlatformPos)
+			local PlatformLen = v.PlatformStart:Distance(v.PlatformEnd)
+			local Track = FindTrackInSquare(PlatformPos,nil,PlatformLen / 3,nil,nil,2)
 			if not Track then continue end
-			FirstMethodTbl[i].vector = Track.vector
-			FirstMethodTbl[i].trakcpos = Track.trakcpos
-			FirstMethodTbl[i].trackid = Track.trackid
-			--FirstMethodTbl[i].PlatformPos = PlatformPos
-			FirstMethodTbl[i].PlatformLen = v.PlatformDir:Length()
-			FirstMethodTbl[i].StationName = FindNearestStation(PlatformPos)
+			for k,v in pairs(Track) do
+				if not v.trackid or not v.trakcpos or not v.vector then continue end
+				i = i + 1
+				if not FirstMethodTbl[i] then FirstMethodTbl[i] = {} end
+				FirstMethodTbl[i].vector = v.vector
+				FirstMethodTbl[i].trakcpos = v.trakcpos
+				FirstMethodTbl[i].trackid = v.trackid
+				--FirstMethodTbl[i].PlatformLen = v.PlatformDir:Length()
+				FirstMethodTbl[i].PlatformLen = PlatformLen		-- который из методов поиска длины платформы верный?
+				FirstMethodTbl[i].StationName = FindNearestStation(PlatformPos)
+			end
 		end
 		--if FirstMethodTbl[1] then PrintTable(FirstMethodTbl) end
 	end
@@ -999,24 +1019,44 @@ if SERVER then
 		GenerateTblForFirstMethod()
 	end)
 	
+	local function GetNearestPlatform(vector)				-- эта функция создает таблицу на 2000 элементов. Ни в коем случае не исполнять ее в рантайме!!!
+		local CurDist,MinDist,NearestPlatform,PlatformPos
+		local DistLimit = 500 * 500
+		for k,v in pairs(ents.FindByClass("gmod_track_platform")) do
+			if not IsValid(v) then continue end
+			PlatformPos = v:GetPos()
+			if PlatformPos.z > vector.z and math.abs(PlatformPos.z - vector.z) > 100 then continue end		-- если платформа выше станции, то искать не выше 100
+			if math.abs(PlatformPos.z - vector.z) > 500 then continue end		-- просто ограничение по высоте в обе стороны
+			CurDist = vector:DistToSqr(PlatformPos)
+			if CurDist > DistLimit then continue end
+			if not MinDist or MinDist > CurDist then MinDist = CurDist NearestPlatform = v end
+		end
+		return NearestPlatform
+	end
+	
 	local ThirdMethodTbl = {}
-	local function GenerateTblForThirdMethod()
+	local function GenerateTblForThirdMethod()						-- эта функция создает таблицу на 2000 элементов. Ни в коем случае не исполнять ее в рантайме!!!
 		local StationName,StationPos,CurDist,MinDist,NearestStationName
 		local i = 0
 		for k,v in pairs(Metrostroi.StationConfigurations) do
 			if not v.positions or not v.positions[1] or not v.positions[1][1] then continue else StationPos = v.positions[1][1] end
 			if not v.names or not v.names[1] then StationName = k else StationName = v.names[1] end
-			i = i + 1
-			if not ThirdMethodTbl[i] then ThirdMethodTbl[i] = {} end
-			local Track = FindTrackInSquare(StationPos)
+			
+			local Platform = GetNearestPlatform(StationPos)
+			local PlatformLen = Platform and Platform.PlatformStart:Distance(Platform.PlatformEnd) or ((stringfind(StationName,"депо",true) or stringfind(StationName,"depo",true)) and 24000) or 4000	--может 4000 тут сделать больше? 
+			local Track = FindTrackInSquare(StationPos,nil,PlatformLen / 3,250,nil,nil,true)							-- вот тут надо использовать donotclear, потому что находится только один трек, а надо два
 			if not Track then continue end
-			ThirdMethodTbl[i].vector = Track.vector
-			ThirdMethodTbl[i].trakcpos = Track.trakcpos
-			ThirdMethodTbl[i].trackid = Track.trackid
-			ThirdMethodTbl[i].PlatformLen = 4000
-			ThirdMethodTbl[i].StationName = FindNearestStation(StationPos)
+			for k,v in pairs(Track) do
+				if not v.trackid or not v.trakcpos or not v.vector then continue end
+				i = i + 1
+				if not ThirdMethodTbl[i] then ThirdMethodTbl[i] = {} end
+				ThirdMethodTbl[i].vector = v.vector
+				ThirdMethodTbl[i].trakcpos = v.trakcpos
+				ThirdMethodTbl[i].trackid = v.trackid
+				ThirdMethodTbl[i].PlatformLen = PlatformLen
+				ThirdMethodTbl[i].StationName = StationName --FindNearestStation(StationPos)			-- эм что?
+			end
 		end
-		--if ThirdMethodTbl[1] then PrintTable(ThirdMethodTbl) end
 	end
 	
 	hook.Add("PlayerInitialSpawn","GenerateTblForSecondMethod",function() 
@@ -1026,8 +1066,15 @@ if SERVER then
 	
 	GenerateTblForFirstMethod()
 	GenerateTblForThirdMethod()
+	--PrintTable(FirstMethodTbl)
+	--PrintTable(ThirdMethodTbl)
+	--(vector,TrackID,customraduis,customwlimit,customstep,autoscale,donotclear)
+	--[[for k,v in pairs(player.GetAll()) do
+		local tbl = FindTrackInSquare(v:GetPos(),nil,200,nil,nil,2)
+		if tbl then PrintTable(tbl) end
+	end]]
 	
-	local function FirstMethod(PosOnTrack,TrackID,tbl)
+	local function FirstMethod(PosOnTrack,TrackID,tbl)			--TODO проверка по несокльким трекам, так как на лупдайне относительно платформ они определяются неправильно (аргумент donotclear)
 		print("first method")
 		if not tbl[1] then return nil end
 		local CurDist,MinDist,FieldKey
@@ -1042,13 +1089,14 @@ if SERVER then
 	end
 
 		-----------------ОПРЕДЕЛЕНИЕ МЕСТА ВЕКТОРА ОТНОСИТЕЛЬНО СТАНЦИЙ------------------------------------------------------
-	local function detectstation(vector)
+	function detectstation(vector)
 		if not Metrostroi.StationConfigurations then return "" end
+		if not FirstMethodTbl[1] then GenerateTblForFirstMethod() end
+		if not ThirdMethodTbl[1] then GenerateTblForThirdMethod() end
 		local Station
 		local Track = FindTrackInSquare(vector,nil,100,100,100)
 		if Track then
-			if not Station then Station = FirstMethod(Track.trakcpos,Track.trackid,FirstMethodTbl) end
-			if not Station then Station = FirstMethod(Track.trakcpos,Track.trackid,ThirdMethodTbl) end
+			Station = --[[FirstMethod(Track.trakcpos,Track.trackid,FirstMethodTbl) or]] FirstMethod(Track.trakcpos,Track.trackid,ThirdMethodTbl)		-- временно отключил третий метод
 		end
 		if not Station then Station = SecondMethod(vector) end
 		return Station or ""
@@ -1559,7 +1607,8 @@ end
 
 
 --[[============================= ОТОБРАЖЕНИЕ ВСЕХ ИНТЕРВАЛЬНЫХ ЧАСОВ ==========================]]
-if SERVER then
+if SERVER then	
+
 	local function SecondMethod(vector)
 		local StationName
 		local StationPos
@@ -1576,56 +1625,29 @@ if SERVER then
 		return NearestStation or ""
 	end
 	
-	local function FindAnotherSignalOnSameTrack(signal)
-		local track = signal.TrackPosition.path and signal.TrackPosition.path.id or 0
-		if track == 0 then return false end
-		local curtrack
-		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
-			if not IsValid(v) or v == signal or not v.Name or v.ARSOnly then continue end
-			curtrack = v.TrackPosition.path and v.TrackPosition.path.id or 0
-			if curtrack == 0 then continue end
-			if curtrack == track then
-				local strsub = string.sub(v.Name,-1)
-				local strsub1 = string.sub(v.Name,-2,-2)
-				if tonumber(strsub) then
-					return strsub
-				elseif tonumber(strsub1)  then
-					return strsub1
-				else
-					continue
-				end
-			end
+	local function GetSignalPath(signal)
+		if not signal.Name then return nil end
+		local strsub1 = string.sub(signal.Name,-1)
+		local strsub2 = string.sub(signal.Name,-2,-2)
+		if tonumber(strsub1) then return strsub1
+		elseif tonumber(strsub2) then return strsub2
+		else return nil 
 		end
 	end
-	
-	local function FindNearestSignal(vector)
-		local mindist
-		local curdist
-		local NearestSignal
-		local SignalPos
-		local wLimit = 300
+
+	local function FindNearestSignalPathOnTrack(TrackPos,TrackID)
+		local curtrack,CurDist,MinDist,NearestSignalPath
+		local i = 0
 		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
-			if not IsValid(v) or not v.Name or v.ARSOnly then continue end
-			SignalPos = v:GetPos()
-			if math.abs(SignalPos.z - vector.z) > wLimit then continue end
-			--curdist = vector:DistToSqr(SignalPos)
-			curdist = math.Distance(SignalPos.x,SignalPos.y,vector.x,vector.y)
-			if not mindist or mindist > curdist then mindist = curdist NearestSignal = v end
+			if not IsValid(v) or v == signal or not v.Name or v.ARSOnly or not v.Lenses then continue end
+			curtrack = v.TrackPosition.path and v.TrackPosition.path.id or 0
+			if curtrack == 0 then continue end
+			if curtrack ~= TrackID then continue end
+			local SignalPath = GetSignalPath(v)
+			CurDist = math.abs(TrackPos - v.TrackPosition.x)
+			if (not MinDist or MinDist > CurDist) and SignalPath then MinDist = CurDist NearestSignalPath = SignalPath end
 		end
-		if NearestSignal then
-			local strsub = string.sub(NearestSignal.Name,-1)
-			local strsub1 = string.sub(NearestSignal.Name,-2,-2)
-			if tonumber(strsub) then
-				return strsub
-			elseif tonumber(strsub1) then
-				return strsub1
-			else
-				local signal = FindAnotherSignalOnSameTrack(NearestSignal)
-				if signal then return signal end
-			end
-		else
-			return nil
-		end
+		return NearestSignalPath and (NearestSignalPath % 2 == 0 and 2 or 1)
 	end
 	
 	local StationsCfg = {}
@@ -1633,10 +1655,14 @@ if SERVER then
 		local i = 0
 		for k,v in pairs(ents.FindByClass("gmod_track_clock_small")) do
 			if not IsValid(v) then continue end
-			i = i + 1
 			local vector = v:GetPos()
+			local Track = FindTrackInSquare(vector,nil,100,100,100)
+			if not Track then continue end
+			i = i + 1
 			local Station = SecondMethod(vector) or ""
-			local Path = FindNearestSignal(vector) % 2 == 0 and 2 or 1
+			local NeedSub = stringfind(Station," (ближа")
+			if NeedSub then Station = string.sub(Station,1,NeedSub - 1) end
+			local Path = FindNearestSignalPathOnTrack(Track.trakcpos,Track.trackid)
 			if not StationsCfg[i] then StationsCfg[i] = {} end
 			StationsCfg[i]["ent"] = v
 			StationsCfg[i]["name"] = Station..". Путь: "..Path..". Интервал: "
@@ -1645,8 +1671,12 @@ if SERVER then
 			if not IsValid(v) then continue end
 			i = i + 1
 			local vector = v:GetPos()
+			local Track = FindTrackInSquare(vector,nil,100,100,100)
+			if not Track then continue end
 			local Station = SecondMethod(vector) or ""
-			local Path = FindNearestSignal(vector) % 2 == 0 and 2 or 1
+			local NeedSub = stringfind(Station," (ближа")
+			if NeedSub then Station = string.sub(Station,1,NeedSub - 1) end
+			local Path = FindNearestSignalPathOnTrack(Track.trakcpos,Track.trackid)
 			if not StationsCfg[i] then StationsCfg[i] = {} end
 			StationsCfg[i]["ent"] = v
 			StationsCfg[i]["name"] = Station..". Путь: "..Path..". Интервал: "
@@ -1656,7 +1686,8 @@ if SERVER then
 		for k,v in pairs(StationsCfg) do
 			pos = v["ent"]:GetPos()
 			for k1,v1 in pairs(StationsCfg) do
-				if v1["ent"] and v1["ent"] ~= v["ent"] and pos:DistToSqr(v1["ent"]:GetPos()) < 300 * 300 then StationsCfg[k1] = nil end
+				local CurDist = pos:DistToSqr(v1["ent"]:GetPos())
+				if v1["ent"] and v1["ent"] ~= v["ent"] and CurDist < 400 * 400 and v1.ent:GetClass() == "gmod_track_clock_small" then StationsCfg[k1] = nil end
 			end
 		end
 	end
@@ -1674,7 +1705,7 @@ if SERVER then
 			if not IntervalsEnabled then hook.Remove("Think","SendIntevals") return end
 			if CurTime() - timestamp < 5 then return end
 			timestamp = CurTime()
-			if not StationsCfg[1] then GenerateStationsCfg() return end
+			if not StationsCfg or #StationsCfg < 1 then GenerateStationsCfg() return end
 			for i = 1, #StationsCfg do
 				if not StationsCfg[i] then continue end
 				IntervalsTbl[i] = GetIntervalTime(StationsCfg[i]["ent"])
@@ -1689,8 +1720,8 @@ if SERVER then
 	util.AddNetworkString("SendStationsCfgNetworkString")
 	local function SendStationsCfgToClient(ply)
 		if not IsValid(ply) then return end
-		if not StationsCfg[1] then GenerateStationsCfg() end
-		if StationsCfg[1] and StationsCfg[1]["name"] then
+		if not StationsCfg or #StationsCfg < 1 then GenerateStationsCfg() end
+		if #StationsCfg > 0 then
 			local tbl = {}
 			for i = 1, #StationsCfg do
 				if not StationsCfg[i] then continue end
@@ -1755,9 +1786,9 @@ if CLIENT then
 			end
 		end
 		local j = 0
-		if StationsCfg[1] and IntervalsTbl[1] then
+		if #StationsCfg > 0 and #IntervalsTbl > 0 then
 			for i = 1, #StationsCfg do
-				if not StationsCfg[i] or stringfind(StationsCfg[i],"депо",true) then continue end
+				if not StationsCfg[i] --[[or stringfind(StationsCfg[i],"депо",true)]] then continue end
 				j = j + 1
 				draw.SimpleText(StationsCfg[i]..NumberToString(IntervalsTbl[i]),"ChatFont",0,0 + (h + 5) * j,Color(255,255,255,150),TEXT_ALIGN_LEFT,TEXT_ALIGN_BOTTOM)
 			end
