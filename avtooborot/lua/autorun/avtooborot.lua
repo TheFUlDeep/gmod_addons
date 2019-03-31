@@ -289,7 +289,7 @@ if SERVER then
 	SendAvtooborot(-1)
 	timer.Simple(2, function() createavtooborot() end)
 
-	local function chetire(chetiretbl) --БАГ - если паравоз уедет из тупика, и за ним сразу же заспавнится другой до того, как занятость очистится, маршрут не маоберется, так как не сброситя openedfrom..
+	local function chetire(chetiretbl)
 		if IsEntity(chetiretbl["Station"]) and not IsValid(chetiretbl["Station"]) then chetiretbl["Station"] = false chetiretbl["OpenedFromStation"] = false end
 		if IsEntity(chetiretbl["Near"]) and not IsValid(chetiretbl["Near"]) then chetiretbl["Near"] = false chetiretbl["OpenedFromNear"] = false end
 		if IsEntity(chetiretbl["Far"]) and not IsValid(chetiretbl["Far"]) then chetiretbl["Far"] = false chetiretbl["OpenedFromFar"] = false end
@@ -337,7 +337,7 @@ if SERVER then
 		end
 		
 		if chetiretbl["TNearDead1"].zanyat or chetiretbl["TNearDead2"].zanyat or chetiretbl["TNearDead3"].zanyat then													--если появился в ближайшем тупике (не оборотном)
-			chetiretbl["NearDead"] = chetiretbl["TNearDead1"].zanyat or chetiretbl["TNearDead2"].zanyat or chetiretbl["TNearDead3"].zanyat
+			if not chetiretbl["NearDead"] then chetiretbl["NearDead"] = chetiretbl["TNearDead1"].zanyat or chetiretbl["TNearDead2"].zanyat or chetiretbl["TNearDead3"].zanyat end
 			if not chetiretbl["TNearDeadSvetofor"].zanyat then
 				if chetiretbl["Station"] then
 					if not chetiretbl["NearDead"].WagonList then
@@ -355,7 +355,7 @@ if SERVER then
 		end
 		
 		if chetiretbl["TFar1"].zanyat or chetiretbl["TFar2"].zanyat or chetiretbl["TFar3"].zanyat then																											--если состав появился в дальнем тупике
-			chetiretbl["Far"] = chetiretbl["TFar1"].zanyat or chetiretbl["TFar2"].zanyat or chetiretbl["TFar3"].zanyat
+			if not chetiretbl["Far"] then chetiretbl["Far"] = chetiretbl["TFar1"].zanyat or chetiretbl["TFar2"].zanyat or chetiretbl["TFar3"].zanyat end
 			if not chetiretbl["TFarSvetofor"].zanyat then 
 				if chetiretbl["Station"] then
 					if not chetiretbl["Far"].WagonList then
@@ -387,7 +387,7 @@ if SERVER then
 		end
 			
 		if chetiretbl["TNear1"].zanyat or chetiretbl["TNear2"].zanyat or chetiretbl["TNear3"].zanyat then																										--если состав появился в ближнеи тупике
-			chetiretbl["Near"] = chetiretbl["TNear1"].zanyat or chetiretbl["TNear2"].zanyat or chetiretbl["TNear3"].zanyat
+			if not chetiretbl["Near"] then chetiretbl["Near"] = chetiretbl["TNear1"].zanyat or chetiretbl["TNear2"].zanyat or chetiretbl["TNear3"].zanyat end
 			if not chetiretbl["TNearSvetofor"].zanyat then 
 				if chetiretbl["Station"] then
 					if not chetiretbl["Near"].WagonList then
@@ -419,7 +419,7 @@ if SERVER then
 		end
 		
 		if chetiretbl["TFarDead1"].zanyat or chetiretbl["TFarDead2"].zanyat or chetiretbl["TFarDead3"].zanyat then													--если появился в дальнем тупике (не оборотном)
-			chetiretbl["FarDead"] = chetiretbl["TFarDead1"].zanyat or chetiretbl["TFarDead2"].zanyat or chetiretbl["TFarDead3"].zanyat
+			if not chetiretbl["FarDead"] then chetiretbl["FarDead"] = chetiretbl["TFarDead1"].zanyat or chetiretbl["TFarDead2"].zanyat or chetiretbl["TFarDead3"].zanyat end
 			if not chetiretbl["TFarDeadSvetofor"].zanyat then
 				if not chetiretbl["OpenedFromFar"] and not chetiretbl["OpenedFromNear"] then
 					if not chetiretbl["OpenedFromFarDead"] then ForAvtooborot(chetiretbl["RouteFromFarDead"]) chetiretbl["OpenedFromFarDead"] = true end
@@ -440,7 +440,7 @@ if SERVER then
 		--return chetiretbl
 	end
 	
-	local function dva(chetiretbl) --БАГ - если паравоз уедет из тупика, и за ним сразу же заспавнится другой до того, как занятость очистится, маршрут не маоберется, так как не сброситя openedfrom..
+	local function dva(chetiretbl)
 		if IsEntity(chetiretbl["Station"]) and not IsValid(chetiretbl["Station"]) then chetiretbl["Station"] = false chetiretbl["OpenedFromStation"] = false end
 		--if IsEntity(chetiretbl["Near"]) and not IsValid(chetiretbl["Near"]) then chetiretbl["Near"] = false chetiretbl["OpenedFromNear"] = false end
 		if IsEntity(chetiretbl["Far"]) and not IsValid(chetiretbl["Far"]) then chetiretbl["Far"] = false chetiretbl["OpenedFromFar"] = false end
@@ -488,7 +488,7 @@ if SERVER then
 		end
 		
 		if chetiretbl["TNearDead1"].zanyat or chetiretbl["TNearDead2"].zanyat or chetiretbl["TNearDead3"].zanyat then													--если появился в ближайшем тупике (не оборотном)
-			chetiretbl["NearDead"] = chetiretbl["TNearDead1"].zanyat or chetiretbl["TNearDead2"].zanyat or chetiretbl["TNearDead3"].zanyat
+			if not chetiretbl["NearDead"] then chetiretbl["NearDead"] = chetiretbl["TNearDead1"].zanyat or chetiretbl["TNearDead2"].zanyat or chetiretbl["TNearDead3"].zanyat end
 			if not chetiretbl["TNearDeadSvetofor"].zanyat then
 				if chetiretbl["Station"] then
 					if not chetiretbl["NearDead"].WagonList then
@@ -506,7 +506,7 @@ if SERVER then
 		end
 		
 		if chetiretbl["TFar1"].zanyat or chetiretbl["TFar2"].zanyat or chetiretbl["TFar3"].zanyat then																											--если состав появился в дальнем тупике
-			chetiretbl["Far"] = chetiretbl["TFar1"].zanyat or chetiretbl["TFar2"].zanyat or chetiretbl["TFar3"].zanyat
+			if not chetiretbl["Far"] then chetiretbl["Far"] = chetiretbl["TFar1"].zanyat or chetiretbl["TFar2"].zanyat or chetiretbl["TFar3"].zanyat end
 			if not chetiretbl["TFarSvetofor"].zanyat then 
 				if chetiretbl["Station"] then
 					if not chetiretbl["Far"].WagonList then
@@ -597,7 +597,7 @@ if SERVER then
 		end
 	end
 	
-	local function pyat(tbl) --БАГ - если паравоз уедет со станциии и за ним сразу же заспавнится другой до того, как занятость очистится, маршрут не соберется, так как не сброситя openedfrom..
+	local function pyat(tbl)
 		--очистка недоступных ентити
 		if IsEntity(chetiretbl["Centre"]) and not IsValid(chetiretbl["Centre"]) then chetiretbl["Centre"] = false chetiretbl["OpenedFromCentre"] = false end
 		if IsEntity(chetiretbl["Left"]) and not IsValid(chetiretbl["Left"]) then chetiretbl["Left"] = false chetiretbl["OpenedFromLeft"] = false end
@@ -639,13 +639,13 @@ if SERVER then
 		end
 		
 		--занятость
-		if tbl["TCentre1"].zanyat or tbl["TCentre2"].zanyat or tbl["TCentre3"].zanyat then
+		if not tbl["Centre"] and (tbl["TCentre1"].zanyat or tbl["TCentre2"].zanyat or tbl["TCentre3"].zanyat) then
 			tbl["Centre"] = tbl["TCentre1"].zanyat or tbl["TCentre2"].zanyat or tbl["TCentre3"].zanyat
 		end
-		if tbl["TLeft1"].zanyat or tbl["TLeft2"].zanyat or tbl["TLeft3"].zanyat then
+		if not tbl["Left"] and tbl["TLeft1"].zanyat or tbl["TLeft2"].zanyat or tbl["TLeft3"].zanyat then
 			tbl["Left"] = tbl["TLeft1"].zanyat or tbl["TLeft2"].zanyat or tbl["TLeft3"].zanyat
 		end
-		if tbl["TRight1"].zanyat or tbl["TRight2"].zanyat or tbl["TRight3"].zanyat then
+		if not tbl["Right"] and tbl["TRight1"].zanyat or tbl["TRight2"].zanyat or tbl["TRight3"].zanyat then
 			tbl["Right"] = tbl["TRight1"].zanyat or tbl["TRight2"].zanyat or tbl["TRight3"].zanyat then
 		end
 		
