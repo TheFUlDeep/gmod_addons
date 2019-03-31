@@ -1639,7 +1639,7 @@ if SERVER then
 		local curtrack,CurDist,MinDist,NearestSignalPath
 		local i = 0
 		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
-			if not IsValid(v) or v == signal or not v.Name or v.ARSOnly or not v.Lenses then continue end
+			if not IsValid(v) or not v.Name or v.ARSOnly or not v.Lenses then continue end
 			curtrack = v.TrackPosition.path and v.TrackPosition.path.id or 0
 			if curtrack == 0 then continue end
 			if curtrack ~= TrackID then continue end
