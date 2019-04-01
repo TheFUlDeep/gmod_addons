@@ -426,7 +426,6 @@ end)
 
 
 function ForAvtooborot(route,hidenotif)
-	CheckSwitchesTBL()
 	CheckRoutes()
 	if not hidenotif then ulx.fancyLog("[АВТООБОРОТ] Собираю маршрут #s",route) end
 	OpenRoute(route)
