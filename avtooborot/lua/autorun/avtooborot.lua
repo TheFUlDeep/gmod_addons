@@ -603,7 +603,7 @@ if SERVER then
 	local function ValidateVhod(tbl)
 		if table.Count(tbl["Vhod"]) > 0 then
 			for k,v in pairs(tbl["Vhod"]) do
-				if IsValid(v) then tbl["Vhod"][k] = nil end
+				if not IsValid(v) then tbl["Vhod"][k] = nil end
 			end
 		end
 	end
