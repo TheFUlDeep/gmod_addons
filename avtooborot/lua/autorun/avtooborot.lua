@@ -372,7 +372,7 @@ if SERVER then
 		end
 		
 		if chetiretbl["TNearDead1"].zanyat or chetiretbl["TNearDead2"].zanyat or chetiretbl["TNearDead3"].zanyat then													--если появился в ближайшем тупике (не оборотном)
-			if not chetiretbl["NearDead"] then chetiretbl["NearDead"] = chetiretbl["TNearDead1"].zanyat or chetiretbl["TNearDead2"].zanyat or chetiretbl["TNearDead3"].zanyat end
+			chetiretbl["NearDead"] = chetiretbl["TNearDead1"].zanyat or chetiretbl["TNearDead2"].zanyat or chetiretbl["TNearDead3"].zanyat
 			if not chetiretbl["TNearDeadSvetofor"].zanyat then
 				if chetiretbl["Station"] then
 					if not chetiretbl["NearDead"].WagonList then
@@ -390,7 +390,7 @@ if SERVER then
 		end
 		
 		if chetiretbl["TFar1"].zanyat or chetiretbl["TFar2"].zanyat or chetiretbl["TFar3"].zanyat then																											--если состав появился в дальнем тупике
-			if not chetiretbl["Far"] then chetiretbl["Far"] = chetiretbl["TFar1"].zanyat or chetiretbl["TFar2"].zanyat or chetiretbl["TFar3"].zanyat end
+			chetiretbl["Far"] = chetiretbl["TFar1"].zanyat or chetiretbl["TFar2"].zanyat or chetiretbl["TFar3"].zanyat
 			if not chetiretbl["TFarSvetofor"].zanyat then 
 				if chetiretbl["Station"] then
 					if not chetiretbl["Far"].WagonList then
@@ -422,7 +422,7 @@ if SERVER then
 		end
 			
 		if chetiretbl["TNear1"].zanyat or chetiretbl["TNear2"].zanyat or chetiretbl["TNear3"].zanyat then																										--если состав появился в ближнеи тупике
-			if not chetiretbl["Near"] then chetiretbl["Near"] = chetiretbl["TNear1"].zanyat or chetiretbl["TNear2"].zanyat or chetiretbl["TNear3"].zanyat end
+			chetiretbl["Near"] = chetiretbl["TNear1"].zanyat or chetiretbl["TNear2"].zanyat or chetiretbl["TNear3"].zanyat
 			if not chetiretbl["TNearSvetofor"].zanyat then 
 				if chetiretbl["Station"] then
 					if not chetiretbl["Near"].WagonList then
@@ -454,7 +454,7 @@ if SERVER then
 		end
 		
 		if chetiretbl["TFarDead1"].zanyat or chetiretbl["TFarDead2"].zanyat or chetiretbl["TFarDead3"].zanyat then													--если появился в дальнем тупике (не оборотном)
-			if not chetiretbl["FarDead"] then chetiretbl["FarDead"] = chetiretbl["TFarDead1"].zanyat or chetiretbl["TFarDead2"].zanyat or chetiretbl["TFarDead3"].zanyat end
+			chetiretbl["FarDead"] = chetiretbl["TFarDead1"].zanyat or chetiretbl["TFarDead2"].zanyat or chetiretbl["TFarDead3"].zanyat
 			if not chetiretbl["TFarDeadSvetofor"].zanyat then
 				if not chetiretbl["OpenedFromFar"] and not chetiretbl["OpenedFromNear"] then
 					if not chetiretbl["OpenedFromFarDead"] then ForAvtooborot(chetiretbl["RouteFromFarDead"]) chetiretbl["OpenedFromFarDead"] = true end
@@ -523,7 +523,7 @@ if SERVER then
 		end
 		
 		if chetiretbl["TNearDead1"].zanyat or chetiretbl["TNearDead2"].zanyat or chetiretbl["TNearDead3"].zanyat then													--если появился в ближайшем тупике (не оборотном)
-			if not chetiretbl["NearDead"] then chetiretbl["NearDead"] = chetiretbl["TNearDead1"].zanyat or chetiretbl["TNearDead2"].zanyat or chetiretbl["TNearDead3"].zanyat end
+			chetiretbl["NearDead"] = chetiretbl["TNearDead1"].zanyat or chetiretbl["TNearDead2"].zanyat or chetiretbl["TNearDead3"].zanyat
 			if not chetiretbl["TNearDeadSvetofor"].zanyat then
 				if chetiretbl["Station"] then
 					if not chetiretbl["NearDead"].WagonList then
@@ -541,7 +541,7 @@ if SERVER then
 		end
 		
 		if chetiretbl["TFar1"].zanyat or chetiretbl["TFar2"].zanyat or chetiretbl["TFar3"].zanyat then																											--если состав появился в дальнем тупике
-			if not chetiretbl["Far"] then chetiretbl["Far"] = chetiretbl["TFar1"].zanyat or chetiretbl["TFar2"].zanyat or chetiretbl["TFar3"].zanyat end
+			chetiretbl["Far"] = chetiretbl["TFar1"].zanyat or chetiretbl["TFar2"].zanyat or chetiretbl["TFar3"].zanyat
 			if not chetiretbl["TFarSvetofor"].zanyat then 
 				if chetiretbl["Station"] then
 					if not chetiretbl["Far"].WagonList then
