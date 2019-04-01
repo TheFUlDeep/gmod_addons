@@ -203,6 +203,8 @@ if SERVER then
 			createTrigger("TRight2",StationName,fun,Vector(3281 + 340, -5230 + 7000 + 1900 * 2, -1700))
 			createTrigger("TRight3",StationName,fun,Vector(3281 + 340, -5230 + 7000 + 1900 * 3, -1700))
 			
+			createTrigger("Obnovlenie",StationName,fun,Vector(12788-15, 2995, -1100))
+			
 			AvtooborotTBL[fun][StationName]["RouteToLeft"] = "K1-2"
 			AvtooborotTBL[fun][StationName]["RouteToCentre"] = "K1-1/2"
 			AvtooborotTBL[fun][StationName]["RouteToRight"] = "K1-1"
