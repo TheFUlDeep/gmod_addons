@@ -690,8 +690,7 @@ if SERVER then
 		--этот параметр не даст собрать маршрут со станции, если есть заезжающий паравоз
 		--то есть, когда в tbl["Vhod"] есть ентити - это значит, что это ентити едет по стрелкам
 		if tbl["TVhod"].zanyat then
-			--if not tbl["Vhod"] or type(tbl["Vhod"]) ~= "table" then tbl["Vhod"] = {} end
-			tbl["Vhod"][tostring(tbl["TVhod"].zanyat)] = tbl["TVhod"].zanyat
+			table.insert(tbl["Vhod"],1,tbl["TVhod"].zanyat)
 		end
 		
 		--сбор маршрута на станции
