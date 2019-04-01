@@ -584,25 +584,37 @@ if SERVER then
 	end
 	
 	local function CheckVhod(tbl,ent) -- если паравоз приехал со входа, или вход не занят, то функция возвращает true
-		if tbl["Vhod"] then
-			if ent.WagonList then
-				for k,v in pairs(ent.WagonList) do
-					if v == tbl["Vhod"] then tbl["Vhod"] = false return true end
+		local cleared = false
+		if table.Count(tbl["Vhod"]) > 0 then
+			for _k,_v in pairs(tbl["Vhod"]) do
+				if ent.WagonList then
+					for k,v in pairs(ent.WagonList) do
+						if v == _v then tbl["Vhod"][_k] = nil cleared = true end
+					end
+				elseif ent == _v then tbl["Vhod"][_k] = nil cleared = true
 				end
-			elseif ent == tbl["Vhod"] then tbl["Vhod"] = false return true
 			end
-			return false
 		else 
-			return true
+			cleared = true
+		end
+		return cleared
+	end
+	
+	local function ValidateVhod(tbl)
+		if table.Count(tbl["Vhod"]) > 0 then
+			for k,v in pairs(tbl["Vhod"]) do
+				if IsValid(v) then tbl["Vhod"][k] = nil end
+			end
 		end
 	end
 	
 	local function pyat(tbl)
+		-- НЕ ЗАБЫТЬ СОЗДАТЬ ТАБЛИЦУ tbl["Vhod"] = {}
 		--очистка недоступных ентити
 		if IsEntity(chetiretbl["Centre"]) and not IsValid(chetiretbl["Centre"]) then chetiretbl["Centre"] = false chetiretbl["OpenedFromCentre"] = false end
 		if IsEntity(chetiretbl["Left"]) and not IsValid(chetiretbl["Left"]) then chetiretbl["Left"] = false chetiretbl["OpenedFromLeft"] = false end
 		if IsEntity(chetiretbl["Right"]) and not IsValid(chetiretbl["Right"]) then chetiretbl["Right"] = false chetiretbl["OpenedFromRight"] = false end
-		if IsEntity(chetiretbl["Vhod"]) and not IsValid(chetiretbl["Vhod"]) then chetiretbl["Vhod"] = false --[[chetiretbl["OpenedFromVhod"] = false]] end
+		ValidateVhod(tbl)
 		
 		--очистка уехавших ентити в правильном направлении
 		if not tbl["TVihod1"].zanyat and tbl["TVihod2"].zanyat then
@@ -610,15 +622,14 @@ if SERVER then
 				if tbl["TVihod2"].zanyat == tbl["Centre"] then tbl["Centre"] = false tbl["OpenedFromCentre"] = false end
 				if tbl["TVihod2"].zanyat == tbl["Left"] then tbl["Left"] = false tbl["OpenedFromLeft"] = false end
 				if tbl["TVihod2"].zanyat == tbl["Right"] then tbl["Right"] = false tbl["OpenedFromRight"] = false end
-				if tbl["TVihod2"].zanyat == tbl["Vhod"] then tbl["Vhod"] = false --[[tbl["OpenedFromVhod"] = false]] end
 			else
 				for k,v in pairs(tbl["TVihod2"].zanyat.WagonList) do
 					if v == tbl["Centre"] then tbl["Centre"] = false tbl["OpenedFromCetre"] = false end				-- вообще тут в каждом условии можно добавить break, но я не буду на всякий случай
 					if v == tbl["Left"] then tbl["Left"] = false tbl["OpenedFromLeft"] = false end
 					if v == tbl["Right"] then tbl["Right"] = false tbl["OpenedFromRight"] = false end
-					if v == tbl["Vhod"] then tbl["Vhod"] = false --[[tbl["OpenedFromVhod"] = false]] end
 				end
 			end
+			CheckVhod(tbl,tbl["TVihod2"].zanyat)
 		end
 		
 		--очистка уехавших ентити в неправильном направлении
@@ -636,6 +647,7 @@ if SERVER then
 					if v == tbl["Vhod"] then tbl["Vhod"] = false --[[tbl["OpenedFromVhod"] = false]] end
 				end
 			end
+			CheckVhod(tbl,tbl["TVihodWrong2"].zanyat)
 		end
 		
 		--занятость
@@ -677,7 +689,10 @@ if SERVER then
 		
 		--этот параметр не даст собрать маршрут со станции, если есть заезжающий паравоз
 		--то есть, когда в tbl["Vhod"] есть ентити - это значит, что это ентити едет по стрелкам
-		if not tbl["Vhod"] and tbl["TVhod"].zanyat then tbl["Vhod"] = tbl["TVhod"].zanyat end
+		if tbl["TVhod"].zanyat then
+			--if not tbl["Vhod"] or type(tbl["Vhod"]) ~= "table" then tbl["Vhod"] = {} end
+			tbl["Vhod"][tostring(tbl["TVhod"].zanyat)] = tbl["TVhod"].zanyat
+		end
 		
 		--сбор маршрута на станции
 		--сбор на левый путь
