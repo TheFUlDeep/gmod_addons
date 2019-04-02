@@ -623,27 +623,7 @@ if SERVER then
 		
 		--return chetiretbl
 	end
-	
-	local function CheckField(tbl,field,ent) -- если паравоз приехал со входа, или вход не занят, то функция возвращает true
-		if not tbl[field] then return true end
-		if ent.WagonList then
-			for k,v in pairs(ent.WagonList) do
-				if v == tbl[field] then tbl[field] = false return true end
-			end
-		elseif ent == tbl[field] then tbl[field] = false return true
-		end
-	end
-	
-	local function ValidateFieldTbl(tbl,field)
-		local cleared = false
-		if table.Count(tbl[field]) > 0 then
-			for k,v in pairs(tbl[field]) do
-				if not IsValid(v) then tbl[field][k] = nil cleared = true end
-			end
-		end
-		return cleared
-	end
-	
+		
 	local function TableInsert(tbl,value)
 		if table.Count(tbl) > 0 then
 			for k,v in pairs(tbl) do
