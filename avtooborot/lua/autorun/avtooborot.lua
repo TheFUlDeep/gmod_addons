@@ -689,7 +689,7 @@ if SERVER then
 		end
 		
 		--очистка недоступных ентити
-		if ValidateFieldTbl(tbl,"Centre") --[[then tbl["Centre"] = {}]] tbl["OpenedFromCentre"] = false end
+		if ValidateFieldTbl(tbl,"Centre") then --[[tbl["Centre"] = {}]] tbl["OpenedFromCentre"] = false end
 		if ValidateFieldTbl(tbl,"Left") then --[[tbl["Left"] = {}]] tbl["OpenedFromLeft"] = false end
 		if ValidateFieldTbl(tbl,"Right") then --[[tbl["Right"] = {}]] tbl["OpenedFromRight"] = false end
 		ValidateFieldTbl(tbl,"Vihod")
