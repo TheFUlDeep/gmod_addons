@@ -644,7 +644,7 @@ if SERVER then
 		return cleared
 	end
 	
-	local function pyat(tbl)
+	local function pyat(tbl)	-- возможно стоит добавить TVhod2 по неправильному направлению, чтобы по нему можно было заезжать
 		-- НЕ ЗАБЫТЬ СОЗДАТЬ ТАБЛИЦУ tbl["Centre"] = {}. Ну или добавить в самое начало проверку на создание этой таблицы
 		-- НЕ ЗАБЫТЬ СОЗДАТЬ ТАБЛИЦУ tbl["Right"] = {}. Ну или добавить в самое начало проверку на создание этой таблицы
 		-- НЕ ЗАБЫТЬ СОЗДАТЬ ТАБЛИЦУ tbl["Left"] = {}. Ну или добавить в самое начало проверку на создание этой таблицы
@@ -666,8 +666,8 @@ if SERVER then
 		--этот параметр не даст собрать маршрут со станции, если есть паравоз на стрелках
 		--то есть, когда в tbl["Vhod"] есть ентити - это значит, что это ентити едет по стрелкам
 		--а также он очищает таблицу паравозов, подъезжающих сюда
-		if tbl.TVhod.zanyat then
-			TableInsert(tbl.Vhod,tbl.TVhod.zanyat)
+		if tbl.TVhod.zanyat --[[or tbl.TVhod2.zanyat]] then
+			TableInsert(tbl.Vhod,tbl.TVhod.zanyat--[[or tbl.TVhod2.zanyat]])
 			ClearCheckTblTbl(tbl,"PeredVhod","Vhod")
 		end
 		
