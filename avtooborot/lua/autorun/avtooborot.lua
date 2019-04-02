@@ -644,6 +644,16 @@ if SERVER then
 		return cleared
 	end
 	
+	local function ValidateFieldTbl(tbl,field)
+		local cleared = false
+		if table.Count(tbl[field]) > 0 then
+			for k,v in pairs(tbl[field]) do
+				if not IsValid(v) then tbl[field][k] = nil cleared = true end
+			end
+		end
+		return cleared
+	end
+	
 	local function pyat(tbl)	-- возможно стоит добавить TVhod2 по неправильному направлению, чтобы по нему можно было заезжать
 		-- НЕ ЗАБЫТЬ СОЗДАТЬ ТАБЛИЦУ tbl["Centre"] = {}. Ну или добавить в самое начало проверку на создание этой таблицы
 		-- НЕ ЗАБЫТЬ СОЗДАТЬ ТАБЛИЦУ tbl["Right"] = {}. Ну или добавить в самое начало проверку на создание этой таблицы
@@ -695,8 +705,9 @@ if SERVER then
 		ValidateFieldTbl(tbl,"Vihod")
 		ValidateFieldTbl(tbl,"VihodWrong")
 		ValidateFieldTbl(tbl,"PeredVhod")
+		ValidateFieldTbl(tbl,"Vhod")
 		
-		--Проверка от казуса: без этого условия, если паравоз заедет на стрелки, и за ним сразу приедет новый и наедет на триггер TVihodWrong2 (или TVihod2), то вся таблца vhod обнулится, то есть автооборот забудат, что есть паравоз на стрелках, что не есть хорошо.
+		--Проверка от казуса: без этого условия, если паравоз заедет на стрелки, и за ним сразу приедет новый и наедет на триггер TVihodWrong2 (или TVihod2), то вся таблца vhod обнулится, то есть автооборот забудет, что есть паравоз на стрелках, что не есть хорошо.
 		if (not tbl["TVihodWrong1"].zanyat and not tbl["TVihodWrong2"].zanyat) or (not tbl["TVihodWrong1"].zanyat and tbl["TVihodWrong2"].zanyat and tbl["TVhod"].zanyat) then
 			tbl["VihodWrong"] = {}
 		end
