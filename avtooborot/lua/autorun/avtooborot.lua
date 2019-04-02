@@ -709,23 +709,6 @@ if SERVER then
 			ClearCheckTblTbl(tbl,"PeredVhod","Vhod")
 		end
 		
-		--занятость станций
-		if tbl["TCentre1"].zanyat or tbl["TCentre2"].zanyat or tbl["TCentre3"].zanyat or tbl["TCentreSvetofor"].zanyat then
-			TableInsert(tbl["Centre"],tbl["TCentre1"].zanyat or tbl["TCentre2"].zanyat or tbl["TCentre3"].zanyat or tbl["TCentreSvetofor"].zanyat)
-		end
-		if tbl["TLeft1"].zanyat or tbl["TLeft2"].zanyat or tbl["TLeft3"].zanyat or tbl["TLeftSvetofor"].zanyat then
-			TableInsert(tbl["Left"],tbl["TLeft1"].zanyat or tbl["TLeft2"].zanyat or tbl["TLeft3"].zanyat or tbl["TLeftSvetofor"].zanyat)
-		end
-		if tbl["TRight1"].zanyat or tbl["TRight2"].zanyat or tbl["TRight3"].zanyat or tbl["TRightSvetofor"].zanyat then
-			TableInsert(tbl["Right"],tbl["TRight1"].zanyat or tbl["TRight2"].zanyat or tbl["TRight3"].zanyat or tbl["TRightSvetofor"].zanyat)
-		end
-		
-		-- при полном заезде на станцию очистка состава со стрелок
-		if (tbl["TRight1"].zanyat or tbl["TRight2"].zanyat or tbl["TRight3"].zanyat) and not tbl["TRightSvetofor"].zanyat then ClearCheckTblTbl(tbl,"Vhod","Right") end
-		if (tbl["TLeft1"].zanyat or tbl["TLeft2"].zanyat or tbl["TLeft3"].zanyat) and not tbl["TLeftSvetofor"].zanyat then ClearCheckTblTbl(tbl,"Vhod","Left") end
-		if (tbl["TCentre1"].zanyat or tbl["TCentre2"].zanyat or tbl["TCentre3"].zanyat) and not tbl["TCentreSvetofor"].zanyat then ClearCheckTblTbl(tbl,"Vhod","Centre") end
-		
-		
 		--очистка недоступных ентити
 		if ValidateFieldTbl(tbl,"Centre") then tbl["Centre"] = {} tbl["OpenedFromCentre"] = false end
 		if ValidateFieldTbl(tbl,"Left") then tbl["Left"] = {} tbl["OpenedFromLeft"] = false end
@@ -755,6 +738,22 @@ if SERVER then
 			ClearCheckTblTbl(tbl,"Vihod","VihodWrong")
 			tbl["VihodWrong"] = {}
 		end
+		
+		--занятость станций
+		if tbl["TCentre1"].zanyat or tbl["TCentre2"].zanyat or tbl["TCentre3"].zanyat or tbl["TCentreSvetofor"].zanyat then
+			TableInsert(tbl["Centre"],tbl["TCentre1"].zanyat or tbl["TCentre2"].zanyat or tbl["TCentre3"].zanyat or tbl["TCentreSvetofor"].zanyat)
+		end
+		if tbl["TLeft1"].zanyat or tbl["TLeft2"].zanyat or tbl["TLeft3"].zanyat or tbl["TLeftSvetofor"].zanyat then
+			TableInsert(tbl["Left"],tbl["TLeft1"].zanyat or tbl["TLeft2"].zanyat or tbl["TLeft3"].zanyat or tbl["TLeftSvetofor"].zanyat)
+		end
+		if tbl["TRight1"].zanyat or tbl["TRight2"].zanyat or tbl["TRight3"].zanyat or tbl["TRightSvetofor"].zanyat then
+			TableInsert(tbl["Right"],tbl["TRight1"].zanyat or tbl["TRight2"].zanyat or tbl["TRight3"].zanyat or tbl["TRightSvetofor"].zanyat)
+		end
+		
+		-- при полном заезде на станцию очистка состава со стрелок
+		if (tbl["TRight1"].zanyat or tbl["TRight2"].zanyat or tbl["TRight3"].zanyat) and not tbl["TRightSvetofor"].zanyat then ClearCheckTblTbl(tbl,"Vhod","Right") end
+		if (tbl["TLeft1"].zanyat or tbl["TLeft2"].zanyat or tbl["TLeft3"].zanyat) and not tbl["TLeftSvetofor"].zanyat then ClearCheckTblTbl(tbl,"Vhod","Left") end
+		if (tbl["TCentre1"].zanyat or tbl["TCentre2"].zanyat or tbl["TCentre3"].zanyat) and not tbl["TCentreSvetofor"].zanyat then ClearCheckTblTbl(tbl,"Vhod","Centre") end
 		
 		--сбор мрашрута со станций
 		--сбор с левого пути
