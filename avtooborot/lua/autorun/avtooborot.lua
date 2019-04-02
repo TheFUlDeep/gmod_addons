@@ -696,6 +696,14 @@ if SERVER then
 		ValidateFieldTbl(tbl,"VihodWrong")
 		ValidateFieldTbl(tbl,"PeredVhod")
 		
+		--Проверка от казуса: без этого условия, если паравоз заедет на стрелки, и за ним сразу приедет новый и наедет на триггер TVihodWrong2 (или TVihod2), то вся таблца vhod обнулится, то есть автооборот забудат, что есть паравоз на стрелках, что не есть хорошо.
+		if (not tbl["TVihodWrong1"].zanyat and not tbl["TVihodWrong2"].zanyat) or (not tbl["TVihodWrong1"].zanyat and tbl["TVihodWrong2"].zanyat and tbl["TVhod"].zanyat) then
+			tbl["VihodWrong"] = {}
+		end
+		if (not tbl["TVihod1"].zanyat and not tbl["TVihod2"].zanyat) or (not tbl["TVihod1"].zanyat and tbl["TVihod2"].zanyat and tbl["TVhod"].zanyat) then
+			tbl["Vihod"] = {}
+		end
+		
 		--очистка уехавших ентити в правильном направлении
 		if not tbl["TVihod1"].zanyat and tbl["TVihod2"].zanyat then
 			if ClearCheckTblTbl(tbl,"Centre","Vihod") then --[[tbl["Centre"] = {}]] tbl["OpenedFromCentre"] = false end
