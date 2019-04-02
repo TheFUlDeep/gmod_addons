@@ -633,24 +633,6 @@ if SERVER then
 		elseif ent == tbl[field] then tbl[field] = false return true
 		end
 	end
-
-	
-	local function CheckFieldTbl(tbl,field,ent) -- если в таблице найдется хоть 1 такой же ent, то возвращается true
-		local cleared = false
-		if table.Count(tbl[field]) > 0 then
-			for _k,_v in pairs(tbl[field]) do
-				if ent.WagonList then
-					for k,v in pairs(ent.WagonList) do
-						if v == _v then tbl[field][_k] = nil cleared = true end
-					end
-				elseif ent == _v then tbl[field][_k] = nil cleared = true
-				end
-			end
-		else 
-			cleared = true
-		end
-		return cleared
-	end
 	
 	local function ValidateFieldTbl(tbl,field)
 		local cleared = false
@@ -765,12 +747,6 @@ if SERVER then
 				ForAvtooborot(tbl["RouteFromLeft"])
 			end
 		end
-		--[[print(table.Count(tbl["Centre"]) > 0)
-		print(table.Count(tbl["Left"]) < 1)
-		print(not tbl["TCentreSvetofor"].zanyat)
-		print(not tbl["OpenedFromCentre"])
-		print(not tbl["OpenedFromRight"])
-		print(not tbl["OpenedFromLeft"])]]
 		--сбор с центрального пути
 		if table.Count(tbl["Centre"]) > 0 and table.Count(tbl["Left"]) < 1 and not tbl["TCentreSvetofor"].zanyat and not tbl["OpenedFromCentre"] and not tbl["OpenedFromRight"] and not tbl["OpenedFromLeft"] then
 			ClearCheckTblTbl(tbl,"Vhod","Centre")
@@ -793,6 +769,7 @@ if SERVER then
 		
 		--автоматическое открытие стрелки, если никто не подъезжает и никого нет на стрелках
 		if table.Count(tbl["PeredVhod"]) < 1 and table.Count(tbl["Vhod"]) < 1 and tbl["OpenedFromVhod"] then tbl["OpenedFromVhod"] = false needsilent = true end
+		
 		
 		--сбор маршрута на станции
 		--сбор на левый путь
