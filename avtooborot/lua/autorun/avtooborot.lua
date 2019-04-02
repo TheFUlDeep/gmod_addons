@@ -24,7 +24,7 @@ if SERVER then
 		--ent:SetSolid(SOLID_BBOX)
 		--ent:SetCollisionBounds(vector + Vector(10,10,10), vector - Vector(100,100,100))
 		ent:UseTriggerBounds(true, 10)
-											--[[local scale = 0.1													-- for debug
+											--[[local scale = 0.1												-- for debug
 											local button = ents.Create( "gmod_button" )
 											button:SetModel( "models/metrostroi_train/81-717.6/6000.mdl" )
 											button:SetCollisionGroup( COLLISION_GROUP_WORLD )
@@ -184,6 +184,9 @@ if SERVER then
 			AvtooborotTBL[fun][StationName]["Vhod"] = {}
 			AvtooborotTBL[fun][StationName]["Centre"] = {}
 			AvtooborotTBL[fun][StationName]["Right"] = {}
+			AvtooborotTBL[fun][StationName]["Vihod"] = {}
+			AvtooborotTBL[fun][StationName]["VihodWrong"] = {}
+			AvtooborotTBL[fun][StationName]["PeredVhod"] = {}
 			createTrigger("TVihod1",StationName,fun,Vector(3281 - 275, -5230 + 500, -1700))
 			createTrigger("TVihod2",StationName,fun,Vector(3281 - 275, -5230 - 200 + 500, -1700))
 			createTrigger("TVihodWrong1",StationName,fun,Vector(3281, -5230 - 200, -1700))
@@ -204,6 +207,7 @@ if SERVER then
 			createTrigger("TRight3",StationName,fun,Vector(3281 + 340, -5230 + 7000 + 1900 * 3, -1700))
 			
 			createTrigger("Obnovlenie",StationName,fun,Vector(12788-15, 2995, -1100))
+			createTrigger("TPeredVhod",StationName,fun,Vector(-9042 + 40, -14005, -1704))
 			
 			AvtooborotTBL[fun][StationName]["RouteToLeft"] = "K1-2"
 			AvtooborotTBL[fun][StationName]["RouteToCentre"] = "K1-1/2"
@@ -683,29 +687,29 @@ if SERVER then
 		-- НЕ ЗАБЫТЬ СОЗДАТЬ ТАБЛИЦУ tbl["Right"] = {}. Ну или добавить в самое начало проверку на создание этой таблицы
 		-- НЕ ЗАБЫТЬ СОЗДАТЬ ТАБЛИЦУ tbl["Left"] = {}. Ну или добавить в самое начало проверку на создание этой таблицы
 		-- НЕ ЗАБЫТЬ СОЗДАТЬ ТАБЛИЦУ tbl["Vhod"] = {}. Ну или добавить в самое начало проверку на создание этой таблицы
-		--очистка недоступных ентити
-		if ValidateFieldTbl(tbl,"Centre") then tbl["Centre"] = {} tbl["OpenedFromCentre"] = false end
-		if ValidateFieldTbl(tbl,"Left") then tbl["Left"] = {} tbl["OpenedFromLeft"] = false end
-		if ValidateFieldTbl(tbl,"Right") then tbl["Right"] = {} tbl["OpenedFromRight"] = false end
-		ValidateFieldTbl(tbl,"Vhod")
-		
-		--очистка уехавших ентити в правильном направлении
-		if not tbl["TVihod1"].zanyat and tbl["TVihod2"].zanyat then
-			if CheckFieldTbl(tbl,"Centre",tbl["TVihod2"].zanyat) then tbl["Centre"] = {} tbl["OpenedFromCentre"] = false end
-			if CheckFieldTbl(tbl,"Right",tbl["TVihod2"].zanyat) then tbl["Right"] = {} tbl["OpenedFromRight"] = false end
-			if CheckFieldTbl(tbl,"Left",tbl["TVihod2"].zanyat) then tbl["Left"] = {} tbl["OpenedFromLeft"] = false end
-			CheckFieldTbl(tbl,"Vhod",tbl["TVihod2"].zanyat)
-		end
-		
-		--очистка уехавших ентити в неправильном направлении
-		if not tbl["TVihodWrong1"].zanyat and tbl["TVihodWrong2"].zanyat then
-			if CheckFieldTbl(tbl,"Centre",tbl["TVihodWrong2"].zanyat) then tbl["Centre"] = {} tbl["OpenedFromCentre"] = false end
-			if CheckFieldTbl(tbl,"Right",tbl["TVihodWrong2"].zanyat) then tbl["Right"] = {} tbl["OpenedFromRight"] = false end
-			if CheckFieldTbl(tbl,"Left",tbl["TVihodWrong2"].zanyat) then tbl["Left"] = {} tbl["OpenedFromLeft"] = false end
-			CheckFieldTbl(tbl,"Vhod",tbl["TVihodWrong2"].zanyat)
-		end
+		-- НЕ ЗАБЫТЬ СОЗДАТЬ ТАБЛИЦУ tbl["PeredVhod"] = {}. Ну или добавить в самое начало проверку на создание этой таблицы
+		-- НЕ ЗАБЫТЬ СОЗДАТЬ ТАБЛИЦУ tbl["Vihod"] = {}. Ну или добавить в самое начало проверку на создание этой таблицы
+		-- НЕ ЗАБЫТЬ СОЗДАТЬ ТАБЛИЦУ tbl["VihodWrong"] = {}. Ну или добавить в самое начало проверку на создание этой таблицы
+		local needsilent = false
 		
 		--занятость
+		
+		--записываю все уезжающие вагоны
+		if tbl["TVihod1"].zanyat or tbl["TVihod2"].zanyat then TableInsert(tbl["Vihod"],tbl["TVihod1"].zanyat or tbl["TVihod2"].zanyat) end
+		if tbl["TVihodWrong1"].zanyat or tbl["TVihodWrong2"].zanyat then TableInsert(tbl["VihodWrong"],tbl["TVihodWrong1"].zanyat or tbl["TVihodWrong2"].zanyat) end
+		
+		--есть ли подъезжающий паравоз
+		if tbl["TPeredVhod"].zanyat then TableInsert(tbl["PeredVhod"],tbl["TPeredVhod"].zanyat) end
+		
+		--этот параметр не даст собрать маршрут со станции, если есть паравоз на стрелках
+		--то есть, когда в tbl["Vhod"] есть ентити - это значит, что это ентити едет по стрелкам
+		--а также он очищает таблицу паравозов, подъезжающих сюда
+		if tbl.TVhod.zanyat then
+			TableInsert(tbl.Vhod,tbl.TVhod.zanyat)
+			ClearCheckTblTbl(tbl,"PeredVhod","Vhod")
+		end
+		
+		--занятость станций
 		if tbl["TCentre1"].zanyat or tbl["TCentre2"].zanyat or tbl["TCentre3"].zanyat or tbl["TCentreSvetofor"].zanyat then
 			TableInsert(tbl["Centre"],tbl["TCentre1"].zanyat or tbl["TCentre2"].zanyat or tbl["TCentre3"].zanyat or tbl["TCentreSvetofor"].zanyat)
 		end
@@ -716,9 +720,41 @@ if SERVER then
 			TableInsert(tbl["Right"],tbl["TRight1"].zanyat or tbl["TRight2"].zanyat or tbl["TRight3"].zanyat or tbl["TRightSvetofor"].zanyat)
 		end
 		
+		-- при полном заезде на станцию очистка состава со стрелок
 		if (tbl["TRight1"].zanyat or tbl["TRight2"].zanyat or tbl["TRight3"].zanyat) and not tbl["TRightSvetofor"].zanyat then ClearCheckTblTbl(tbl,"Vhod","Right") end
 		if (tbl["TLeft1"].zanyat or tbl["TLeft2"].zanyat or tbl["TLeft3"].zanyat) and not tbl["TLeftSvetofor"].zanyat then ClearCheckTblTbl(tbl,"Vhod","Left") end
 		if (tbl["TCentre1"].zanyat or tbl["TCentre2"].zanyat or tbl["TCentre3"].zanyat) and not tbl["TCentreSvetofor"].zanyat then ClearCheckTblTbl(tbl,"Vhod","Centre") end
+		
+		
+		--очистка недоступных ентити
+		if ValidateFieldTbl(tbl,"Centre") then tbl["Centre"] = {} tbl["OpenedFromCentre"] = false end
+		if ValidateFieldTbl(tbl,"Left") then tbl["Left"] = {} tbl["OpenedFromLeft"] = false end
+		if ValidateFieldTbl(tbl,"Right") then tbl["Right"] = {} tbl["OpenedFromRight"] = false end
+		ValidateFieldTbl(tbl,"Vihod")
+		ValidateFieldTbl(tbl,"VihodWrong")
+		ValidateFieldTbl(tbl,"PeredVhod")
+		
+		--очистка уехавших ентити в правильном направлении
+		if not tbl["TVihod1"].zanyat and tbl["TVihod2"].zanyat then
+			if ClearCheckTblTbl(tbl,"Centre","Vihod") then tbl["Centre"] = {} tbl["OpenedFromCentre"] = false end
+			if ClearCheckTblTbl(tbl,"Right","Vihod") then tbl["Right"] = {} tbl["OpenedFromRight"] = false end
+			if ClearCheckTblTbl(tbl,"Left","Vihod") then tbl["Left"] = {} tbl["OpenedFromLeft"] = false end
+			ClearCheckTblTbl(tbl,"PeredVhod","Vihod")
+			ClearCheckTblTbl(tbl,"Vhod","Vihod")
+			ClearCheckTblTbl(tbl,"VihodWrong","Vihod")
+			tbl["Vihod"] = {}
+		end
+		
+		--очистка уехавших ентити в неправильном направлении
+		if not tbl["TVihodWrong1"].zanyat and tbl["TVihodWrong2"].zanyat then
+			if ClearCheckTblTbl(tbl,"Centre","VihodWrong") then tbl["Centre"] = {} tbl["OpenedFromCentre"] = false end
+			if ClearCheckTblTbl(tbl,"Right","VihodWrong") then tbl["Right"] = {} tbl["OpenedFromRight"] = false end
+			if ClearCheckTblTbl(tbl,"Left","VihodWrong") then tbl["Left"] = {} tbl["OpenedFromLeft"] = false end
+			ClearCheckTblTbl(tbl,"PeredVhod","VihodWrong")
+			ClearCheckTblTbl(tbl,"Vhod","VihodWrong")
+			ClearCheckTblTbl(tbl,"Vihod","VihodWrong")
+			tbl["VihodWrong"] = {}
+		end
 		
 		--сбор мрашрута со станций
 		--сбор с левого пути
@@ -755,27 +791,25 @@ if SERVER then
 			end
 		end
 		
-		--этот параметр не даст собрать маршрут со станции, если есть заезжающий паравоз
-		--то есть, когда в tbl["Vhod"] есть ентити - это значит, что это ентити едет по стрелкам
-		if tbl.TVhod.zanyat then
-			TableInsert(tbl.Vhod,tbl.TVhod.zanyat)
-		end
+		
+		--автоматическое открытие стрелки, если никто не подъезжает и никого нет на стрелках
+		if table.Count(tbl["PeredVhod"]) < 1 and table.Count(tbl["Vhod"]) < 1 and tbl["OpenedFromVhod"] then tbl["OpenedFromVhod"] = false needsilent = true end
 		
 		--сбор маршрута на станции
 		--сбор на левый путь
 		if table.Count(tbl["Left"]) < 1 and table.Count(tbl["Right"]) < 1 and table.Count(tbl["Centre"]) < 1 and not tbl["OpenedFromVhod"] then	--их надо собирать только если поезд заехал. Если он заспавнился,то переводить не нужно
 			tbl["OpenedFromVhod"] = true
-			ForAvtooborot(tbl["RouteToLeft"])
+			ForAvtooborot(tbl["RouteToLeft"],needsilent)
 		end
 		--сбор на средний путь
 		if table.Count(tbl["Left"]) > 0 and table.Count(tbl["Right"]) < 1 and table.Count(tbl["Centre"]) < 1 and not tbl["OpenedFromVhod"] then
 			tbl["OpenedFromVhod"] = true
-			ForAvtooborot(tbl["RouteToCentre"])
+			ForAvtooborot(tbl["RouteToCentre"],needsilent)
 		end
 		--сбор на правый путь
 		if table.Count(tbl["Centre"]) > 0 and table.Count(tbl["Right"]) < 1 and not tbl["OpenedFromVhod"] then
 			tbl["OpenedFromVhod"] = true
-			ForAvtooborot(tbl["RouteToRight"])
+			ForAvtooborot(tbl["RouteToRight"],needsilent)
 		end
 	end
 	
