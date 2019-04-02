@@ -671,36 +671,6 @@ if SERVER then
 			ClearCheckTblTbl(tbl,"PeredVhod","Vhod")
 		end
 		
-		--очистка недоступных ентити
-		if ValidateFieldTbl(tbl,"Centre") then tbl["Centre"] = {} tbl["OpenedFromCentre"] = false end
-		if ValidateFieldTbl(tbl,"Left") then tbl["Left"] = {} tbl["OpenedFromLeft"] = false end
-		if ValidateFieldTbl(tbl,"Right") then tbl["Right"] = {} tbl["OpenedFromRight"] = false end
-		ValidateFieldTbl(tbl,"Vihod")
-		ValidateFieldTbl(tbl,"VihodWrong")
-		ValidateFieldTbl(tbl,"PeredVhod")
-		
-		--очистка уехавших ентити в правильном направлении
-		if not tbl["TVihod1"].zanyat and tbl["TVihod2"].zanyat then
-			if ClearCheckTblTbl(tbl,"Centre","Vihod") then tbl["Centre"] = {} tbl["OpenedFromCentre"] = false end
-			if ClearCheckTblTbl(tbl,"Right","Vihod") then tbl["Right"] = {} tbl["OpenedFromRight"] = false end
-			if ClearCheckTblTbl(tbl,"Left","Vihod") then tbl["Left"] = {} tbl["OpenedFromLeft"] = false end
-			ClearCheckTblTbl(tbl,"PeredVhod","Vihod")
-			ClearCheckTblTbl(tbl,"Vhod","Vihod")
-			ClearCheckTblTbl(tbl,"VihodWrong","Vihod")
-			tbl["Vihod"] = {}
-		end
-		
-		--очистка уехавших ентити в неправильном направлении
-		if not tbl["TVihodWrong1"].zanyat and tbl["TVihodWrong2"].zanyat then
-			if ClearCheckTblTbl(tbl,"Centre","VihodWrong") then tbl["Centre"] = {} tbl["OpenedFromCentre"] = false end
-			if ClearCheckTblTbl(tbl,"Right","VihodWrong") then tbl["Right"] = {} tbl["OpenedFromRight"] = false end
-			if ClearCheckTblTbl(tbl,"Left","VihodWrong") then tbl["Left"] = {} tbl["OpenedFromLeft"] = false end
-			ClearCheckTblTbl(tbl,"PeredVhod","VihodWrong")
-			ClearCheckTblTbl(tbl,"Vhod","VihodWrong")
-			ClearCheckTblTbl(tbl,"Vihod","VihodWrong")
-			tbl["VihodWrong"] = {}
-		end
-		
 		--занятость станций
 		if tbl["TCentre1"].zanyat or tbl["TCentre2"].zanyat or tbl["TCentre3"].zanyat or tbl["TCentreSvetofor"].zanyat then
 			TableInsert(tbl["Centre"],tbl["TCentre1"].zanyat or tbl["TCentre2"].zanyat or tbl["TCentre3"].zanyat or tbl["TCentreSvetofor"].zanyat)
@@ -716,6 +686,36 @@ if SERVER then
 			TableInsert(tbl["Right"],tbl["TRight1"].zanyat or tbl["TRight2"].zanyat or tbl["TRight3"].zanyat or tbl["TRightSvetofor"].zanyat)
 			ClearCheckTblTbl(tbl,"VihodWrong","Right")
 			ClearCheckTblTbl(tbl,"Vihod","Right")
+		end
+		
+		--очистка недоступных ентити
+		if ValidateFieldTbl(tbl,"Centre") --[[then tbl["Centre"] = {}]] tbl["OpenedFromCentre"] = false end
+		if ValidateFieldTbl(tbl,"Left") then --[[tbl["Left"] = {}]] tbl["OpenedFromLeft"] = false end
+		if ValidateFieldTbl(tbl,"Right") then --[[tbl["Right"] = {}]] tbl["OpenedFromRight"] = false end
+		ValidateFieldTbl(tbl,"Vihod")
+		ValidateFieldTbl(tbl,"VihodWrong")
+		ValidateFieldTbl(tbl,"PeredVhod")
+		
+		--очистка уехавших ентити в правильном направлении
+		if not tbl["TVihod1"].zanyat and tbl["TVihod2"].zanyat then
+			if ClearCheckTblTbl(tbl,"Centre","Vihod") then --[[tbl["Centre"] = {}]] tbl["OpenedFromCentre"] = false end
+			if ClearCheckTblTbl(tbl,"Right","Vihod") then --[[tbl["Right"] = {}]] tbl["OpenedFromRight"] = false end
+			if ClearCheckTblTbl(tbl,"Left","Vihod") then --[[tbl["Left"] = {}]] tbl["OpenedFromLeft"] = false end
+			ClearCheckTblTbl(tbl,"PeredVhod","Vihod")
+			ClearCheckTblTbl(tbl,"Vhod","Vihod")
+			ClearCheckTblTbl(tbl,"VihodWrong","Vihod")
+			tbl["Vihod"] = {}
+		end
+		
+		--очистка уехавших ентити в неправильном направлении
+		if not tbl["TVihodWrong1"].zanyat and tbl["TVihodWrong2"].zanyat then
+			if ClearCheckTblTbl(tbl,"Centre","VihodWrong") then --[[tbl["Centre"] = {}]] tbl["OpenedFromCentre"] = false end
+			if ClearCheckTblTbl(tbl,"Right","VihodWrong") then --[[tbl["Right"] = {}]] tbl["OpenedFromRight"] = false end
+			if ClearCheckTblTbl(tbl,"Left","VihodWrong") then --[[tbl["Left"] = {}]] tbl["OpenedFromLeft"] = false end
+			ClearCheckTblTbl(tbl,"PeredVhod","VihodWrong")
+			ClearCheckTblTbl(tbl,"Vhod","VihodWrong")
+			ClearCheckTblTbl(tbl,"Vihod","VihodWrong")
+			tbl["VihodWrong"] = {}
 		end
 		
 		-- при полном заезде на станцию очистка состава со стрелок
