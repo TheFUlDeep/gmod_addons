@@ -709,9 +709,9 @@ if SERVER then
 			if ClearCheckTblTbl(tbl,"Centre","Vihod") then --[[tbl["Centre"] = {}]] tbl["OpenedFromCentre"] = false end
 			if ClearCheckTblTbl(tbl,"Right","Vihod") then --[[tbl["Right"] = {}]] tbl["OpenedFromRight"] = false end
 			if ClearCheckTblTbl(tbl,"Left","Vihod") then --[[tbl["Left"] = {}]] tbl["OpenedFromLeft"] = false end
-			ClearCheckTblTbl(tbl,"PeredVhod","Vihod")
+			--ClearCheckTblTbl(tbl,"PeredVhod","Vihod")	--надеюсь, что это не нужно
 			ClearCheckTblTbl(tbl,"Vhod","Vihod")
-			ClearCheckTblTbl(tbl,"VihodWrong","Vihod")
+			--ClearCheckTblTbl(tbl,"VihodWrong","Vihod")		--наверное, это стало не нужно после добавления блока выше
 			tbl["Vihod"] = {}
 		end
 		
@@ -720,9 +720,9 @@ if SERVER then
 			if ClearCheckTblTbl(tbl,"Centre","VihodWrong") then --[[tbl["Centre"] = {}]] tbl["OpenedFromCentre"] = false end
 			if ClearCheckTblTbl(tbl,"Right","VihodWrong") then --[[tbl["Right"] = {}]] tbl["OpenedFromRight"] = false end
 			if ClearCheckTblTbl(tbl,"Left","VihodWrong") then --[[tbl["Left"] = {}]] tbl["OpenedFromLeft"] = false end
-			ClearCheckTblTbl(tbl,"PeredVhod","VihodWrong")
+			--ClearCheckTblTbl(tbl,"PeredVhod","VihodWrong")	-- надеюсь, что это не нужно
 			ClearCheckTblTbl(tbl,"Vhod","VihodWrong")
-			ClearCheckTblTbl(tbl,"Vihod","VihodWrong")
+			--ClearCheckTblTbl(tbl,"Vihod","VihodWrong")		--наверное, это стало не нужно после добавления блока выше
 			tbl["VihodWrong"] = {}
 		end
 		
