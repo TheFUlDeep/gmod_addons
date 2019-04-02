@@ -751,9 +751,9 @@ if SERVER then
 		end
 		
 		-- при полном заезде на станцию очистка состава со стрелок
-		if (tbl["TRight1"].zanyat or tbl["TRight2"].zanyat or tbl["TRight3"].zanyat) and not tbl["TRightSvetofor"].zanyat then ClearCheckTblTbl(tbl,"Vhod","Right") end
-		if (tbl["TLeft1"].zanyat or tbl["TLeft2"].zanyat or tbl["TLeft3"].zanyat) and not tbl["TLeftSvetofor"].zanyat then ClearCheckTblTbl(tbl,"Vhod","Left") end
-		if (tbl["TCentre1"].zanyat or tbl["TCentre2"].zanyat or tbl["TCentre3"].zanyat) and not tbl["TCentreSvetofor"].zanyat then ClearCheckTblTbl(tbl,"Vhod","Centre") end
+		if table.Count(tbl["Right"]) > 0 and not tbl["TRightSvetofor"].zanyat then ClearCheckTblTbl(tbl,"Vhod","Right") end
+		if table.Count(tbl["Left"]) > 0 and not tbl["TLeftSvetofor"].zanyat then ClearCheckTblTbl(tbl,"Vhod","Left") end
+		if table.Count(tbl["Centre"]) > 0 and not tbl["TCentreSvetofor"].zanyat then ClearCheckTblTbl(tbl,"Vhod","Centre") end
 		
 		--сбор мрашрута со станций
 		--сбор с левого пути
