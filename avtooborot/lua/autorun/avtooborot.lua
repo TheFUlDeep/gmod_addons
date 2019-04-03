@@ -633,22 +633,22 @@ if SERVER then
 		table.insert(tbl,1,value)
 	end
 	
-	local function ClearCheckTblTbl(tbl,fieldtbltoclear,field2)
-		if table.Count(tbl[fieldtbltoclear]) < 1 then return true end
+	local function ClearCheckTblTbl(tbltoclear,tbl2)
+		if table.Count(tbltoclear) < 1 then return true end
 		local cleared = false
-		for k,v in pairs(tbl[field2]) do
-			for k1,v1 in pairs(tbl[fieldtbltoclear]) do
-				if v == v1 then tbl[fieldtbltoclear][k1] = nil cleared = true end
+		for k,v in pairs(tbl2) do
+			for k1,v1 in pairs(tbltoclear) do
+				if v == v1 then tbltoclear[k1] = nil cleared = true end
 			end
 		end
 		return cleared
 	end
 	
-	local function ValidateFieldTbl(tbl,field)
+	local function ValidateFieldTbl(tbl)
 		local cleared = false
-		if table.Count(tbl[field]) > 0 then
-			for k,v in pairs(tbl[field]) do
-				if not IsValid(v) then tbl[field][k] = nil cleared = true end
+		if table.Count(tbl) > 0 then
+			for k,v in pairs(tbl) do
+				if not IsValid(v) then tbl[k] = nil cleared = true end
 			end
 		end
 		return cleared
@@ -678,34 +678,34 @@ if SERVER then
 		--а также он очищает таблицу паравозов, подъезжающих сюда
 		if tbl.TVhod.zanyat --[[or tbl.TVhod2.zanyat]] then
 			TableInsert(tbl.Vhod,tbl.TVhod.zanyat--[[or tbl.TVhod2.zanyat]])
-			ClearCheckTblTbl(tbl,"PeredVhod","Vhod")
+			ClearCheckTblTbl(tbl["PeredVhod"],tbl["Vhod"])
 		end
 		
 		--занятость станций
 		if tbl["TCentre1"].zanyat or tbl["TCentre2"].zanyat or tbl["TCentre3"].zanyat or tbl["TCentreSvetofor"].zanyat then
 			TableInsert(tbl["Centre"],tbl["TCentre1"].zanyat or tbl["TCentre2"].zanyat or tbl["TCentre3"].zanyat or tbl["TCentreSvetofor"].zanyat)
-			ClearCheckTblTbl(tbl,"VihodWrong","Centre")
-			ClearCheckTblTbl(tbl,"Vihod","Centre")
+			ClearCheckTblTbl(tbl["VihodWrong"],tbl["Centre"])
+			ClearCheckTblTbl(tbl["Vihod"],tbl["Centre"])
 		end
 		if tbl["TLeft1"].zanyat or tbl["TLeft2"].zanyat or tbl["TLeft3"].zanyat or tbl["TLeftSvetofor"].zanyat then
 			TableInsert(tbl["Left"],tbl["TLeft1"].zanyat or tbl["TLeft2"].zanyat or tbl["TLeft3"].zanyat or tbl["TLeftSvetofor"].zanyat)
-			ClearCheckTblTbl(tbl,"VihodWrong","Left")
-			ClearCheckTblTbl(tbl,"Vihod","Left")
+			ClearCheckTblTbl(tbl["VihodWrong"],tbl["Left"])
+			ClearCheckTblTbl(tbl["Vihod"],tbl["Left"])
 		end
 		if tbl["TRight1"].zanyat or tbl["TRight2"].zanyat or tbl["TRight3"].zanyat or tbl["TRightSvetofor"].zanyat then
 			TableInsert(tbl["Right"],tbl["TRight1"].zanyat or tbl["TRight2"].zanyat or tbl["TRight3"].zanyat or tbl["TRightSvetofor"].zanyat)
-			ClearCheckTblTbl(tbl,"VihodWrong","Right")
-			ClearCheckTblTbl(tbl,"Vihod","Right")
+			ClearCheckTblTbl(tbl["VihodWrong"],tbl["Right"])
+			ClearCheckTblTbl(tbl["Vihod"],tbl["Right"])
 		end
 		
 		--очистка недоступных ентити
-		if ValidateFieldTbl(tbl,"Centre") then --[[tbl["Centre"] = {}]] tbl["OpenedFromCentre"] = false end
-		if ValidateFieldTbl(tbl,"Left") then --[[tbl["Left"] = {}]] tbl["OpenedFromLeft"] = false end
-		if ValidateFieldTbl(tbl,"Right") then --[[tbl["Right"] = {}]] tbl["OpenedFromRight"] = false end
-		ValidateFieldTbl(tbl,"Vihod")
-		ValidateFieldTbl(tbl,"VihodWrong")
-		ValidateFieldTbl(tbl,"PeredVhod")
-		ValidateFieldTbl(tbl,"Vhod")
+		if ValidateFieldTbl(tbl["Centre"]) then --[[tbl["Centre"] = {}]] tbl["OpenedFromCentre"] = false end
+		if ValidateFieldTbl(tbl["Left"]) then --[[tbl["Left"] = {}]] tbl["OpenedFromLeft"] = false end
+		if ValidateFieldTbl(tbl["Right"]) then --[[tbl["Right"] = {}]] tbl["OpenedFromRight"] = false end
+		ValidateFieldTbl(tbl["Vihod"])
+		ValidateFieldTbl(tbl["VihodWrong"])
+		ValidateFieldTbl(tbl["PeredVhod"])
+		ValidateFieldTbl(tbl["Vhod"])
 		
 		--Проверка от казуса: без этого условия, если паравоз заедет на стрелки, и за ним сразу приедет новый и наедет на триггер TVihodWrong2 (или TVihod2), то вся таблца vhod обнулится, то есть автооборот забудет, что есть паравоз на стрелках, что не есть хорошо.
 		if (not tbl["TVihodWrong1"].zanyat and not tbl["TVihodWrong2"].zanyat) or (not tbl["TVihodWrong1"].zanyat and tbl["TVihodWrong2"].zanyat and tbl["TVhod"].zanyat) then
@@ -717,62 +717,53 @@ if SERVER then
 		
 		--очистка уехавших ентити в правильном направлении
 		if not tbl["TVihod1"].zanyat and tbl["TVihod2"].zanyat then
-			if ClearCheckTblTbl(tbl,"Centre","Vihod") then --[[tbl["Centre"] = {}]] tbl["OpenedFromCentre"] = false end
-			if ClearCheckTblTbl(tbl,"Right","Vihod") then --[[tbl["Right"] = {}]] tbl["OpenedFromRight"] = false end
-			if ClearCheckTblTbl(tbl,"Left","Vihod") then --[[tbl["Left"] = {}]] tbl["OpenedFromLeft"] = false end
-			--ClearCheckTblTbl(tbl,"PeredVhod","Vihod")	--надеюсь, что это не нужно
-			ClearCheckTblTbl(tbl,"Vhod","Vihod")
-			--ClearCheckTblTbl(tbl,"VihodWrong","Vihod")		--наверное, это стало не нужно после добавления блока выше
+			if ClearCheckTblTbl(tbl["Centre"],tbl["Vihod"]) then --[[tbl["Centre"] = {}]] tbl["OpenedFromCentre"] = false end
+			if ClearCheckTblTbl(tbl["Right"],tbl["Vihod"]) then --[[tbl["Right"] = {}]] tbl["OpenedFromRight"] = false end
+			if ClearCheckTblTbl(tbl["Left"],tbl["Vihod"]) then --[[tbl["Left"] = {}]] tbl["OpenedFromLeft"] = false end
+			--ClearCheckTblTbl(tbl["PeredVhod"],tbl["Vihod"])	--надеюсь, что это не нужно
+			ClearCheckTblTbl(tbl["Vhod"],tbl["Vihod"])
+			--ClearCheckTblTbl(tbl["VihodWrong"],tbl["Vihod"])		--наверное, это стало не нужно после добавления блока выше
 			tbl["Vihod"] = {}
 		end
 		
 		--очистка уехавших ентити в неправильном направлении
 		if not tbl["TVihodWrong1"].zanyat and tbl["TVihodWrong2"].zanyat then
-			if ClearCheckTblTbl(tbl,"Centre","VihodWrong") then --[[tbl["Centre"] = {}]] tbl["OpenedFromCentre"] = false end
-			if ClearCheckTblTbl(tbl,"Right","VihodWrong") then --[[tbl["Right"] = {}]] tbl["OpenedFromRight"] = false end
-			if ClearCheckTblTbl(tbl,"Left","VihodWrong") then --[[tbl["Left"] = {}]] tbl["OpenedFromLeft"] = false end
-			--ClearCheckTblTbl(tbl,"PeredVhod","VihodWrong")	-- надеюсь, что это не нужно
-			ClearCheckTblTbl(tbl,"Vhod","VihodWrong")
-			--ClearCheckTblTbl(tbl,"Vihod","VihodWrong")		--наверное, это стало не нужно после добавления блока выше
+			if ClearCheckTblTbl(tbl["Centre"],tbl["VihodWrong"]) then --[[tbl["Centre"] = {}]] tbl["OpenedFromCentre"] = false end
+			if ClearCheckTblTbl(tbl["Right"],tbl["VihodWrong"]) then --[[tbl["Right"] = {}]] tbl["OpenedFromRight"] = false end
+			if ClearCheckTblTbl(tbl["Left"],tbl["VihodWrong"]) then --[[tbl["Left"] = {}]] tbl["OpenedFromLeft"] = false end
+			--ClearCheckTblTbl(tbl["PeredVhod"],tbl["VihodWrong"])	-- надеюсь, что это не нужно
+			ClearCheckTblTbl(tbl["Vhod"],tbl["VihodWrong"])
+			--ClearCheckTblTbl(tbl,[Vihod"],tbl["VihodWrong"])		--наверное, это стало не нужно после добавления блока выше
 			tbl["VihodWrong"] = {}
 		end
 		
 		-- при полном заезде на станцию очистка состава со стрелок
-		if table.Count(tbl["Right"]) > 0 and not tbl["TRightSvetofor"].zanyat then ClearCheckTblTbl(tbl,"Vhod","Right") end
-		if table.Count(tbl["Left"]) > 0 and not tbl["TLeftSvetofor"].zanyat then ClearCheckTblTbl(tbl,"Vhod","Left") end
-		if table.Count(tbl["Centre"]) > 0 and not tbl["TCentreSvetofor"].zanyat then ClearCheckTblTbl(tbl,"Vhod","Centre") end
+		if table.Count(tbl["Right"]) > 0 and not tbl["TRightSvetofor"].zanyat then ClearCheckTblTbl(tbl["Vhod"],tbl["Right"]) end
+		if table.Count(tbl["Left"]) > 0 and not tbl["TLeftSvetofor"].zanyat then ClearCheckTblTbl(tbl["Vhod"],tbl["Left"]) end
+		if table.Count(tbl["Centre"]) > 0 and not tbl["TCentreSvetofor"].zanyat then ClearCheckTblTbl(tbl["Vhod"],tbl["Centre"]) end
+		
 		
 		--сбор мрашрута со станций
-		--сбор с левого пути
-		if table.Count(tbl["Left"]) > 0 and not tbl["TLeftSvetofor"].zanyat and not tbl["OpenedFromCentre"] and not tbl["OpenedFromRight"] and not tbl["OpenedFromLeft"] then
-			ClearCheckTblTbl(tbl,"Vhod","Left")
-			if table.Count(tbl["Vhod"]) < 1 then
+		if not tbl["OpenedFromCentre"] and not tbl["OpenedFromRight"] and not tbl["OpenedFromLeft"] and table.Count(tbl["Vhod"]) < 1 then
+			--сбор с левого пути
+			if table.Count(tbl["Left"]) > 0 and not tbl["TLeftSvetofor"].zanyat then
 				tbl["OpenedFromVhod"] = false
 				tbl["OpenedFromLeft"] = true
 				ForAvtooborot(tbl["RouteFromLeft"])
-			end
-		end
-		--сбор с центрального пути
-		if table.Count(tbl["Centre"]) > 0 and table.Count(tbl["Left"]) < 1 and not tbl["TCentreSvetofor"].zanyat and not tbl["OpenedFromCentre"] and not tbl["OpenedFromRight"] and not tbl["OpenedFromLeft"] then
-			ClearCheckTblTbl(tbl,"Vhod","Centre")
-			if table.Count(tbl["Vhod"]) < 1 then
+			--сбор с центрального пути
+			elseif table.Count(tbl["Centre"]) > 0 and not tbl["TCentreSvetofor"].zanyat then
 				tbl["OpenedFromVhod"] = false
 				tbl["OpenedFromCentre"] = true
 				ForAvtooborot(tbl["RouteFromCentre"])
-			end
-		end
-		--сбор с правого пути
-		if table.Count(tbl["Right"]) > 0 and table.Count(tbl["Left"]) < 1 and table.Count(tbl["Centre"]) < 1 and not tbl["TRightSvetofor"].zanyat and not tbl["OpenedFromCentre"] and not tbl["OpenedFromRight"] and not tbl["OpenedFromLeft"] then
-			ClearCheckTblTbl(tbl,"Vhod","Right")
-			if table.Count(tbl["Vhod"]) < 1 then
+			--сбор с правого пути
+			elseif table.Count(tbl["Right"]) > 0 and not tbl["TRightSvetofor"].zanyat then
 				tbl["OpenedFromVhod"] = false
 				tbl["OpenedFromRight"] = true
 				ForAvtooborot(tbl["RouteFromRight"])
 			end
 		end
-		
-		
-		--автоматическое открытие стрелки, если никто не подъезжает и никого нет на стрелках
+
+		--автоматическое открытие стрелки, если никто не подъезжает и никого нет на стрелках и маршрут еще не открыт
 		if table.Count(tbl["PeredVhod"]) < 1 and table.Count(tbl["Vhod"]) < 1 and tbl["OpenedFromVhod"] then tbl["OpenedFromVhod"] = false needsilent = true end
 		
 		
