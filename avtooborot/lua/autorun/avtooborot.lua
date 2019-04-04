@@ -24,31 +24,31 @@ if SERVER then
 		--ent:SetSolid(SOLID_BBOX)
 		--ent:SetCollisionBounds(vector + Vector(10,10,10), vector - Vector(100,100,100))
 		ent:UseTriggerBounds(true, 10)
-											--[[local scale = 0.1												-- for debug
-											local button = ents.Create( "gmod_button" )
-											button:SetModel( "models/metrostroi_train/81-717.6/6000.mdl" )
-											button:SetCollisionGroup( COLLISION_GROUP_WORLD )
-											button:SetPersistent( true )
-											button:SetPos(ent:GetPos() )
-											button:SetModelScale(scale)
-											button:Spawn()
-											local button = ents.Create( "gmod_button" )
-											button:SetModel( "models/metrostroi_train/81-717.6/6000.mdl" )
-											button:SetCollisionGroup( COLLISION_GROUP_WORLD )
-											button:SetPersistent( true )
-											button:SetPos(ent:GetPos() )
-											button:SetAngles(Angle(0,90,0))
-											button:SetModelScale(scale)
-											button:Spawn()
-											local button = ents.Create( "gmod_button" )
-											button:SetModel( "models/metrostroi_train/81-717.6/6000.mdl" )
-											button:SetCollisionGroup( COLLISION_GROUP_WORLD )
-											button:SetPersistent( true )
-											button:SetPos(ent:GetPos() )
-											button:SetAngles(Angle(90,0,0))
-											button:SetModelScale(scale)
-											button:Spawn()]]
 		ent:Spawn()
+		--[[local scale = 0.1												-- for debug
+		local button = ents.Create( "gmod_button" )
+		button:SetModel( "models/metrostroi_train/81-717.6/6000.mdl" )
+		button:SetCollisionGroup( COLLISION_GROUP_WORLD )
+		button:SetPersistent( true )
+		button:SetPos(ent:GetPos() )
+		button:SetModelScale(scale)
+		button:Spawn()
+		local button = ents.Create( "gmod_button" )
+		button:SetModel( "models/metrostroi_train/81-717.6/6000.mdl" )
+		button:SetCollisionGroup( COLLISION_GROUP_WORLD )
+		button:SetPersistent( true )
+		button:SetPos(ent:GetPos() )
+		button:SetAngles(Angle(0,90,0))
+		button:SetModelScale(scale)
+		button:Spawn()
+		local button = ents.Create( "gmod_button" )
+		button:SetModel( "models/metrostroi_train/81-717.6/6000.mdl" )
+		button:SetCollisionGroup( COLLISION_GROUP_WORLD )
+		button:SetPersistent( true )
+		button:SetPos(ent:GetPos() )
+		button:SetAngles(Angle(90,0,0))
+		button:SetModelScale(scale)
+		button:Spawn()]]
 	if not AvtooborotTBL[fun] then AvtooborotTBL[fun] = {} end
 	if not AvtooborotTBL[fun][StationName] then AvtooborotTBL[fun][StationName] = {} end
 	AvtooborotTBL[fun][StationName][name] = ent
@@ -699,9 +699,9 @@ if SERVER then
 		end
 		
 		--очистка недоступных ентити
-		if ValidateFieldTbl(tbl["Centre"]) then --[[tbl["Centre"] = {}]] tbl["OpenedFromCentre"] = false end
-		if ValidateFieldTbl(tbl["Left"]) then --[[tbl["Left"] = {}]] tbl["OpenedFromLeft"] = false end
-		if ValidateFieldTbl(tbl["Right"]) then --[[tbl["Right"] = {}]] tbl["OpenedFromRight"] = false end
+		ValidateFieldTbl(tbl["Centre"])
+		ValidateFieldTbl(tbl["Left"])
+		ValidateFieldTbl(tbl["Right"])
 		ValidateFieldTbl(tbl["Vihod"])
 		ValidateFieldTbl(tbl["VihodWrong"])
 		ValidateFieldTbl(tbl["PeredVhod"])
@@ -742,6 +742,11 @@ if SERVER then
 		if table.Count(tbl["Left"]) > 0 and not tbl["TLeftSvetofor"].zanyat then ClearCheckTblTbl(tbl["Vhod"],tbl["Left"]) end
 		if table.Count(tbl["Centre"]) > 0 and not tbl["TCentreSvetofor"].zanyat then ClearCheckTblTbl(tbl["Vhod"],tbl["Centre"]) end
 		
+		--если на станции никого нет, то разрешается открыть с нее маршрут
+		if table.Count(tbl["Right"]) < 1 then tbl["OpenedFromRight"] = false end
+		if table.Count(tbl["Left"]) < 1 then tbl["OpenedFromLeft"] = false end
+		if table.Count(tbl["Centre"]) < 1 then tbl["OpenedFromCentre"] = false end
+		
 		
 		--сбор мрашрута со станций
 		if not tbl["OpenedFromCentre"] and not tbl["OpenedFromRight"] and not tbl["OpenedFromLeft"] and table.Count(tbl["Vhod"]) < 1 then
@@ -762,6 +767,12 @@ if SERVER then
 				ForAvtooborot(tbl["RouteFromRight"])
 			end
 		end
+		
+		--когда есть состав на станции, надо разрешать собирать маршрут на станцию
+		if (table.Count(tbl["Left"]) > 0 or table.Count(tbl["Centre"]) > 0 or table.Count(tbl["Right"]) > 0) and tbl["OpenedFromVhod"] and table.Count(tbl["Vhod"]) < 1 then
+			tbl["OpenedFromVhod"] = false
+			needsilent = true
+		end
 
 		--автоматическое открытие стрелки, если никто не подъезжает и никого нет на стрелках и маршрут еще не открыт
 		if table.Count(tbl["PeredVhod"]) < 1 and table.Count(tbl["Vhod"]) < 1 and tbl["OpenedFromVhod"] then tbl["OpenedFromVhod"] = false needsilent = true end
@@ -769,20 +780,28 @@ if SERVER then
 		
 		--сбор маршрута на станции
 		--сбор на левый путь
-		if table.Count(tbl["Left"]) < 1 and table.Count(tbl["Right"]) < 1 and table.Count(tbl["Centre"]) < 1 and not tbl["OpenedFromVhod"] then	--их надо собирать только если поезд заехал. Если он заспавнился,то переводить не нужно
-			tbl["OpenedFromVhod"] = true
-			ForAvtooborot(tbl["RouteToLeft"],needsilent)
+		if not tbl["OpenedFromVhod"] then
+			if table.Count(tbl["Left"]) < 1 and table.Count(tbl["Right"]) < 1 and table.Count(tbl["Centre"]) < 1 then	--их надо собирать только если поезд заехал. Если он заспавнился,то переводить не нужно
+				tbl["OpenedFromVhod"] = true
+				ForAvtooborot(tbl["RouteToLeft"],needsilent)
+			end
+			--сбор на средний путь
+			if table.Count(tbl["Left"]) > 0 and table.Count(tbl["Right"]) < 1 and table.Count(tbl["Centre"]) < 1 then
+				tbl["OpenedFromVhod"] = true
+				ForAvtooborot(tbl["RouteToCentre"],needsilent)
+			end
+			--сбор на правый путь
+			if table.Count(tbl["Centre"]) > 0 and table.Count(tbl["Right"]) < 1 then
+				tbl["OpenedFromVhod"] = true
+				ForAvtooborot(tbl["RouteToRight"],needsilent)
+			end
 		end
-		--сбор на средний путь
-		if table.Count(tbl["Left"]) > 0 and table.Count(tbl["Right"]) < 1 and table.Count(tbl["Centre"]) < 1 and not tbl["OpenedFromVhod"] then
-			tbl["OpenedFromVhod"] = true
-			ForAvtooborot(tbl["RouteToCentre"],needsilent)
-		end
-		--сбор на правый путь
-		if table.Count(tbl["Centre"]) > 0 and table.Count(tbl["Right"]) < 1 and not tbl["OpenedFromVhod"] then
-			tbl["OpenedFromVhod"] = true
-			ForAvtooborot(tbl["RouteToRight"],needsilent)
-		end
+		--[[for k,v in pairs(player.GetAll()) do
+			v:ChatPrint("------------------------------------------------")
+			for k1,v1 in pairs(tbl) do
+				v:ChatPrint(k1..":"..tostring(v1))
+			end
+		end]]
 	end
 	
 	function UpdateAvtooborot()
