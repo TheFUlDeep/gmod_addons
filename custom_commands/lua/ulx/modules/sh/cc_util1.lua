@@ -1493,7 +1493,7 @@ if SERVER then
 end
 
 --[[============================= Перегрузка !menu ==========================]]
-timer.Simple(5, function()
+--[[timer.Simple(5, function()
 	if SERVER then
 		function ulx.menu(ply)
 			ply:ConCommand("xgui")
@@ -1502,7 +1502,7 @@ timer.Simple(5, function()
 	local menu = ulx.command("Metrostroi", "ulx menu", ulx.menu, "!menu",true)
 	menu:defaultAccess(ULib.ACCESS_ALL)
 	menu:help("Открыть ulx меню")
-end)
+end)]]
 
 
 --[[============================= ПЕРЕГРУЗКА ТАБЛИЦЫ КАРТ ДЛЯ MAPCYCLE ==========================]]
