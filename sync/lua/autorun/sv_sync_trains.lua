@@ -418,6 +418,7 @@ hook.Add("PlayerSay","SyncRoutes", function(ply,text)
 end)
 
 hook.Add("MetrostroiChangedSwitch", "SyncSwitches", function(self,AlternateTrack)
+	CheckSwitchesTBL()
 	local state = nil
 	if AlternateTrack then state = "Open" else state = "Close" end
 	table.insert(SwitchesTBL,1,{name = self.Name,state = state,OsTime = os.clock()})
@@ -425,6 +426,7 @@ end)
 
 
 function ForAvtooborot(route,hidenotif)
+	CheckRoutes()
 	if not hidenotif then ulx.fancyLog("[АВТООБОРОТ] Собираю маршрут #s",route) end
 	OpenRoute(route)
 	table.insert(RoutesTBL,1,{comm = "!sopen "..route, OsTime = os.clock()})

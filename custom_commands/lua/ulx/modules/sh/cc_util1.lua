@@ -1493,7 +1493,7 @@ if SERVER then
 end
 
 --[[============================= Перегрузка !menu ==========================]]
-timer.Simple(5, function()
+--[[timer.Simple(5, function()
 	if SERVER then
 		function ulx.menu(ply)
 			ply:ConCommand("xgui")
@@ -1502,7 +1502,7 @@ timer.Simple(5, function()
 	local menu = ulx.command("Metrostroi", "ulx menu", ulx.menu, "!menu",true)
 	menu:defaultAccess(ULib.ACCESS_ALL)
 	menu:help("Открыть ulx меню")
-end)
+end)]]
 
 
 --[[============================= ПЕРЕГРУЗКА ТАБЛИЦЫ КАРТ ДЛЯ MAPCYCLE ==========================]]
@@ -1639,7 +1639,7 @@ if SERVER then
 		local curtrack,CurDist,MinDist,NearestSignalPath
 		local i = 0
 		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
-			if not IsValid(v) or not v.Name or v.ARSOnly or not v.Lenses then continue end
+			if not IsValid(v) or not v.Name or v.Name == "" or v.ARSOnly or not v.Lenses then continue end
 			curtrack = v.TrackPosition.path and v.TrackPosition.path.id or 0
 			if curtrack == 0 then continue end
 			if curtrack ~= TrackID then continue end
