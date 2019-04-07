@@ -141,7 +141,7 @@ if SERVER then
 		end
 		
 		if Map:find("surface") then
-			--[[StationName = "Площадь Восстания"
+			StationName = "Площадь Восстания"
 			fun = "6"
 			
 			createTrigger("TPeredStation1",StationName,fun,Vector(12780, 2998-500, -1090))
@@ -174,9 +174,9 @@ if SERVER then
 			AvtooborotTBL[fun][StationName]["TFarDeadSvetofor"] = {}
 			AvtooborotTBL[fun][StationName]["TFarDead1"] = {}
 			AvtooborotTBL[fun][StationName]["TFarDead2"] = {}
-			AvtooborotTBL[fun][StationName]["TFarDead3"] = {}]]
+			AvtooborotTBL[fun][StationName]["TFarDead3"] = {}
 			
-			StationName = "Куровская"
+			--[[StationName = "Куровская"
 			fun = "5"
 			
 			createTrigger("TVhod",StationName,fun,Vector(3281, -5230, -1700))
@@ -214,7 +214,7 @@ if SERVER then
 			AvtooborotTBL[fun][StationName]["RouteToRight"] = "K1-1"
 			AvtooborotTBL[fun][StationName]["RouteFromLeft"] = "ST2-2"
 			AvtooborotTBL[fun][StationName]["RouteFromRight"] = "ST1-2"
-			AvtooborotTBL[fun][StationName]["RouteFromCentre"] = "ST1/2-2"
+			AvtooborotTBL[fun][StationName]["RouteFromCentre"] = "ST1/2-2"]]
 			
 			
 			fun = "6"
@@ -624,7 +624,7 @@ if SERVER then
 		--return chetiretbl
 	end
 		
-	local function TableInsert(tbl,value)
+	--[[local function TableInsert(tbl,value)
 		if table.Count(tbl) > 0 then
 			for k,v in pairs(tbl) do
 				if v == value then return end
@@ -652,9 +652,9 @@ if SERVER then
 			end
 		end
 		return cleared
-	end
+	end]]
 	
-	local function pyat(tbl)	-- возможно стоит добавить TVhod2 по неправильному направлению, чтобы по нему можно было заезжать
+	--[[local function pyat(tbl)	-- возможно стоит добавить TVhod2 по неправильному направлению, чтобы по нему можно было заезжать
 		-- НЕ ЗАБЫТЬ СОЗДАТЬ ТАБЛИЦУ tbl["Centre"] = {}. Ну или добавить в самое начало проверку на создание этой таблицы
 		-- НЕ ЗАБЫТЬ СОЗДАТЬ ТАБЛИЦУ tbl["Right"] = {}. Ну или добавить в самое начало проверку на создание этой таблицы
 		-- НЕ ЗАБЫТЬ СОЗДАТЬ ТАБЛИЦУ tbl["Left"] = {}. Ну или добавить в самое начало проверку на создание этой таблицы
@@ -802,7 +802,7 @@ if SERVER then
 				v:ChatPrint(k1..":"..tostring(v1))
 			end
 		end]]
-	end
+	end]]
 	
 	function UpdateAvtooborot()
 		if AvtooborotEnabled ~= 1 then return end
