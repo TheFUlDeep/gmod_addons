@@ -624,7 +624,7 @@ if SERVER then
 		--return chetiretbl
 	end
 		
-	--[[local function TableInsert(tbl,value)
+	local function TableInsert(tbl,value)
 		if table.Count(tbl) > 0 then
 			for k,v in pairs(tbl) do
 				if v == value then return end
@@ -652,9 +652,9 @@ if SERVER then
 			end
 		end
 		return cleared
-	end]]
+	end
 	
-	--[[local function pyat(tbl)	-- возможно стоит добавить TVhod2 по неправильному направлению, чтобы по нему можно было заезжать
+	local function pyat(tbl)	-- возможно стоит добавить TVhod2 по неправильному направлению, чтобы по нему можно было заезжать
 		-- НЕ ЗАБЫТЬ СОЗДАТЬ ТАБЛИЦУ tbl["Centre"] = {}. Ну или добавить в самое начало проверку на создание этой таблицы
 		-- НЕ ЗАБЫТЬ СОЗДАТЬ ТАБЛИЦУ tbl["Right"] = {}. Ну или добавить в самое начало проверку на создание этой таблицы
 		-- НЕ ЗАБЫТЬ СОЗДАТЬ ТАБЛИЦУ tbl["Left"] = {}. Ну или добавить в самое начало проверку на создание этой таблицы
@@ -802,7 +802,7 @@ if SERVER then
 				v:ChatPrint(k1..":"..tostring(v1))
 			end
 		end]]
-	end]]
+	end
 	
 	function UpdateAvtooborot()
 		if AvtooborotEnabled ~= 1 then return end
