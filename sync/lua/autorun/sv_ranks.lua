@@ -15,7 +15,6 @@ if SERVER then
 				if body and body ~= "" then
 					body = util.JSONToTable(body)
 					if body and body.Rank then
-						--print(body)
 						if not IsValid(player.GetBySteamID(SteamID)) then return end						
 						local Rank = ply:GetUserGroup()
 						if Rank ~= body.Rank then
@@ -27,7 +26,6 @@ if SERVER then
 						end
 					end
 				end
-				--print("Setting rank "..body.." to "..ply:Nick())
 				timer.Simple(0.1, function()
 					if not IsValid(ply) then return end
 					SendRankToWebServer(WebServerUrl,ply:SteamID(),ply:Nick(),ply:GetUserGroup())
@@ -49,7 +47,6 @@ if SERVER then
 	end)
 
 	local function CheckRanks()
-		--print("Checking Ranks")
 		local i = 0
 		for k,v in pairs(player.GetAll()) do
 			timer.Simple(i,function() 
@@ -58,9 +55,8 @@ if SERVER then
 			end)
 			i = i + 1
 		end
-		timer.Simple(60,function() CheckRanks() end)
 	end
-	CheckRanks()
+	timer.Create("CheckingRanks",60,0,function() CheckRanks() end)
 
 
 
@@ -78,20 +74,46 @@ if SERVER then
 				--[[if BansTBL[SteamID].Nick == "Unknown" then				--вообще можно еще сделать проверку и обновление ника, но мне лень
 					
 				end]]
-			end,
-			function(errorr)
-				BansTBL[SteamID] = {}
 			end
 		)
+	end
+	
+	local BansTBL = {}
+	
+	local function GetBansFromWebServer()
+		http.Fetch(WebServerUrl.."bans/",
+			function(body)
+				local tbl = util.JSONToTable(body)
+				if not tbl then return end
+				BansTBL = tbl
+			end
+		)
+	end
+	
+	GetBansFromWebServer()
+	timer.Create("UpdateBansTBL",30,0,GetBansFromWebServer)
+	
+	
+	local function CheckIfLocalBanned(SteamID)
+		if table.Count(BansTBL) < 1 then return end
+		for _k,_v in pairs(BansTBL) do
+			for k,v in pairs(_v) do
+				if k == SteamID and not v.Unbanned and (v.UnBanDate == "perma" or os.time() < v.UnBanDate) then
+					local BanDate = os.date("%H:%M:%S %d/%m/%Y",v.BanDate)
+					local UnBanDate = v.UnBanDate == "perma" and "никогда" or os.date("%H:%M:%S %d/%m/%Y",v.UnBanDate)
+					return "ВЫ ЗАБАНЕНЫ\nЗабанил "..(v.WhoBanned)..", его SteamID: "..(v.WhoBannedID).."\nПричина: "..(v.Reason).."\nДата бана: "..BanDate.."\nДата разбана: "..UnBanDate
+				end
+			end
+		end
 	end
 
 	hook.Add( "CheckPassword", "SyncBanCheck", function(steamID64,ipAddress,svPassword,clPassword,name)
 		local SteamID = util.SteamIDFrom64(steamID64)
-		CheckIfBanned(SteamID)
+		local result = CheckIfLocalBanned(SteamID)
+		if result then return false,result end
 	end)
 	
 	local function CheckingIfBanned()
-		--print("Checking Ranks")
 		local i = 0
 		for k,v in pairs(player.GetAll()) do
 			timer.Simple(i,function() 
@@ -100,9 +122,8 @@ if SERVER then
 			end)
 			i = i + 1
 		end
-		timer.Simple(60,function() CheckingIfBanned() end)
 	end
-	CheckingIfBanned()
+	timer.Create("CheckingBan",60,0,function() CheckingIfBanned() end)
 		
 		--SendRankToWebServer(WebServerUrl,"SteamID","Nick","user1")
 		--ulx.adduserid(nil,"STEAM_0:1:37134658","superadmin")
