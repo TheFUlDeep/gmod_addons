@@ -1,3 +1,5 @@
+--====================ДИСКОННЕКТ ИГРОКА======================================--
+
 --СЕРВЕРНЫЙ
 if SERVER then
 	util.AddNetworkString("SB_PlayerDisconnectedMessage")
@@ -27,7 +29,7 @@ end
 
 
 
-
+--====================ЗАГРУЗКА ИГРОКА======================================--
 --СЕРВЕРНЫЙ
 if SERVER then
 	util.AddNetworkString("SB_PlayerLoaded")
@@ -35,6 +37,7 @@ if SERVER then
 	net.Receive("SB_PlayerLoaded",function(len,ply)
 		net.Start("SB_PlayerLoaded")
 			net.WriteString(ply:Nick())
+			net.WriteColor(team.GetColor(ply:Team()))
 		net.Broadcast()
 
 		hook.Run("PlayerLoaded",ply)
@@ -57,7 +60,8 @@ if CLIENT then
 
 	net.Receive("SB_PlayerLoaded",function(len)
 		local nick = net.ReadString()
+		local color = net.ReadColor()
 
-		chat.AddText(color_white,"Игрок \"",nick,"\"",Color(0,255,0),"загрузился",color_white,".")
+		chat.AddText(color_white,"Игрок \"",color,nick,color_white,"\"",Color(0,255,0)," загрузился",color_white,".")
 	end)
 end
