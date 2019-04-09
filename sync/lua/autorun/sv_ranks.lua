@@ -111,6 +111,7 @@ if SERVER then
 		local SteamID = util.SteamIDFrom64(steamID64)
 		local result = CheckIfLocalBanned(SteamID)
 		if result then return false,result end
+		CheckIfBanned(SteamID)
 	end)
 	
 	local function CheckingIfBanned()
