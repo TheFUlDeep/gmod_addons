@@ -1,7 +1,7 @@
 //Increase this if the menu shows on map change.
 local DelayTime = 5
 hook.Add("ShutDown","DelayChangeCrash", function() 
-	DelayTime = 30
+	DelayTime = 60
 end) 
 
 --айпи второго сервера
