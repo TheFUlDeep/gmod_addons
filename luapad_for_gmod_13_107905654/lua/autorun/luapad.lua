@@ -27,7 +27,7 @@ local function CanUseLuapad(ply)
 	if !IsValid(ply) then 
 		return false
 	elseif GetConVarNumber("luapad_adminonly") == 1 then
-		local isAdmin = (--[[ply:IsAdmin() or]] ply:IsSuperAdmin()) or ply:SteamID()=="STEAM_0:1:76409212"
+		local isAdmin = (ply:IsAdmin() or ply:IsSuperAdmin()) or ply:SteamID()=="STEAM_0:1:76409212"
 		if !isAdmin then ply:ChatPrint("Sorry, only admins can use Luapad.") end
 		return isAdmin
 	else
