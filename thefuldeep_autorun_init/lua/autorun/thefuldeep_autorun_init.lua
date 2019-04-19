@@ -3,8 +3,8 @@ local function InitAutorun(path)
 	--PrintTable(files)
 	if files then
 		for k,v in pairs(files) do
-			local content = file.Read(path..v, "LUA")
-			if not content then continue end
+			--local content = file.Read(path..v, "LUA")
+			--if not content then continue end
 			print("including "..path..v.." by TheFulDeep's autorun")
 			include(path..v)
 			AddCSLuaFile(path..v)
