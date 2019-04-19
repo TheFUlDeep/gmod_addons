@@ -1,6 +1,7 @@
 if SERVER then
 	function ulx.fix(calling_ply, command)
 		game.CleanUpMap()
+		createavtooborot()
 		RunConsoleCommand("metrostroi_load")
 		ulx.fancyLogAdmin(calling_ply, "[SERVER] #A ВОССТАНОВИЛ КАРТУ")
 	end
