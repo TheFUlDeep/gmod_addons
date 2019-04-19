@@ -8,19 +8,19 @@ local function InitAutorun(path,param)
 				if content:find("%a") then
 					continue
 				else
-					files[k] = nil print("File "..path..v.." is empty. It will not be included.") 
+					files[k] = nil MsgC(Color( 255, 0, 0 ),"File "..path..v.." is empty. It will not be included.\n")
 				end
 			end
 			if param == "sh" or param == "sv" then
 				for k,v in pairs(files) do
-					print("including "..path..v.." by TheFulDeep's autorun")
+					MsgC(Color(0,255,0),"including "..path..v.." by TheFulDeep's autorun\n")
 					include(path..v) 
 				end
 			end
 			if param == "sh" or param == "cl" then
 				for k,v in pairs(files) do
 					AddCSLuaFile(path..v)
-					print("added "..path..v.." to download to clients")
+					MsgC(Color( 255, 255, 0 ),"added "..path..v.." to download to clients by TheFulDeep's autorun\n")
 				end
 			end
 		end
@@ -28,7 +28,7 @@ local function InitAutorun(path,param)
 		if CLIENT and (param == "sh" or param == "cl") then
 			for k,v in pairs(files) do
 				include(path..v)
-				print("included "..path..v.." by TheFulDeep's autorun")
+				MsgC(Color(0,255,0),"included "..path..v.." by TheFulDeep's autorun\n")
 			end
 		end
 	end
