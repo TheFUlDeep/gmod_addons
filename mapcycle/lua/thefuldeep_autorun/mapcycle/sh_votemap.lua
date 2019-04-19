@@ -1,4 +1,3 @@
-AddCSLuaFile("autorun/sh_votemap.lua")
 AVMS = {}
 function AVMS.timeToStr( time )
 	local tmp = time
