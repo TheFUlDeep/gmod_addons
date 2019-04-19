@@ -65,8 +65,8 @@ if SERVER then
 	end
 
 	function createavtooborot()
-	local StationName
-	local fun
+		local StationName
+		local fun
 		if Map:find("neocrims") then
 			StationName = "Сталинская"
 			fun = "6"
