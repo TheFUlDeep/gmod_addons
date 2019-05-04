@@ -1712,7 +1712,11 @@ if SERVER then
 				IntervalsTbl[i] = GetIntervalTime(StationsCfg[i]["ent"])
 			end
 			net.Start("SendIntervalsNetworkString")
-			net.WriteTable(IntervalsTbl)
+			--net.WriteTable(IntervalsTbl)		-- старый вариант
+				local TableToSend = util.Compress(util.TableToJSON(IntervalsTbl))		--новый вариант
+				local TableToSendN = #TableToSend
+				net.WriteUInt(TableToSendN, 32)
+				net.WriteData(TableToSend, TableToSendN)
 			net.Broadcast()
 		end)
 	end
@@ -1759,7 +1763,9 @@ if CLIENT then
 	local IntervalsTbl = {}
 	
 	net.Receive("SendIntervalsNetworkString",function() 
-		IntervalsTbl = net.ReadTable()
+		--IntervalsTbl = net.ReadTable()		старый вариант
+		local length = net.ReadUInt(32)			-- новый вариант
+		IntervalsTbl = util.JSONToTable(util.Decompress(net.ReadData(length)))
 	end)
 	
 	net.Receive("SendStationsCfgNetworkString",function() 
