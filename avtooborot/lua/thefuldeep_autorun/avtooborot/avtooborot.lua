@@ -141,7 +141,7 @@ if SERVER then
 		end
 		
 		if Map:find("surface") then
-			StationName = "Площадь Восстания"
+			--[[StationName = "Площадь Восстания"
 			fun = "6"
 			
 			createTrigger("TPeredStation1",StationName,fun,Vector(12780, 2998-500, -1090))
@@ -174,7 +174,7 @@ if SERVER then
 			AvtooborotTBL[fun][StationName]["TFarDeadSvetofor"] = {}
 			AvtooborotTBL[fun][StationName]["TFarDead1"] = {}
 			AvtooborotTBL[fun][StationName]["TFarDead2"] = {}
-			AvtooborotTBL[fun][StationName]["TFarDead3"] = {}
+			AvtooborotTBL[fun][StationName]["TFarDead3"] = {}]]
 			
 			--[[StationName = "Куровская"
 			fun = "5"
@@ -252,6 +252,42 @@ if SERVER then
 			AvtooborotTBL[fun][StationName]["TFarDead2"] = {}
 			AvtooborotTBL[fun][StationName]["TFarDead3"] = {}
 			
+			
+			StationName = "Куровская"
+			fun = "6"
+			
+			createTrigger("TPeredStation1",StationName,fun,Vector(3274, 3569 - 600, -1706))
+			createTrigger("TPeredStation2",StationName,fun,Vector(3274, 3569 - 800, -1706))
+			
+			createTrigger("TStationReika",StationName,fun,Vector(3274, 3569, -1706))
+			createTrigger("TStationZaReikoi",StationName,fun,Vector(3274, 3569 + 520, -1706))
+			
+			createTrigger("TNearSvetofor",StationName,fun,Vector(3274, 3569 + 5250, -1706))
+			createTrigger("TNear1",StationName,fun,Vector(3274, 3569 + 5250 + 1900 * 0.5, -1706))
+			createTrigger("TNear2",StationName,fun,Vector(3274, 3569 + 5250 + 1900 * 1, -1706))
+			createTrigger("TNear3",StationName,fun,Vector(3274, 3569 + 5250 + 1900 * 1.5, -1706))
+			
+			createTrigger("TFarSvetofor",StationName,fun,Vector(3274 - 260, 3569 + 5250, -1706))
+			createTrigger("TFar1",StationName,fun,Vector(3274 - 260, 3569 + 5250 + 1900 * 0.5, -1706))
+			createTrigger("TFar2",StationName,fun,Vector(3274 - 260, 3569 + 5250 + 1900 * 1, -1706))
+			createTrigger("TFar3",StationName,fun,Vector(3274 - 260, 3569 + 5250 + 1900 * 1.5, -1706))
+			
+			createTrigger("TEnd1",StationName,fun,Vector(3274 - 270, 3569 + 3170, -1706))
+			createTrigger("TEnd2",StationName,fun,Vector(3274 - 280, 3569 + 3170 - 220, -1706))
+			
+			AvtooborotTBL[fun][StationName]["RouteToFar"] = "KR2-3"
+			AvtooborotTBL[fun][StationName]["RouteToNear"] = "KR2-4"
+			AvtooborotTBL[fun][StationName]["RouteFromNear"] = "KR4-1"
+			AvtooborotTBL[fun][StationName]["RouteFromFar"] = "KR3-1"
+			
+			AvtooborotTBL[fun][StationName]["TNearDeadSvetofor"] = {}
+			AvtooborotTBL[fun][StationName]["TNearDead1"] = {}
+			AvtooborotTBL[fun][StationName]["TNearDead2"] = {}
+			AvtooborotTBL[fun][StationName]["TNearDead3"] = {}
+			AvtooborotTBL[fun][StationName]["TFarDeadSvetofor"] = {}
+			AvtooborotTBL[fun][StationName]["TFarDead1"] = {}
+			AvtooborotTBL[fun][StationName]["TFarDead2"] = {}
+			AvtooborotTBL[fun][StationName]["TFarDead3"] = {}
 		end
 		
 		
