@@ -1146,12 +1146,13 @@ if SERVER then
 		elseif Map == "gm_smr_first_line_v2" then LoopTime = 35 * 60
 		elseif Map == "gm_metro_crossline_c4" then LoopTime = 35 * 60	
 		elseif Map == "gm_metrostroi_b50" then LoopTime = 70*60
+		elseif Map:find("surface") then LoopTime = 22*60+26
 		end
 		LoopTime = LoopTime / trains_n
 		if LoopTime > 1023 then LoopTime = 0 end
 		
 		if SERVER then
-		ulx.SendActiveInt(LoopTime)
+			ulx.SendActiveInt(LoopTime)
 		end
 		--print(trains_n)
 	end
