@@ -23,7 +23,7 @@ if SERVER then
 		ent:SetPos(vector)
 		--ent:SetSolid(SOLID_BBOX)
 		--ent:SetCollisionBounds(vector + Vector(10,10,10), vector - Vector(100,100,100))
-		ent:UseTriggerBounds(true, 10)
+		ent:UseTriggerBounds(true,1)
 		ent:Spawn()
 		
 		--[[local scale = 0.1												-- for debug
@@ -264,15 +264,15 @@ if SERVER then
 			createTrigger("TStationReika",StationName,fun,Vector(3274, 3569, -1706))
 			createTrigger("TStationZaReikoi",StationName,fun,Vector(3274, 3569 + 520, -1706))
 			
-			createTrigger("TNearSvetofor",StationName,fun,Vector(3274, 3569 + 5250, -1706))
-			createTrigger("TNear1",StationName,fun,Vector(3274 - 80, 3569 + 5250 + 1900 * 0.5, -1706))
-			createTrigger("TNear2",StationName,fun,Vector(3274 - 380, 3569 + 5250 + 1900 * 1, -1706))
-			createTrigger("TNear3",StationName,fun,Vector(3274 - 1520, 3569 + 5250 + 1900 * 1.67, -1706))
+			createTrigger("TNearSvetofor",StationName,fun,Vector(3274 + 20, 3569 + 5250, -1706 + 10))
+			createTrigger("TNear1",StationName,fun,Vector(3274 - 80 + 50, 3569 + 5250 + 1900 * 0.5, -1706 + 10))
+			createTrigger("TNear2",StationName,fun,Vector(3274 - 380 + 20, 3569 + 5250 + 1900 * 1.25, -1706 + 10))
+			createTrigger("TNear3",StationName,fun,Vector(3274 - 1520 + 20, 3569 + 5250 + 1900 * 1.83, -1706 + 10))
 			
-			createTrigger("TFarSvetofor",StationName,fun,Vector(3274 - 260, 3569 + 5250, -1706))
-			createTrigger("TFar1",StationName,fun,Vector(3274 - 260 - 100, 3569 + 5250 + 1900 * 0.5, -1706))
-			createTrigger("TFar2",StationName,fun,Vector(3274 - 260 - 410, 3569 + 5250 + 1900 * 1, -1706))
-			createTrigger("TFar3",StationName,fun,Vector(3274 - 260 - 1850, 3569 + 5250 + 1900 * 1.67, -1706))
+			createTrigger("TFarSvetofor",StationName,fun,Vector(3274 - 260, 3569 + 5250, -1706 + 10))
+			createTrigger("TFar1",StationName,fun,Vector(3274 - 260 - 100 - 150, 3569 + 5250 + 1900 * 0.5, -1706 + 10))
+			createTrigger("TFar2",StationName,fun,Vector(3274 - 260 - 750, 3569 + 5250 + 1900 * 1, -1706 + 10))
+			createTrigger("TFar3",StationName,fun,Vector(3274 - 260 - 1950 - 200, 3569 + 5250 + 1900 * 1.63, -1706 + 10))
 			
 			createTrigger("TEnd1",StationName,fun,Vector(3274 - 270, 3569 + 3170, -1706))
 			createTrigger("TEnd2",StationName,fun,Vector(3274 - 280, 3569 + 3170 - 220, -1706))
