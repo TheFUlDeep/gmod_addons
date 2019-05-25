@@ -372,12 +372,11 @@ end}
 function ENT:ShouldRenderClientEnts()
     local result = !self:IsDormant() and math.abs(LocalPlayer():EyePos().z-self:GetPos().z)<500 and (system.HasFocus() or C_MinimizedShow:GetBool()) and (!Metrostroi or !Metrostroi.ReloadClientside) and LocalPlayer():EyePos():DistToSqr(self:GetPos())
     
-    if result then
+    if result and not C_ScreenshotMode:GetBool() then
         tracelineent,tracelinehitcount = self,0
     
         tracelinesetup.start = LocalPlayer():EyePos()
         tracelinesetup.endpos = self:LocalToWorld(self:OBBCenter())
-        
         local output = util.TraceLine(tracelinesetup)
         
         result = output.Fraction==1 or output.Entity==self
@@ -409,6 +408,7 @@ function ENT:ShouldDrawClientEnt(v)
 end
 --util.PrecacheModel("models/metrostroi_train/81-720/81-720.mdl")
 function ENT:SpawnCSEnt(k,override)
+	--print("a")
     local v = self.ClientPropsOv and self.ClientPropsOv[k] or self.ClientProps[k]
     if v and k ~= "BaseClass" and not IsValid(self.ClientEnts[k]) and not self.Hidden[k] and not self.Hidden.anim[id] and (override or self:ShouldDrawClientEnt(self.ClientProps[k])) and v.model ~= "" then
         --local cent = ents.CreateClientProp(LocalPlayer():GetModel())
@@ -525,6 +525,7 @@ end
 local elapsed = SysTime()
 hook.Add("Think","SpwanElasped",function() elasped = SysTime() end)
 function ENT:CreateCSEnts()
+	--print("b")
     local count = 0
     local time = C_SoftDraw:GetFloat()/100*0.001
     if self.ClientPropsOv then
@@ -761,6 +762,7 @@ function ENT:Initialize()
 end
 
 function ENT:UpdateTextures()
+	--print("b")
     self.Texture = self:GetNW2String("Texture")
     self.PassTexture = self:GetNW2String("PassTexture")
     self.CabinTexture = self:GetNW2String("CabTexture")
