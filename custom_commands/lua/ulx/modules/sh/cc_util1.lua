@@ -1847,7 +1847,7 @@ if SERVER then
 			str = string.lower(str)
 			if not ent[str] then ULib.tsayError(ply, "Такой переключатель не найден.", true) return end
 		end
-		if not ent[str].Value or (ent[str].Value ~= 0 and ent[str].Value ~= 1) then ULib.tsayError(ply, "Не удается переключить тумблер.", true) return end
+		if not ent[str].Value or (ent[str].Value ~= 0 and ent[str].Value ~= 1) or (ent[str].Blocked and ent[str].Blocked == 1) then ULib.tsayError(ply, "Не удается переключить тумблер.", true) return end
 		if not tumblerstbl[str] then tumblerstbl[str] = {} end
 		local Owner = "N/A"
 		local OwnerSteamID = ""
@@ -1856,14 +1856,14 @@ if SERVER then
 		if not FindInTable(tumblerstbl[str],ent) then 
 			ent[str]:TriggerInput("Set",needvalue) 
 			ent[str]:TriggerInput("Block",true) 
-			ply:ChatPrint("Тумблер "..str.." переключен и заблокирован")
+			ply:ChatPrint("Тумблер "..str.." переключен и заблокирован.")
 			MsgC(Color( 255, 0, 0 ), ply:Nick().."("..ply:SteamID()..") переключил и заблокировал тумблер в составе игрока "..Owner..OwnerSteamID.."\n")
 			table.insert(tumblerstbl[str],1,ent)
 			print(ent[str].Blocked)
 		else
 			ent[str]:TriggerInput("Block",false) 
 			ent[str]:TriggerInput("Set",needvalue) 
-			ply:ChatPrint("Тумблер "..str.." переключен и разблокирован")
+			ply:ChatPrint("Тумблер "..str.." переключен и разблокирован.")
 			MsgC(Color( 255, 0, 0 ), ply:Nick().."("..ply:SteamID()..") переключил и разблокировал тумблер в составе игрока "..Owner..OwnerSteamID.."\n")
 			tumblerstbl[str][FindInTable(tumblerstbl[str],ent)] = nil
 		end
