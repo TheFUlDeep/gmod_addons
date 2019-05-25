@@ -1839,13 +1839,15 @@ if SERVER then
 		end
 	end
 	function ulx.toggletumbler(ply,str)
-		str = string.upper(str)
 		if not ply:InVehicle() then ULib.tsayError(ply, "Ты не в кабине.", true) return end
 		local ent = ply:GetVehicle():GetNW2Entity("TrainEntity",false)
 		if not ent then ULib.tsayError(ply, "Ты не в составе.", true) return end
 		if not ent[str] then
 			str = string.lower(str)
-			if not ent[str] then ULib.tsayError(ply, "Такой переключатель не найден.", true) return end
+			if not ent[str] then 
+				str = string.upper(str)
+				if not ent[str] then ULib.tsayError(ply, "Такой переключатель не найден.", true) return end
+			end
 		end
 		if not ent[str].Value or (ent[str].Value ~= 0 and ent[str].Value ~= 1) then ULib.tsayError(ply, "Не удается переключить тумблер.", true) return end
 		if not tumblerstbl[str] then tumblerstbl[str] = {} end
