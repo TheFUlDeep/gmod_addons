@@ -1742,14 +1742,27 @@ if SERVER then
 	end
 	
 	hook.Add("PlayerInitialSpawn","SendStationsCfgOnSpawn",function(ply) 
-		timer.Simple(1,function()
-			SendStationsCfgToClient(ply)
-		end)
+		local NoSignals = true
+		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
+			if IsValid(v) and NoSignals then NoSignals = false end
+		end
+		if not NoSignals then
+			timer.Simple(1,function()
+				SendStationsCfgToClient(ply)
+			end)
+		end
 	end)
 	
+	
+	local NoSignals = true
+	for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
+		if IsValid(v) and NoSignals then NoSignals = false end
+	end
 	timer.Simple(1,function()
-		for k,v in pairs(player.GetAll()) do
-			SendStationsCfgToClient(v)
+		if not NoSignals then
+			for k,v in pairs(player.GetAll()) do
+				SendStationsCfgToClient(v)
+			end
 		end
 		--[[for k,v in pairs(player.GetAll()) do
 			for k1,v1 in pairs(StationsCfg) do
@@ -1796,7 +1809,7 @@ if CLIENT then
 			end
 		end
 		local j = 0
-		if #StationsCfg > 0 and #IntervalsTbl > 0 then
+		if table.Count(StationsCfg) > 0 and table.Count(IntervalsTbl) > 0 then
 			for i = 1, #StationsCfg do
 				if not StationsCfg[i] --[[or stringfind(StationsCfg[i],"депо",true)]] then continue end
 				j = j + 1
