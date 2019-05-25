@@ -1860,7 +1860,6 @@ if SERVER then
 			ply:ChatPrint("Тумблер "..str.." переключен и заблокирован.")
 			MsgC(Color( 255, 0, 0 ), ply:Nick().."("..ply:SteamID()..") переключил и заблокировал тумблер в составе игрока "..Owner..OwnerSteamID.."\n")
 			table.insert(tumblerstbl[str],1,ent)
-			print(ent[str].Blocked)
 		else
 			ent[str]:TriggerInput("Block",false) 
 			ent[str]:TriggerInput("Set",needvalue) 
