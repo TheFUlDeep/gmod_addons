@@ -1415,7 +1415,7 @@ if SERVER then
 	end)
 	
 	function ulx.resetudochki()
-		if #udochkitbl < 1 then return end
+		if table.Count(udochkitbl) < 1 then return end
 		for k,v in pairs(udochkitbl) do
 			for k1,v1 in pairs(ents.FindByClass(v[1]:GetClass())) do
 				if v1 == v[1] then v1:SetPos(v[2]) v1:SetAngles(v[3]) end
@@ -1535,11 +1535,13 @@ if SERVER then
 	
 --[[============================= ТЕЛЕПОРТАЦИЯ В ПРОТИВОПОЛОЖНУЮ КАБИНУ ==========================]]
 	function ulx.changecabin(ply)
-		if not ply:InVehicle() then ULib.tsayError(ply, "Ты не в кабине", true) return end
-		local ent = ply:GetVehicle():GetNW2Entity("TrainEntity")
+		if not ply:InVehicle() then ULib.tsayError(ply, "Ты не в кабине.", true) return end
+		local ent = ply:GetVehicle():GetNW2Entity("TrainEntity",nil)
+		if not ent then ULib.tsayError(ply, "Ты не в составе.", true) return end
 		local WagonList = ent.WagonList
+		if not WagonList then ULib.tsayError(ply, "Ошибка.", true) return end
 		local WagonListN = #WagonList
-		if WagonListN == 1 then ULib.tsayError(ply, "У тебя только 1 вагон", true) return end
+		if WagonListN == 1 then ULib.tsayError(ply, "У тебя только 1 вагон.", true) return end
 		local EntClass = ent:GetClass()
 		for k,v in pairs(WagonList) do
 			if k ~= WagonListN then continue end
@@ -1709,7 +1711,7 @@ if SERVER then
 			if not IntervalsEnabled then hook.Remove("Think","SendIntevals") return end
 			if CurTime() - timestamp < 5 then return end
 			timestamp = CurTime()
-			if not StationsCfg or #StationsCfg < 1 then GenerateStationsCfg() return end
+			if not StationsCfg or table.Count(StationsCfg) < 1 then GenerateStationsCfg() return end
 			for i = 1, #StationsCfg do
 				if not StationsCfg[i] then continue end
 				IntervalsTbl[i] = GetIntervalTime(StationsCfg[i]["ent"])
@@ -1728,8 +1730,8 @@ if SERVER then
 	util.AddNetworkString("SendStationsCfgNetworkString")
 	local function SendStationsCfgToClient(ply)
 		if not IsValid(ply) then return end
-		if not StationsCfg or #StationsCfg < 1 then GenerateStationsCfg() end
-		if #StationsCfg > 0 then
+		if not StationsCfg or table.Count(StationsCfg) < 1 then GenerateStationsCfg() end
+		if table.Count(StationsCfg) > 0 then
 			local tbl = {}
 			for i = 1, #StationsCfg do
 				if not StationsCfg[i] then continue end
@@ -1742,14 +1744,27 @@ if SERVER then
 	end
 	
 	hook.Add("PlayerInitialSpawn","SendStationsCfgOnSpawn",function(ply) 
-		timer.Simple(1,function()
-			SendStationsCfgToClient(ply)
-		end)
+		local NoSignals = true
+		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
+			if IsValid(v) and NoSignals then NoSignals = false end
+		end
+		if not NoSignals then
+			timer.Simple(1,function()
+				SendStationsCfgToClient(ply)
+			end)
+		end
 	end)
 	
+	
+	local NoSignals = true
+	for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
+		if IsValid(v) and NoSignals then NoSignals = false end
+	end
 	timer.Simple(1,function()
-		for k,v in pairs(player.GetAll()) do
-			SendStationsCfgToClient(v)
+		if not NoSignals then
+			for k,v in pairs(player.GetAll()) do
+				SendStationsCfgToClient(v)
+			end
 		end
 		--[[for k,v in pairs(player.GetAll()) do
 			for k1,v1 in pairs(StationsCfg) do
@@ -1796,7 +1811,7 @@ if CLIENT then
 			end
 		end
 		local j = 0
-		if #StationsCfg > 0 and #IntervalsTbl > 0 then
+		if table.Count(StationsCfg) > 0 and table.Count(IntervalsTbl) > 0 then
 			for i = 1, #StationsCfg do
 				if not StationsCfg[i] --[[or stringfind(StationsCfg[i],"депо",true)]] then continue end
 				j = j + 1
