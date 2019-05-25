@@ -1824,6 +1824,7 @@ end
 
 --[[============================= ВКЛЮЧЕНИЕ И ОТКЛЮЧЕНИЕ АВТОМАТИКОВ/ТУМБЛЕРОВ ==========================]]
 if SERVER then
+	util.AddNetworkString("RelalysInTrain")
 	local function FindInTable(tbl,value)
 		for k,v in pairs(tbl) do
 			if v == value then return k end
@@ -1846,7 +1847,21 @@ if SERVER then
 			str = string.lower(str)
 			if not ent[str] then 
 				str = string.upper(str)
-				if not ent[str] then ULib.tsayError(ply, "Такой переключатель не найден.", true) return end
+				if not ent[str] then 
+					ply:ChatPrint("Такой переключатель не найден. Список переключателей выведен в консоль.")
+					local Relays = ""
+					for k,v in pairs(ent.SyncTable) do
+						if Relays == "" then 
+							Relays = v 
+						else
+							Relays = Relays..", "..v
+						end
+					end
+					net.Start("RelalysInTrain")
+						net.WriteString(Relays)
+					net.Send(ply)
+					return 
+				end
 			end
 		end
 		if not ent[str].Value or (ent[str].Value ~= 0 and ent[str].Value ~= 1) then ULib.tsayError(ply, "Не удается переключить тумблер.", true) return end
@@ -1870,6 +1885,11 @@ if SERVER then
 			tumblerstbl[str][FindInTable(tumblerstbl[str],ent)] = nil
 		end
 	end
+end
+if CLIENT then
+	net.Receive("RelalysInTrain",function()
+		Msg(net.ReadString())
+	end)
 end
 local toggletumbler = ulx.command("Metrostroi", "ulx toggletumbler", ulx.toggletumbler, "!toggletumbler",true)
 toggletumbler:addParam{ type=ULib.cmds.StringArg, hint="имя тумблера"}
