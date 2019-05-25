@@ -928,7 +928,7 @@ if SERVER then
 	end
 	
 	function FindTrackInSquare(vector,TrackID,customraduis,customwlimit,customstep,autoscale,donotclear)		-- При большом радиусе и маленьком шаге эта функция очень тяжелая
-		if customraduis and customraduis > 20000 then return nil end
+		if customraduis and customraduis > 15000 then return nil end
 		--if customwlimit and customwlimit > 1000 then return nil end		-- не знаю, нужны ли эти два условия
 		--if customstep and customstep > 100 then customstep = 100 end		-- хотел добавить это, потому что при слишком большом шаге функция просто перепрыгнет трек и не найдет его
 		local i,j,k
@@ -1015,11 +1015,6 @@ if SERVER then
 		--if FirstMethodTbl[1] then PrintTable(FirstMethodTbl) end
 	end
 	
-	hook.Add("PlayerInitialSpawn","GenerateTblForFirstMethod",function() 
-		hook.Remove("PlayerInitialSpawn","GenerateTblForFirstMethod")
-		GenerateTblForFirstMethod()
-	end)
-	
 	local function GetNearestPlatform(vector)				-- эта функция создает таблицу на 2000 элементов. Ни в коем случае не исполнять ее в рантайме!!!
 		local CurDist,MinDist,NearestPlatform,PlatformPos
 		local DistLimit = 500 * 500
@@ -1060,13 +1055,20 @@ if SERVER then
 		end
 	end
 	
-	hook.Add("PlayerInitialSpawn","GenerateTblForSecondMethod",function() 
-		hook.Remove("PlayerInitialSpawn","GenerateTblForSecondMethod")
-		GenerateTblForThirdMethod()
+	hook.Add("PlayerInitialSpawn","GenerateTblsForStations",function() 
+		hook.Remove("PlayerInitialSpawn","GenerateTblsForStations")
+		local NoSignals = true
+		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
+			if IsValid(v) and NoSignals then NoSignals = false end
+		end
+		if not NoSignals then 
+			GenerateTblForThirdMethod()
+			GenerateTblForFirstMethod()
+		end
 	end)
 	
-	GenerateTblForFirstMethod()
-	GenerateTblForThirdMethod()
+	--GenerateTblForFirstMethod()
+	--GenerateTblForThirdMethod()
 	--PrintTable(FirstMethodTbl)
 	--PrintTable(ThirdMethodTbl)
 	--(vector,TrackID,customraduis,customwlimit,customstep,autoscale,donotclear)
@@ -1803,6 +1805,64 @@ if CLIENT then
 		end
 	end)
 end
+
+
+--[[============================= ВКЛЮЧЕНИЕ И ОТКЛЮЧЕНИЕ АВТОМАТИКОВ/ТУМБЛЕРОВ ==========================]]
+if SERVER then
+	local function FindInTable(tbl,value)
+		for k,v in pairs(tbl) do
+			if v == value then return k end
+		end
+		return false
+	end
+	local tumblerstbl = {}
+	for k,v in pairs(tumblerstbl) do
+		if type(v) == "table" then
+			for k1,v1 in pairs(v) do
+				if not IsValid(v1) then tumblerstbl[k][k1] = nil end
+			end
+		end
+	end
+	function ulx.toggletumbler(ply,str)
+		str = string.upper(str)
+		if not ply:InVehicle() then ULib.tsayError(ply, "Ты не в кабине.", true) return end
+		local ent = ply:GetVehicle():GetNW2Entity("TrainEntity",false)
+		if not ent then ULib.tsayError(ply, "Ты не в составе.", true) return end
+		if not ent[str] then
+			str = string.lower(str)
+			if not ent[str] then ULib.tsayError(ply, "Такой переключатель не найден.", true) return end
+		end
+		if not ent[str].Value or (ent[str].Value ~= 0 and ent[str].Value ~= 1) then ULib.tsayError(ply, "Не удается переключить тумблер.", true) return end
+		if not tumblerstbl[str] then tumblerstbl[str] = {} end
+		local Owner = "N/A"
+		local OwnerSteamID = ""
+		if CPPI then Owner = ent:CPPIGetOwner():Nick() OwnerSteamID = "("..ent:CPPIGetOwner():SteamID()..")" end
+		local needvalue = ent[str].Value == 1 and 0 or 1
+		if not FindInTable(tumblerstbl[str],ent) then 
+			ent[str]:TriggerInput("Set",needvalue) 
+			ent[str]:TriggerInput("Block",true) 
+			ply:ChatPrint("Тумблер "..str.." переключен и заблокирован")
+			MsgC(Color( 255, 0, 0 ), ply:Nick().."("..ply:SteamID()..") переключил и заблокировал тумблер в составе игрока "..Owner..OwnerSteamID.."\n")
+			table.insert(tumblerstbl[str],1,ent)
+			print(ent[str].Blocked)
+		else
+			ent[str]:TriggerInput("Block",false) 
+			ent[str]:TriggerInput("Set",needvalue) 
+			ply:ChatPrint("Тумблер "..str.." переключен и разблокирован")
+			MsgC(Color( 255, 0, 0 ), ply:Nick().."("..ply:SteamID()..") переключил и разблокировал тумблер в составе игрока "..Owner..OwnerSteamID.."\n")
+			tumblerstbl[str][FindInTable(tumblerstbl[str],ent)] = nil
+		end
+	end
+end
+local toggletumbler = ulx.command("Metrostroi", "ulx toggletumbler", ulx.toggletumbler, "!toggletumbler",true)
+toggletumbler:addParam{ type=ULib.cmds.StringArg, hint="имя тумблера"}
+toggletumbler:defaultAccess(ULib.ACCESS_OPERATOR)
+toggletumbler:help("Переключить и заблокировать тумблер в составе.")
+
+
+
+
+
 --используй table.insert только если ключи не числа
 --ply.InMetrostroiTrain
 --[[============================= УДАЛЕНИЕ НЕНУЖНЫХ ВКЛАДОК ИЗ SPAWNMENU ==========================]]
