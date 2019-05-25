@@ -1094,8 +1094,8 @@ if SERVER then
 		-----------------ОПРЕДЕЛЕНИЕ МЕСТА ВЕКТОРА ОТНОСИТЕЛЬНО СТАНЦИЙ------------------------------------------------------
 	function detectstation(vector)
 		if not Metrostroi.StationConfigurations then return "" end
-		if not FirstMethodTbl[1] then GenerateTblForFirstMethod() end
-		if not ThirdMethodTbl[1] then GenerateTblForThirdMethod() end
+		--if not FirstMethodTbl[1] then GenerateTblForFirstMethod() end
+		--if not ThirdMethodTbl[1] then GenerateTblForThirdMethod() end
 		local Station
 		local Track = FindTrackInSquare(vector,nil,100,100,100)
 		if Track then
