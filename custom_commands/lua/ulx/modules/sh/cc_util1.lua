@@ -1556,19 +1556,27 @@ changecabin:help("Телепортация в заднюю кабиную.")
 
 --[[============================= АВТОМАТИЧЕСКАЯ УСТАНОВКА ДЕШИФРАТОРА ==========================]]
 if SERVER then
+	local NoSignals = true
+	hook.Add("PlayerInitialSpawn","FoundSignaksForAlsFreq",function(ply)
+		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
+			if IsValid(v) and NoSignals then NoSignals = false end
+		end
+	end)
 	hook.Add("OnEntityCreated", "AlsFReq", function(ent)
-		timer.Simple(2, function()
-			if not IsValid(ent) then return
-			elseif not stringfind(ent:GetClass(), "717_m") then return
-			end
-			local blizhniy = nil
-			for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
-				if blizhniy == nil then blizhniy = v
-				elseif ent:GetPos():DistToSqr(v:GetPos()) < ent:GetPos():DistToSqr(blizhniy:GetPos()) then blizhniy = v
+		if not NoSignals then
+			timer.Simple(2, function()
+				if not IsValid(ent) then return
+				elseif not stringfind(ent:GetClass(), "717_m") then return
 				end
-			end
-			if blizhniy.TwoToSix then ent.ALSFreq:TriggerInput("Set",1) return end
-		end)
+				local blizhniy = nil
+				for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
+					if blizhniy == nil then blizhniy = v
+					elseif ent:GetPos():DistToSqr(v:GetPos()) < ent:GetPos():DistToSqr(blizhniy:GetPos()) then blizhniy = v
+					end
+				end
+				if blizhniy.TwoToSix then ent.ALSFreq:TriggerInput("Set",1) return end
+			end)
+		end
 	end)
 end
 
@@ -1843,46 +1851,45 @@ if SERVER then
 		if not ply:InVehicle() then ULib.tsayError(ply, "Ты не в кабине.", true) return end
 		local ent = ply:GetVehicle():GetNW2Entity("TrainEntity",false)
 		if not ent then ULib.tsayError(ply, "Ты не в составе.", true) return end
-		if not ent[str] then
-			str = string.lower(str)
-			if not ent[str] then 
-				str = string.upper(str)
-				if not ent[str] then 
-					ply:ChatPrint("Такой переключатель не найден. Список переключателей выведен в консоль.")
-					local Relays = ""
-					for k,v in pairs(ent.SyncTable) do
-						if Relays == "" then 
-							Relays = v 
-						else
-							Relays = Relays..", "..v
-						end
-					end
-					net.Start("RelalysInTrain")
-						net.WriteString(Relays)
-					net.Send(ply)
-					return 
+		str = string.lower(str)
+		local found = false
+		for k,v in pairs(ent.SyncTable) do
+			if not found and string.lower(v) == str then found = v end
+		end
+		if not found then
+			ply:ChatPrint("Такой переключатель не найден. Список переключателей выведен в консоль.")
+			local Relays = ""
+			for k,v in pairs(ent.SyncTable) do
+				if Relays == "" then 
+					Relays = v 
+				else
+					Relays = Relays..", "..v
 				end
 			end
+			net.Start("RelalysInTrain")
+				net.WriteString(Relays)
+			net.Send(ply)
+			return 
 		end
-		if not ent[str].Value or (ent[str].Value ~= 0 and ent[str].Value ~= 1) then ULib.tsayError(ply, "Не удается переключить тумблер.", true) return end
-		if not tumblerstbl[str] then tumblerstbl[str] = {} end
+		if not ent[found].Value or (ent[found].Value ~= 0 and ent[found].Value ~= 1) then ULib.tsayError(ply, "Не удается переключить тумблер.", true) return end
+		if not tumblerstbl[found] then tumblerstbl[found] = {} end
 		local Owner = "N/A"
 		local OwnerSteamID = ""
 		if CPPI then Owner = ent:CPPIGetOwner():Nick() OwnerSteamID = "("..ent:CPPIGetOwner():SteamID()..")" end
-		local needvalue = ent[str].Value == 1 and 0 or 1
-		if not FindInTable(tumblerstbl[str],ent) then 
-			if ent[str].Blocked and ent[str].Blocked == 1 then ULib.tsayError(ply, "Не удается переключить тумблер.", true) return end
-			ent[str]:TriggerInput("Set",needvalue) 
-			ent[str]:TriggerInput("Block",true) 
-			ply:ChatPrint("Тумблер "..str.." переключен и заблокирован.")
+		local needvalue = ent[found].Value == 1 and 0 or 1
+		if not FindInTable(tumblerstbl[found],ent) then 
+			if ent[found].Blocked and ent[found].Blocked == 1 then ULib.tsayError(ply, "Не удается переключить тумблер.", true) return end
+			ent[found]:TriggerInput("Set",needvalue) 
+			ent[found]:TriggerInput("Block",true) 
+			ply:ChatPrint("Тумблер "..found.." переключен и заблокирован.")
 			MsgC(Color( 255, 0, 0 ), ply:Nick().."("..ply:SteamID()..") переключил и заблокировал тумблер в составе игрока "..Owner..OwnerSteamID.."\n")
-			table.insert(tumblerstbl[str],1,ent)
+			table.insert(tumblerstbl[found],1,ent)
 		else
-			ent[str]:TriggerInput("Block",false) 
-			ent[str]:TriggerInput("Set",needvalue) 
-			ply:ChatPrint("Тумблер "..str.." переключен и разблокирован.")
+			ent[found]:TriggerInput("Block",false) 
+			ent[found]:TriggerInput("Set",needvalue) 
+			ply:ChatPrint("Тумблер "..found.." переключен и разблокирован.")
 			MsgC(Color( 255, 0, 0 ), ply:Nick().."("..ply:SteamID()..") переключил и разблокировал тумблер в составе игрока "..Owner..OwnerSteamID.."\n")
-			tumblerstbl[str][FindInTable(tumblerstbl[str],ent)] = nil
+			tumblerstbl[found][FindInTable(tumblerstbl[found],ent)] = nil
 		end
 	end
 end
