@@ -998,7 +998,8 @@ if SERVER then
 			if not IsValid(v) then continue end
 			local PlatformPos = v:GetPos()
 			local PlatformLen = v.PlatformStart:Distance(v.PlatformEnd)
-			local Track = FindTrackInSquare(PlatformPos,nil,PlatformLen / 3,nil,nil,2)
+			--function FindTrackInSquare(vector,TrackID,customraduis,customwlimit,customstep,autoscale,donotclear)
+			local Track = FindTrackInSquare(PlatformPos,nil,PlatformLen / 3,100,nil,nil,true)
 			if not Track then continue end
 			for k,v in pairs(Track) do
 				if not v.trackid or not v.trakcpos or not v.vector then continue end
@@ -1040,6 +1041,7 @@ if SERVER then
 			
 			local Platform = GetNearestPlatform(StationPos)
 			local PlatformLen = Platform and Platform.PlatformStart:Distance(Platform.PlatformEnd) or ((stringfind(StationName,"депо",true) or stringfind(StationName,"depo",true)) and 24000) or 4000	--может 4000 тут сделать больше? 
+			--function FindTrackInSquare(vector,TrackID,customraduis,customwlimit,customstep,autoscale,donotclear)
 			local Track = FindTrackInSquare(StationPos,nil,PlatformLen / 3,250,nil,nil,true)							-- вот тут надо использовать donotclear, потому что находится только один трек, а надо два
 			if not Track then continue end
 			for k,v in pairs(Track) do
@@ -1062,6 +1064,7 @@ if SERVER then
 			if IsValid(v) and NoSignals then NoSignals = false end
 		end
 		if not NoSignals then 
+			print("Generating Tbls for detectstation")
 			GenerateTblForThirdMethod()
 			GenerateTblForFirstMethod()
 		end
@@ -1077,18 +1080,29 @@ if SERVER then
 		if tbl then PrintTable(tbl) end
 	end]]
 	
-	local function FirstMethod(PosOnTrack,TrackID,tbl)			--TODO проверка по несокльким трекам, так как на лупдайне относительно платформ они определяются неправильно (аргумент donotclear)
+	local function FirstMethod(PosOnTrack,TrackID,tbl)
 		--print("first method")
 		if not tbl[1] then return nil end
-		local CurDist,MinDist,FieldKey
-		for k,v in pairs(tbl) do
+		local CurDist,MinDist,FieldKey,PrevKey
+		for k,v in pairs(tbl) do							-- ищу ближайшую станцию по позиции на треке
 			if v.trackid ~= TrackID then continue end
 			CurDist = math.abs(PosOnTrack - v.trakcpos)
 			if not MinDist or MinDist > CurDist then MinDist = CurDist FieldKey = k end
 		end
 		if not FieldKey or not MinDist then return nil end
-		if MinDist > tbl[FieldKey].PlatformLen / 1.5 / 64 then MinDist = " (ближайшая по треку)" else MinDist = "" end
-		return tbl[FieldKey].StationName and tbl[FieldKey].StationName..MinDist or nil
+		
+		local MinDist2,CurDist2,FieldKey2
+		if MinDist > tbl[FieldKey].PlatformLen / 1.5 / 64 then 
+			MinDist = " (ближайшая по треку)" 
+			for k,v in pairs(tbl) do							-- ищу вторую по близости станцию, если не в пределах платформы
+				if v.trackid ~= TrackID or v.StationName == tbl[FieldKey].StationName then continue end
+				CurDist2 = math.abs(PosOnTrack - v.trakcpos)
+				if (not MinDist2 or MinDist2 > CurDist2) and (PosOnTrack < tbl[FieldKey].trakcpos and PosOnTrack > v.trakcpos or PosOnTrack > tbl[FieldKey].trakcpos and PosOnTrack < v.trakcpos) then MinDist2 = CurDist2 FieldKey2 = k end
+			end
+		else 
+			MinDist = "" 
+		end
+		return tbl[FieldKey].StationName and tbl[FieldKey].StationName..MinDist or nil, FieldKey2 and tbl[FieldKey2].StationName or nil
 	end
 
 		-----------------ОПРЕДЕЛЕНИЕ МЕСТА ВЕКТОРА ОТНОСИТЕЛЬНО СТАНЦИЙ------------------------------------------------------
@@ -1096,13 +1110,18 @@ if SERVER then
 		if not Metrostroi.StationConfigurations then return "" end
 		--if not FirstMethodTbl[1] then GenerateTblForFirstMethod() end
 		--if not ThirdMethodTbl[1] then GenerateTblForThirdMethod() end
-		local Station
+		local Station,Station2,Path
 		local Track = FindTrackInSquare(vector,nil,100,100,100)
 		if Track then
-			Station = --[[FirstMethod(Track.trakcpos,Track.trackid,FirstMethodTbl) or]] FirstMethod(Track.trakcpos,Track.trackid,ThirdMethodTbl)		-- временно отключил третий метод
+			Station,Station2 = FirstMethod(Track.trakcpos,Track.trackid,FirstMethodTbl)
+			if not Station or not Station2 then 
+				Station,Station2 = FirstMethod(Track.trakcpos,Track.trackid,ThirdMethodTbl)
+			end
+			Path = FindNearestSignalPathOnTrack(Track.trakcpos,Track.trackid)
 		end
 		if not Station then Station = SecondMethod(vector) end
-		return Station or ""
+		--print(Station,Station2)
+		return Station or "", Station2,Path
 	end
 	
 	--[[for k,v in pairs(player.GetAll()) do
@@ -1649,7 +1668,7 @@ if SERVER then
 		end
 	end
 
-	local function FindNearestSignalPathOnTrack(TrackPos,TrackID)
+	function FindNearestSignalPathOnTrack(TrackPos,TrackID)
 		local curtrack,CurDist,MinDist,NearestSignalPath
 		local i = 0
 		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
@@ -1904,7 +1923,19 @@ toggletumbler:defaultAccess(ULib.ACCESS_OPERATOR)
 toggletumbler:help("Переключить и заблокировать тумблер в составе.")
 
 
-
+--[[============================= ПЕРЕГРУЗКА GOTO ==========================]]
+if SERVER then
+	timer.Create("UlxGotoOverwrite", 5, 0, function()
+		if not ulx or not ulx.goto then return end
+		timer.Remove("UlxGotoOverwrite")
+		local oldgoto = ulx.goto
+		function ulx.goto(calling_ply, target_ply)
+			if calling_ply:InVehicle() then calling_ply:ExitVehicle() end
+			oldgoto(calling_ply, target_ply)
+		end
+		print("ulx.goto overwrited")
+	end)
+end
 
 
 --используй table.insert только если ключи не числа
