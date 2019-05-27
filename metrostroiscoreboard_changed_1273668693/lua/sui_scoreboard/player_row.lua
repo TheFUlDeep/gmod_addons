@@ -170,7 +170,7 @@ function PANEL:UpdatePlayerData()
 			Pos = string.sub(Pos,1,End - 1)
 		end
 	end
-	self.lblPos:SetText(Pos ~= "" and Pos..Path or "-")
+	self.lblPos:SetText(Pos ~= "" and Pos ~= "-" and Pos..Path or "-")
 	self.lblInTrain:SetText(Train ~= "" and Train or "-")
 	
 	-- Change the icon of the mute button based on state
