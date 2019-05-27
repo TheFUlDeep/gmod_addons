@@ -363,7 +363,7 @@ function PANEL:PerformLayout()
 	
 	
 	self.lblName:SetPos( 60, 8)
-	self.lblMute:SetPos( self:GetParent():GetWide() - 45 - 8, 8)
+	self.lblMute:SetPos( self:GetParent():GetWide() - 45 - 8, 2)
 	self.lblPing:SetPos( self:GetParent():GetWide() - 85, 8)
 	if utimecheck then self.lblHours:SetPos( self:GetParent():GetWide() - 85 - 34, 8) end
 	self.lblHealth:SetPos( self:GetParent():GetWide() - 85 - 34 - 54, 8)
