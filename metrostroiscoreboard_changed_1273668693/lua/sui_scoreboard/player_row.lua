@@ -121,14 +121,18 @@ end]]
 ----[[---------------------------------------------------------
    --Name: UpdatePlayerData
 ---------------------------------------------------------]]\
+local function GetNickUntilSpace(str)
+	local start = string.find(str," ")
+	if start then return string.sub(str,1,start - 1) end
+	return str
+end
+
 local DataTBL = {}
 net.Receive("ScoreBoardAdditional",function()
 	Pos,Train,SteamID = net.ReadString(),net.ReadString(),net.ReadString()
 	if not DataTBL[SteamID] then DataTBL[SteamID] = {} end
 	DataTBL[SteamID] = {Pos,Train}
 end)
-local Pos = ""
-local Train = ""
 
 function PANEL:UpdatePlayerData()
 	local ply = self.Player
@@ -151,12 +155,15 @@ function PANEL:UpdatePlayerData()
 	self.lblPing:SetText( ply:Ping() )
 	
 	local SteamID = ply:SteamID()
+	--if SteamID == "NULL" then SteamID = "BOT" end			-- это для ботов, но у всех ботов одинаковый стимайди и там надо еще по нику проверять, так что на ботов забить
+	local Pos = ""
+	local Train = ""
 	if DataTBL[SteamID] then
 		Pos = DataTBL[SteamID][1]
 		Train = DataTBL[SteamID][2]
 	end
-	self.lblPos:SetText(Pos ~= "" and Pos or "перегон")
-	self.lblInTrain:SetText(Train ~= "" and Train or "-")
+	self.lblPos:SetText(Pos and Pos ~= "" and Pos or "перегон")
+	self.lblInTrain:SetText(Train and Train ~= "" and Train or "-")
 	
 	-- Change the icon of the mute button based on state
 	if  self.Muted == nil or self.Muted ~= self.Player:IsMuted() then
@@ -172,7 +179,20 @@ function PANEL:UpdatePlayerData()
 	
 	self.lblInTrain.DoClick = function() 
 		if self.lblInTrain:GetText() == "-" then return end
-		print(ply)
+		RunConsoleCommand("ulx","traintp",GetNickUntilSpace(ply:Nick()))
+		--print("тп в состав игрока")
+	end
+	
+	self.lblName.DoClick = function() 
+		if ply:SteamID() == LocalPlayer():SteamID() then return end
+		RunConsoleCommand("ulx","goto",GetNickUntilSpace(ply:Nick()))
+		--print("тп к игроку")
+	end
+	
+	self.lblPos.DoClick = function() 
+		if self.lblPos:GetText() == "перегон" then return end
+		RunConsoleCommand("ulx","station",GetNickUntilSpace(self.lblPos:GetText()))
+		--print("тп на станцию")
 	end
 
 	local k = ply:Frags()
@@ -220,15 +240,15 @@ function PANEL:Init()
 	
 	self.infoCard	= vgui.Create( "suiscoreplayerinfocard", self )
 	
-	self.lblName 	= vgui.Create( "DLabel", self )
+	self.lblName 	= vgui.Create( "DButton", self )
 	self.lblMetadninLink 	= vgui.Create( "DButton", self )
 	if ulibcheck then self.lblTeam 	= vgui.Create( "DLabel", self ) end
 	if utimecheck then  self.lblHours 	= vgui.Create( "DLabel", self ) end
 	self.lblHealth 	= vgui.Create( "DLabel", self )
 	self.lblFrags 	= vgui.Create( "DLabel", self )
 	self.lblDeaths 	= vgui.Create( "DLabel", self )
-	self.lblInTrain 	= vgui.Create( "DLabel", self )
-	self.lblPos 	= vgui.Create( "DLabel", self )
+	self.lblInTrain 	= vgui.Create( "DButton", self )
+	self.lblPos 	= vgui.Create( "DButton", self )
 	self.lblPing 	= vgui.Create( "DLabel", self )
 	self.lblMute = vgui.Create( "DImageButton", self)
 	self.lblPing:SetText( "9999" )
@@ -239,15 +259,15 @@ function PANEL:Init()
 	self.imgAvatar = vgui.Create( "AvatarImage", self.btnAvatar )
 	
 	// If you don't do this it'll block your clicks
-	self.lblName:SetMouseInputEnabled( false )
+	self.lblName:SetMouseInputEnabled( true )
 	self.lblMetadninLink:SetMouseInputEnabled( true )
 	if ulibcheck then self.lblTeam:SetMouseInputEnabled( false ) end
 	if utimecheck then self.lblHours:SetMouseInputEnabled( false ) end
 	self.lblHealth:SetMouseInputEnabled( false )
 	self.lblFrags:SetMouseInputEnabled( false )
 	self.lblDeaths:SetMouseInputEnabled( false )
-	self.lblInTrain:SetMouseInputEnabled( false )
-	self.lblPos:SetMouseInputEnabled( false )
+	self.lblInTrain:SetMouseInputEnabled( true )
+	self.lblPos:SetMouseInputEnabled( true )
 	self.lblPing:SetMouseInputEnabled( false )
 	self.imgAvatar:SetMouseInputEnabled( false )
 	self.lblMute:SetMouseInputEnabled( true )
