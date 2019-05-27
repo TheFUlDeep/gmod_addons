@@ -88,7 +88,7 @@ function PANEL:Init()
 	self.lblDeaths:SetText( "Энергия" )
 	
 	self.lblInTrain = vgui.Create( "DLabel", self )
-	self.lblInTrain:SetText( "В составе" )
+	self.lblInTrain:SetText( "В составе (маршрут)" )
 	
 	self.lblPos = vgui.Create( "DLabel", self )
 	self.lblPos:SetText( "Местоположение" )
@@ -256,13 +256,13 @@ function PANEL:PerformLayout()
 		xpos = self.lblDeaths:GetPos()
 		self.lblKills:SetPos( xpos - self.lblKills:GetWide() - space, self.PlayerFrame.y - self.lblPing:GetTall() - 3  )
 		xpos = self.lblKills:GetPos()
-		self.lblInTrain:SetPos( xpos - self.lblInTrain:GetWide() - res - 72 + 20, self.PlayerFrame.y - self.lblPing:GetTall() - 3  )
+		self.lblInTrain:SetPos( xpos - self.lblInTrain:GetWide() - res - 72 + 60, self.PlayerFrame.y - self.lblPing:GetTall() - 3  )
 		--xpos = self.lblInTrain:GetPos()
 		local j = 0
 		if ScrW() > 1800 then
-			j = 100
+			j = 120
 		end
-		self.lblPos:SetPos(  xpos - self.lblInTrain:GetWide() - res - 72 + 20 - 300 - 20 - j, self.PlayerFrame.y - self.lblPing:GetTall() - 3  )
+		self.lblPos:SetPos(  xpos - self.lblInTrain:GetWide() - res - 72 + 60 - 300 - 20 - j, self.PlayerFrame.y - self.lblPing:GetTall() - 3  )
 	end
 	if ulibcheck then  self.lblTeam:SetPos( self:GetWide() / 4 + k, self.PlayerFrame.y - self.lblPing:GetTall() - 3  ) end
 	

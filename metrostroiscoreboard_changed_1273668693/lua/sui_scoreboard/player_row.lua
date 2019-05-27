@@ -377,12 +377,12 @@ function PANEL:PerformLayout()
 	self.lblHealth:SetPos( self:GetParent():GetWide() - 85 - 34 - 54, 10)
 	self.lblDeaths:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48, 10)
 	self.lblFrags:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48 - 64, 10)
-	self.lblInTrain:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48 - 64 - 198 - res + 80 + 20, 10)
+	self.lblInTrain:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48 - 64 - 198 - res + 80 + 6, 10)
 	local j = 0
 	if ScrW() > 1800 then
-		j = 100
+		j = 120
 	end
-	self.lblPos:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48 - 64 - 198 - 234 - res + 80 + 20 - 68 - 20 - j, 10)
+	self.lblPos:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48 - 64 - 198 - 234 - res + 80 + 6 - 68 - 20 - j, 10)
 	if ulibcheck then self.lblTeam:SetPos( self:GetParent():GetWide() / 4 - 3 + k, 10) end
 	
 	
