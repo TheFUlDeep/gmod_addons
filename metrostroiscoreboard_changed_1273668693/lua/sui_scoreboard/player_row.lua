@@ -362,16 +362,16 @@ function PANEL:PerformLayout()
 	self.lblPing:SetWide( 100 )
 	
 	
-	self.lblName:SetPos( 60, self:GetParent():GetTall()/4 + 1)
-	self.lblMute:SetPos( self:GetParent():GetWide() - 45 - 8, self:GetParent():GetTall()/2/2/2 - 2)
-	self.lblPing:SetPos( self:GetParent():GetWide() - 85, self:GetParent():GetTall()/4 + 1 )
-	if utimecheck then self.lblHours:SetPos( self:GetParent():GetWide() - 85 - 34, self:GetParent():GetTall()/4 + 1 ) end
-	self.lblHealth:SetPos( self:GetParent():GetWide() - 85 - 34 - 54, self:GetParent():GetTall()/4 + 1 )
-	self.lblDeaths:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48, self:GetParent():GetTall()/4 + 1 )
-	self.lblFrags:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48 - 64, self:GetParent():GetTall()/4 + 1 )
-	self.lblInTrain:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48 - 64 - 198 - res + 80, self:GetParent():GetTall()/4 + 1 )
-	self.lblPos:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48 - 64 - 198 - 234 - res + 80, self:GetParent():GetTall()/4 + 1 )
-	if ulibcheck then self.lblTeam:SetPos( self:GetParent():GetWide() / 4 - 3 + k, self:GetParent():GetTall()/4 + 1) end
+	self.lblName:SetPos( 60, 8)
+	self.lblMute:SetPos( self:GetParent():GetWide() - 45 - 8, 8)
+	self.lblPing:SetPos( self:GetParent():GetWide() - 85, 8)
+	if utimecheck then self.lblHours:SetPos( self:GetParent():GetWide() - 85 - 34, 8) end
+	self.lblHealth:SetPos( self:GetParent():GetWide() - 85 - 34 - 54, 8)
+	self.lblDeaths:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48, 8)
+	self.lblFrags:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48 - 64, 8)
+	self.lblInTrain:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48 - 64 - 198 - res + 80, 8)
+	self.lblPos:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48 - 64 - 198 - 234 - res + 80, 8)
+	if ulibcheck then self.lblTeam:SetPos( self:GetParent():GetWide() / 4 - 3 + k, 8) end
 	
 	
 	if self.Open or self.Size ~= self.TargetSize then
