@@ -129,9 +129,9 @@ end
 
 local DataTBL = {}
 net.Receive("ScoreBoardAdditional",function()
-	Pos,Train,SteamID = net.ReadString(),net.ReadString(),net.ReadString()
+	local Pos,Train,SteamID,Path = net.ReadString(),net.ReadString(),net.ReadString(),net.ReadString()
 	if not DataTBL[SteamID] then DataTBL[SteamID] = {} end
-	DataTBL[SteamID] = {Pos,Train}
+	DataTBL[SteamID] = {Pos,Train,Path}
 end)
 
 function PANEL:UpdatePlayerData()
@@ -158,12 +158,20 @@ function PANEL:UpdatePlayerData()
 	--if SteamID == "NULL" then SteamID = "BOT" end			-- это для ботов, но у всех ботов одинаковый стимайди и там надо еще по нику проверять, так что на ботов забить
 	local Pos = ""
 	local Train = ""
+	local Path = ""
 	if DataTBL[SteamID] then
 		Pos = DataTBL[SteamID][1]
 		Train = DataTBL[SteamID][2]
+		Path = DataTBL[SteamID][3] or ""
 	end
-	self.lblPos:SetText(Pos and Pos ~= "" and Pos or "перегон")
-	self.lblInTrain:SetText(Train and Train ~= "" and Train or "-")
+	if ScrW() < 1800 then
+		local start,End = Pos:find("перегон ")
+		if start then
+			Pos = string.sub(Pos,1,End - 1)
+		end
+	end
+	self.lblPos:SetText(Pos ~= "" and Pos..Path or "-")
+	self.lblInTrain:SetText(Train ~= "" and Train or "-")
 	
 	-- Change the icon of the mute button based on state
 	if  self.Muted == nil or self.Muted ~= self.Player:IsMuted() then
@@ -189,9 +197,10 @@ function PANEL:UpdatePlayerData()
 		--print("тп к игроку")
 	end
 	
-	self.lblPos.DoClick = function() 
-		if self.lblPos:GetText() == "перегон" then return end
-		RunConsoleCommand("ulx","station",GetNickUntilSpace(self.lblPos:GetText()))
+	self.lblPos.DoClick = function()
+		local text = self.lblPos:GetText()
+		if text:find("перегон") or text == "-" then return end
+		RunConsoleCommand("ulx","station",GetNickUntilSpace(text))
 		--print("тп на станцию")
 	end
 
@@ -361,7 +370,6 @@ function PANEL:PerformLayout()
 	self.lblPing:SizeToContents()
 	self.lblPing:SetWide( 100 )
 	
-	
 	self.lblName:SetPos( 60, 10)
 	self.lblMute:SetPos( self:GetParent():GetWide() - 45 - 8, 2)
 	self.lblPing:SetPos( self:GetParent():GetWide() - 85, 10)
@@ -369,8 +377,12 @@ function PANEL:PerformLayout()
 	self.lblHealth:SetPos( self:GetParent():GetWide() - 85 - 34 - 54, 10)
 	self.lblDeaths:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48, 10)
 	self.lblFrags:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48 - 64, 10)
-	self.lblInTrain:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48 - 64 - 198 - res + 80, 10)
-	self.lblPos:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48 - 64 - 198 - 234 - res + 80, 10)
+	self.lblInTrain:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48 - 64 - 198 - res + 80 + 20, 10)
+	local j = 0
+	if ScrW() > 1800 then
+		j = 100
+	end
+	self.lblPos:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48 - 64 - 198 - 234 - res + 80 + 20 - 68 - 20 - j, 10)
 	if ulibcheck then self.lblTeam:SetPos( self:GetParent():GetWide() / 4 - 3 + k, 10) end
 	
 	

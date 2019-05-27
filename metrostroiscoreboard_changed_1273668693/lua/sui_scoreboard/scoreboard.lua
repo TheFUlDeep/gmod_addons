@@ -242,7 +242,7 @@ function PANEL:PerformLayout()
 	local k = 1/(ScrW()/70000)
 	local res = ScrW()
 	if res > 1500 then
-		res = 150
+		res = 0
 		k = 0
 	else
 		res = -9999
@@ -256,9 +256,13 @@ function PANEL:PerformLayout()
 		xpos = self.lblDeaths:GetPos()
 		self.lblKills:SetPos( xpos - self.lblKills:GetWide() - space, self.PlayerFrame.y - self.lblPing:GetTall() - 3  )
 		xpos = self.lblKills:GetPos()
-		self.lblInTrain:SetPos( xpos - self.lblInTrain:GetWide() - res + 80, self.PlayerFrame.y - self.lblPing:GetTall() - 3  )
-		xpos = self.lblInTrain:GetPos()
-		self.lblPos:SetPos(  xpos - self.lblPos:GetWide() - res, self.PlayerFrame.y - self.lblPing:GetTall() - 3  )
+		self.lblInTrain:SetPos( xpos - self.lblInTrain:GetWide() - res - 72 + 20, self.PlayerFrame.y - self.lblPing:GetTall() - 3  )
+		--xpos = self.lblInTrain:GetPos()
+		local j = 0
+		if ScrW() > 1800 then
+			j = 100
+		end
+		self.lblPos:SetPos(  xpos - self.lblInTrain:GetWide() - res - 72 + 20 - 300 - 20 - j, self.PlayerFrame.y - self.lblPing:GetTall() - 3  )
 	end
 	if ulibcheck then  self.lblTeam:SetPos( self:GetWide() / 4 + k, self.PlayerFrame.y - self.lblPing:GetTall() - 3  ) end
 	
