@@ -350,7 +350,7 @@ function PANEL:PerformLayout()
 	else
 		res = -9999
 	end
-	self.lblMetadninLink:SetPos( self:GetParent():GetWide() / 4 - 35 + k, 9 )
+	self.lblMetadninLink:SetPos( self:GetParent():GetWide() / 4 - 35 + k, 10 )
 	if ulibcheck then self.lblTeam:SizeToContents() end
 	if utimecheck then self.lblHours:SizeToContents() end
 	self.lblHealth:SizeToContents()
@@ -362,16 +362,16 @@ function PANEL:PerformLayout()
 	self.lblPing:SetWide( 100 )
 	
 	
-	self.lblName:SetPos( 60, 8)
+	self.lblName:SetPos( 60, 10)
 	self.lblMute:SetPos( self:GetParent():GetWide() - 45 - 8, 2)
-	self.lblPing:SetPos( self:GetParent():GetWide() - 85, 8)
-	if utimecheck then self.lblHours:SetPos( self:GetParent():GetWide() - 85 - 34, 8) end
-	self.lblHealth:SetPos( self:GetParent():GetWide() - 85 - 34 - 54, 8)
-	self.lblDeaths:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48, 8)
-	self.lblFrags:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48 - 64, 8)
-	self.lblInTrain:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48 - 64 - 198 - res + 80, 8)
-	self.lblPos:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48 - 64 - 198 - 234 - res + 80, 8)
-	if ulibcheck then self.lblTeam:SetPos( self:GetParent():GetWide() / 4 - 3 + k, 8) end
+	self.lblPing:SetPos( self:GetParent():GetWide() - 85, 10)
+	if utimecheck then self.lblHours:SetPos( self:GetParent():GetWide() - 85 - 34, 10) end
+	self.lblHealth:SetPos( self:GetParent():GetWide() - 85 - 34 - 54, 10)
+	self.lblDeaths:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48, 10)
+	self.lblFrags:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48 - 64, 10)
+	self.lblInTrain:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48 - 64 - 198 - res + 80, 10)
+	self.lblPos:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48 - 64 - 198 - 234 - res + 80, 10)
+	if ulibcheck then self.lblTeam:SetPos( self:GetParent():GetWide() / 4 - 3 + k, 10) end
 	
 	
 	if self.Open or self.Size ~= self.TargetSize then
