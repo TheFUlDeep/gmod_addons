@@ -904,7 +904,7 @@ if SERVER then
 	end)
 	
 	local function SecondMethod(vector,arg)
-		print("second method")
+		--print("second method")
 		local StationName
 		local StationPos
 		local NearestStation
@@ -1078,7 +1078,7 @@ if SERVER then
 	end]]
 	
 	local function FirstMethod(PosOnTrack,TrackID,tbl)			--TODO проверка по несокльким трекам, так как на лупдайне относительно платформ они определяются неправильно (аргумент donotclear)
-		print("first method")
+		--print("first method")
 		if not tbl[1] then return nil end
 		local CurDist,MinDist,FieldKey
 		for k,v in pairs(tbl) do
