@@ -1710,6 +1710,7 @@ if SERVER then
 			local NeedSub = stringfind(Station," (ближа")
 			if NeedSub then Station = string.sub(Station,1,NeedSub - 1) end
 			local Path = FindNearestSignalPathOnTrack(Track.trakcpos,Track.trackid)
+			if not Path then continue end
 			if not StationsCfg[i] then StationsCfg[i] = {} end
 			StationsCfg[i]["ent"] = v
 			StationsCfg[i]["name"] = Station..". Путь: "..Path..". Интервал: "
