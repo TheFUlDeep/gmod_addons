@@ -198,8 +198,16 @@ function PANEL:UpdatePlayerData()
 	
 	self.lblPos.DoClick = function()
 		local text = self.lblPos:GetText()
-		if string.sub(text,1,15) == "перегон " or text == "-" then return end
+		if text == "-" then return end
 		if string.sub(text,1,11) == "тупик " then text = string.sub(text,12) end
+		if string.sub(text,1,15) == "перегон " then
+			if string.sub(text,-13,-3) == " (путь " then
+				local start = stringfind(text," - ")
+				if start then
+					text = string.sub(text,start + 4,-14)
+				end
+			end
+		end
 		RunConsoleCommand("ulx","station",GetNickUntilSpace(text))
 		--print("тп на станцию")
 	end
