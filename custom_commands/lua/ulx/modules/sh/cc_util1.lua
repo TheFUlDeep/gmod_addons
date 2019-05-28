@@ -1136,9 +1136,9 @@ if SERVER then
 		end
 	end)
 	
-	GenerateTblForFirstMethod()
-	GenerateTblForThirdMethod()
-	GenerateTrackIDsPathsTbl()
+	--GenerateTblForFirstMethod()
+	--GenerateTblForThirdMethod()
+	--GenerateTrackIDsPathsTbl()
 	--PrintTable(FirstMethodTbl)
 	--PrintTable(ThirdMethodTbl)
 	--(vector,TrackID,customraduis,customwlimit,customstep,autoscale,donotclear)
