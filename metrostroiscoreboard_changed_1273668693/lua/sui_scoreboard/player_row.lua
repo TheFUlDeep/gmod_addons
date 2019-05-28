@@ -186,20 +186,26 @@ function PANEL:UpdatePlayerData()
 	
 	self.lblInTrain.DoClick = function() 
 		if self.lblInTrain:GetText() == "-" or not DataTBL[SteamID] or not DataTBL[SteamID][4] or DataTBL[SteamID][4] == "" then return end
-		RunConsoleCommand("ulx","traintp",GetNickUntilSpace(DataTBL[SteamID][4]))
+		RunConsoleCommand("ulx","traintp",DataTBL[SteamID][4])
 		--print("тп в состав игрока")
 	end
 	
 	self.lblName.DoClick = function() 
 		if ply:SteamID() == LocalPlayer():SteamID() then return end
-		RunConsoleCommand("ulx","goto",GetNickUntilSpace(ply:Nick()))
+		RunConsoleCommand("ulx","goto",ply:Nick())
 		--print("тп к игроку")
 	end
 	
 	self.lblPos.DoClick = function()
 		local text = self.lblPos:GetText()
 		if text == "-" then return end
-		if string.sub(text,1,11) == "тупик " then text = string.sub(text,12) end
+		if string.sub(text,1,11) == "тупик " then
+			if string.sub(text,-13,-3) == " (путь " then
+				text = string.sub(text,12,-14)
+			else
+				text = string.sub(text,12)
+			end
+		end
 		if string.sub(text,1,15) == "перегон " then
 			if string.sub(text,-13,-3) == " (путь " then
 				local start = stringfind(text," - ")
@@ -209,7 +215,7 @@ function PANEL:UpdatePlayerData()
 			end
 		if string.sub(text,1,14) == "перегон" then return end
 		end
-		RunConsoleCommand("ulx","station",GetNickUntilSpace(text))
+		RunConsoleCommand("ulx","station",text)
 		--print("тп на станцию")
 	end
 
