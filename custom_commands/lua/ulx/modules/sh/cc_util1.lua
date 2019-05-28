@@ -1100,6 +1100,16 @@ if SERVER then
 	
 	local TrackIDsPaths = {}
 	
+	local function GetSignalPath(signal)
+		if not signal.Name then return nil end
+		local strsub1 = string.sub(signal.Name,-1)
+		local strsub2 = string.sub(signal.Name,-2,-2)
+		if tonumber(strsub1) then return strsub1
+		elseif tonumber(strsub2) then return strsub2
+		else return nil 
+		end
+	end
+	
 	local function GenerateTrackIDsPathsTbl()
 		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
 			if not IsValid(v) or not v.Name or v.Name == "" or v.ARSOnly or not v.Lenses then continue end
@@ -1126,8 +1136,9 @@ if SERVER then
 		end
 	end)
 	
-	--GenerateTblForFirstMethod()
-	--GenerateTblForThirdMethod()
+	GenerateTblForFirstMethod()
+	GenerateTblForThirdMethod()
+	GenerateTrackIDsPathsTbl()
 	--PrintTable(FirstMethodTbl)
 	--PrintTable(ThirdMethodTbl)
 	--(vector,TrackID,customraduis,customwlimit,customstep,autoscale,donotclear)
@@ -1175,6 +1186,7 @@ if SERVER then
 				Station,Station2 = FirstMethod(Track.trakcpos,Track.trackid,ThirdMethodTbl)
 			end
 			Path = TrackIDsPaths[Track.trackid]
+			print(Path)
 		end
 		--print(Station,Station2)
 		if not Station then Station = SecondMethod(vector) end
@@ -1725,7 +1737,7 @@ if SERVER then
 		end
 	end
 
-	function FindNearestSignalPathOnTrack(TrackPos,TrackID)
+	local function FindNearestSignalPathOnTrack(TrackPos,TrackID)
 		local curtrack,CurDist,MinDist,NearestSignalPath
 		local i = 0
 		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
