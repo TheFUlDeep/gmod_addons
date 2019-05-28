@@ -12,7 +12,7 @@ if SERVER then
 		local RouteNumber1
 		local SPB = false
 		local Name = ent.SubwayTrain.Name
-		if Name:find("722") or Name:find("Ema") or (Name:find("717") and not Name:find("5m")) or (ent.SubwayTrain.Manufacturer and ent.SubwayTrain.Manufacturer:find("LVZ")) then SPB = true end
+		if not ent.ASNP then SPB = true end
 		if not SPB then RouteNumber = RouteNumber / 10 end
 		if RouteNumber < 10 then RouteNumber1 = "0"..RouteNumber else RouteNumber1 = RouteNumber end
 		if SPB and RouteNumber < 100 then RouteNumber1 = "0"..RouteNumber1 else RouteNumber1 = RouteNumber1 end
@@ -32,10 +32,18 @@ if SERVER then
 	end
 
 	util.AddNetworkString("ScoreBoardAdditional")
+	
+	
+	local PeregonsTbl = {}
 	timer.Create("ScoreBoardAdditional", 5, 0, function()
+		for k,v in pairs(PeregonsTbl) do
+			if not IsValid(player.GetBySteamID(k)) then PeregonsTbl[k] = nil end
+		end
 		if not detectstation then print("detectstation is not avaliable") return end
 		for k,v in pairs(player.GetAll()) do
 			if not IsValid(v) then continue end
+			local SteamID = v:SteamID()
+			if not PeregonsTbl[SteamID] then PeregonsTbl[SteamID] = {} end
 			local pos,pos2,path = detectstation(v:GetPos())
 			if not pos then return end
 			local result = pos
@@ -58,10 +66,29 @@ if SERVER then
 					result = "тупик "..string.sub(pos,1,-38)
 				end
 			end
+			
+			if string.sub(result,1,15) == "перегон " then							--определяю направление движения по ближайшей стации и сохраняю до тех пор, пока человек в перегоне
+				if pos2 and strsub1 == "(ближайшая по треку)" then
+					local strsub3 = string.sub(pos,1,-38)
+					if PeregonsTbl[SteamID][1] and PeregonsTbl[SteamID][2] then
+						if PeregonsTbl[SteamID][1] == strsub3 or PeregonsTbl[SteamID][1] == pos2 and PeregonsTbl[SteamID][2] == strsub3 or PeregonsTbl[SteamID][2] == pos2 then
+							result = "перегон "..PeregonsTbl[SteamID][1].." - "..PeregonsTbl[SteamID][2]
+						end
+					else
+						PeregonsTbl[SteamID][1] = strsub3
+						PeregonsTbl[SteamID][2] = pos2
+					end
+				else
+					PeregonsTbl[SteamID] = {}
+				end
+			else
+				PeregonsTbl[SteamID] = {}
+			end
+			
 			net.Start("ScoreBoardAdditional")
 				net.WriteString(result)
 				net.WriteString(GetTrain(v))
-				net.WriteString(v:SteamID())
+				net.WriteString(SteamID)
 				net.WriteString(path and " (путь "..path..")" or "")
 			net.Broadcast()
 		end
