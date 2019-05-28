@@ -32,7 +32,7 @@ if SERVER then
 	end
 
 	util.AddNetworkString("ScoreBoardAdditional")
-	timer.Create("ScoreBoardAdditional", 1, 0, function()
+	timer.Create("ScoreBoardAdditional", 5, 0, function()
 		if not detectstation then print("detectstation is not avaliable") return end
 		for k,v in pairs(player.GetAll()) do
 			if not IsValid(v) then continue end
