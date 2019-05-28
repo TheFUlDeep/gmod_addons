@@ -1186,7 +1186,6 @@ if SERVER then
 				Station,Station2 = FirstMethod(Track.trakcpos,Track.trackid,ThirdMethodTbl)
 			end
 			Path = TrackIDsPaths[Track.trackid]
-			print(Path)
 		end
 		--print(Station,Station2)
 		if not Station then Station = SecondMethod(vector) end
