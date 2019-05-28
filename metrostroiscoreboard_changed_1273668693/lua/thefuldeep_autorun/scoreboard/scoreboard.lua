@@ -32,19 +32,34 @@ if SERVER then
 	end
 
 	util.AddNetworkString("ScoreBoardAdditional")
-	timer.Create("ScoreBoardAdditional", 5, 0, function()
-		if not detectstation then return end
+	timer.Create("ScoreBoardAdditional", 1, 0, function()
+		if not detectstation then print("detectstation is not avaliable") return end
 		for k,v in pairs(player.GetAll()) do
 			if not IsValid(v) then continue end
 			local pos,pos2,path = detectstation(v:GetPos())
 			if not pos then return end
-			local start = string.find(pos,"ближайшая")
-			if start then
-				if pos2 then pos = "перегон "..string.sub(pos,1,start - 2).." - "..pos2 else pos = "-" end
+			local result = pos
+			local strsub1 = string.sub(pos,-36) --(ближайшая по треку)
+			local strsub2 = string.sub(pos,-42)	--(ближайшая в плоскости)
+			if strsub2 == "(ближайшая в плоскости)" then
+				if path then
+					result = "перегон"
+				elseif stringfind(pos,"депо",true) then
+					result = "депо"
+				else
+					result = "-"
+				end
 			end
-			--if pos ~= "-" and path then pos = pos.." (путь "..path..")" end
+			
+			if strsub1 == "(ближайшая по треку)" then
+				if pos2 then
+					result = "перегон "..string.sub(pos,1,-38).." - "..pos2
+				else
+					result = "тупик "..string.sub(pos,1,-38)
+				end
+			end
 			net.Start("ScoreBoardAdditional")
-				net.WriteString(pos)
+				net.WriteString(result)
 				net.WriteString(GetTrain(v))
 				net.WriteString(v:SteamID())
 				net.WriteString(path and " (путь "..path..")" or "")

@@ -162,15 +162,14 @@ function PANEL:UpdatePlayerData()
 	if DataTBL[SteamID] then
 		Pos = DataTBL[SteamID][1]
 		Train = DataTBL[SteamID][2]
-		Path = DataTBL[SteamID][3] or ""
+		Path = DataTBL[SteamID][3]
 	end
 	if ScrW() < 1800 then
-		local start,End = Pos:find("перегон ")
-		if start then
-			Pos = string.sub(Pos,1,End - 1)
+		if string.sub(Pos,1,15) == "перегон " then
+			Pos = "перегон "
 		end
 	end
-	self.lblPos:SetText(Pos ~= "" and Pos ~= "-" and Pos..Path or "-")
+	self.lblPos:SetText(Pos ~= "" and Pos..Path or "-")
 	self.lblInTrain:SetText(Train ~= "" and Train or "-")
 	
 	-- Change the icon of the mute button based on state
@@ -199,7 +198,8 @@ function PANEL:UpdatePlayerData()
 	
 	self.lblPos.DoClick = function()
 		local text = self.lblPos:GetText()
-		if text:find("перегон") or text == "-" then return end
+		if string.sub(text,1,15) == "перегон " or text == "-" then return end
+		if string.sub(text,1,11) == "тупик " then text = string.sub(text,12) end
 		RunConsoleCommand("ulx","station",GetNickUntilSpace(text))
 		--print("тп на станцию")
 	end
