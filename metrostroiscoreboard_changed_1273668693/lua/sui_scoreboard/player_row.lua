@@ -213,10 +213,10 @@ function PANEL:UpdatePlayerData()
 					text = string.sub(text,start + 4,-14)
 				end
 			end
+		end
 		if string.sub(text,1,14) == "перегон" then return end
 		if string.sub(text,-13,-3) == " (путь " then
 			text = string.sub(text,1,-14)
-		end
 		end
 		RunConsoleCommand("ulx","station",text)
 		--print("тп на станцию")
