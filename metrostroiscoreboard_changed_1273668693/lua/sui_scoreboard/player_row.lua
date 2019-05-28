@@ -207,6 +207,7 @@ function PANEL:UpdatePlayerData()
 					text = string.sub(text,start + 4,-14)
 				end
 			end
+		if string.sub(text,1,14) == "перегон" then return end
 		end
 		RunConsoleCommand("ulx","station",GetNickUntilSpace(text))
 		--print("тп на станцию")
