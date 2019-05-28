@@ -129,9 +129,9 @@ end
 
 local DataTBL = {}
 net.Receive("ScoreBoardAdditional",function()
-	local Pos,Train,SteamID,Path = net.ReadString(),net.ReadString(),net.ReadString(),net.ReadString()
+	local Pos,Train,SteamID,Path,Owner = net.ReadString(),net.ReadString(),net.ReadString(),net.ReadString(),net.ReadString()
 	if not DataTBL[SteamID] then DataTBL[SteamID] = {} end
-	DataTBL[SteamID] = {Pos,Train,Path}
+	DataTBL[SteamID] = {Pos,Train,Path,Owner}
 end)
 
 function PANEL:UpdatePlayerData()
@@ -185,8 +185,8 @@ function PANEL:UpdatePlayerData()
 	end
 	
 	self.lblInTrain.DoClick = function() 
-		if self.lblInTrain:GetText() == "-" then return end
-		RunConsoleCommand("ulx","traintp",GetNickUntilSpace(ply:Nick()))
+		if self.lblInTrain:GetText() == "-" or not DataTBL[SteamID] or not DataTBL[SteamID][4] or DataTBL[SteamID][4] == "" then return end
+		RunConsoleCommand("ulx","traintp",GetNickUntilSpace(DataTBL[SteamID][4]))
 		--print("тп в состав игрока")
 	end
 	

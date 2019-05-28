@@ -20,15 +20,16 @@ if SERVER then
 	end
 	
 	local function GetTrain(ply)
+		local Owner
 		if ply:InVehicle() then
 			local ent = ply:GetVehicle()
 			if IsValid(ent) then ent = ent:GetNW2Entity("TrainEntity",nil) end
 			if IsValid(ent) then
-				
-				return ent.SubwayTrain.Name..GetRouteNumber(ent) or "-" 
+				if CPPI then Owner = ent:CPPIGetOwner():Nick() end
+				return ent.SubwayTrain.Name..GetRouteNumber(ent) or "-", Owner or ""
 			end
 		end
-		return "-"
+		return "-",""
 	end
 
 	util.AddNetworkString("ScoreBoardAdditional")
@@ -85,11 +86,13 @@ if SERVER then
 				PeregonsTbl[SteamID] = {}
 			end
 			
+			local Train,Owner = GetTrain(v)
 			net.Start("ScoreBoardAdditional")
 				net.WriteString(result)
-				net.WriteString(GetTrain(v))
+				net.WriteString(Train)
 				net.WriteString(SteamID)
 				net.WriteString(path and " (путь "..path..")" or "")
+				net.WriteString(Owner)
 			net.Broadcast()
 		end
 	end)
