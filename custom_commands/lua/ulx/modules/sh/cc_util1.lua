@@ -974,7 +974,7 @@ if SERVER then
 		local n = 0
 		for i = -radius,radius,step do
 			for j = -radius,radius,step do
-				if i ~= 0 and j ~= 0 or i == j then continue end
+				if not (i == 0 or j == 0 or i == j) then continue end
 				for k = -wLimit,wLimit,step do
 					local results = Metrostroi.GetPositionOnTrack(vector + Vector(i,j,k))
 					--print(ent:GetPos() + Vector(i,j,k))
@@ -1098,6 +1098,20 @@ if SERVER then
 		end
 	end
 	
+	local TrackIDsPaths = {}
+	
+	local function GenerateTrackIDsPathsTbl()
+		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
+			if not IsValid(v) or not v.Name or v.Name == "" or v.ARSOnly or not v.Lenses then continue end
+			curtrack = v.TrackPosition.path and v.TrackPosition.path.id or 0
+			if curtrack == 0 then continue end
+			if not TrackIDsPaths[curtrack] then 
+				local Path = GetSignalPath(v)
+				if not Path then continue end
+				TrackIDsPaths[curtrack] = Path % 2 == 0 and 2 or 1 end
+		end
+	end
+	
 	hook.Add("PlayerInitialSpawn","GenerateTblsForStations",function() 
 		hook.Remove("PlayerInitialSpawn","GenerateTblsForStations")
 		local NoSignals = true
@@ -1108,11 +1122,12 @@ if SERVER then
 			print("Generating Tbls for detectstation")
 			GenerateTblForThirdMethod()
 			GenerateTblForFirstMethod()
+			GenerateTrackIDsPathsTbl()
 		end
 	end)
 	
-	GenerateTblForFirstMethod()
-	GenerateTblForThirdMethod()
+	--GenerateTblForFirstMethod()
+	--GenerateTblForThirdMethod()
 	--PrintTable(FirstMethodTbl)
 	--PrintTable(ThirdMethodTbl)
 	--(vector,TrackID,customraduis,customwlimit,customstep,autoscale,donotclear)
@@ -1159,7 +1174,7 @@ if SERVER then
 			if not Station then 
 				Station,Station2 = FirstMethod(Track.trakcpos,Track.trackid,ThirdMethodTbl)
 			end
-			Path = FindNearestSignalPathOnTrack(Track.trakcpos,Track.trackid)
+			Path = TrackIDsPaths[Track.trackid]
 		end
 		--print(Station,Station2)
 		if not Station then Station = SecondMethod(vector) end
