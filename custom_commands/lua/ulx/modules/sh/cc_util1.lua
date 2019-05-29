@@ -1452,10 +1452,10 @@ if SERVER then
 	end
 	CheckRoutes()
 
-	--[[============================= NOCLIP ПРИ ПОПЫТКЕ ТЕЛЕПОРТА НА СТАНЦИЮ ==========================]]
+	--[[============================= NOCLIP ПРИ ПОПЫТКЕ ТЕЛЕПОРТА ==========================]]
 	hook.Add("PlayerSay", "stationnoclip", function(ply, text, team)
 	local text = string.lower(text)
-		if string.find(text, "!station") or string.find(text, "!goto") or string.find(text, "!return") then ply:SetMoveType(MOVETYPE_NOCLIP) end
+		if string.find(text, "!return") then ply:SetMoveType(MOVETYPE_NOCLIP) end
 	end)
 
 --[[============================= ТЕЛЕПОРТ К СИГНАЛУ ==========================]]
@@ -2000,6 +2000,8 @@ if SERVER then
 		timer.Remove("UlxGotoOverwrite")
 		local oldgoto = ulx.goto
 		function ulx.goto(calling_ply, target_ply)
+			--local WasNoclip = calling_ply:GetMoveType() == MOVETYPE_NOCLIP and true or false
+			calling_ply:SetMoveType(MOVETYPE_NOCLIP)
 			if calling_ply:InVehicle() then calling_ply:ExitVehicle() end
 			oldgoto(calling_ply, target_ply)
 		end
