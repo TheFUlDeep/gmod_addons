@@ -369,23 +369,29 @@ local tracelinesetup = {mask = MASK_SOLID,output = {},filter = function(ent)
 
     return ent==tracelineent or tracelinehitcount>=3
 end}
+
+local PlyInTrain
+
 function ENT:ShouldRenderClientEnts()
 	local ply = LocalPlayer()
+	if not timer.Exists("PlyInTrainForHideCheck") then
+		timer.Create("PlyInTrainForHideCheck",1,0,function()
+			if ply:InVehicle() then
+				PlyInTrain = ply:GetVehicle():GetNW2Entity("TrainEntity",nil)
+				if PlyInTrain and not IsValid(PlyInTrain) then PlyInTrain = nil end
+			else
+				PlyInTrain = nil
+			end
+		end)
+	end
 	
 	if not C_ScreenshotMode:GetBool() then
 		if GetConVar("hidealltrains"):GetBool() then
-			local ent
-			if ply:InVehicle() then
-				ent = ply:GetVehicle():GetNW2Entity("TrainEntity",nil)
-			end
-			if not IsValid(ent) then return end
+			if not PlyInTrain or PlyInTrain ~= self then return false end
 		else
 			if GetConVar("hideothertrains"):GetBool() then
-				local ent
-				if ply:InVehicle() then
-					ent = ply:GetVehicle():GetNW2Entity("TrainEntity",nil)
-				end
-				if not IsValid(ent) --[[and ply:GetPos():DistToSqr(self:GetPos()) > 500 * 500]] and CPPI and self:CPPIGetOwner() ~= ply then return end
+				local Owner = CPPI and self:CPPIGetOwner() or nil
+				if not (IsValid(Owner) and Owner == ply or PlyInTrain and PlyInTrain == self) then return false end
 			end
 		end
 	end
