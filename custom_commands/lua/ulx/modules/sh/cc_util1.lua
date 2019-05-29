@@ -1900,7 +1900,7 @@ if CLIENT then
 	CreateClientConVar("showintervalclocks","0",false,false,"")
 	hook.Add("HUDPaint","ShowingIntervalClocks",function()
 		if GetConVar("showintervalclocks"):GetInt() == 0 then return end
-		if CurTime() - timestamp >= 1 and IntervalsTbl[1] then
+		if CurTime() - timestamp >= 1 and table.Count(IntervalsTbl) > 0 then
 			timestamp = CurTime()
 			for i = 1, #IntervalsTbl do
 				if not IntervalsTbl[i] then continue end
