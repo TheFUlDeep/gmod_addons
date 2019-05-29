@@ -9,6 +9,7 @@ local FPSLimit = 20
 local TimeLimit = 10 * FPSLimit
 local i = 0
 hook.Add("Think","RecomendHideTrains",function()
+	if not system.HasFocus() then return end
 	local fps = 1 / RealFrameTime()
 	if fps < FPSLimit then i = i + 1 else i = 0 end
 	if i > TimeLimit then
