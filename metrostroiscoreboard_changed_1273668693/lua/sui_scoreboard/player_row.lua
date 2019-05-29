@@ -209,7 +209,7 @@ function PANEL:UpdatePlayerData()
 	
 	self.lblPos.DoClick = function()
 		local text = self.lblPos:GetText()
-		if (Train == "" or Train == "-") and (text == "-" or string.sub(text,1,14) == "перегон" or string.sub(text,1,10) == "тупик") and ply:SteamID() == LocalPlayer():SteamID() then
+		if (Train == "" or Train == "-") and (text == "-" or string.sub(text,1,14) == "перегон" or string.sub(text,1,10) == "тупик") and ply:SteamID() ~= LocalPlayer():SteamID() then
 			RunConsoleCommand("ulx","goto",ply:Nick())
 			return 
 		end
