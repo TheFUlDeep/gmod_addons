@@ -129,9 +129,9 @@ end
 
 local DataTBL = {}
 net.Receive("ScoreBoardAdditional",function()
-	local Pos,Train,SteamID,Path,Owner = net.ReadString(),net.ReadString(),net.ReadString(),net.ReadString(),net.ReadString()
+	local Pos,Train,SteamID,Path,Owner,Time = net.ReadString(),net.ReadString(),net.ReadString(),net.ReadString(),net.ReadString(),net.ReadString()
 	if not DataTBL[SteamID] then DataTBL[SteamID] = {} end
-	DataTBL[SteamID] = {Pos,Train,Path,Owner}
+	DataTBL[SteamID] = {Pos,Train,Path,Owner,Time}
 end)
 
 function PANEL:UpdatePlayerData()
@@ -159,10 +159,14 @@ function PANEL:UpdatePlayerData()
 	local Pos = ""
 	local Train = ""
 	local Path = ""
+	local Owner = ""
+	local Time = ""
 	if DataTBL[SteamID] then
 		Pos = DataTBL[SteamID][1]
 		Train = DataTBL[SteamID][2]
 		Path = DataTBL[SteamID][3]
+		Owner = DataTBL[SteamID][4]
+		Time = DataTBL[SteamID][5]
 	end
 	if ScrW() < 1800 then
 		if string.sub(Pos,1,15) == "перегон " then
@@ -185,8 +189,8 @@ function PANEL:UpdatePlayerData()
 	end
 	
 	self.lblInTrain.DoClick = function() 
-		if self.lblInTrain:GetText() == "-" or not DataTBL[SteamID] or not DataTBL[SteamID][4] or DataTBL[SteamID][4] == "" then return end
-		RunConsoleCommand("ulx","traintp",DataTBL[SteamID][4])
+		if self.lblInTrain:GetText() == "-" or Owner == "" then return end
+		RunConsoleCommand("ulx","traintp",Owner)
 		--print("тп в состав игрока")
 	end
 	
@@ -197,6 +201,7 @@ function PANEL:UpdatePlayerData()
 	end
 	
 	self.lblPos.DoClick = function()
+		if Time ~= "" then chat.AddText((color_white),Time) end
 		local text = self.lblPos:GetText()
 		if text == "-" then return end
 		if string.sub(text,1,11) == "тупик " then

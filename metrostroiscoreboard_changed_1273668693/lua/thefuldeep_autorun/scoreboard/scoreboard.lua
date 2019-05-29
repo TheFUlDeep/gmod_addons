@@ -21,15 +21,17 @@ if SERVER then
 	
 	local function GetTrain(ply)
 		local Owner
+		local Speed
 		if ply:InVehicle() then
-			local ent = ply:GetVehicle()
+			ent = ply:GetVehicle()
 			if IsValid(ent) then ent = ent:GetNW2Entity("TrainEntity",nil) end
 			if IsValid(ent) then
+				Speed = ent.Speed
 				if CPPI then Owner = ent:CPPIGetOwner():Nick() end
-				return ent.SubwayTrain.Name..GetRouteNumber(ent) or "-", Owner or ""
+				return ent.SubwayTrain.Name..GetRouteNumber(ent) or "-", Owner or "",Speed
 			end
 		end
-		return "-",""
+		return "-","",Speed
 	end
 
 	util.AddNetworkString("ScoreBoardAdditional")
@@ -44,9 +46,9 @@ if SERVER then
 		for k,v in pairs(player.GetAll()) do
 			if not IsValid(v) then continue end
 			local SteamID = v:SteamID()
-			if not PeregonsTbl[SteamID] then PeregonsTbl[SteamID] = {} end
-			local pos,pos2,path = detectstation(v:GetPos())
-			if not pos then return end
+			if not PeregonsTbl[SteamID] then PeregonsTbl[SteamID] = {} PeregonsTbl[SteamID][1] = {} PeregonsTbl[SteamID][2] = {} end
+			local pos,pos2,path,posx,pos2x,poscurx = detectstation(v:GetPos())
+			--if not pos then return end				-- detectstation всегда возвращает pos, поэтому эта строка не нужна?
 			local result = pos
 			local strsub1 = string.sub(pos,-36) --(ближайшая по треку)
 			local strsub2 = string.sub(pos,-42)	--(ближайшая в плоскости)
@@ -68,31 +70,43 @@ if SERVER then
 				end
 			end
 			
+			local Train,Owner,Speed = GetTrain(v)
+			local Time = ""
 			if string.sub(result,1,15) == "перегон " then							--определяю направление движения по ближайшей стации и сохраняю до тех пор, пока человек в перегоне
 				if pos2 and strsub1 == "(ближайшая по треку)" then
 					local strsub3 = string.sub(pos,1,-38)
-					if PeregonsTbl[SteamID][1] and PeregonsTbl[SteamID][2] then
-						if PeregonsTbl[SteamID][1] == strsub3 or PeregonsTbl[SteamID][1] == pos2 and PeregonsTbl[SteamID][2] == strsub3 or PeregonsTbl[SteamID][2] == pos2 then
-							result = "перегон "..PeregonsTbl[SteamID][1].." - "..PeregonsTbl[SteamID][2]
+					if PeregonsTbl[SteamID][1][1] and PeregonsTbl[SteamID][2][1] then
+						if PeregonsTbl[SteamID][1][1] == strsub3 or PeregonsTbl[SteamID][1][1] == pos2 and PeregonsTbl[SteamID][2][1] == strsub3 or PeregonsTbl[SteamID][2][1] == pos2 then
+							result = "перегон "..PeregonsTbl[SteamID][1][1].." - "..PeregonsTbl[SteamID][2][1]
+							if Train ~= "-" then
+								if Speed and Speed > 5 and PeregonsTbl[SteamID][2][2] and poscurx then
+									--Speed = Speed * 1000 / 60 / 60
+									Time = "Примерное время прибытия через "..math.floor((math.abs(PeregonsTbl[SteamID][2][2] - poscurx) / (50 * 1000 / 60 / 60))).." сек."
+								else
+									Time = "Не удалось определить время прибытия."
+								end
+							end
 						end
 					else
-						PeregonsTbl[SteamID][1] = strsub3
-						PeregonsTbl[SteamID][2] = pos2
+						PeregonsTbl[SteamID][1][1] = strsub3
+						PeregonsTbl[SteamID][2][1] = pos2
+						--PeregonsTbl[SteamID][1][2] = posx			--мне не нужа позиция станции отправления
+						PeregonsTbl[SteamID][2][2] = pos2x
 					end
 				else
-					PeregonsTbl[SteamID] = {}
+					PeregonsTbl[SteamID][1] = {}
 				end
 			else
-				PeregonsTbl[SteamID] = {}
+				PeregonsTbl[SteamID][2] = {}
 			end
 			
-			local Train,Owner = GetTrain(v)
 			net.Start("ScoreBoardAdditional")
 				net.WriteString(result)
 				net.WriteString(Train)
 				net.WriteString(SteamID)
 				net.WriteString(path and " (путь "..path..")" or "")
 				net.WriteString(Owner)
+				net.WriteString(Time)
 			net.Broadcast()
 		end
 	end)

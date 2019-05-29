@@ -1170,7 +1170,7 @@ if SERVER then
 			MinDist = "" 
 		end
 		--print(tbl[FieldKey].StationName)
-		return tbl[FieldKey].StationName and tbl[FieldKey].StationName..MinDist or nil, FieldKey2 and tbl[FieldKey2].StationName or nil
+		return tbl[FieldKey].StationName and tbl[FieldKey].StationName..MinDist or nil, FieldKey2 and tbl[FieldKey2].StationName or nil, tbl[FieldKey].trakcpos, FieldKey2 and tbl[FieldKey2].trakcpos or nil
 	end
 
 		-----------------ОПРЕДЕЛЕНИЕ МЕСТА ВЕКТОРА ОТНОСИТЕЛЬНО СТАНЦИЙ------------------------------------------------------
@@ -1178,18 +1178,19 @@ if SERVER then
 		if not Metrostroi.StationConfigurations then return "" end
 		--if not FirstMethodTbl[1] then GenerateTblForFirstMethod() end
 		--if not ThirdMethodTbl[1] then GenerateTblForThirdMethod() end
-		local Station,Station2,Path
+		local Station,Station2,Path,Posx,StationPosx,Station2Posx
 		local Track = FindTrackInSquare(vector,nil,100,100,100)
 		if Track then
-			Station,Station2 = FirstMethod(Track.trakcpos,Track.trackid,FirstMethodTbl)
+			Station,Station2,StationPosx,Station2Posx = FirstMethod(Track.trakcpos,Track.trackid,FirstMethodTbl)
 			if not Station then 
-				Station,Station2 = FirstMethod(Track.trakcpos,Track.trackid,ThirdMethodTbl)
+				Station,Station2,StationPosx,Station2Posx = FirstMethod(Track.trakcpos,Track.trackid,ThirdMethodTbl)
 			end
 			Path = TrackIDsPaths[Track.trackid]
+			Posx = Track.trakcpos
 		end
 		--print(Station,Station2)
 		if not Station then Station = SecondMethod(vector) end
-		return Station or "", Station2,Path
+		return Station or "", Station2,Path,StationPosx,Station2Posx,Posx
 	end
 	
 	--[[for k,v in pairs(player.GetAll()) do
