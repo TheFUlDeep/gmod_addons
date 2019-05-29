@@ -207,7 +207,6 @@ function PANEL:UpdatePlayerData()
 	end
 	
 	
-	if Time == "" then Time = "Не удалось определить время прибытия." else Time = "Примерное прибытие через "..Time.." сек." end
 	self.lblPos.DoClick = function()
 		if Time ~= "" then chat.AddText((color_white),Time) end
 		local text = self.lblPos:GetText()
@@ -223,6 +222,7 @@ function PANEL:UpdatePlayerData()
 			if string.sub(text,-13,-3) == " (путь " then
 				local start = stringfind(text," - ")
 				if start then
+					if Time == "" then Time = "Не удалось определить время прибытия." else Time = "Примерное прибытие через "..Time.." сек." end
 					text = string.sub(text,start + 4,-14)
 				end
 			end
