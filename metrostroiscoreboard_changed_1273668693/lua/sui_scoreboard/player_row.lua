@@ -134,6 +134,12 @@ net.Receive("ScoreBoardAdditional",function()
 	DataTBL[SteamID] = {Pos,Train,Path,Owner,Time}
 end)
 
+timer.Create("TrainArraiveTimeInc", 1, 0, function()
+	for k,v in pairs(DataTBL) do
+		if v[5] and v[5] ~= "" then DataTBL[k][5] = DataTBL[k][5] - 1 end
+	end
+end)
+
 function PANEL:UpdatePlayerData()
 	local ply = self.Player
 	if not IsValid( ply ) then return end
@@ -200,6 +206,8 @@ function PANEL:UpdatePlayerData()
 		--print("тп к игроку")
 	end
 	
+	
+	if Time == "" then Time = "Не удалось определить время прибытия." else Time = "Примерное прибытие через "..Time.." сек." end
 	self.lblPos.DoClick = function()
 		if Time ~= "" then chat.AddText((color_white),Time) end
 		local text = self.lblPos:GetText()

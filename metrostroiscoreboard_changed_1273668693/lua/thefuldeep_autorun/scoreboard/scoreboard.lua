@@ -81,9 +81,9 @@ if SERVER then
 							if Train ~= "-" then
 								if Speed and Speed > 5 and PeregonsTbl[SteamID][2][2] and poscurx then
 									--Speed = Speed * 1000 / 60 / 60
-									Time = "Примерное время прибытия через "..math.floor((math.abs(PeregonsTbl[SteamID][2][2] - poscurx) / (50 * 1000 / 60 / 60))).." сек."
+									Time = math.floor((math.abs(PeregonsTbl[SteamID][2][2] - poscurx) / (50 * 1000 / 60 / 60)))
 								else
-									Time = "Не удалось определить время прибытия."
+									Time = ""
 								end
 							end
 						end
