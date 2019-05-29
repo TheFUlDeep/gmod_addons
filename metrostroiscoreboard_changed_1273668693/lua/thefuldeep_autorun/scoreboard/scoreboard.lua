@@ -23,7 +23,7 @@ if SERVER then
 		local Owner
 		local Speed
 		if ply:InVehicle() then
-			ent = ply:GetVehicle()
+			local ent = ply:GetVehicle()
 			if IsValid(ent) then ent = ent:GetNW2Entity("TrainEntity",nil) end
 			if IsValid(ent) then
 				Speed = ent.Speed
