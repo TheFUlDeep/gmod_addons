@@ -370,12 +370,32 @@ local tracelinesetup = {mask = MASK_SOLID,output = {},filter = function(ent)
     return ent==tracelineent or tracelinehitcount>=3
 end}
 function ENT:ShouldRenderClientEnts()
-    local result = !self:IsDormant() and math.abs(LocalPlayer():EyePos().z-self:GetPos().z)<500 and (system.HasFocus() or C_MinimizedShow:GetBool()) and (!Metrostroi or !Metrostroi.ReloadClientside) and LocalPlayer():EyePos():DistToSqr(self:GetPos())
+	local ply = LocalPlayer()
+	
+	if not C_ScreenshotMode:GetBool() then
+		if GetConVar("hidealltrains"):GetBool() then
+			local ent
+			if ply:InVehicle() then
+				ent = ply:GetVehicle():GetNW2Entity("TrainEntity",nil)
+			end
+			if not IsValid(ent) then return end
+		else
+			if GetConVar("hideothertrains"):GetBool() then
+				local ent
+				if ply:InVehicle() then
+					ent = ply:GetVehicle():GetNW2Entity("TrainEntity",nil)
+				end
+				if not IsValid(ent) --[[and ply:GetPos():DistToSqr(self:GetPos()) > 500 * 500]] and CPPI and self:CPPIGetOwner() ~= ply then return end
+			end
+		end
+	end
+	
+    local result = !self:IsDormant() and math.abs(ply:EyePos().z-self:GetPos().z)<500 and (system.HasFocus() or C_MinimizedShow:GetBool()) and (!Metrostroi or !Metrostroi.ReloadClientside) and LocalPlayer():EyePos():DistToSqr(self:GetPos())
     
     if result and not C_ScreenshotMode:GetBool() then
         tracelineent,tracelinehitcount = self,0
     
-        tracelinesetup.start = LocalPlayer():EyePos()
+        tracelinesetup.start = ply:EyePos()
         tracelinesetup.endpos = self:LocalToWorld(self:OBBCenter())
         local output = util.TraceLine(tracelinesetup)
         
