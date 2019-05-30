@@ -27,8 +27,10 @@ if SERVER then
 			if IsValid(ent) then ent = ent:GetNW2Entity("TrainEntity",nil) end
 			if IsValid(ent) then
 				Speed = ent.Speed
-				if CPPI then Owner = ent:CPPIGetOwner() end
-				if IsValid(Owner) then Owner = Owner:Nick() end
+				if CPPI then 
+					Owner = ent:CPPIGetOwner()
+					Owner = IsValid(Owner) and Owner:Nick() or nil 
+				end
 				return ent.SubwayTrain.Name..GetRouteNumber(ent) or "-", Owner or "",Speed
 			end
 		end
