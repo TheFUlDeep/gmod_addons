@@ -14,6 +14,24 @@ hook.Add("Think","RecomendHideTrains",function()
 	if fps < FPSLimit then i = i + 1 else i = 0 end
 	if i > TimeLimit then
 		hook.Remove("Think","RecomendHideTrains")
-		chat.AddText(Color(255,0,0,200),"Обнаружена низкая производительность. Для повышения fps попробуйте консольные команды hideothertrains 1 или hidealltrains 1. А также убедитесь, что режим съемки выключен!")
+		chat.AddText(
+			Color(255,0,0),"Обнаружена низкая производительность. Для повышения fps попробуйте консольные команды ", 
+			Color(255,255,0), "hideothertrains 1", 
+			Color(255,0,0), " или ", 
+			Color(255,255,0), "hidealltrains 1", 
+			Color(255,0,0), ". А также убедитесь, что режим съемки выключен (", 
+			Color(255,255,0), "metrostroi_screenshotmode 0", 
+			Color(255,0,0), ")!"
+		)
 	end
+end)
+
+hook.Add( "PopulateToolMenu", "MetrostroiCustomPanel", function()
+	spawnmenu.AddToolMenuOption( "Utilities", "Metrostroi", "metrostroi_client_panel2", "Клиент2", "", "", function(panel)
+		panel:ClearControls()
+		panel:CheckBox("Показывать интервальные часы","showintervalclocks")
+		panel:CheckBox("Режим съемки","metrostroi_screenshotmode")
+		panel:CheckBox("Не прогружать чужие составы","hideothertrains")
+		panel:CheckBox("Не прогружать все составы","hidealltrains")
+	end)
 end)

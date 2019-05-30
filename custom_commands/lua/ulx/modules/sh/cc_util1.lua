@@ -996,10 +996,19 @@ if SERVER then
 		if donotclear or autoscale then
 			if table.Count(out) > 1 then
 				for k,v in pairs(out) do
+					local MinDist1,CurDist1,MinK
 					for k1,v1 in pairs(out) do
-						if v1.trackid == v.trackid and k ~= k1 then out[k1] = nil end
+						if v1.trackid ~= v.trackid or k == k1 then continue end
+						CurDist1 = v1.vector:DistToSqr(v.vector)
+						if not MinDist1 or MinDist1 > CurDist1 then MinDist1 = CurDist1 MinK = k1 end
+					end
+					if not MinK then continue end
+					for k1,v1 in pairs(out) do
+						if v1.trackid ~= v.trackid then continue end
+						if k1 ~= MinK then out[k1] = nil end
 					end
 				end
+				--PrintTable(out)
 			end
 			if autoscale then
 				if table.Count(out) < autoscale then return FindTrackInSquare(vector,TrackID or nil,radius + step,wLimit,step,autoscale) else return out end
@@ -1028,6 +1037,44 @@ if SERVER then
 	end
 	
 	local function GetStationByIndex(index)
+		local StationName--,StationPos
+		for k,v in pairs(Metrostroi.StationConfigurations) do
+			--if not v.positions or not v.positions[1] or not v.positions[1][1] then continue else StationPos = v.positions[1][1] end
+			if not v.names or not v.names[1] then StationName = k else StationName = v.names[1] end
+			if k == index then return StationName end
+		end
+	end
+	
+	local function CompleteTBLTrakcs(tbl)
+		for k,v in pairs(ents.FindByClass("gmod_track_platform")) do
+			if not IsValid(v) then continue end
+			local StationName = GetStationByIndex(v.StationIndex)
+			if not StationName then continue end
+			for k1,v1 in pairs(tbl) do
+				if v1.StationName ~= StationName then continue end
+				local ThisStationTracks = 0
+				local MaxID = 0
+				for k2,v2 in pairs(tbl) do				-- ищу количество одинаковых треков, принадлежащих к одной танции
+					if v2.trackid == v1.trackid and v1.StationName == v2.StationName then 
+						ThisStationTracks = ThisStationTracks + 1 
+						if MaxID < v2.trackid then MaxID = v2.trackid end
+					end
+				end
+				if ThisStationTracks < 1 then continue end
+				for i = 1,MaxID do 				--для каждого трека ищу ближайший
+					local CurDist,MinDist,MinK
+					for k2,v2 in pairs(tbl) do
+						if v2.trackid ~= i or v2.StationName ~= v1.StationName then continue end
+						CurDist = v2.vector:DistToSqr(v:GetPos())
+						if not MinDist or MinDist > CurDist then MinDist = CurDist MinK = k2 end
+					end
+					for k2,v2 in pairs(tbl) do			--на втором проходе зачищаю все, кроме ближайшего
+						if v2.trackid ~= i or v2.StationName ~= v1.StationName then continue end
+						if k2 ~= MinK then tbl[k2] = nil end
+					end
+				end
+			end
+		end
 	end
 	
 	local FirstMethodTbl = {}
@@ -1050,9 +1097,12 @@ if SERVER then
 				FirstMethodTbl[i].trackid = v1.trackid
 				--FirstMethodTbl[i].PlatformLen = v.PlatformDir:Length()
 				FirstMethodTbl[i].PlatformLen = PlatformLen		-- который из методов поиска длины платформы верный?
+				FirstMethodTbl[i].PlatformPos = PlatformPos		-- который из методов поиска длины платформы верный?
 				FirstMethodTbl[i].StationName = FindNearestStation(PlatformPos)
 			end
 		end
+		CompleteTBLTrakcs(FirstMethodTbl)
+
 		--if FirstMethodTbl[1] then PrintTable(FirstMethodTbl) end
 	end
 	
@@ -1096,6 +1146,7 @@ if SERVER then
 				ThirdMethodTbl[i].StationName = StationName --FindNearestStation(StationPos)			-- эм что?
 			end
 		end
+		CompleteTBLTrakcs(ThirdMethodTbl)
 	end
 	
 	local TrackIDsPaths = {}
@@ -1139,6 +1190,18 @@ if SERVER then
 	--GenerateTblForFirstMethod()
 	--GenerateTblForThirdMethod()
 	--GenerateTrackIDsPathsTbl()
+	--[[for k,v in pairs(player.GetAll()) do
+		--v:SetPos(Vector(-2076.004639, -15260.714844, 3451.966064))
+		local i = 0
+		for k1,v1 in pairs(FirstMethodTbl) do
+			if v1.StationName:find("аэро") then
+				i = i + 1
+				--print(v1.trackid)
+				--if i > 2 then return end
+				timer.Simple(i,function() v:SetPos(v1.vector) end)
+			end
+		end
+	end]]
 	--PrintTable(FirstMethodTbl)
 	--PrintTable(ThirdMethodTbl)
 	--(vector,TrackID,customraduis,customwlimit,customstep,autoscale,donotclear)
@@ -1159,7 +1222,7 @@ if SERVER then
 		if not FieldKey or not MinDist then return nil end
 		--print(tbl[FieldKey].PlatformLen / 102 ,MinDist)
 		local MinDist2,CurDist2,FieldKey2
-		if MinDist > tbl[FieldKey].PlatformLen / 102 + 10 then 			-- 10 метров - небольшой запас
+		if MinDist > tbl[FieldKey].PlatformLen / 102 + 20 then 			-- 10 метров - небольшой запас
 			MinDist = " (ближайшая по треку)" 
 			for k,v in pairs(tbl) do							-- ищу вторую по близости станцию, если не в пределах платформы
 				if v.trackid ~= TrackID or v.StationName == tbl[FieldKey].StationName then continue end
@@ -1897,9 +1960,8 @@ if CLIENT then
 	
 	local timestamp = 0
 	local h = 10
-	CreateClientConVar("showintervalclocks","0",false,false,"")
 	hook.Add("HUDPaint","ShowingIntervalClocks",function()
-		if GetConVar("showintervalclocks"):GetInt() == 0 then return end
+		if not GetConVar("showintervalclocks"):GetBool() then return end
 		if CurTime() - timestamp >= 1 and table.Count(IntervalsTbl) > 0 then
 			timestamp = CurTime()
 			for i = 1, #IntervalsTbl do

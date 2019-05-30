@@ -12,8 +12,8 @@ if SERVER then
 		local RouteNumber1
 		local SPB = false
 		local Name = ent.SubwayTrain.Name
-		if not ent.ASNP then SPB = true end
-		if not SPB then RouteNumber = RouteNumber / 10 end
+		if not ent.ASNP and ent.SubwayTrain.Name ~= "81-718" and ent.SubwayTrain.Name ~= "81-703" and ent.SubwayTrain.Name ~= "81-702" then SPB = true end
+		if not SPB and ent.SubwayTrain.Name ~= "81-717.6" then RouteNumber = RouteNumber / 10 end
 		if RouteNumber < 10 then RouteNumber1 = "0"..RouteNumber else RouteNumber1 = RouteNumber end
 		if SPB and RouteNumber < 100 then RouteNumber1 = "0"..RouteNumber1 else RouteNumber1 = RouteNumber1 end
 		return " ("..RouteNumber1..")"
@@ -27,7 +27,8 @@ if SERVER then
 			if IsValid(ent) then ent = ent:GetNW2Entity("TrainEntity",nil) end
 			if IsValid(ent) then
 				Speed = ent.Speed
-				if CPPI then Owner = ent:CPPIGetOwner():Nick() end
+				if CPPI then Owner = ent:CPPIGetOwner() end
+				if IsValid(Owner) then Owner = Owner:Nick() end
 				return ent.SubwayTrain.Name..GetRouteNumber(ent) or "-", Owner or "",Speed
 			end
 		end
