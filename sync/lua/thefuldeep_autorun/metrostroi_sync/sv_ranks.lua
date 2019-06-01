@@ -112,6 +112,7 @@ if SERVER then
 	
 	hook.Add("PlayerInitialSpawn","CheckIfBannedInitialSpawn",function(ply)
 		timer.Simple(1,function()
+			if not IsValid(ply) then return end
 			CheckUserRank(ply)
 			CheckIfLocalBanned(ply:SteamID())		-- в этом хуке просто на всякий случай
 			CheckIfBanned(ply:SteamID())		-- в этом хуке просто на всякий случай
