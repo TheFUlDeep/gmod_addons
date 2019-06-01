@@ -98,8 +98,13 @@ if SERVER then
 			for k,v in pairs(_v) do
 				if k == SteamID and not v.Unbanned and (v.UnBanDate == "perma" or os.time() < v.UnBanDate) then
 					local BanDate = os.date("%H:%M:%S %d/%m/%Y",v.BanDate)
-					local UnBanDate = v.UnBanDate == "perma" and "никогда" or os.date("%H:%M:%S %d/%m/%Y",v.UnBanDate)
-					return "ВЫ ЗАБАНЕНЫ\nЗабанил "..(v.WhoBanned)..", его SteamID: "..(v.WhoBannedID).."\nПричина: "..(v.Reason).."\nДата бана: "..BanDate.."\nДата разбана: "..UnBanDate
+					local UnBanDate = "никогда"
+					local BanTime = ""
+					if v.UnBanDate ~= "perma" then 
+						UnBanDate = os.date("%H:%M:%S %d/%m/%Y",body.UnBanDate)
+						BanTime = "\nДо разбана осталось "..tostring((v.UnBanDate - v.BanDate) / 60).." мин."
+					end
+					return "ВЫ ЗАБАНЕНЫ\nЗабанил "..(v.WhoBanned)..", его SteamID: "..(v.WhoBannedID).."\nПричина: "..(v.Reason).."\nДата бана: "..BanDate.."\nДата разбана: "..UnBanDate..BanTime
 				end
 			end
 		end
@@ -190,9 +195,9 @@ local function OverWriteUlxCommands()
 				if ULib.isValidSteamID(WhoBannedSteamID) and IsValid(player.GetBySteamID(WhoBannedSteamID)) then calling_ply = WhoBannedSteamID.." ("..(player.GetBySteamID(WhoBannedSteamID):Nick())..")" end
 				ulx.fancyLog(false,"#s забанил игрока #s на #s мин.",calling_ply,target_ply,duration) 
 				ulx.fancyLog(false,"Причина #s",reason) 
-				timer.Simple(1,function()
-					GetBansFromWebServer()
-				end)
+				--[[timer.Simple(1,function()
+					GetBansFromWebServer()		-- оно не видит эту функцию
+				end)]]
 			end
 		)
 	end
