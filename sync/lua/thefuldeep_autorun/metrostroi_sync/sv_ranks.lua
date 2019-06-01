@@ -40,12 +40,6 @@ if SERVER then
 		GetRankFromWebServer(WebServerUrl,ply:SteamID(),ply)
 	end
 
-	hook.Add("PlayerInitialSpawn","SyncRanksInitialSpawn1",function(ply)
-		timer.Simple(1,function()
-			CheckUserRank(ply)
-		end)
-	end)
-
 	local function CheckRanks()
 		local i = 0
 		for k,v in pairs(player.GetAll()) do
@@ -69,8 +63,12 @@ if SERVER then
 				if not body or not body.Nick then return end
 				local BanDate = os.date("%H:%M:%S %d/%m/%Y",body.BanDate)
 				local UnBanDate = "никогда"
-				if body.UnBanDate ~= "perma" then UnBanDate = os.date("%H:%M:%S %d/%m/%Y",body.UnBanDate) end
-				game.KickID(SteamID,"ВЫ ЗАБАНЕНЫ\nЗабанил "..(body.WhoBanned)..", его SteamID: "..(body.WhoBannedID).."\nПричина: "..(body.Reason).."\nДата бана: "..BanDate.."\nДата разбана: "..UnBanDate)
+				local BanTime = ""
+				if body.UnBanDate ~= "perma" then 
+					UnBanDate = os.date("%H:%M:%S %d/%m/%Y",body.UnBanDate)
+					BanTime = "\nДо разбана осталось "..tostring((body.UnBanDate - body.BanDate) / 60).." мин."
+				end
+				game.KickID(SteamID,"ВЫ ЗАБАНЕНЫ\nЗабанил "..(body.WhoBanned)..", его SteamID: "..(body.WhoBannedID).."\nПричина: "..(body.Reason).."\nДата бана: "..BanDate.."\nДата разбана: "..UnBanDate..BanTime)
 				--[[if BansTBL[SteamID].Nick == "Unknown" then				--вообще можно еще сделать проверку и обновление ника, но мне лень
 					
 				end]]
@@ -106,6 +104,14 @@ if SERVER then
 			end
 		end
 	end
+	
+	hook.Add("PlayerInitialSpawn","CheckIfBannedInitialSpawn",function(ply)
+		timer.Simple(1,function()
+			CheckUserRank(ply)
+			CheckIfLocalBanned(ply:SteamID())		-- в этом хуке просто на всякий случай
+			CheckIfBanned(ply:SteamID())		-- в этом хуке просто на всякий случай
+		end)
+	end)
 
 	hook.Add( "CheckPassword", "SyncBanCheck", function(steamID64,ipAddress,svPassword,clPassword,name)
 		local SteamID = util.SteamIDFrom64(steamID64)
@@ -184,6 +190,9 @@ local function OverWriteUlxCommands()
 				if ULib.isValidSteamID(WhoBannedSteamID) and IsValid(player.GetBySteamID(WhoBannedSteamID)) then calling_ply = WhoBannedSteamID.." ("..(player.GetBySteamID(WhoBannedSteamID):Nick())..")" end
 				ulx.fancyLog(false,"#s забанил игрока #s на #s мин.",calling_ply,target_ply,duration) 
 				ulx.fancyLog(false,"Причина #s",reason) 
+				timer.Simple(1,function()
+					GetBansFromWebServer()
+				end)
 			end
 		)
 	end
