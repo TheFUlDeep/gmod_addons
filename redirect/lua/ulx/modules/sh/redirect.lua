@@ -1,6 +1,6 @@
 --[[============================= РЕДИРЕКТ ==========================]]
 if SERVER then
-	local WebServerUrl = "http://metronorank.ddns.net/sync/"
+	local WebServerUrl = "http://212.22.77.19/metrostroi/sync/"
 	
 	local function GetFromWebServer(url,typ,ply)
 		http.Fetch( 

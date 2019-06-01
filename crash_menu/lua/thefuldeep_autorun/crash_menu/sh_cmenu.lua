@@ -7,9 +7,11 @@ end)
 --айпи второго сервера
 local secondip
 if GetHostName():find("1") then 
-	secondip = "metronorank.ddns.net:27017"
+	secondip = "212.22.77.19:27017"
+elseif GetHostName():find("2")
+	secondip = "212.22.77.19:27018"
 else
-	secondip = "metronorank.ddns.net:27016"
+	secondip = "212.22.77.19:27016"
 end
 
 //What's the title?
