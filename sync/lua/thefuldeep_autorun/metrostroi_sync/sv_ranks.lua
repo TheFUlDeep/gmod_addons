@@ -101,7 +101,7 @@ if SERVER then
 					local UnBanDate = "никогда"
 					local BanTime = ""
 					if v.UnBanDate ~= "perma" then 
-						UnBanDate = os.date("%H:%M:%S %d/%m/%Y",body.UnBanDate)
+						UnBanDate = os.date("%H:%M:%S %d/%m/%Y",v.UnBanDate)
 						BanTime = "\nДо разбана осталось "..tostring((v.UnBanDate - v.BanDate) / 60).." мин."
 					end
 					return "ВЫ ЗАБАНЕНЫ\nЗабанил "..(v.WhoBanned)..", его SteamID: "..(v.WhoBannedID).."\nПричина: "..(v.Reason).."\nДата бана: "..BanDate.."\nДата разбана: "..UnBanDate..BanTime
