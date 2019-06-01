@@ -1,5 +1,5 @@
 if CLIENT then return end
-local WebServerUrl = "http://metronorank.ddns.net/sync/"
+local WebServerUrl = "http://212.22.77.19/metrostroi/sync/"
 
 local function SendToWebServer(tbl,url,typ)
 	if GetConVar("sv_password"):GetString() and GetConVar("sv_password"):GetString() ~= "" then
