@@ -66,7 +66,7 @@ if SERVER then
 				local BanTime = ""
 				if body.UnBanDate ~= "perma" then 
 					UnBanDate = os.date("%H:%M:%S %d/%m/%Y",body.UnBanDate)
-					BanTime = "\nДо разбана осталось "..tostring((body.UnBanDate - os.time()) / 60).." мин."
+					BanTime = "\nДо разбана осталось "..tostring(math.floor((body.UnBanDate - os.time()) / 60)).." мин."
 				end
 				game.KickID(SteamID,"ВЫ ЗАБАНЕНЫ\nЗабанил "..(body.WhoBanned)..", его SteamID: "..(body.WhoBannedID).."\nПричина: "..(body.Reason).."\nДата бана: "..BanDate.."\nДата разбана: "..UnBanDate..BanTime)
 				--[[if BansTBL[SteamID].Nick == "Unknown" then				--вообще можно еще сделать проверку и обновление ника, но мне лень
@@ -102,7 +102,7 @@ if SERVER then
 					local BanTime = ""
 					if v.UnBanDate ~= "perma" then 
 						UnBanDate = os.date("%H:%M:%S %d/%m/%Y",v.UnBanDate)
-						BanTime = "\nДо разбана осталось "..tostring((v.UnBanDate - os.time()) / 60).." мин."
+						BanTime = "\nДо разбана осталось "..tostring(math.floor((v.UnBanDate - os.time()) / 60)).." мин."
 					end
 					return "ВЫ ЗАБАНЕНЫ\nЗабанил "..(v.WhoBanned)..", его SteamID: "..(v.WhoBannedID).."\nПричина: "..(v.Reason).."\nДата бана: "..BanDate.."\nДата разбана: "..UnBanDate..BanTime
 				end
