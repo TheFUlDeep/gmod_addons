@@ -237,8 +237,20 @@ local function OverWriteUlxCommands()
 			ply = player.GetBySteamID(steamid)
 			Nick = ply:Nick()
 			ply:Kick("ВЫ ЗАБАНЕНЫ\nЗабанил "..WhoBanned.." его SteamID: "..WhoBannedSteamID.."\nПричина: "..reason.."\nДлительность: "..minutes.." мин.")
+		else
+			http.Fetch(
+				WebServerUrl.."?SteamID="..steamid,
+				function(body)
+					if not body then SetBan(steamid,Nick,WhoBannedSteamID,WhoBanned,reason,minutes) return end
+					body = util.JSONToTable(body)
+					if body and body.Nick and body.Nick ~= "" and body.Nick ~= "Unknown" then
+						SetBan(steamid,body.Nick,WhoBannedSteamID,WhoBanned,reason,minutes)
+					else 
+						SetBan(steamid,Nick,WhoBannedSteamID,WhoBanned,reason,minutes)
+					end
+				end
+			)
 		end
-		SetBan(steamid,Nick,WhoBannedSteamID,WhoBanned,reason,minutes)
 	end
 	local banid = ulx.command( CATEGORY_NAME, "ulx banid", ulx.banid, nil, false, false, true )
 	banid:addParam{ type=ULib.cmds.StringArg, hint="steamid" }
