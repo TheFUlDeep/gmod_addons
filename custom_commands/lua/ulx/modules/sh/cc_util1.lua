@@ -716,6 +716,7 @@ if SERVER then
 	end)
 
 	--[[ ======================================= УВЕДОМЛЕНИЕ О ЗАПРЕТЕ ПЕРЕВОДА СТРЕЛОК ПРИ ДЦХ (и чатсаунды) ======================================= ]]
+	local SignalNamesTbl = {}
 	hook.Add("PlayerSay", "SopenScloseControl", function(ply, text, team)
 		local Rank = ply:GetUserGroup()
 		if  Metrostroi.ActiveDispatcher ~= nil
@@ -739,8 +740,9 @@ if SERVER then
 		if text:find("!sclose") and Rank ~= "superadmin" then
 			local strsub = string.sub(text,9)
 			if tonumber(strsub) then return "" end
-			for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
-				if v.Name and stringfind(strsub,v.Name,true) then return "" end
+			if tonumber(string.sub(strsub,1,-2)) then return "" end
+			for k,v in pairs(SignalNamesTbl) do
+				if v ~= "" and stringfind(strsub,v,true) and not stringfind(strsub,"-") then return "" end
 			end
 		end
 	if string.match(bigrustosmall(text), "goto") ~= "goto" and string.match(bigrustosmall(text), "station") ~= "station" and string.match(bigrustosmall(text), "sopen") ~= "sopen" and ply:GetUserGroup() ~= "user" then
@@ -1177,6 +1179,7 @@ if SERVER then
 		hook.Remove("PlayerInitialSpawn","GenerateTblsForStations")
 		local NoSignals = true
 		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
+			table.insert(SignalNamesTbl,1,v.Name or "")
 			if IsValid(v) and NoSignals then NoSignals = false end
 		end
 		if not NoSignals then 
