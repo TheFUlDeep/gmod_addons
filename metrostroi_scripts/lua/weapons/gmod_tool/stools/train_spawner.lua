@@ -16,6 +16,129 @@ if CLIENT then
     language.Add("SBoxLimit_spawner_restrict","This train is restricted for you")
 end
 
+local function CustomSkin(self,OnSpawn)
+	if not IGS or CLIENT then return end
+	local ply = self:GetOwner()
+	
+	local TexturesTbl = {}
+
+	if self.Train.Spawner then 
+		for k,v in pairs(self.Train.Spawner) do
+			if type(v) == "table" then
+				for k1,v1 in pairs(v) do
+					if type(v1) == "string" then
+						if v1:lower():find("texture") then table.insert(TexturesTbl,1,v) break end
+					end
+				end
+			end
+		end
+	end
+	
+	for k,v in pairs(TexturesTbl) do
+		if v[1] and v[4] and type(v[4]) == "function" then
+			TexturesTbl[v[1]] = v[4]()
+		end
+	end
+	
+	local function GetNameAndDescriptionByUID(IdOfItem)
+		for k,v in pairs(IGS.ITEMS) do
+			if type(v) ~= "table" then continue end
+			for k1,v1 in pairs(v) do
+				if type(v1) ~= "table" then continue end
+				for k2,v2 in pairs(v1) do
+					local type1 = type(v2)
+					if type1 ~= "string" and type1 ~= "number" then continue end
+					if v2 == IdOfItem then
+						if IGS.ITEMS[k][k1]["name"] and IGS.ITEMS[k][k1]["description"] then
+							return IGS.ITEMS[k][k1]["name"], IGS.ITEMS[k][k1]["description"]
+						else
+							continue
+						end
+					end
+				end
+			end
+		end
+	end
+
+	local function GetAndConvertItems(ply)
+		local NewInventory = {}
+		local Inventory = IGS.PlayerPurchases(ply) or {}
+		for k,v in pairs(Inventory) do
+			local name,description = GetNameAndDescriptionByUID(k)
+			if not name or not description then continue end
+			NewInventory[k] = {}
+			NewInventory[k]["name"] = name
+			NewInventory[k]["description"] = description
+		end
+		return NewInventory
+	end
+	
+	local function IsThisSkinInInventory(TrainClass,TextureClass,TextureName)
+		local result = false
+		local Inventory = GetAndConvertItems(ply) or {}
+		for k,v in pairs(Inventory) do
+			if not v["description"] or not stringfind(v["description"],"\n[[") then continue end
+			v = string.sub(v["description"],stringfind(v["description"],"\n[[") + 3, - 3)
+			--print(v)
+			local start1 = string.find(v," ")
+			if not start1 then continue end
+			local TrainClass1 = string.sub(v,1,start1 - 1)
+			if TrainClass ~= TrainClass1 then continue end
+			local start2 = string.find(v," ",start1 + 1)
+			if not start2 then continue end
+			local TextureClass1 = string.sub(v,start1 + 1, start2 - 1)
+			if TextureClass1 ~= TextureClass then continue end
+			local TextureName1 = string.sub(v,start2 + 1)
+			if TextureName1 ~= TextureName then continue else result = true end
+		end
+		--print(result)
+		return result
+	end
+	
+	local function NoSkinsForThisTrain(self,TextureClass)
+		if TexturesTbl[TextureClass] and self.Settings[TextureClass] and TexturesTbl[TextureClass][self.Settings[TextureClass]] and IsThisSkinInInventory(self.Train.ClassName,TextureClass,TexturesTbl[TextureClass][self.Settings[TextureClass]]) then
+			return false
+		else 
+			return true
+		end
+	end
+	
+	local function ReturnRandomKeyFromTable(tbl,TextureClass)
+		local TBL = tbl
+		for k,v in pairs(TBL) do
+			if IsThisSkinInInventory(self.Train.ClassName,TextureClass,v) then TBL[k] = nil --[[print("nilled",v)]] end		-- выбираю рандомный скин, предварительно очистив купленные
+		end
+		local TblCount = table.Count(TBL)
+		math.randomseed(os.clock())
+		local key = math.random(1,TblCount)
+		local i = 0
+		for k,v in pairs(TBL) do
+			i = i + 1
+			if i == key then return k end
+		end
+	end
+	
+	local randomSkin = false
+	for k,v in pairs(TexturesTbl) do
+		for k1,v1 in pairs(self.Settings) do
+			if k1 == k then
+				if NoSkinsForThisTrain(self,k) then --если этот скин не куплен, то рандомить скин
+					self.Settings[k1] = ReturnRandomKeyFromTable(v,k)
+					randomSkin = true 
+				end 
+				-- v -- таблица всех текстур
+				-- v1 -- выбранный айди скина
+			end
+		end
+	end
+	if randomSkin and OnSpawn then 
+		ULib.tsayError(ply,"Скины на некупленные части состава установятся случайно.") 
+		ULib.tsayError(ply,"Купить скин можно в /donate") 
+	end
+	
+	
+end
+
 local function Trace(ply,tr)
     local verticaloffset = 5 -- Offset for the train model
     local distancecap = 2000 -- When to ignore hitpos and spawn at set distanace
@@ -193,6 +316,7 @@ function TOOL:SpawnWagon(trace)
     local LastRot,LastEnt = false
     local trains = {}
     for i=1,self.Settings.WagNum do
+		CustomSkin(self,i == 1)
         local spawnfunc = self.Train.Spawner.spawnfunc
         local ent
         if i == 1 then
@@ -303,7 +427,6 @@ function TOOL:SpawnWagon(trace)
             ent.FrontCouple:SetMoveType(MOVETYPE_NONE)
             ent.RearCouple:SetMoveType(MOVETYPE_NONE)
         end]]
-
         for _, set in ipairs(self.Train.Spawner) do
             local val = self.Settings[set[1]]
             if set[3] == "List" then
@@ -382,6 +505,7 @@ function TOOL:Reload(trace)
     spawner:SpawnFunction(self:GetOwner())
 end
 function TOOL:LeftClick(trace)
+	CustomSkin(self)
     local class = IsValid(trace.Entity) and trace.Entity:GetClass()
     if class and (trace.Entity.Spawner or class ~= "func_door" and class ~= "prop_door_rotating")  then
         if SERVER then
@@ -389,6 +513,7 @@ function TOOL:LeftClick(trace)
                 local LastEnt
                 local trains = {}
                 for k,ent in ipairs(trace.Entity.WagonList) do
+					CustomSkin(self)
                     --[[
                     local rot = ent.RearTrain and ent.RearTrain.FrontTrain == ent or ent.FrontTrain and ent.FrontTrain.RearTrain == ent
                     if not LastRot then
@@ -421,7 +546,6 @@ function TOOL:LeftClick(trace)
     end
     if not self.AllowSpawn or not self.Train then return end
     if SERVER then
-
 		local ply = self:GetOwner()
 		if ply:GetUserGroup() == "user" and (self.Train.ClassName == "gmod_subway_81-703" or self.Train.ClassName == "gmod_subway_em508" or self.Train.ClassName == "gmod_subway_81-702") then
 			if TwoToSixInSignals then ULib.tsayError( ply, "Тебе нельзя спавнить этот состав", true ) return end
@@ -464,6 +588,7 @@ function TOOL:RightClick(trace)
                     local rot = ent.RearTrain == LastEnt
                     LastEnt = ent
                     if ent ~= trace.Entity then continue end
+					CustomSkin(self)
                     for i, set in ipairs(self.Train.Spawner) do
                         local val = self.Settings[set[1]]
                         if set[3] == "List" then
@@ -476,7 +601,7 @@ function TOOL:RightClick(trace)
                     end
                     if self.Train.Spawner.func then self.Train.Spawner.func(ent,k,self.Settings.WagNum,rot) end
                     ent:GenerateWagonNumber(self.Train.Spawner.wagfunc)
-                    if ent.TrainSpawnerUpdate then ent:TrainSpawnerUpdate() end
+                    if ent.c then ent:TrainSpawnerUpdate() end
                     hook.Run("MetrostroiSpawnerUpdate",ent,self.Settings)
                     ent:UpdateTextures()
                     table.insert(trains,ent)
