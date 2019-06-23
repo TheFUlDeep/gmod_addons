@@ -601,7 +601,7 @@ function TOOL:RightClick(trace)
                     end
                     if self.Train.Spawner.func then self.Train.Spawner.func(ent,k,self.Settings.WagNum,rot) end
                     ent:GenerateWagonNumber(self.Train.Spawner.wagfunc)
-                    if ent.c then ent:TrainSpawnerUpdate() end
+                    if ent.TrainSpawnerUpdate then ent:TrainSpawnerUpdate() end
                     hook.Run("MetrostroiSpawnerUpdate",ent,self.Settings)
                     ent:UpdateTextures()
                     table.insert(trains,ent)
