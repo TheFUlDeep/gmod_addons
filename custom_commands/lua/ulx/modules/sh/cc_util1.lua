@@ -718,6 +718,7 @@ if SERVER then
 	--[[ ======================================= УВЕДОМЛЕНИЕ О ЗАПРЕТЕ ПЕРЕВОДА СТРЕЛОК ПРИ ДЦХ (и чатсаунды) ======================================= ]]
 	local SignalNamesTbl = {}
 	hook.Add("PlayerSay", "SopenScloseControl", function(ply, text, team)
+		if string.sub(text,1,5) == "!ср" then ply:ConCommand("ulx ch") end
 		local Rank = ply:GetUserGroup()
 		if  Metrostroi.ActiveDispatcher ~= nil
 			--and avtooborot == 0
