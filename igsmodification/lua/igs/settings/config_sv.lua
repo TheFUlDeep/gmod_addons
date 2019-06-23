@@ -6,7 +6,7 @@ IGS.C.ProjectID  = 3028
 
 -- Секретный ключ проекта. Никому не сообщайте.
 -- Он используется для создания подписи запросов к серверам GM-DONATE
-IGS.C.ProjectKey = "3a3d86289e354cc796c63649340c89e6"
+IGS.C.ProjectKey = file.Read("IGS_ProjectKey.txt", "DATA")
 
 
 
