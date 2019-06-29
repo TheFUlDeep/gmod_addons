@@ -139,6 +139,9 @@ local function CustomSkin(self,OnSpawn)
 	
 end
 
+local function CustomSkin(arg1,arg2)
+end
+
 local function Trace(ply,tr)
     local verticaloffset = 5 -- Offset for the train model
     local distancecap = 2000 -- When to ignore hitpos and spawn at set distanace
