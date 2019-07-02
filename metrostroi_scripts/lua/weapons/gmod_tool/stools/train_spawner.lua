@@ -103,12 +103,15 @@ local function CustomSkin(self,OnSpawn)
 		end
 	end
 	
+	local NotOnlyOneSkin
+	
 	local function ReturnRandomKeyFromTable(tbl,TextureClass)
 		local TBL = tbl
 		for k,v in pairs(TBL) do
 			if IsThisSkinInInventory(self.Train.ClassName,TextureClass,v) then TBL[k] = nil --[[print("nilled",v)]] end		-- выбираю рандомный скин, предварительно очистив купленные
 		end
 		local TblCount = table.Count(TBL)
+		if TblCount > 1 then NotOnlyOneSkin = true print("NotOnlyOneSkin") end
 		math.randomseed(os.clock())
 		local key = math.random(1,TblCount)
 		local i = 0
@@ -131,7 +134,7 @@ local function CustomSkin(self,OnSpawn)
 			end
 		end
 	end
-	if randomSkin and OnSpawn then 
+	if randomSkin and OnSpawn and NotOnlyOneSkin then 
 		ULib.tsayError(ply,"Скины на некупленные части состава установятся случайно.") 
 		ULib.tsayError(ply,"Купить скин можно в /donate") 
 	end

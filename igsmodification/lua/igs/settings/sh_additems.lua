@@ -94,13 +94,13 @@
 	
 	
  IGS("81-702 (Д) Train Blue", "7")
- 	:SetPrice(15)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кузова Blue на составе 81-702\n[[gmod_subway_81-702 Texture Blue]]")
  	:SetCategory("Скины на 81-702 (Д)")
 	
  IGS("81-702 (Д) Train Green", "8")
- 	:SetPrice(15)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кузова Green на составе 81-702\n[[gmod_subway_81-702 Texture Green]]")
  	:SetCategory("Скины на 81-702 (Д)")
@@ -120,31 +120,31 @@
 	
 	
  IGS("81-703 (Е) Train Line 1 (Blue)", "11")
- 	:SetPrice(15)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кузова Line 1 (Blue) на составе 81-703\n[[gmod_subway_81-703 Texture Line 1 (Blue)]]")
  	:SetCategory("Скины на 81-703 (Е)")
 	
  IGS("81-703 (Е) Train Line 2 (Green)", "12")
- 	:SetPrice(15)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кузова Line 2 (Green) на составе 81-703\n[[gmod_subway_81-703 Texture Line 2 (Green)]]")
  	:SetCategory("Скины на 81-703 (Е)")
 	
  IGS("81-703 (Е) Train Line 3 (Green)", "13")
- 	:SetPrice(15)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кузова Line 3 (Green) на составе 81-703\n[[gmod_subway_81-703 Texture Line 3 (Green)]]")
  	:SetCategory("Скины на 81-703 (Е)")
 	
  IGS("81-703 (Е) Train Line 4 (Blue)", "14")
- 	:SetPrice(15)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кузова Line 4 (Blue) на составе 81-703\n[[gmod_subway_81-703 Texture Line 4 (Blue)]]")
  	:SetCategory("Скины на 81-703 (Е)")
 	
  IGS("81-703 (Е) Train SPB", "15")
- 	:SetPrice(15)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кузова SPB на составе 81-703\n[[gmod_subway_81-703 Texture SPB]]")
  	:SetCategory("Скины на 81-703 (Е)")
@@ -176,25 +176,25 @@
  	:SetCategory("Скины на 81-707 (Еж)")
 	
  IGS("81-707 (Еж) Train Line1 (Blue)", "20")
- 	:SetPrice(15)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кузова Line1 (Blue) на составе 81-707\n[[gmod_subway_ezh Texture Line1 (Blue)]]")
  	:SetCategory("Скины на 81-707 (Еж)")
 	
  IGS("81-707 (Еж) Train Line2 (Green)", "21")
- 	:SetPrice(15)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кузова Line2 (Green) на составе 81-707\n[[gmod_subway_ezh Texture Line2 (Green)]]")
  	:SetCategory("Скины на 81-707 (Еж)")
 	
  IGS("81-707 (Еж) Train Line3 (Blue)", "22")
- 	:SetPrice(15)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кузова Line3 (Blue) на составе 81-707\n[[gmod_subway_ezh Texture Line3 (Blue)]]")
  	:SetCategory("Скины на 81-707 (Еж)")
 	
  IGS("81-707 (Еж) Train Line4 (Blue)", "23")
- 	:SetPrice(15)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кузова Line4 (Blue) на составе 81-707\n[[gmod_subway_ezh Texture Line4 (Blue)]]")
  	:SetCategory("Скины на 81-707 (Еж)")
@@ -214,37 +214,37 @@
 	
 	
  IGS("81-707 (Еж) Pass Blue interior 1970", "26")
- 	:SetPrice(10)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин салона Blue interior 1970 на составе 81-707\n[[gmod_subway_ezh PassTexture Blue interior 1970]]")
  	:SetCategory("Скины на 81-707 (Еж)")
 	
  IGS("81-707 (Еж) Pass Dark Wood 1990", "27")
- 	:SetPrice(10)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин салона Dark Wood 1990 на составе 81-707\n[[gmod_subway_ezh PassTexture Dark Wood 1990]]")
  	:SetCategory("Скины на 81-707 (Еж)")
 	
  IGS("81-707 (Еж) Pass Green interior 1971", "28")
- 	:SetPrice(10)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин салона Green interior 1971 на составе 81-707\n[[gmod_subway_ezh PassTexture Green interior 1971]]")
  	:SetCategory("Скины на 81-707 (Еж)")
 	
  IGS("81-707 (Еж) Pass White plastic 1972", "29")
- 	:SetPrice(10)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин салона White plastic 1972 на составе 81-707\n[[gmod_subway_ezh PassTexture White plastic 1972]]")
  	:SetCategory("Скины на 81-707 (Еж)")
 	
  IGS("81-707 (Еж) Pass Wood interior 1980", "30")
- 	:SetPrice(10)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин салона Wood interior 1980 на составе 81-707\n[[gmod_subway_ezh PassTexture Wood interior 1980]]")
  	:SetCategory("Скины на 81-707 (Еж)")
 	
  IGS("81-707 (Еж) Pass Wood interior classic", "31")
- 	:SetPrice(10)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин салона Wood interior classic на составе 81-707\n[[gmod_subway_ezh PassTexture Wood interior classic]]")
  	:SetCategory("Скины на 81-707 (Еж)")
@@ -252,43 +252,43 @@
 	
 	
  IGS("81-710 (Еж3) Train Budapest Ev (Dark Blue)", "32") --TODO проверить, есть ли пробел
- 	:SetPrice(15)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кузова Budapest Ev (Dark Blue) на составе 81-710\n[[gmod_subway_ezh3 Texture Budapest Ev (Dark Blue)]]")
  	:SetCategory("Скины на 81-710 (Еж3")
 	
  IGS("81-710 (Еж3) Train Budapest Ev3 (Blue)", "33")
- 	:SetPrice(15)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кузова Budapest Ev3 (Blue) на составе 81-710\n[[gmod_subway_ezh3 Texture Budapest Ev3 (Blue)]]")
  	:SetCategory("Скины на 81-710 (Еж3")
 	
  IGS("81-710 (Еж3) Train Echs (81-709)", "34")
- 	:SetPrice(15)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кузова Echs (81-709) на составе 81-710\n[[gmod_subway_ezh3 Texture Echs (81-709)]]")
  	:SetCategory("Скины на 81-710 (Еж3")
 	
  IGS("81-710 (Еж3) Train Line 7 (Blue)", "35")
- 	:SetPrice(15)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кузова Line 7 (Blue) на составе 81-710\n[[gmod_subway_ezh3 Texture Line 7 (Blue)]]")
  	:SetCategory("Скины на 81-710 (Еж3")
 	
  IGS("81-710 (Еж3) Train Line 7 (Dark)", "36")
- 	:SetPrice(15)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кузова Line 7 (Dark) на составе 81-710\n[[gmod_subway_ezh3 Texture Line 7 (Dark)]]")
  	:SetCategory("Скины на 81-710 (Еж3")
 	
  IGS("81-710 (Еж3) Train Line 7 (Green)", "37")
- 	:SetPrice(15)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кузова Line 7 (Green) на составе 81-710\n[[gmod_subway_ezh3 Texture Line 7 (Green)]]")
  	:SetCategory("Скины на 81-710 (Еж3")
 	
  IGS("81-710 (Еж3) Train Line 1 (Green)", "38")
- 	:SetPrice(15)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кузова Line 1 (Green) на составе 81-710\n[[gmod_subway_ezh3 Texture Line 1 (Green)]]")
  	:SetCategory("Скины на 81-710 (Еж3")
@@ -302,25 +302,25 @@
 	
 	
  IGS("81-710 (Еж3) Pass Dark-Wood interior", "40")
- 	:SetPrice(10)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин салона Dark-Wood interior на составе 81-710\n[[gmod_subway_ezh3 PassTexture Dark-Wood interior]]")
  	:SetCategory("Скины на 81-710 (Еж3")
 	
  IGS("81-710 (Еж3) Pass White plastic", "41")
- 	:SetPrice(10)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин салона White plastic на составе 81-710\n[[gmod_subway_ezh3 PassTexture White plastic]]")
  	:SetCategory("Скины на 81-710 (Еж3")
 	
  IGS("81-710 (Еж3) Pass Wood 1980", "42")
- 	:SetPrice(10)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин салона Wood 1980 на составе 81-710\n[[gmod_subway_ezh3 PassTexture Wood 1980]]")
  	:SetCategory("Скины на 81-710 (Еж3")
 	
  IGS("81-710 (Еж3) Pass Wood KVR", "43")
- 	:SetPrice(10)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин салона Wood KVR на составе 81-710\n[[gmod_subway_ezh3 PassTexture Wood KVR]]")
  	:SetCategory("Скины на 81-710 (Еж3")
@@ -328,13 +328,13 @@
 	
 	
  IGS("81-710 (Еж3) Cab Classic", "44")
- 	:SetPrice(5)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кабины Classic на составе 81-710\n[[gmod_subway_ezh3 CabTexture Classic]]")
  	:SetCategory("Скины на 81-710 (Еж3")
 	
  IGS("81-710 (Еж3) Cab Wood", "45")
- 	:SetPrice(5)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кабины Wood на составе 81-710\n[[gmod_subway_ezh3 CabTexture Wood]]")
  	:SetCategory("Скины на 81-710 (Еж3")
@@ -384,13 +384,13 @@
  	:SetCategory("Скины на 81-717 МСК (номерной)")
 	
  IGS("81-717 МСК (номерной) Train Line 1", "53")
- 	:SetPrice(15)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кузова Line 1 на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Line 1]]")
  	:SetCategory("Скины на 81-717 МСК (номерной)")
 	
  IGS("81-717 МСК (номерной) Train Line 5", "54")
- 	:SetPrice(15)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кузова Line 5 на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Line 5]]")
  	:SetCategory("Скины на 81-717 МСК (номерной)")
@@ -494,13 +494,13 @@
 	
 	
  IGS("81-717 МСК (номерной) Pass Blue interior", "71")
- 	:SetPrice(10)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин салона Blue interior на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom PassTexture Blue interior]]")
  	:SetCategory("Скины на 81-717 МСК (номерной)")
 	
  IGS("81-717 МСК (номерной) Pass Light-Wood interior", "72")
- 	:SetPrice(10)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин салона Light-Wood interior на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom PassTexture Light-Wood interior]]")
  	:SetCategory("Скины на 81-717 МСК (номерной)")
@@ -518,25 +518,25 @@
  	:SetCategory("Скины на 81-717 МСК (номерной)")
 	
  IGS("81-717 МСК (номерной) Pass White interior", "75")
- 	:SetPrice(10)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин салона White interior на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom PassTexture White interior]]")
  	:SetCategory("Скины на 81-717 МСК (номерной)")
 	
  IGS("81-717 МСК (номерной) Pass Wood interior 1", "76")
- 	:SetPrice(10)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин салона Wood interior 1 на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom PassTexture Wood interior 1]]")
  	:SetCategory("Скины на 81-717 МСК (номерной)")
 	
  IGS("81-717 МСК (номерной) Pass Wood interior 2", "77")
- 	:SetPrice(10)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин салона Wood interior 2 на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom PassTexture Wood interior 2]]")
  	:SetCategory("Скины на 81-717 МСК (номерной)")
 	
  IGS("81-717 МСК (номерной) Pass Wood interior 3", "78")
- 	:SetPrice(10)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин салона Wood interior 3 на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom PassTexture Wood interior 3]]")
  	:SetCategory("Скины на 81-717 МСК (номерной)")
@@ -574,25 +574,25 @@
  	:SetCategory("Скины на 81-717 МСК (номерной)")
 	
  IGS("81-717 МСК (номерной) Cab Variant 1", "84")
- 	:SetPrice(5)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кабины Variant 1 на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom CabTexture Variant 1]]")
  	:SetCategory("Скины на 81-717 МСК (номерной)")
 	
  IGS("81-717 МСК (номерной) Cab Variant 2", "85")
- 	:SetPrice(5)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кабины Variant 2 на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom CabTexture Variant 2]]")
  	:SetCategory("Скины на 81-717 МСК (номерной)")
 	
  IGS("81-717 МСК (номерной) Cab Variant 3", "86")
- 	:SetPrice(5)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кабины Variant 3 на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom CabTexture Variant 3]]")
  	:SetCategory("Скины на 81-717 МСК (номерной)")
 	
  IGS("81-717 МСК (номерной) Cab Variant 4", "87")
- 	:SetPrice(5)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кабины Variant 4 на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom CabTexture Variant 4]]")
  	:SetCategory("Скины на 81-717 МСК (номерной)")
@@ -660,7 +660,7 @@
  	:SetCategory("Скины на 81-718 (ТИСУ)")
 	
  IGS("81-718 (ТИСУ) Pass Wood", "97")
- 	:SetPrice(5)
+ 	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин салона Wood на составе 81-718\n[[gmod_subway_81-718 PassTexture Wood]]")
  	:SetCategory("Скины на 81-718 (ТИСУ)")
@@ -767,7 +767,68 @@
  	:SetDescription("Разрешает использовать скин кабины NeVa Skin (81-556) Cabin на составе 81-722\n[[gmod_subway_81-722 CabTexture NeVa Skin (81-556) Cabin]]")
  	:SetCategory("Скины на 81-722 (Юбилейный)")
 	
-
+--81-720 (Яуза)
+ IGS("81-720 (Яуза) Train Default", "120")
+ 	:SetPrice(0)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова Default на составе 81-720\n[[gmod_subway_81-720 Texture Default]]")
+ 	:SetCategory("Скины на 81-720 (Яуза)")
+	
+ IGS("81-720 (Яуза) Train Default", "121")
+ 	:SetPrice(0)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин салона Default на составе 81-720\n[[gmod_subway_81-720 PassTexture Default]]")
+ 	:SetCategory("Скины на 81-720 (Яуза)")
+	
+ IGS("81-720 (Яуза) Train 81-740 Skin", "122")
+ 	:SetPrice(5)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова 81-740 Skin на составе 81-720\n[[gmod_subway_81-720 Texture 81-740 Skin]]")
+ 	:SetCategory("Скины на 81-720 (Яуза)")
+	
+ IGS("81-720 (Яуза) Train 81-740 Interior", "123")
+ 	:SetPrice(5)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин салона Train 81-740 Interior на составе 81-720\n[[gmod_subway_81-720 PassTexture 81-740 Interior]]")
+ 	:SetCategory("Скины на 81-720 (Яуза)")
+	
+ IGS("81-720 (Яуза) Train Northbound Downtown Railways - Black", "124")
+ 	:SetPrice(10)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова Northbound Downtown Railways - Black на составе 81-720\n[[gmod_subway_81-720 Texture Northbound Downtown Railways - Black]]")
+ 	:SetCategory("Скины на 81-720 (Яуза)")
+	
+ IGS("81-720 (Яуза) Train Northbound Downtown Railways", "125")
+ 	:SetPrice(10)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин салона Northbound Downtown Railways - Black на составе 81-720\n[[gmod_subway_81-720 PassTexture Northbound Downtown Railways]]")
+ 	:SetCategory("Скины на 81-720 (Яуза)")
+	
+ IGS("81-720 (Яуза) Train Northbound Downtown Railways - Grey", "126")
+ 	:SetPrice(10)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова Northbound Downtown Railways - Grey на составе 81-720\n[[gmod_subway_81-720 Texture Northbound Downtown Railways - Grey]]")
+ 	:SetCategory("Скины на 81-720 (Яуза)")
+	
+	
+	
+ IGS("81-502 (Ема) Train Default", "127")
+ 	:SetPrice(0)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова Default на составе 81-502\n[[gmod_subway_81-502 Texture Default]]")
+ 	:SetCategory("Скины на 81-502 (Ема)")
+	
+ IGS("81-502 (Ема) Pass Default", "128")
+ 	:SetPrice(0)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин салона Default на составе 81-502\n[[gmod_subway_81-502 PassTexture Default]]")
+ 	:SetCategory("Скины на 81-502 (Ема)")
+	
+ IGS("81-502 (Ема) Cab Default", "129")
+ 	:SetPrice(0)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кабины Default на составе 81-502\n[[gmod_subway_81-502 CabTexture Default]]")
+ 	:SetCategory("Скины на 81-502 (Ема)")
 
 
 
