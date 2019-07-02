@@ -29,8 +29,8 @@ end
 local function CheckSkin(item_description)
 	local TrainClass1,TextureClass1,TextureName1 = ConvertDescriptionToUse(item_description)
 	if TrainClass1 ~= "gmod_subway_81-717_6" then
-    local TextureClass2 = TextureClass1 == "Texture" and "train" or TextureClass1 == "CabTexture" and "cab" or TextureClass1 == "PassTexture" and "pass" or ""
-	if TextureClass2 == "" then return false end
+		local TextureClass2 = TextureClass1 == "Texture" and "train" or TextureClass1 == "CabTexture" and "cab" or TextureClass1 == "PassTexture" and "pass" or ""
+		if TextureClass2 == "" then return false end
 		for k,v in pairs(Metrostroi.Skins) do
 			if type(v) ~= "table" then continue end
 			if k ~= TextureClass2 then continue end
