@@ -111,7 +111,7 @@ local function CustomSkin(self,OnSpawn)
 			if IsThisSkinInInventory(self.Train.ClassName,TextureClass,v) then TBL[k] = nil --[[print("nilled",v)]] end		-- выбираю рандомный скин, предварительно очистив купленные
 		end
 		local TblCount = table.Count(TBL)
-		if TblCount > 1 then NotOnlyOneSkin = true print("NotOnlyOneSkin") end
+		if TblCount > 1 then NotOnlyOneSkin = true end 	--вообще тут надо ставить > 0, так как по сути будет ставиться рандомный скин, но он будет только один. Так что и так соайдет
 		math.randomseed(os.clock())
 		local key = math.random(1,TblCount)
 		local i = 0

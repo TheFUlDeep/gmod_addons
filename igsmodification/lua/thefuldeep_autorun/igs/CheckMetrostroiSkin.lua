@@ -27,10 +27,10 @@ local function IsThisTyp(str,EntClass)
 end
 
 local function CheckSkin(item_description)
-	local FoundSkin = false
 	local TrainClass1,TextureClass1,TextureName1 = ConvertDescriptionToUse(item_description)
-	local TextureClass2 = TextureClass1 == "Texture" and "train" or TextureClass1 == "CabTexture" and "cab" or TextureClass1 == "PassTexture" and "pass" or ""
 	if TrainClass1 ~= "gmod_subway_81-717_6" then
+    local TextureClass2 = TextureClass1 == "Texture" and "train" or TextureClass1 == "CabTexture" and "cab" or TextureClass1 == "PassTexture" and "pass" or ""
+	if TextureClass2 == "" then return false end
 		for k,v in pairs(Metrostroi.Skins) do
 			if type(v) ~= "table" then continue end
 			if k ~= TextureClass2 then continue end
@@ -42,10 +42,14 @@ local function CheckSkin(item_description)
 			end
 		end
 	else
-	
+		local TextureClass2 = TextureClass1 == "Texture" and "Train" or TextureClass1 == "CabTexture" and "Cab" or TextureClass1 == "PassTexture" and "Int" or ""
+		if TextureClass2 == "" then return false end
+		for k,v in pairs(MetrostroiDotSixSkins[TextureClass2]) do
+			if v.Name == TextureName1 then return true end
+		end
 	end
 	
-	return FoundSkin
+	return false
 end
 
 hook.Add("IGS.CanPlayerBuyItem", "CheckMetrostroiSkin", function(pl,item,global,invid)
