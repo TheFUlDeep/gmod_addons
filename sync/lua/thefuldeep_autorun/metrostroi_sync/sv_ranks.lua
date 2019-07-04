@@ -1,5 +1,5 @@
 --if CLIENT then return end
-local WebServerUrl = "http://212.22.77.19/metrostroi/sync/ranks/"
+local WebServerUrl = "http://"..(file.Read("web_server_ip.txt") or "127.0.0.1").."/metrostroi/sync/ranks/"
 if SERVER then
 	local function SendRankToWebServer(url,SteamID,Nick,Rank)
 		if not url or not SteamID or not Rank then return end
@@ -178,7 +178,7 @@ local function OverWriteUlxCommands()
 		)
 	end
 	
-	local WebServerUrl = "http://212.22.77.19/metrostroi/sync/ranks/"
+	local WebServerUrl = "http://"..(file.Read("web_server_ip.txt") or "127.0.0.1").."/metrostroi/sync/ranks/"
 	local function SetBan(SteamID,Nick,WhoBannedSteamID,WhoBanned,reason,duration)
 		if not SteamID then ULib.tsayError(ply,"No SteamID") return end
 		duration = tostring(duration)

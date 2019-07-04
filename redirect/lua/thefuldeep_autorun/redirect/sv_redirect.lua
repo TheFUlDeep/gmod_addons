@@ -1,5 +1,5 @@
 if CLIENT then return end
-local WebServerUrl = "http://212.22.77.19/metrostroi/sync/"
+local WebServerUrl = "http://"..(file.Read("web_server_ip.txt") or "127.0.0.1").."/metrostroi/sync/"
 
 local function SendToWebServer(tbl,url,typ)
 	if GetConVar("sv_password"):GetString() and GetConVar("sv_password"):GetString() ~= "" then
