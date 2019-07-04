@@ -7,11 +7,11 @@ end)
 --айпи второго сервера
 local secondip
 if GetHostName():find("1") then 
-	secondip = "212.22.77.19:27017"
+	secondip = ""..(file.Read("web_server_ip.txt") or "127.0.0.1")..":27017"
 elseif GetHostName():find("2")
-	secondip = "212.22.77.19:27018"
+	secondip = ""..(file.Read("web_server_ip.txt") or "127.0.0.1")..":27018"
 else
-	secondip = "212.22.77.19:27016"
+	secondip = ""..(file.Read("web_server_ip.txt") or "127.0.0.1")..":27016"
 end
 
 //What's the title?
