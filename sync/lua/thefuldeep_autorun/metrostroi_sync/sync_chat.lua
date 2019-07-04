@@ -2,7 +2,7 @@ if SERVER then
 	local WebServerTyp = "chat"
 	local HostName = GetHostName()
 	local Map = game.GetMap()
-	local WebServerUrl = "http://"..(file.Read("web_server_ip.txt") or "127.0.0.1").."/metrostroi/sync/"
+	local WebServerUrl = "http://"..(file.Read("web_server_ip.txt") or "127.0.0.1").."/sync/"
 	local function SendToWebServer(tbl,url,typ)
 		local TableToSend = {MainTable = util.TableToJSON(tbl), server = GetHostName(), map = Map,typ = typ}
 		http.Post(url, TableToSend)
