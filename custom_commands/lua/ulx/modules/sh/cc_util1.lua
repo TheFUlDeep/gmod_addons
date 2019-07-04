@@ -2075,6 +2075,15 @@ if SERVER then
 	end)
 end
 
+
+
+--[[============================= ClearDecals ==========================]]
+if CLIENT then
+	timer.Create("ClearDecals", 180, 0, function()
+		RunConsoleCommand("r_cleardecals", "")
+	end)
+end
+
 --используй table.insert только если ключи не числа
 --ply.InMetrostroiTrain
 --[[============================= УДАЛЕНИЕ НЕНУЖНЫХ ВКЛАДОК ИЗ SPAWNMENU ==========================]]
