@@ -24,6 +24,12 @@ ENT.no_entry_arr = Sound("thefuldeeps_sounds/no_entry_arr.mp3")
 				Station = Line and (not Path and Line[self:GetNW2Int("SarmatEndStation",0)] or Path and Line[self:GetNW2Int("SarmatStartStation",0)]) or nil
 				Station = Station and Station[1] or nil
 			end
+			if not Station and Metrostroi.RRISetup then
+				local Selected = Metrostroi.RRISetup[self:GetNW2Int("Announcer",0)] or nil
+				local Line = Selected and Selected[self:GetNW2Int("RRI:Line",0)] or Metrostroi.RRISetup[self:GetNW2Int("RRI:Line",0)] or nil
+				Station = Line and Line[self:GetNW2Int("RRI:LastStation",0)] or nil
+				Station = Station and Station[1] or nil
+			end
 			if not Station and Metrostroi.UPOSetup then
 				local Path = self:ReadCell(49170)
 				local Line = 1
