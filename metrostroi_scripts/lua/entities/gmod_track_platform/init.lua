@@ -28,7 +28,7 @@ ENT.no_entry_arr = Sound("thefuldeeps_sounds/no_entry_arr.mp3")
 				local Path = self:ReadCell(49170)
 				local Line = 1
 				local tbl = Metrostroi.PAMConfTest and Metrostroi.PAMConfTest[Line] and Metrostroi.PAMConfTest[Line][Path]
-				Station = tbl[1].stations[#tbl[1].stations].id
+				Station = tbl and tbl[1].stations[#tbl[1].stations].id
 			end
 			--print(Station)
 			return Station
