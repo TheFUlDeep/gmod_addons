@@ -24,6 +24,13 @@ ENT.no_entry_arr = Sound("thefuldeeps_sounds/no_entry_arr.mp3")
 				Station = Line and (not Path and Line[self:GetNW2Int("SarmatEndStation",0)] or Path and Line[self:GetNW2Int("SarmatStartStation",0)]) or nil
 				Station = Station and Station[1] or nil
 			end
+			if not Station and Metrostroi.UPOSetup then
+				local Path = self:ReadCell(49170)
+				local Line = 1
+				local tbl = Metrostroi.PAMConfTest and Metrostroi.PAMConfTest[Line] and Metrostroi.PAMConfTest[Line][Path]
+				Station = tbl[1].stations[#tbl[1].stations].id
+			end
+			--print(Station)
 			return Station
 		end
 	end
