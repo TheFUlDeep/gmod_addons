@@ -55,8 +55,8 @@ function ENT:PlayAnnounce(arriving,Ann)
 		local LastStation = GetLastStation(self.CurrentTrain)
 		if LastStation and bigrustosmall(LastStation) == bigrustosmall(GetStationByIndex(self.StationIndex)) then 
 			local PlatformLen = self.PlatformStart:Distance(self.PlatformEnd)
-			sound.Play(self.no_entry_arr,self:GetPos(),90,100,1)
-			sound.Play(self.no_entry_arr,self:GetPos(),90,100,1)
+			sound.Play(self.no_entry_arr,self:LocalToWorld(Vector(0,-PlatformLen/4,200)),90,100,1)
+			sound.Play(self.no_entry_arr,self:LocalToWorld(Vector(0,PlatformLen/4,200)),90,100,1)
 		end
 		--------------ADDITIONAL by TheFulDeep END-----------------
     elseif arriving == 2 then
