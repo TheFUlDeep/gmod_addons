@@ -142,7 +142,7 @@ if SERVER then
 			AvtooborotTBL[fun][StationName]["RouteFromFar"] = "BR1-1"
 		end
 		
-		if Map:find("surface") then
+		--[[if Map:find("surface") then
 			--[[StationName = "Площадь Восстания"
 			fun = "6"
 			
@@ -290,7 +290,7 @@ if SERVER then
 			AvtooborotTBL[fun][StationName]["TFarDead1"] = {}
 			AvtooborotTBL[fun][StationName]["TFarDead2"] = {}
 			AvtooborotTBL[fun][StationName]["TFarDead3"] = {}
-		end
+		end]]
 		
 		
 		--im not sure about routes on ruralline. Need to check it
