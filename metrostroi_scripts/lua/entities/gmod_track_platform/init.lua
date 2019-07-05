@@ -30,7 +30,7 @@ ENT.no_entry_arr = Sound("thefuldeeps_sounds/no_entry_arr.mp3")
 				local tbl = Metrostroi.PAMConfTest and Metrostroi.PAMConfTest[Line] and Metrostroi.PAMConfTest[Line][Path]
 				Station = tbl and tbl[1].stations[#tbl[1].stations].id
 			end
-			--print(Station)
+			print(Station)
 			return Station
 		end
 	end
@@ -49,7 +49,7 @@ ENT.TriTone = Sound( "subway_stations/tritone.mp3" )
 function ENT:PlayAnnounce(arriving,Ann)
     if not arriving then
         if self.MustPlayAnnounces then
-            local tbl = Metrostroi.StationSound
+            local tbl = Metrostroi.StationSoundy
             if not tbl and not Ann then return end
             local snd = Ann or table.Random(tbl)
             if not snd.sound then snd.sound = Sound(snd[1]) end
@@ -67,12 +67,18 @@ function ENT:PlayAnnounce(arriving,Ann)
         sound.Play(self.TriTone,self:LocalToWorld(Vector(0,-1200,200)),120,self.TritonePitch,1)
         sound.Play(self.TriTone,self:LocalToWorld(Vector(0,1200,200)),120,self.TritonePitch,1)
 		------------ADDITIONAL by TheFulDeep START-----------
-		--print(CurrentTrain.ASNPState)
 		local LastStation = GetLastStation(self.CurrentTrain)
 		if LastStation and LastStation == self.StationIndex then 
 			local PlatformLen = self.PlatformStart:Distance(self.PlatformEnd)
-			sound.Play(self.no_entry_arr,self:LocalToWorld(Vector(0,-PlatformLen/4,200)),90,100,1)
-			sound.Play(self.no_entry_arr,self:LocalToWorld(Vector(0,PlatformLen/4,200)),90,100,1)
+			
+			--делю платформу на участки по 1000
+			local sections = PlatformLen / 1000
+			--на каждом отрезке проигрываю звук
+			for i = 1, sections do
+				local percent = i/sections
+				local vec = LerpVector(percent, self.PlatformStart, self.PlatformEnd)
+				sound.Play(self.no_entry_arr,vec,90,100,1)
+			end
 		end
 		--------------ADDITIONAL by TheFulDeep END-----------------
     elseif arriving == 2 then

@@ -1085,7 +1085,7 @@ if SERVER then
 		local i = 0
 		for k,v in pairs(ents.FindByClass("gmod_track_platform")) do
 			if not IsValid(v) then continue end
-			local PlatformPos = v:GetPos()
+			local PlatformPos = LerpVector(0.5, v.PlatformStart, v.PlatformEnd)
 			local PlatformLen = v.PlatformStart:Distance(v.PlatformEnd)
 			--function FindTrackInSquare(vector,TrackID,customraduis,customwlimit,customstep,autoscale,donotclear)
 			local Track = FindTrackInSquare(PlatformPos,nil,PlatformLen / 3,100,nil,nil,true)
@@ -1114,7 +1114,7 @@ if SERVER then
 		local DistLimit = 500 * 500
 		for k,v in pairs(ents.FindByClass("gmod_track_platform")) do
 			if not IsValid(v) then continue end
-			PlatformPos = v:GetPos()
+			PlatformPos = LerpVector(0.5, v.PlatformStart, v.PlatformEnd)
 			if PlatformPos.z > vector.z and math.abs(PlatformPos.z - vector.z) > 100 then continue end		-- если платформа выше станции, то искать не выше 100
 			if math.abs(PlatformPos.z - vector.z) > 500 then continue end		-- просто ограничение по высоте в обе стороны
 			CurDist = vector:DistToSqr(PlatformPos)
