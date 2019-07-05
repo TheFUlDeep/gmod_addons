@@ -15,7 +15,11 @@ ENT.no_entry_arr = Sound("thefuldeeps_sounds/no_entry_arr.mp3")
 				local Path = self:GetNW2Bool("ASNP:Path",false)
 				Station = Line and (not Path and Line[self:GetNW2Int("ASNP:LastStation",0)] or Path and Line[self:GetNW2Int("ASNP:FirstStation",0)]) or nil
 				if Station then Station = Station[1] or nil end
-				--if Line and not Station then Station = "Кольцевая" end
+				if not Station then
+					local Line = Selected and Selected[self:GetNW2Int("RRI:Line",0)] or nil
+					Station = Line and Line[self:GetNW2Int("RRI:LastStation",0)] or nil
+					if Station then Station = Station[1] or nil end
+				end
 			end
 			if not Station and Metrostroi.SarmatUPOSetup then
 				local Selected = Metrostroi.SarmatUPOSetup[self:GetNW2Int("Announcer",0)] or nil
@@ -25,8 +29,7 @@ ENT.no_entry_arr = Sound("thefuldeeps_sounds/no_entry_arr.mp3")
 				Station = Station and Station[1] or nil
 			end
 			if not Station and Metrostroi.RRISetup then
-				local Selected = Metrostroi.RRISetup[self:GetNW2Int("Announcer",0)] or nil
-				local Line = Selected and Selected[self:GetNW2Int("RRI:Line",0)] or Metrostroi.RRISetup[self:GetNW2Int("RRI:Line",0)] or nil
+				local Line = Metrostroi.RRISetup[self:GetNW2Int("RRI:Line",0)] or nil
 				Station = Line and Line[self:GetNW2Int("RRI:LastStation",0)] or nil
 				Station = Station and Station[1] or nil
 			end
