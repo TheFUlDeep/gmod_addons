@@ -53,7 +53,7 @@ function ENT:PlayAnnounce(arriving,Ann)
 		------------ADDITIONAL by TheFulDeep START-----------
 		--print(CurrentTrain.ASNPState)
 		local LastStation = GetLastStation(self.CurrentTrain)
-		if LastStation and LastStation == GetStationByIndex(self.StationIndex) then 
+		if LastStation and bigrustosmall(LastStation) == bigrustosmall(GetStationByIndex(self.StationIndex)) then 
 			local PlatformLen = self.PlatformStart:Distance(self.PlatformEnd)
 			sound.Play(self.no_entry_arr,self:GetPos(),90,100,1)
 			sound.Play(self.no_entry_arr,self:GetPos(),90,100,1)
