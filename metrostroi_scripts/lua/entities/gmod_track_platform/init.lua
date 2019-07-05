@@ -5,17 +5,26 @@ include("shared.lua")
 ------------ADDITIONAL by TheFulDeep START-----------
 ENT.no_entry_arr = Sound("thefuldeeps_sounds/no_entry_arr.mp3")
 	local function GetLastStation(self)
-		if not Metrostroi.StationConfigurations or not Metrostroi.ASNPSetup then
+		if not Metrostroi.StationConfigurations then
 			return nil
 		else
-			--if self.ASNPState < 7 then return "Посадки нет" end
-			local Selected = Metrostroi.ASNPSetup[self:GetNW2Int("Announcer",0)] or nil
-			local Line = Selected and Selected[self:GetNW2Int("ASNP:Line",0)] or nil
-			local Path = self:GetNW2Bool("ASNP:Path",false)
-			local Station = Line and (not Path and Line[self:GetNW2Int("ASNP:LastStation",0)] or Path and Line[self:GetNW2Int("ASNP:FirstStation",0)]) or nil
-			if Station then Station = Station[2] or nil end
-			if Line and not Station then Station = "Кольцевая" end
-			if Station then return Station else return nil end
+			local Station
+			if not Station and Metrostroi.ASNPSetup then
+				local Selected = Metrostroi.ASNPSetup[self:GetNW2Int("Announcer",0)] or nil
+				local Line = Selected and Selected[self:GetNW2Int("ASNP:Line",0)] or nil
+				local Path = self:GetNW2Bool("ASNP:Path",false)
+				Station = Line and (not Path and Line[self:GetNW2Int("ASNP:LastStation",0)] or Path and Line[self:GetNW2Int("ASNP:FirstStation",0)]) or nil
+				if Station then Station = Station[1] or nil end
+				--if Line and not Station then Station = "Кольцевая" end
+			end
+			if not Station and Metrostroi.SarmatUPOSetup then
+				local Selected = Metrostroi.SarmatUPOSetup[self:GetNW2Int("Announcer",0)] or nil
+				local Line = Selected and Selected[self:GetNW2Int("SarmatLine",0)] or nil
+				local Path = self:GetNW2Bool("SarmatPath",false)
+				Station = Line and (not Path and Line[self:GetNW2Int("SarmatEndStation",0)] or Path and Line[self:GetNW2Int("SarmatStartStation",0)]) or nil
+				Station = Station and Station[1]
+			end
+			return Station
 		end
 	end
 	
@@ -53,7 +62,7 @@ function ENT:PlayAnnounce(arriving,Ann)
 		------------ADDITIONAL by TheFulDeep START-----------
 		--print(CurrentTrain.ASNPState)
 		local LastStation = GetLastStation(self.CurrentTrain)
-		if LastStation and bigrustosmall(LastStation) == bigrustosmall(GetStationByIndex(self.StationIndex)) then 
+		if LastStation and LastStation == self.StationIndex then 
 			local PlatformLen = self.PlatformStart:Distance(self.PlatformEnd)
 			sound.Play(self.no_entry_arr,self:LocalToWorld(Vector(0,-PlatformLen/4,200)),90,100,1)
 			sound.Play(self.no_entry_arr,self:LocalToWorld(Vector(0,PlatformLen/4,200)),90,100,1)
