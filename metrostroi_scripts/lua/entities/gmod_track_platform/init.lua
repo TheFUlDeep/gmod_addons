@@ -22,7 +22,7 @@ ENT.no_entry_arr = Sound("thefuldeeps_sounds/no_entry_arr.mp3")
 				local Line = Selected and Selected[self:GetNW2Int("SarmatLine",0)] or nil
 				local Path = self:GetNW2Bool("SarmatPath",false)
 				Station = Line and (not Path and Line[self:GetNW2Int("SarmatEndStation",0)] or Path and Line[self:GetNW2Int("SarmatStartStation",0)]) or nil
-				Station = Station and Station[1]
+				Station = Station and Station[1] or nil
 			end
 			return Station
 		end
