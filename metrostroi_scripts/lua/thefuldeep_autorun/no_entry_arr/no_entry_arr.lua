@@ -14,11 +14,13 @@ local function GetLastStation(self)
 			Station = Line and (not Path and Line[self:GetNW2Int("ASNP:LastStation",0)] or Path and Line[self:GetNW2Int("ASNP:FirstStation",0)]) or nil
 			if Station then Station = Station[1] or nil end
 			if Station and (Station == Line[#Line][1] or Station == Line[1][1]) then Station = nil end
+			if Station and not tonumber(Station) then Station = nil end
 			if not Station then
 				local Line = Selected and Selected[self:GetNW2Int("RRI:Line",0)] or nil
 				Station = Line and Line[self:GetNW2Int("RRI:LastStation",0)] or nil
 				if Station then Station = Station[1] or nil end
 				if Station and (Station == Line[#Line][1] or Station == Line[1][1]) then Station = nil end
+				if Station and not tonumber(Station) then Station = nil end
 			end
 		end
 		if not Station and Metrostroi.SarmatUPOSetup then
@@ -28,12 +30,14 @@ local function GetLastStation(self)
 			Station = Line and (not Path and Line[self:GetNW2Int("SarmatEndStation",0)] or Path and Line[self:GetNW2Int("SarmatStartStation",0)]) or nil
 			Station = Station and Station[1] or nil
 			if Station and (Station == Line[#Line][1] or Station == Line[1][1]) then Station = nil end
+			if Station and not tonumber(Station) then Station = nil end
 		end
 		if not Station and Metrostroi.RRISetup then
 			local Line = Metrostroi.RRISetup[self:GetNW2Int("RRI:Line",0)] or nil
 			Station = Line and Line[self:GetNW2Int("RRI:LastStation",0)] or nil
 			Station = Station and Station[1] or nil
 			if Station and (Station == Line[#Line][1] or Station == Line[1][1]) then Station = nil end
+			if Station and not tonumber(Station) then Station = nil end
 		end
 		--[[if not Station and Metrostroi.UPOSetup then		-- у упо нельзя выбирать кастомные конечные станции, поэтому оно бесполезно
 			local Path = self:ReadCell(49170)
