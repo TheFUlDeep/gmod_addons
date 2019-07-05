@@ -12,7 +12,7 @@ ENT.no_entry_arr = Sound("thefuldeeps_sounds/no_entry_arr.mp3")
 			local Selected = Metrostroi.ASNPSetup[self:GetNW2Int("Announcer",0)] or nil
 			local Line = Selected and Selected[self:GetNW2Int("ASNP:Line",0)] or nil
 			local Path = self:GetNW2Bool("ASNP:Path",false)
-			local Station = Line and Line[self:GetNW2Int("ASNP:LastStation",0)] or nil
+			local Station = Line and Line[self:GetNW2Int("ASNP:FirstStation",0)] or nil
 			if Station then Station = Station[2] or nil end
 			if Line and not Station then Station = "Кольцевая" end
 			if Station then return Station else return nil end
