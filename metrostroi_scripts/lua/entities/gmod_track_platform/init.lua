@@ -30,7 +30,7 @@ ENT.no_entry_arr = Sound("thefuldeeps_sounds/no_entry_arr.mp3")
 				local tbl = Metrostroi.PAMConfTest and Metrostroi.PAMConfTest[Line] and Metrostroi.PAMConfTest[Line][Path]
 				Station = tbl and tbl[1].stations[#tbl[1].stations].id
 			end
-			print(Station)
+			--print(Station)
 			return Station
 		end
 	end
@@ -49,7 +49,7 @@ ENT.TriTone = Sound( "subway_stations/tritone.mp3" )
 function ENT:PlayAnnounce(arriving,Ann)
     if not arriving then
         if self.MustPlayAnnounces then
-            local tbl = Metrostroi.StationSoundy
+            local tbl = Metrostroi.StationSound
             if not tbl and not Ann then return end
             local snd = Ann or table.Random(tbl)
             if not snd.sound then snd.sound = Sound(snd[1]) end
