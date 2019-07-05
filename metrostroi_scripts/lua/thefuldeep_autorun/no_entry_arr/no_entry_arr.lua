@@ -17,7 +17,7 @@ local function GetLastStation(self)
 				local Line = Selected and Selected[self:GetNW2Int("RRI:Line",0)] or nil
 				Station = Line and Line[self:GetNW2Int("RRI:LastStation",0)] or nil
 				if Station then Station = Station[1] or nil end
-				if Station and (not tonumber(Station) or Line.Loop and (Station == Line[#Line][1] or Station == Line[1][1])) then Station = nil end
+				if Station and (not tonumber(Station) or not Line.Loop and (Station == Line[#Line][1] or Station == Line[1][1])) then Station = nil end
 			end
 		end
 		if not Station and Metrostroi.SarmatUPOSetup then
