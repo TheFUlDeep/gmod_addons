@@ -361,16 +361,17 @@ local toolTipColor
 local lastAimButtonChange
 local lastAimButton
 
-local tracelineent,tracelinehitcount = NULL,0
-local tracelinesetup = {mask = MASK_SOLID,output = {},filter = function(ent)
-    if ent.Base=="gmod_subway_base" then
-        tracelinehitcount = tracelinehitcount+1
-    end
-
-    return ent==tracelineent or tracelinehitcount>=3
-end}
-
 local PlyInTrain
+
+local tracelineent,tracelinehitcount = NULL,0
+local tracelinesetup = {mask = MASK_ALL,output = {},filter = function(ent)
+	if ent == LocalPlayer() then return false end
+	
+	--если игрок в составе, то его первый вагон пропускается, чтобы тут же за окном не было некрасиво
+	if PlyInTrain and ent == PlyInTrain or IsValid(ent:GetNW2Entity("TrainEntity",nil)) and ent:GetNW2Entity("TrainEntity",nil) == PlyInTrain then return false end
+	
+	return true
+end}
 
 function ENT:ShouldRenderClientEnts()
 	local ply = LocalPlayer()
@@ -396,16 +397,30 @@ function ENT:ShouldRenderClientEnts()
 		end
 	end
 	
+	--metrostroi default
     local result = !self:IsDormant() and math.abs(ply:EyePos().z-self:GetPos().z)<500 and (system.HasFocus() or C_MinimizedShow:GetBool()) and (!Metrostroi or !Metrostroi.ReloadClientside) and LocalPlayer():EyePos():DistToSqr(self:GetPos())
     
-    if result and not C_ScreenshotMode:GetBool() then
+    if GetConVar("hidetrains_behind_props"):GetBool() and not C_ScreenshotMode:GetBool() then
         tracelineent,tracelinehitcount = self,0
     
-        tracelinesetup.start = ply:EyePos()
-        tracelinesetup.endpos = self:LocalToWorld(self:OBBCenter())
-        local output = util.TraceLine(tracelinesetup)
-        
-        result = output.Fraction==1 or output.Entity==self
+        tracelinesetup.start = ply:EyePos()	
+	
+		local TrainSize,Result = self:OBBMins() / 1.2
+		for i = 1,8 do
+			if i == 1 then k = TrainSize * Vector(1,1,1)
+			elseif i == 2 then k = TrainSize * Vector(1,1,-1)
+			elseif i == 3 then k = TrainSize * Vector(1,-1,1)
+			elseif i == 4 then k = TrainSize * Vector(1,-1,-1)
+			elseif i == 5 then k = TrainSize * Vector(-1,1,1)
+			elseif i == 6 then k = TrainSize * Vector(-1,1,-1)
+			elseif i == 7 then k = TrainSize * Vector(-1,-1,1)
+			elseif i == 8 then k = TrainSize * Vector(-1,-1,-1)
+			end
+			tracelinesetup.endpos = self:LocalToWorld(k)
+			output = util.TraceLine(tracelinesetup)
+			if output.Fraction == 1 or output.Entity == self then Result = true break end
+		end
+        result = Result or false
     end
     
     return result
