@@ -400,7 +400,7 @@ function ENT:ShouldRenderClientEnts()
 	--metrostroi default
     local result = !self:IsDormant() and math.abs(ply:EyePos().z-self:GetPos().z)<500 and (system.HasFocus() or C_MinimizedShow:GetBool()) and (!Metrostroi or !Metrostroi.ReloadClientside) and LocalPlayer():EyePos():DistToSqr(self:GetPos())
     
-    if GetConVar("hidetrains_behind_props"):GetBool() and not C_ScreenshotMode:GetBool() then
+    if result and GetConVar("hidetrains_behind_props"):GetBool() and not C_ScreenshotMode:GetBool() then
         tracelineent,tracelinehitcount = self,0
     
         tracelinesetup.start = ply:EyePos()	
