@@ -143,7 +143,7 @@ if SERVER then
 		end
 		
 		--[[if Map:find("surface") then
-			--[[StationName = "Площадь Восстания"
+			StationName = "Площадь Восстания"
 			fun = "6"
 			
 			createTrigger("TPeredStation1",StationName,fun,Vector(12780, 2998-500, -1090))
@@ -216,7 +216,7 @@ if SERVER then
 			AvtooborotTBL[fun][StationName]["RouteToRight"] = "K1-1"
 			AvtooborotTBL[fun][StationName]["RouteFromLeft"] = "ST2-2"
 			AvtooborotTBL[fun][StationName]["RouteFromRight"] = "ST1-2"
-			AvtooborotTBL[fun][StationName]["RouteFromCentre"] = "ST1/2-2"]]
+			AvtooborotTBL[fun][StationName]["RouteFromCentre"] = "ST1/2-2"
 			
 			
 			fun = "6"
