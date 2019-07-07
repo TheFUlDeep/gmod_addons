@@ -376,30 +376,6 @@ local ViewPos
 local ViewAng
 ENT.LastDrawCall = os.time()
 
-local function GoThroughTrain(self,startvec)
-	local startvec = self:LocalToWorld(startvec)
-	local endvec = self:LocalToWorld(startvec*Vector(-1,-1,-1))
-	local step = 0.1
-	for i = 0,1,step do
-		local curvec = LerpVector(i, startvec, endvec)
-		tracelinesetup.endpos = curvec
-		output = util.TraceLine(tracelinesetup)
-		
-		if output.Fraction == 1 or output.Entity == self then Result = true end
-		
-		FoV = ViewAng and 0.7 * C_CabFOV:GetFloat() or 0.7 * C_FovDesired:GetFloat()
-		tracelinesetup.endpos = self:GetPos()
-		local ang = output.Normal:Angle()
-		local PlyAngle = ViewAng or ply:GetEyeTrace().Normal:Angle()
-		ang:Normalize()
-		PlyAngle:Normalize()
-		local ResultAngle = (ang - PlyAngle)
-		ResultAngle:Normalize()
-		if not CanSee and ResultAngle.y < FoV and ResultAngle.y > -FoV and ResultAngle.p < FoV and ResultAngle.p > -FoV then
-			CanSee = true
-		end
-	end
-end
 
 function ENT:ShouldRenderClientEnts()
 	--print(self.DrawResult)
