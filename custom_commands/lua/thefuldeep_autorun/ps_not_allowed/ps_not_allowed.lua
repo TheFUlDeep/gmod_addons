@@ -36,5 +36,5 @@ end
 
 hook.Add("PlayerInitialSpawn","PSNotAllowed Load",function()
     hook.Remove("PlayerInitialSpawn","PSNotAllowed Load")
-    PSNotAllowed("KB112","KB2-2")
+    --PSNotAllowed("KB112","KB2-2")
 end)

@@ -363,7 +363,6 @@ local lastAimButton
 
 local PlyInTrain
 
-local tracelineent,tracelinehitcount = NULL,0
 local tracelinesetup = {mask = MASK_ALL,output = {},filter = function(ent)
 	if ent == LocalPlayer() then return false end
 	
@@ -372,6 +371,8 @@ local tracelinesetup = {mask = MASK_ALL,output = {},filter = function(ent)
 	
 	return true
 end}
+
+local ViewPos
 
 function ENT:ShouldRenderClientEnts()
 	local ply = LocalPlayer()
@@ -401,11 +402,10 @@ function ENT:ShouldRenderClientEnts()
     local result = !self:IsDormant() and math.abs(ply:EyePos().z-self:GetPos().z)<500 and (system.HasFocus() or C_MinimizedShow:GetBool()) and (!Metrostroi or !Metrostroi.ReloadClientside) and LocalPlayer():EyePos():DistToSqr(self:GetPos())
     
     if result and GetConVar("hidetrains_behind_props"):GetBool() and not C_ScreenshotMode:GetBool() then
-        tracelineent,tracelinehitcount = self,0
-    
-        tracelinesetup.start = ply:EyePos()	
-	
-		local TrainSize,Result = self:OBBMins() / 1.2
+
+		tracelinesetup.start = ViewPos or ply:EyePos()
+		
+		local TrainSize,Result = self:OBBMins() / 1.1
 		for i = 1,8 do
 			if i == 1 then k = TrainSize * Vector(1,1,1)
 			elseif i == 2 then k = TrainSize * Vector(1,1,-1)
@@ -1943,10 +1943,12 @@ end
 hook.Add("CalcView", "Metrostroi_TrainView", function(ply,pos,ang,fov,znear,zfar)
     local seat = ply:GetVehicle()
     if (not seat) or (not seat:IsValid()) then
+		ViewPos = nil
         return
     end
     local train = seat:GetNW2Entity("TrainEntity")
     if (not train) or (not train:IsValid()) then
+		ViewPos = nil
         return
     end
 
@@ -1989,6 +1991,7 @@ hook.Add("CalcView", "Metrostroi_TrainView", function(ply,pos,ang,fov,znear,zfar
                 ply:SetFOV(30,0)
                 ply.OldFOV = 30
             end--]]
+			ViewPos = train.CamPos
             return {
                 origin = train.CamPos,
                 angles = target_ang,
@@ -2005,6 +2008,7 @@ hook.Add("CalcView", "Metrostroi_TrainView", function(ply,pos,ang,fov,znear,zfar
                 ply:SetFOV(20,0)
                 ply.OldFOV = 20
             end--]]
+			ViewPos = train.CamPos
             return {
                 origin = train.CamPos,
                 angles = target_ang,
@@ -2018,7 +2022,7 @@ hook.Add("CalcView", "Metrostroi_TrainView", function(ply,pos,ang,fov,znear,zfar
         train.CamPos = train:LocalToWorld(camera[1])
         local tFov = fov/C_FovDesired:GetFloat()*C_CabFOV:GetFloat()
         --ply:SetFOV(tFov,0)
-
+		ViewPos = train.CamPos
         return {
             origin = train.CamPos,
             angles = ang,--+train:LocalToWorldAngles(camera[2]),
@@ -2035,6 +2039,7 @@ hook.Add("CalcView", "Metrostroi_TrainView", function(ply,pos,ang,fov,znear,zfar
         local tFov = fov/C_FovDesired:GetFloat()*C_CabFOV:GetFloat()
         --ply:SetFOV(tFov,0)
         train.CamAngles =  ang
+		ViewPos = train.CamPos
         return {
             origin = train.CamPos,
             angles = ang,
@@ -2043,6 +2048,7 @@ hook.Add("CalcView", "Metrostroi_TrainView", function(ply,pos,ang,fov,znear,zfar
             zfar = zfar
         }
     end
+	ViewPos = nil
     return
 end)
 
