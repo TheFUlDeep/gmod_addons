@@ -393,7 +393,7 @@ function ENT:Think()
         --TODO
         if self.AutostopPresent then
             if IsValid(self.Models[1]["autostop"]) then
-				if self.autostoppos ~= self:GetNW2Bool("Autostop") then self.autostoppos = self:GetNW2Bool("Autostop") sound.Play( "autostop.mp3", self.Models[1]["autostop"]:GetPos(), 325, 100, 0.3 ) end	-- добавил звук автостопу
+				if self.autostoppos ~= self:GetNW2Bool("Autostop") then self.autostoppos = self:GetNW2Bool("Autostop") end
                 self.Models[1]["autostop"]:SetPoseParameter("position",self:Animate("Autostop", self:GetNW2Bool("Autostop") and 1 or 0,     0,1, 0.3,false))
             end
         end
