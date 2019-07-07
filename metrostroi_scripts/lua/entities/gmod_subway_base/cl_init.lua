@@ -417,12 +417,14 @@ function ENT:ShouldRenderClientEnts()
 		for j = 1,2 do
 			local startvec = j == 1 and TrainSize or TrainSize * Vector(1,-1,-1)
 			local endvec = startvec * Vector(-1,-1,-1)
+			startvec = self:LocalToWorld(startvec)
+			endvec = self:LocalToWorld(endvec)
 			for i = 0,1,step do
 				local curvec = LerpVector(i, startvec, endvec)
 				tracelinesetup.endpos = curvec
 				output = util.TraceLine(tracelinesetup)
 				
-				if output.Fraction == 1 or output.Entity == self then Result = true end
+				if output.Fraction == 1 or output.Entity == self or IsValid(output.Entity:GetNW2Entity("TrainEntity",nil)) and output.Entity:GetNW2Entity("TrainEntity",nil) == self then Result = true end
 				
 				FoV = ViewAng and 0.7 * C_CabFOV:GetFloat() or 0.7 * C_FovDesired:GetFloat()
 				tracelinesetup.endpos = self:GetPos()
