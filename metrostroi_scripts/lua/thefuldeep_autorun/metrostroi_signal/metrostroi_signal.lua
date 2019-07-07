@@ -51,7 +51,7 @@ if SERVER then
 	local SignalsCustomized
 	
 	hook.Add("PlayerInitialSpawn","Custom metrostroi signals",function()
-		hook.Remove("PlayerInitialSpawn","Custom metrostroi signal")
+		hook.Remove("PlayerInitialSpawn","Custom metrostroi signals")
 		CustomozeSignals()
 		SignalsCustomized = true
 	end)
