@@ -1,16 +1,11 @@
-if SERVER then
-	function ulx.fix(calling_ply, command)
-		game.CleanUpMap()
-		createavtooborot()
-		RunConsoleCommand("metrostroi_load")
-		ulx.fancyLogAdmin(calling_ply, "[SERVER] #A ВОССТАНОВИЛ КАРТУ")
-	end
-end
-local fix = ulx.command("Utility", "ulx fix", ulx.fix, "!fix", true, false, true)
-fix:defaultAccess(ULib.ACCESS_SUPERADMIN)
-fix:help("Восстанавливает карту и сигналку. Все составы удалятся.")
+local TrackIDsPaths = {}
+local NoSignals = true
 
 if SERVER then
+	for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
+		if IsValid(v) then NoSignals = false break end
+	end
+
 	function ulx.reloadsignals(calling_ply)
 		RunConsoleCommand("metrostroi_load")
 		ulx.fancyLogAdmin(calling_ply, "[SERVER] #A ПЕРЕЗАГРУЗИЛ СИГНАЛКУ")
@@ -1108,6 +1103,7 @@ if SERVER then
 
 		--if FirstMethodTbl[1] then PrintTable(FirstMethodTbl) end
 	end
+	if not NoSignals then GenerateTblForFirstMethod() end
 	
 	local function GetNearestPlatform(vector)				-- эта функция создает таблицу на 2000 элементов. Ни в коем случае не исполнять ее в рантайме!!!
 		local CurDist,MinDist,NearestPlatform,PlatformPos
@@ -1151,8 +1147,7 @@ if SERVER then
 		end
 		CompleteTBLTrakcs(ThirdMethodTbl)
 	end
-	
-	local TrackIDsPaths = {}
+	if not NoSignals then GenerateTblForThirdMethod() end
 	
 	local function GetSignalPath(signal)
 		if not signal.Name then return nil end
@@ -1175,44 +1170,28 @@ if SERVER then
 				TrackIDsPaths[curtrack] = Path % 2 == 0 and 2 or 1 end
 		end
 	end
+	if not NoSignals then GenerateTrackIDsPathsTbl() end
 	
 	hook.Add("PlayerInitialSpawn","GenerateTblsForStations",function() 
 		hook.Remove("PlayerInitialSpawn","GenerateTblsForStations")
-		local NoSignals = true
 		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
 			table.insert(SignalNamesTbl,1,v.Name or "")
 			if IsValid(v) and NoSignals then NoSignals = false end
 		end
-		if not NoSignals then 
-			print("Generating Tbls for detectstation")
-			GenerateTblForThirdMethod()
-			GenerateTblForFirstMethod()
-			GenerateTrackIDsPathsTbl()
-		end
+		timer.Simple(1,function()
+			if not NoSignals then 
+				print("Generating Tbls for detectstation")
+				GenerateTblForThirdMethod()
+				GenerateTblForFirstMethod()
+				GenerateTrackIDsPathsTbl()
+			end
+		end)
 	end)
 	
-	--GenerateTblForFirstMethod()
-	--GenerateTblForThirdMethod()
-	--GenerateTrackIDsPathsTbl()
-	--[[for k,v in pairs(player.GetAll()) do
-		--v:SetPos(Vector(-2076.004639, -15260.714844, 3451.966064))
-		local i = 0
-		for k1,v1 in pairs(FirstMethodTbl) do
-			if v1.StationName:find("аэро") then
-				i = i + 1
-				--print(v1.trackid)
-				--if i > 2 then return end
-				timer.Simple(i,function() v:SetPos(v1.vector) end)
-			end
-		end
-	end]]
-	--PrintTable(FirstMethodTbl)
-	--PrintTable(ThirdMethodTbl)
-	--(vector,TrackID,customraduis,customwlimit,customstep,autoscale,donotclear)
-	--[[for k,v in pairs(player.GetAll()) do
-		local tbl = FindTrackInSquare(v:GetPos(),nil,200,nil,nil,2)
-		if tbl then PrintTable(tbl) end
-	end]]
+	for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
+		table.insert(SignalNamesTbl,1,v.Name or "")
+	end
+	
 	
 	local function FirstMethod(PosOnTrack,TrackID,tbl)
 		--print("first method")
@@ -1569,6 +1548,14 @@ if SERVER then
 		end		
 	end)
 	
+	local i = 1
+	for k,v in pairs(ents.GetAll()) do
+		if stringfind(v:GetClass(),"udochka",true) or stringfind(v:GetClass(),"physbox",true) or stringfind(v:GetClass(), "tracktrain",true) then
+			udochkitbl[i] = {v,v:GetPos(),v:GetAngles()}
+			i = i + 1
+		end
+	end	
+	
 	function ulx.resetudochki()
 		if table.Count(udochkitbl) < 1 then return end
 		for k,v in pairs(udochkitbl) do
@@ -1711,27 +1698,21 @@ changecabin:help("Телепортация в заднюю кабиную.")
 
 --[[============================= АВТОМАТИЧЕСКАЯ УСТАНОВКА ДЕШИФРАТОРА ==========================]]
 if SERVER then
-	local NoSignals = true
-	hook.Add("PlayerInitialSpawn","FoundSignaksForAlsFreq",function(ply)
-		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
-			if IsValid(v) and NoSignals then NoSignals = false end
-		end
-	end)
 	hook.Add("OnEntityCreated", "AlsFReq", function(ent)
-		if not NoSignals then
 			timer.Simple(2, function()
-				if not IsValid(ent) then return
-				elseif not stringfind(ent:GetClass(), "717_m") then return
-				end
-				local blizhniy = nil
-				for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
-					if blizhniy == nil then blizhniy = v
-					elseif ent:GetPos():DistToSqr(v:GetPos()) < ent:GetPos():DistToSqr(blizhniy:GetPos()) then blizhniy = v
+				if not NoSignals then
+					if not IsValid(ent) then return
+					elseif not stringfind(ent:GetClass(), "717_m") then return
 					end
+					local blizhniy = nil
+					for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
+						if blizhniy == nil then blizhniy = v
+						elseif ent:GetPos():DistToSqr(v:GetPos()) < ent:GetPos():DistToSqr(blizhniy:GetPos()) then blizhniy = v
+						end
+					end
+					if blizhniy.TwoToSix then ent.ALSFreq:TriggerInput("Set",1) return end
 				end
-				if blizhniy.TwoToSix then ent.ALSFreq:TriggerInput("Set",1) return end
 			end)
-		end
 	end)
 end
 
@@ -1794,33 +1775,9 @@ if SERVER then
 		return NearestStation or ""
 	end
 	
-	local function GetSignalPath(signal)
-		if not signal.Name then return nil end
-		local strsub1 = string.sub(signal.Name,-1)
-		local strsub2 = string.sub(signal.Name,-2,-2)
-		if tonumber(strsub1) then return strsub1
-		elseif tonumber(strsub2) then return strsub2
-		else return nil 
-		end
-	end
-
-	local function FindNearestSignalPathOnTrack(TrackPos,TrackID)
-		local curtrack,CurDist,MinDist,NearestSignalPath
-		local i = 0
-		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
-			if not IsValid(v) or not v.Name or v.Name == "" or v.ARSOnly or not v.Lenses then continue end
-			curtrack = v.TrackPosition.path and v.TrackPosition.path.id or 0
-			if curtrack == 0 then continue end
-			if curtrack ~= TrackID then continue end
-			local SignalPath = GetSignalPath(v)
-			CurDist = math.abs(TrackPos - v.TrackPosition.x)
-			if (not MinDist or MinDist > CurDist) and SignalPath then MinDist = CurDist NearestSignalPath = SignalPath end
-		end
-		return NearestSignalPath and (NearestSignalPath % 2 == 0 and 2 or 1)
-	end
-	
 	local StationsCfg = {}
 	local function GenerateStationsCfg()
+		print("Generating StationsCfg Table")
 		local i = 0
 		for k,v in pairs(ents.FindByClass("gmod_track_clock_small")) do
 			if not IsValid(v) then continue end
@@ -1831,7 +1788,8 @@ if SERVER then
 			local Station = SecondMethod(vector) or ""
 			local NeedSub = stringfind(Station," (ближа")
 			if NeedSub then Station = string.sub(Station,1,NeedSub - 1) end
-			local Path = FindNearestSignalPathOnTrack(Track.trakcpos,Track.trackid)
+			local Path = TrackIDsPaths[Track.trackid]
+			if not Path then continue end
 			if not StationsCfg[i] then StationsCfg[i] = {} end
 			StationsCfg[i]["ent"] = v
 			StationsCfg[i]["name"] = Station..". Путь: "..Path..". Интервал: "
@@ -1845,7 +1803,7 @@ if SERVER then
 			local Station = SecondMethod(vector) or ""
 			local NeedSub = stringfind(Station," (ближа")
 			if NeedSub then Station = string.sub(Station,1,NeedSub - 1) end
-			local Path = FindNearestSignalPathOnTrack(Track.trakcpos,Track.trackid)
+			local Path = TrackIDsPaths[Track.trackid]
 			if not Path then continue end
 			if not StationsCfg[i] then StationsCfg[i] = {} end
 			StationsCfg[i]["ent"] = v
@@ -1861,6 +1819,8 @@ if SERVER then
 			end
 		end
 	end
+	
+	GenerateStationsCfg()
 
 	local function GetIntervalTime(ent)
 		return math.floor(Metrostroi.GetSyncTime() - (ent:GetIntervalResetTime() + GetGlobalFloat("MetrostroiTY")))
@@ -1875,6 +1835,7 @@ if SERVER then
 			if not IntervalsEnabled then hook.Remove("Think","SendIntevals") return end
 			if CurTime() - timestamp < 5 then return end
 			timestamp = CurTime()
+			if NoSignals then return end
 			if not StationsCfg or table.Count(StationsCfg) < 1 then GenerateStationsCfg() return end
 			for i = 1, #StationsCfg do
 				if not StationsCfg[i] then continue end
@@ -1890,10 +1851,11 @@ if SERVER then
 		end)
 	end
 	EnableIntervalClocks()
-	
+
 	util.AddNetworkString("SendStationsCfgNetworkString")
 	local function SendStationsCfgToClient(ply)
 		if not IsValid(ply) then return end
+		if NoSignals then return end
 		if not StationsCfg or table.Count(StationsCfg) < 1 then GenerateStationsCfg() end
 		if table.Count(StationsCfg) > 0 then
 			local tbl = {}
@@ -1908,22 +1870,11 @@ if SERVER then
 	end
 	
 	hook.Add("PlayerInitialSpawn","SendStationsCfgOnSpawn",function(ply) 
-		local NoSignals = true
-		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
-			if IsValid(v) and NoSignals then NoSignals = false end
-		end
-		if not NoSignals then
-			timer.Simple(1,function()
-				SendStationsCfgToClient(ply)
+			timer.Simple(2,function()
+				if not NoSignals then SendStationsCfgToClient(ply) end
 			end)
-		end
 	end)
 	
-	
-	local NoSignals = true
-	for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
-		if IsValid(v) and NoSignals then NoSignals = false end
-	end
 	timer.Simple(1,function()
 		if not NoSignals then
 			for k,v in pairs(player.GetAll()) do
@@ -1936,7 +1887,20 @@ if SERVER then
 			end
 		end]]
 	end)
+	
+	function ulx.fix(calling_ply, command)
+		game.CleanUpMap()
+		StationsCfg = {}
+		--createavtooborot()
+		RunConsoleCommand("metrostroi_load")
+		timer.Simple(2,function() GenerateStationsCfg() end)
+		ulx.fancyLogAdmin(calling_ply, "[SERVER] #A ВОССТАНОВИЛ КАРТУ")
+	end
 end
+local fix = ulx.command("Utility", "ulx fix", ulx.fix, "!fix", true, false, true)
+fix:defaultAccess(ULib.ACCESS_SUPERADMIN)
+fix:help("Восстанавливает карту и сигналку. Все составы удалятся.")
+
 
 
 if CLIENT then	
@@ -2062,8 +2026,9 @@ toggletumbler:help("Переключить и заблокировать тум�
 --[[============================= ПЕРЕГРУЗКА GOTO ==========================]]
 if SERVER then
 	timer.Create("UlxGotoOverwrite", 5, 0, function()
-		if not ulx or not ulx.goto then return end
+		if not ulx or not ulx.goto or ulx.gotoOverwrited then return end
 		timer.Remove("UlxGotoOverwrite")
+		ulx.gotoOverwrited = true
 		local oldgoto = ulx.goto
 		function ulx.goto(calling_ply, target_ply)
 			--local WasNoclip = calling_ply:GetMoveType() == MOVETYPE_NOCLIP and true or false

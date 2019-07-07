@@ -361,18 +361,27 @@ local toolTipColor
 local lastAimButtonChange
 local lastAimButton
 
-local tracelineent,tracelinehitcount = NULL,0
-local tracelinesetup = {mask = MASK_SOLID,output = {},filter = function(ent)
-    if ent.Base=="gmod_subway_base" then
-        tracelinehitcount = tracelinehitcount+1
-    end
-
-    return ent==tracelineent or tracelinehitcount>=3
-end}
-
 local PlyInTrain
 
+local tracelinesetup = {mask = MASK_ALL,output = {},filter = function(ent)
+	if ent == LocalPlayer() then return false end
+	
+	--если игрок в составе, то его первый вагон пропускается, чтобы тут же за окном не было некрасиво
+	if PlyInTrain and ent == PlyInTrain or IsValid(ent:GetNW2Entity("TrainEntity",nil)) and ent:GetNW2Entity("TrainEntity",nil) == PlyInTrain then return false end
+	
+	return true
+end}
+
+local ViewPos
+local ViewAng
+ENT.LastDrawCall = os.time()
+
+
 function ENT:ShouldRenderClientEnts()
+	--print(self.DrawResult)
+	local asd = !Metrostroi or !Metrostroi.ReloadClientside
+	if not asd then return false elseif os.time() - self.LastDrawCall > 0 then self.LastDrawCall = os.time() else return self.DrawResult or false end
+	if PlyInTrain == self then self.DrawResult = true return self.DrawResult end
 	local ply = LocalPlayer()
 	if not timer.Exists("PlyInTrainForHideCheck") then
 		timer.Create("PlyInTrainForHideCheck",1,0,function()
@@ -387,28 +396,59 @@ function ENT:ShouldRenderClientEnts()
 	
 	if not C_ScreenshotMode:GetBool() then
 		if GetConVar("hidealltrains"):GetBool() then
-			if not PlyInTrain or PlyInTrain ~= self then return false end
+			if not PlyInTrain or PlyInTrain ~= self then self.DrawResult = false return self.DrawResult end
 		else
 			if GetConVar("hideothertrains"):GetBool() then
 				local Owner = CPPI and self:CPPIGetOwner() or nil
-				if not (IsValid(Owner) and Owner == ply or PlyInTrain and PlyInTrain == self) then return false end
+				if not (IsValid(Owner) and Owner == ply or PlyInTrain and PlyInTrain == self) then self.DrawResult = false return self.DrawResult end
 			end
 		end
 	end
 	
-    local result = !self:IsDormant() and math.abs(ply:EyePos().z-self:GetPos().z)<500 and (system.HasFocus() or C_MinimizedShow:GetBool()) and (!Metrostroi or !Metrostroi.ReloadClientside) and LocalPlayer():EyePos():DistToSqr(self:GetPos())
+	--metrostroi default
+    self.DrawResult = !self:IsDormant() and math.abs(ply:EyePos().z-self:GetPos().z)<500 and (system.HasFocus() or C_MinimizedShow:GetBool()) and LocalPlayer():EyePos():DistToSqr(self:GetPos())
     
-    if result and not C_ScreenshotMode:GetBool() then
-        tracelineent,tracelinehitcount = self,0
-    
-        tracelinesetup.start = ply:EyePos()
-        tracelinesetup.endpos = self:LocalToWorld(self:OBBCenter())
-        local output = util.TraceLine(tracelinesetup)
-        
-        result = output.Fraction==1 or output.Entity==self
+    if self.DrawResult and (GetConVar("hidetrains_behind_props"):GetBool() or GetConVar("hidetrains_behind_player"):GetBool()) and not C_ScreenshotMode:GetBool() then
+		tracelinesetup.start = ViewPos or ply:EyePos()
+		
+		local TrainSize,Result = self:OBBMins() / 1
+		local CanSee
+		local step = 0.1
+		for j = 1,2 do
+			local startvec = j == 1 and TrainSize or TrainSize * Vector(1,-1,-1)
+			local endvec = startvec * Vector(-1,-1,-1)
+			startvec = self:LocalToWorld(startvec)
+			endvec = self:LocalToWorld(endvec)
+			for i = 0,1,step do
+				local curvec = LerpVector(i, startvec, endvec)
+				tracelinesetup.endpos = curvec
+				output = util.TraceLine(tracelinesetup)
+				
+				if output.Fraction == 1 or output.Entity == self or IsValid(output.Entity:GetNW2Entity("TrainEntity",nil)) and output.Entity:GetNW2Entity("TrainEntity",nil) == self then Result = true end
+				
+				FoV = ViewAng and 0.7 * C_CabFOV:GetFloat() or 0.7 * C_FovDesired:GetFloat()
+				tracelinesetup.endpos = self:GetPos()
+				local ang = output.Normal:Angle()
+				local PlyAngle = ViewAng or ply:GetEyeTrace().Normal:Angle()
+				ang:Normalize()
+				PlyAngle:Normalize()
+				local ResultAngle = (ang - PlyAngle)
+				ResultAngle:Normalize()
+				if not CanSee and ResultAngle.y < FoV and ResultAngle.y > -FoV and ResultAngle.p < FoV and ResultAngle.p > -FoV then
+					CanSee = true
+				end
+			end
+		end
+		if GetConVar("hidetrains_behind_props"):GetBool() then
+			self.DrawResult = Result or false
+		end
+		
+		if GetConVar("hidetrains_behind_player"):GetBool() then
+			if not CanSee then self.DrawResult = false end
+		end
     end
-    
-    return result
+
+    return self.DrawResult
 end
 
 function ENT:ShouldDrawPanel(v)
@@ -1928,10 +1968,14 @@ end
 hook.Add("CalcView", "Metrostroi_TrainView", function(ply,pos,ang,fov,znear,zfar)
     local seat = ply:GetVehicle()
     if (not seat) or (not seat:IsValid()) then
+		ViewPos = nil
+		ViewAng = nil
         return
     end
     local train = seat:GetNW2Entity("TrainEntity")
     if (not train) or (not train:IsValid()) then
+		ViewPos = nil
+		ViewAng = nil
         return
     end
 
@@ -1974,6 +2018,8 @@ hook.Add("CalcView", "Metrostroi_TrainView", function(ply,pos,ang,fov,znear,zfar
                 ply:SetFOV(30,0)
                 ply.OldFOV = 30
             end--]]
+			ViewPos = train.CamPos
+			ViewAng = target_ang
             return {
                 origin = train.CamPos,
                 angles = target_ang,
@@ -1990,6 +2036,8 @@ hook.Add("CalcView", "Metrostroi_TrainView", function(ply,pos,ang,fov,znear,zfar
                 ply:SetFOV(20,0)
                 ply.OldFOV = 20
             end--]]
+			ViewPos = train.CamPos
+			ViewAng = target_ang
             return {
                 origin = train.CamPos,
                 angles = target_ang,
@@ -2003,7 +2051,8 @@ hook.Add("CalcView", "Metrostroi_TrainView", function(ply,pos,ang,fov,znear,zfar
         train.CamPos = train:LocalToWorld(camera[1])
         local tFov = fov/C_FovDesired:GetFloat()*C_CabFOV:GetFloat()
         --ply:SetFOV(tFov,0)
-
+		ViewPos = train.CamPos
+		ViewAng = ang
         return {
             origin = train.CamPos,
             angles = ang,--+train:LocalToWorldAngles(camera[2]),
@@ -2020,6 +2069,8 @@ hook.Add("CalcView", "Metrostroi_TrainView", function(ply,pos,ang,fov,znear,zfar
         local tFov = fov/C_FovDesired:GetFloat()*C_CabFOV:GetFloat()
         --ply:SetFOV(tFov,0)
         train.CamAngles =  ang
+		ViewPos = train.CamPos
+		ViewAng = ang
         return {
             origin = train.CamPos,
             angles = ang,
@@ -2028,6 +2079,8 @@ hook.Add("CalcView", "Metrostroi_TrainView", function(ply,pos,ang,fov,znear,zfar
             zfar = zfar
         }
     end
+	ViewPos = nil
+	ViewAng = nil
     return
 end)
 
