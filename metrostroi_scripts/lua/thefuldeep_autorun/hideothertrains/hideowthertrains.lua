@@ -117,7 +117,7 @@ timer.Create("HideTrainClientEnts",10,0,function()		-- каждые 10 секу�
 							
 							if output.Fraction == 1 or output.Entity == ent or IsValid(output.Entity:GetNW2Entity("TrainEntity",nil)) and output.Entity:GetNW2Entity("TrainEntity",nil) == ent then Result = true end
 							
-							FoV = ViewAng and 0.7 * C_CabFOV:GetFloat() or 0.7 * C_FovDesired:GetFloat()
+							FoV = ViewAng and 0.7 * C_CabFOV:GetFloat() or 0.7 * C_FovDesired:GetFloat() -- TODO возможно для вертикали нужно уменьшить коэффициент
 							tracelinesetup.endpos = ent:GetPos()
 							local ang = output.Normal:Angle()
 							local PlyAngle = ViewAng or ply:GetEyeTrace().Normal:Angle()

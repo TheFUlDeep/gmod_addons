@@ -915,6 +915,7 @@ if SERVER then
 	end
 	
 	local function SecondMethod(vector,arg)
+		if not Metrostroi or not Metrostroi.StationConfigurations then return "" end
 		--print("second method")
 		local StationName
 		local StationPos
@@ -1024,6 +1025,7 @@ if SERVER then
 	end
 	
 	local function FindNearestStation(vector)
+		if not Metrostroi or not Metrostroi.StationConfigurations then return "" end
 		local StationName,StationPos,CurDist,MinDist,NearestStationName
 		for k,v in pairs(Metrostroi.StationConfigurations) do
 			if not v.positions or not v.positions[1] or not v.positions[1][1] then continue else StationPos = v.positions[1][1] end
@@ -1035,6 +1037,7 @@ if SERVER then
 	end
 	
 	local function GetStationByIndex(index)
+		if not Metrostroi or not Metrostroi.StationConfigurations then return "" end
 		local StationName--,StationPos
 		for k,v in pairs(Metrostroi.StationConfigurations) do
 			--if not v.positions or not v.positions[1] or not v.positions[1][1] then continue else StationPos = v.positions[1][1] end
@@ -1122,6 +1125,7 @@ if SERVER then
 	
 	local ThirdMethodTbl = {}
 	local function GenerateTblForThirdMethod()						-- эта функция создает таблицу на 2000 элементов. Ни в коем случае не исполнять ее в рантайме!!!
+		if not Metrostroi or not Metrostroi.StationConfigurations then return "" end
 		local StationName,StationPos,CurDist,MinDist,NearestStationName
 		local i = 0
 		for k,v in pairs(Metrostroi.StationConfigurations) do
@@ -1221,7 +1225,7 @@ if SERVER then
 
 		-----------------ОПРЕДЕЛЕНИЕ МЕСТА ВЕКТОРА ОТНОСИТЕЛЬНО СТАНЦИЙ------------------------------------------------------
 	function detectstation(vector)
-		if not Metrostroi.StationConfigurations then return "" end
+		if not Metrostroi or not Metrostroi.StationConfigurations then return "" end
 		--if not FirstMethodTbl[1] then GenerateTblForFirstMethod() end
 		--if not ThirdMethodTbl[1] then GenerateTblForThirdMethod() end
 		local Station,Station2,Path,Posx,StationPosx,Station2Posx
@@ -1573,6 +1577,7 @@ resetudochki:help("Восстанавливает удочки на карте."
 timer.Simple(5, function()
 	if SERVER then
 		function ulx.station(ply,comm)
+			if not Metrostroi or not Metrostroi.StationConfigurations then ULib.tsayError(ply,"На карте не настроены станции.") return end
 			comm = bigrustosmall(comm)
 			local stationstbl = {}
 			local i = 1
@@ -1760,6 +1765,7 @@ end
 if SERVER then	
 
 	local function SecondMethod(vector)
+		if not Metrostroi or not Metrostroi.StationConfigurations then return "" end
 		local StationName
 		local StationPos
 		local NearestStation
