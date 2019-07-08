@@ -77,7 +77,7 @@ timer.Create("HideTrainClientEnts",10,0,function()		-- каждые 10 секу�
 				if PlyInTrain == ent then ent.DrawResult = true return ent.DrawResult end
 				
 				if ViewFunction then
-					local ViewTbl = ViewFunction(Lastply,Lastpos,Lastang,Lastfov,Lastznear,Lastzfar)
+					local ViewTbl = ViewFunction(ply,Lastpos,Lastang,Lastfov,Lastznear,Lastzfar)
 					if ViewTbl then
 						ViewPos,ViewAng = ViewTbl.origin,ViewTbl.angles
 					else
