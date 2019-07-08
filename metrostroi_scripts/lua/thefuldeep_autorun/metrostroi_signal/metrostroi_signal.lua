@@ -3,10 +3,9 @@ if SERVER then
 		print("customizing signals")
 		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
 			if not IsValid(v) then continue end
-			local tbl = v:GetTable()
-			if tbl.SayHook then
-				local OldSayHook = tbl.SayHook
-				tbl.SayHook = function(ply,comm)
+			if v.SayHook then
+				local OldSayHook = v.SayHook
+				v.SayHook = function(ply,comm)
 					if  Metrostroi.ActiveDispatcher ~= ply
 						and Metrostroi.ActiveDSCP1 ~= ply
 						and Metrostroi.ActiveDSCP2 ~= ply
@@ -18,33 +17,32 @@ if SERVER then
 					then 
 						return
 					end
-					OldSayHook(ply,comm)
+					OldSayHook(v,ply,comm) -- ЧАВО? ПОЧЕМУ ОНО РАБОТАЕТ???????????
 				end
-				v:SetTable(tbl)
+				hook.Add("PlayerSay","metrostroi-signal-say"..v:EntIndex(), function(ply, comm) v.SayHook(ply,comm) end)
 			end
 		end
 	end
 	
 	local function CustomozeSignal(ent)
-		--print("customizing signal "..ent.Name)
-		local tbl = ent:GetTable()
-		if tbl.SayHook then
-			local OldSayHook = tbl.SayHook
-			tbl.SayHook = function(ply,comm)
+		if not IsValid(ent) then return end
+		if ent.SayHook then
+			local OldSayHook = ent.SayHook
+			ent.SayHook = function(ply,comm)
 				if  Metrostroi.ActiveDispatcher ~= ply
 					and Metrostroi.ActiveDSCP1 ~= ply
 					and Metrostroi.ActiveDSCP2 ~= ply
 					and Metrostroi.ActiveDSCP3 ~= ply 
 					and Metrostroi.ActiveDSCP4 ~= ply 
 					and Metrostroi.ActiveDSCP5 ~= ply 
-					and Metrostroi.ActiveDispatcher ~= nil 
+						and Metrostroi.ActiveDispatcher ~= nil 
 					and ply:GetUserGroup() == "user" 
 				then 
 					return
 				end
-				OldSayHook(ply,comm)
+				OldSayHook(ent,ply,comm) -- ЧАВО? ПОЧЕМУ ОНО РАБОТАЕТ???????????
 			end
-			ent:SetTable(tbl)
+			hook.Add("PlayerSay","metrostroi-signal-say"..ent:EntIndex(), function(ply, comm) ent.SayHook(ply,comm) end)
 		end
 	end
 	
@@ -55,7 +53,6 @@ if SERVER then
 		CustomozeSignals()
 		SignalsCustomized = true
 	end)
-	
 	
 	--на всякий случай при спавне светофора обновлять его функции
 	hook.Add("OnEntityCreated","Custom metrostroi signal",function(ent)
