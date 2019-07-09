@@ -1,10 +1,17 @@
 if SERVER then
 	local WebServerTyp = "chat"
-	local HostName = GetHostName()
-	local Map = game.GetMap()
+	local HostName
+	local Map
+	local NotInitialized = true
+	timer.Simple(0,function()
+		HostName = game.GetIPAddress()
+		Map = game.GetMap()
+		NotInitialized = false
+	end)
+
 	local WebServerUrl = "http://"..(file.Read("web_server_ip.txt") or "127.0.0.1").."/sync/"
 	local function SendToWebServer(tbl,url,typ)
-		local TableToSend = {MainTable = util.TableToJSON(tbl), server = GetHostName(), map = Map,typ = typ}
+		local TableToSend = {MainTable = util.TableToJSON(tbl), server = HostName, map = Map,typ = typ}
 		http.Post(url, TableToSend)
 	end
 	
@@ -53,6 +60,7 @@ if SERVER then
 	end
 	
 	local function GetFromWebServer(url,typ)
+		if NotInitialized then return end
 		http.Fetch( 
 		url.."?typ="..typ,
 		function (body)
@@ -61,7 +69,7 @@ if SERVER then
 			if not tbl then return end
 			local tbl2 = {}
 			for k,v in pairs(tbl) do
-				if k == GetHostName() or (v.map and v.map ~= Map) then continue end
+				if k == HostName or (v.map and v.map ~= Map) then continue end
 				if not v.MainTable then continue end
 				for k1,v1 in pairs(v.MainTable) do
 					v1.ply = "["..(k).."] "..(v1.ply)
@@ -77,6 +85,7 @@ if SERVER then
 	local shetchik0 = true
 	local LastChatTBL = {}
 	local function SendChatTBL()
+		if NotInitialized then return end
 		--PrintTable(ChatTBL)
 		--if not ChatTBL and LastChatTBL and util.TableToJSON(ChatTBL) == util.TableToJSON(LastChatTBL) then return end
 		if not ChatTBL then 

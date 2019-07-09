@@ -10,6 +10,14 @@ local SwitchesTBL = {}
 local GetSyncedSwitchesTbl = {}
 local TrainsTBL = {}
 local CurTime = os.clock()
+local NotInitialized = true
+local HostName
+local Map
+timer.Simple(0,function()
+	HostName = game.GetIPAddress()
+	Map = game.GetMap()
+	NotInitialized = false
+end)
 
 local function MoveSmooth(ent,vec1,vec2,ang1,ang2)
 	hook.Add("Think",tostring(ent), function()
@@ -27,11 +35,9 @@ local function MoveSmooth(ent,vec1,vec2,ang1,ang2)
 	end)
 end
 
-local HostName = GetHostName()
-local Map = game.GetMap()
 local WebServerUrl = "http://"..(file.Read("web_server_ip.txt") or "127.0.0.1").."/sync/"
 local function SendToWebServer(tbl,url,typ)
-	local TableToSend = {MainTable = util.TableToJSON(tbl), server = GetHostName(), map = Map,typ = typ}
+	local TableToSend = {MainTable = util.TableToJSON(tbl), server = HostName, map = Map,typ = typ}
 	http.Post(url, TableToSend)
 end
 
@@ -86,7 +92,7 @@ local function GetFromWebServer(url,typ)
 	end]]
 	local tbl2 = {}
 	for k,v in pairs(outputTBL[typ]) do
-		if k == GetHostName() or (v.map and v.map ~= Map) then continue end
+		if k == HostName or (v.map and v.map ~= Map) then continue end
 		if not v.MainTable then continue end		
 		for k1,v1 in pairs(v.MainTable) do
 			table.insert(tbl2,1,v1)
@@ -109,7 +115,7 @@ local function SendSyncedTrains(arg)
 			if IsValid(v1:CPPIGetOwner()) then
 				Owner = v1:CPPIGetOwner():Nick()
 			end
-			TrainsTBLL[(GetHostName())..tostring(v1)] = {
+			TrainsTBLL[(HostName)..v1:EntIndex()] = {
 				OsTime = os.clock(),
 				model = v1:GetModel(),
 				pos = v1:GetPos(),
@@ -433,7 +439,7 @@ function ForAvtooborot(route,hidenotif)
 	--PrintTable(SopensTBL)
 end
 
-MetrostroiSyncEnabled = false
+MetrostroiSyncEnabled = true
 hook.Remove("Think","SyncTrainsThink")
 function SyncTrainsThink()
 	hook.Add("Think","SyncTrainsThink", function() 
@@ -448,6 +454,7 @@ function SyncTrainsThink()
 		end
 		if lasttime + interval > os.clock() then return end
 		lasttime = os.clock()
+		if NotInitialized then return end
 		SendSyncedTrains(nil)
 		GetSyncedTrains(nil)
 		
