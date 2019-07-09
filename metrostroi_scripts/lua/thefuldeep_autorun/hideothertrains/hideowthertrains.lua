@@ -30,7 +30,7 @@ local tracelinesetup = {mask = MASK_ALL,output = {},filter = function(ent)
 	local PlyInSeatTrain = PlyInSeat and PlyInSeat:GetNW2Entity("TrainEntity",nil)
 	if not IsValid(PlyInSeatTrain) then PlyInSeatTrain = nil end
 	
-	local entTrain = entTrain:GetNW2Entity("TrainEntity",nil)
+	local entTrain = ent:GetNW2Entity("TrainEntity",nil)
 	if not IsValid(entTrain) then entTrain = nil end
 	
 	if PlyInSeat and (PlyInSeat == ent or PlyInSeatTrain and (PlyInSeatTrain == ent or entTrain and entTrain == PlyInSeatTrain)) then
