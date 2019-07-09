@@ -1478,6 +1478,13 @@ if SERVER then
 		for k,v in pairs(routes) do
 			for k1,v1 in pairs(routes) do
 				if v1[1] == v[1] and v1[3] ~= v[3] and v1[1] ~= "0" then 
+					local SameTrain
+					if v1[3].WagonList then
+						for k2,wag in pairs(v1[3].WagonList) do
+							if wag == v[3] then SameTrain = true break end
+						end
+					end
+					if SameTrain then continue end
 					ulx.fancyLogAdmin(v1[2],"#A и #T имеют одинаковые номера маршрутов!", v[2])
 					--print(v1[2]:Nick().." i "..v[2]:Nick())
 					for k2,v2 in pairs(routes) do
