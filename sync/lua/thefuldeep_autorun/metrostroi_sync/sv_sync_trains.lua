@@ -1,6 +1,6 @@
 if CLIENT then return end
 
-local interval = 0.5
+local interval = 1
 local lasttime = os.clock()
 local SyncedTrainsTBL = {}
 local RoutesTBL = {}
