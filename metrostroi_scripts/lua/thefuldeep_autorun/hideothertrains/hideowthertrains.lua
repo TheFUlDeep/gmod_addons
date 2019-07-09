@@ -27,7 +27,15 @@ local tracelinesetup = {mask = MASK_ALL,output = {},filter = function(ent)
 	if ent == LocalPlayer() then return false end
 	
 	--если игрок в составе, то его первый вагон пропускается, чтобы тут же за окном не было некрасиво
-	if PlyInSeat and (PlyInSeat == ent or IsValid(PlyInSeat:GetNW2Entity("TrainEntity",nil)) and PlyInSeat:GetNW2Entity("TrainEntity",nil) == ent) or PlyInTrain and (ent == PlyInTrain or IsValid(ent:GetNW2Entity("TrainEntity",nil)) and ent:GetNW2Entity("TrainEntity",nil) == PlyInTrain) then return false end
+	local PlyInSeatTrain = PlyInSeat and PlyInSeat:GetNW2Entity("TrainEntity",nil)
+	if not IsValid(PlyInSeatTrain) then PlyInSeatTrain = nil end
+	
+	local entTrain = entTrain:GetNW2Entity("TrainEntity",nil)
+	if not IsValid(entTrain) then entTrain = nil end
+	
+	if PlyInSeat and (PlyInSeat == ent or PlyInSeatTrain and (PlyInSeatTrain == ent or entTrain and entTrain == PlyInSeatTrain))
+		return false 
+	end
 	
 	return true
 end}
