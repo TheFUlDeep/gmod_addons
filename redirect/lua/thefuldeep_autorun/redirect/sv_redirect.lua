@@ -3,7 +3,8 @@ if CLIENT then return end
 local HostName
 local Map
 local NotInitialized = true
-timer.Simple(0,function()
+hook.Add("PlayerInitialSpawn","RedirectInitialize",function()
+	hook.Remove("PlayerInitialSpawn","RedirectInitialize")
 	HostName = game.GetIPAddress()
 	Map = game.GetMap()
 	NotInitialized = false

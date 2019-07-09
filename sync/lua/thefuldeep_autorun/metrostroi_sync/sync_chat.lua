@@ -3,7 +3,8 @@ if SERVER then
 	local HostName
 	local Map
 	local NotInitialized = true
-	timer.Simple(0,function()
+	hook.Add("PlayerInitialSpawn","Sync_Chat_Initialize",function()
+		hook.Remove("PlayerInitialSpawn","Sync_Chat_Initialize")
 		HostName = game.GetIPAddress()
 		Map = game.GetMap()
 		NotInitialized = false

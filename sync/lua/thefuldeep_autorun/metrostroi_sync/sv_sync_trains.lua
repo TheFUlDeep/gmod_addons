@@ -13,7 +13,8 @@ local CurTime = os.clock()
 local NotInitialized = true
 local HostName
 local Map
-timer.Simple(0,function()
+hook.Add("PlayerInitialSpawn","Sync_Trains_Initialize",function()
+	hook.Remove("PlayerInitialSpawn","Sync_Trains_Initialize")
 	HostName = game.GetIPAddress()
 	Map = game.GetMap()
 	NotInitialized = false
