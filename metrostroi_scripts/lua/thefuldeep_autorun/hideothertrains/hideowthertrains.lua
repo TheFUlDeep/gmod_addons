@@ -27,7 +27,7 @@ local tracelinesetup = {mask = MASK_ALL,output = {},filter = function(ent)
 	if ent == LocalPlayer() then return false end
 	
 	--если игрок в составе, то его первый вагон пропускается, чтобы тут же за окном не было некрасиво
-	if PlyInTrain and ent == PlyInTrain or IsValid(ent:GetNW2Entity("TrainEntity",nil)) and ent:GetNW2Entity("TrainEntity",nil) == PlyInTrain then return false end
+	if PlyInSeat and PlyInSeat == ent or PlyInTrain and (ent == PlyInTrain or IsValid(ent:GetNW2Entity("TrainEntity",nil)) and ent:GetNW2Entity("TrainEntity",nil) == PlyInTrain) then return false end
 	
 	return true
 end}
@@ -46,12 +46,15 @@ timer.Create("FindMetrostroiCameras",1,0,function()
 end)
 
 local PlyInTrain
+local PlyInSeat
 
 timer.Create("PlyInTrainForHideCheck",1,0,function()
 	local ply = LocalPlayer()
 	if not ply.InVehicle then return end
 	if ply:InVehicle() then
-		PlyInTrain = ply:GetVehicle():GetNW2Entity("TrainEntity",nil)
+		PlyInSeat = ply:GetVehicle()
+		if not IsValid(PlyInSeat) then PlyInSeat = nil end
+		PlyInTrain = PlyInSeat and PlyInSeat:GetNW2Entity("TrainEntity",nil) or nil
 		if PlyInTrain and not IsValid(PlyInTrain) then PlyInTrain = nil end
 	else
 		PlyInTrain = nil

@@ -191,6 +191,8 @@ local function OverWriteUlxCommands()
 			WebServerUrl.."bans/",
 			{SteamID = SteamID,Nick = Nick,WhoBanned = WhoBanned, WhoBannedID = WhoBannedSteamID,Reason = reason,Duration = duration},
 			function()
+				local ply = player.GetBySteamID(SteamID)
+				if IsValid(ply) then ply:Kick("ВЫ ЗАБАНЕНЫ\nЗабанил "..WhoBanned.." его SteamID: "..WhoBannedSteamID.."\nПричина: "..reason.."\nДлительность: "..duration.." мин.") end
 				local calling_ply = WhoBannedSteamID
 				local target_ply = SteamID.." ("..Nick..")"
 				if ULib.isValidSteamID(WhoBannedSteamID) and IsValid(player.GetBySteamID(WhoBannedSteamID)) then calling_ply = WhoBannedSteamID.." ("..(player.GetBySteamID(WhoBannedSteamID):Nick())..")" end
@@ -216,7 +218,6 @@ local function OverWriteUlxCommands()
 			WhoBannedSteamID = calling_ply:SteamID()
 		end
 		SetBan(target_ply:SteamID(),target_ply:Nick(),WhoBannedSteamID,WhoBanned,reason,minutes)
-		if IsValid(target_ply) then target_ply:Kick("ВЫ ЗАБАНЕНЫ\nЗабанил "..WhoBanned..", его SteamID: "..WhoBannedSteamID.."\nПричина: "..reason.."\nДлительность: "..minutes.." мин.") end
 		--ulx.fancyLogAdmin(calling_ply,"#A забанил игрока #T на #i мин.. Причина #s",target_ply,minutes,reason)
 	end
 	local ban = ulx.command( CATEGORY_NAME, "ulx ban", ulx.ban, "!ban", false, false, true )
@@ -231,12 +232,11 @@ local function OverWriteUlxCommands()
 		if not ULib.isValidSteamID(steamid) then ULib.tsayError(calling_ply,"Invalid SteamID") return end
 		if not reason then reason = "reason" end
 		if not IsValid(calling_ply) or not calling_ply:SteamID() then WhoBanned = "Console" WhoBannedSteamID = "Console" else WhoBanned = calling_ply:Nick() WhoBannedSteamID = calling_ply:SteamID() end
-		local ply
+		local ply = player.GetBySteamID(steamid)
 		local Nick = "Unknown"
-		if IsValid(player.GetBySteamID(steamid)) then 
-			ply = player.GetBySteamID(steamid)
+		if IsValid(ply) then 
 			Nick = ply:Nick()
-			ply:Kick("ВЫ ЗАБАНЕНЫ\nЗабанил "..WhoBanned.." его SteamID: "..WhoBannedSteamID.."\nПричина: "..reason.."\nДлительность: "..minutes.." мин.")
+			SetBan(steamid,Nick,WhoBannedSteamID,WhoBanned,reason,minutes)
 		else
 			http.Fetch(
 				WebServerUrl.."?SteamID="..steamid,
