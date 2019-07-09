@@ -130,7 +130,7 @@ if SERVER then
 		SendChatTBL()
 	end)
 	
-	local interval = 0.5
+	local interval = 1
 	local lasttime = os.clock()
 	hook.Remove("Think","SyncChatThink")
 	function SyncChatThink()
