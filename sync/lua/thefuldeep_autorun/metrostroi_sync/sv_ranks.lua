@@ -191,7 +191,7 @@ local function OverWriteUlxCommands()
 			WebServerUrl.."bans/",
 			{SteamID = SteamID,Nick = Nick,WhoBanned = WhoBanned, WhoBannedID = WhoBannedSteamID,Reason = reason,Duration = duration},
 			function()
-				local ply = player.GetBySteamID(steamid)
+				local ply = player.GetBySteamID(SteamID)
 				if IsValid(ply) then ply:Kick("ВЫ ЗАБАНЕНЫ\nЗабанил "..WhoBanned.." его SteamID: "..WhoBannedSteamID.."\nПричина: "..reason.."\nДлительность: "..duration.." мин.") end
 				local calling_ply = WhoBannedSteamID
 				local target_ply = SteamID.." ("..Nick..")"
