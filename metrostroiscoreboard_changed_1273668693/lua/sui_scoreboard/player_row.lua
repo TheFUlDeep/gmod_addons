@@ -130,6 +130,9 @@ end
 local DataTBL = {}
 net.Receive("ScoreBoardAdditional",function()
 	local Pos,Train,SteamID,Path,Owner,Time = net.ReadString(),net.ReadString(),net.ReadString(),net.ReadString(),net.ReadString(),net.ReadString()
+	local ent = ents.GetByIndex(SteamID)
+	if not IsValid(ent) or not ent:IsPlayer() then return end
+	SteamID = ent:SteamID()
 	if not DataTBL[SteamID] then DataTBL[SteamID] = {} end
 	DataTBL[SteamID] = {Pos,Train,Path,Owner,Time}
 end)
