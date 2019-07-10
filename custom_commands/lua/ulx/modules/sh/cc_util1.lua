@@ -1333,21 +1333,24 @@ end
 
 
 --[[============================= Новая функция смены карты для того, чтобы она сохранялась в файл ==========================]]
-if SERVER then
-	timer.Create("ulx.map overriding",1,0,function()
-		if not ulx or not ulx.map then return end
-		if ulx.MapOverrided then timer.Remove("ulx.map overriding") return end
-		timer.Remove("ulx.map overriding")
-		print("overriding ulx.map")
-		local OldUlxMap = ulx.map
-		ulx.map = function(calling_ply, map, gamemode)
-			file.Write("lastmap.txt", map)
-			--ulx.map2(calling_ply, map, gamemode)		-- TODO не работает
-			OldUlxMap(calling_ply, map, gamemode)
-		end
-		ulx.MapOverrided = true
-	end)
-end
+timer.Simple(1,function()
+	if SERVER then
+			if ulx.MapOverrided then return end
+			print("overriding ulx.map")
+			local OldUlxMap = ulx.map
+			ulx.map = function(calling_ply, map, gamemode)
+				file.Write("lastmap.txt", map)
+				ulx.map2(calling_ply, map, gamemode)
+				OldUlxMap(calling_ply, map, gamemode)
+			end
+			ulx.MapOverrided = true
+	end
+	local map = ulx.command( "Utility", "ulx map", ulx.map, "!map" )
+	map:addParam{ type=ULib.cmds.StringArg, completes=ulx.maps, hint="map", error="invalid map \"%s\" specified", ULib.cmds.restrictToCompletes }
+	map:addParam{ type=ULib.cmds.StringArg, completes=ulx.gamemodes, hint="gamemode", error="invalid gamemode \"%s\" specified", ULib.cmds.restrictToCompletes, ULib.cmds.optional }
+	map:defaultAccess( ULib.ACCESS_SUPERADMIN )
+	map:help( "Changes map and gamemode." )
+end)
 
 if SERVER then
 	--[[============================= NOCLIP ПРИ ПОПЫТКЕ ТЕЛЕПОРТА ==========================]]
