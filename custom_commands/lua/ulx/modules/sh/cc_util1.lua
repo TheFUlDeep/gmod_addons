@@ -1929,8 +1929,8 @@ if SERVER then
 	end
 end
 local info = ulx.command("Metrostroi", "ulx info", ulx.info, "!info",true)
-toggletumbler:defaultAccess(ULib.ACCESS_SUPERADMIN)
-toggletumbler:help("Подробная информация о игроках на серверах.")
+info:defaultAccess(ULib.ACCESS_SUPERADMIN)
+info:help("Подробная информация о игроках на серверах.")
 if CLIENT then
 	net.Receive("ServersInfo",function()
 		local Len = net.ReadUInt(32)
