@@ -527,6 +527,6 @@ timer.Create("Send Server Info to WebServer",20,0,function()
 end)
 
 
-timer.Create("CheckSameRoutes",5,0,function()
+timer.Create("CheckSameRoutes",60,0,function()
 	ulx.GetTrains(nil,nil,nil,true)
 end)
