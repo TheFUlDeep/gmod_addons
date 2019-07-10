@@ -1917,6 +1917,7 @@ if SERVER then
 						PrintTable(body1)
 					else
 						net.Start("ServersInfo")
+							print(body)
 							local DataToSend = util.Compress(body)
 							local DataToSendN = #DataToSend
 							net.WriteUInt(DataToSendN,32)
@@ -1935,7 +1936,7 @@ if CLIENT then
 	net.Receive("ServersInfo",function()
 		local Len = net.ReadUInt(32)
 		local Data = net.ReadData(Len)
-		Data = util.TableToJSON(Data)
+		Data = util.JSONToTable(util.Decompress(Data))
 		if Data then 
 			PrintTable(Data) 
 			chat.AddText(Color( 100, 100, 255 ),"Информация о серверах выведена к консоль.")
