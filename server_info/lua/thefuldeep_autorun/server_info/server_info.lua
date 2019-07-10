@@ -1,9 +1,9 @@
 if CLIENT then return end
 
 
-local NotInitialized = false --временно
-local HostName = game.GetIPAddress()--временно
-local Map = game.GetMap()--временно
+local NotInitialized = true
+local HostName
+local Map
 hook.Add("PlayerInitialSpawn","Server_Info_Initialize",function()
 	hook.Remove("PlayerInitialSpawn","Server_Info_Initialize")
 	HostName = game.GetIPAddress()
@@ -11,7 +11,7 @@ hook.Add("PlayerInitialSpawn","Server_Info_Initialize",function()
 	NotInitialized = false
 end)
 
-local WebServerUrl = "http://thefuldeep.ddns.net/serverinfo/"
+local WebServerUrl = "http://"..(file.Read("web_server_ip.txt") or "127.0.0.1").."/serverinfo/"
 local function SendToWebServer(tbl)
 	PrintTable(tbl)
 	local TableToSend = {MainTable = util.TableToJSON(tbl), server = HostName}
@@ -20,6 +20,7 @@ end
 
 timer.Create("Overriding ulx.map for sending info to WebServer",1,0,function()
 	if not ulx or not ulx.map then return end
+	if ulx.GotoServerInfoLoaded then timer.Remove("Overriding ulx.map for sending info to WebServer") return end
 	timer.Remove("Overriding ulx.map for sending info to WebServer")
 	print("overriding ulx.map for sending info to WebServer")
 	local OldUlxMap = ulx.map
@@ -27,26 +28,115 @@ timer.Create("Overriding ulx.map for sending info to WebServer",1,0,function()
 		SendToWebServer({"СМЕНА КАРТЫ"})
 		OldUlxMap(calling_ply, map, gamemode)
 	end
+	ulx.GotoServerInfoLoaded = true
 end)
 
+
+timer.Create("Ovewriting ulx.wagons",1,0,function()
+	if not ulx or not ulx.wagons then return end
+	if ulx.WagonsOverWrited then timer.Remove("Ovewriting ulx.wagons") return end
+	timer.Remove("Ovewriting ulx.wagons")
+	ulx.WagonsOverWrited = true
+	ulx.wagons = function(ply)
+		http.Fetch(
+			WebServerUrl,
+			function(body)
+				body = util.JSONToTable(body)
+				if not body or not MetrostroiSyncEnabled then ulx.GetTrains(ply,nil,true) return end
+				local ResultTable = {}
+				ResultTable.Trains = {}
+				local Wagons = 0
+				for k,v in pairs(body) do
+					--if type(v) == "table" then PrintTable(v) end
+					if type(v) ~= "table" or not v.Map or v.Map ~= Map or not v.Trains then continue end
+					for k1,v1 in ipairs(v.Trains) do
+						if v1.WagonCount then Wagons = Wagons + v1.WagonCount end
+						table.insert(ResultTable.Trains,1,v1)
+					end
+				end
+				ulx.fancyLog(false,"Составов в сессии: #i",#ResultTable.Trains)
+				ulx.fancyLog(false,"Вгонов в сессии: #i",Wagons)
+				for k,v in pairs(ResultTable.Trains) do
+					if v.Owner and v.Owner.Nick and v.WagonCount and v.Name and v.RouteNumber then
+						ulx.fancyLog(false,"Владелец #s, состав #s, маршрут #s, вагонов #s",v.Owner.Nick,v.Name,v.RouteNumber,v.WagonCount)
+					end
+					if v.Drivers then
+						local DriversN = #v.Drivers
+						if DriversN == 1 then ulx.fancyLog(false,"управляет #s",v.Drivers[1].Nick)
+						elseif DriversN> 1 then 
+							local str = ""
+							for k1,v1 in pairs(v.Drivers) do
+								if v1.Nick then str = str == "" and v1.Nick or str..", "..v1.Nick end
+							end
+							ulx.fancyLog(false,"управляют #s",str)
+						end
+					end
+				end
+			end,
+			function()
+				ulx.GetTrains(ply,nil,true)
+				return
+			end
+		)
+		--ulx.GetTrains(ply,nil,true)	-- это тут на всякий случай. Не уверен, что это нужно
+	end
+end)
+
+ulx.wagons(nil,nil,true)
+
 local function GetRouteNumber(ent)
+	local tbl = {}
 	local RouteNumber = ent:GetNW2Int("RouteNumber",0)
-	local RouteNumber1
-	local SPB = false
-	local Name = ent.SubwayTrain.Name
-	if not ent.ASNP and ent.SubwayTrain.Name ~= "81-718" and ent.SubwayTrain.Name ~= "81-703" and ent.SubwayTrain.Name ~= "81-702" and not ent:GetClass():find("_6") then SPB = true end
-	if RouteNumber < 10 then RouteNumber1 = "0"..RouteNumber else RouteNumber1 = RouteNumber end
-	if SPB and RouteNumber < 100 then RouteNumber1 = "0"..RouteNumber1 else RouteNumber1 = RouteNumber1 end
-	return RouteNumber1
+	local Class = ent:GetClass()
+	if Class == "gmod_subway_81-702"
+	or Class == "gmod_subway_81-702_int"
+	or Class == "gmod_subway_81-703"
+	or Class == "gmod_subway_81-703_int"
+	or Class == "gmod_subway_81-717_mvm"
+	or Class == "gmod_subway_81-714_mvm"
+	or Class == "gmod_subway_81-717_mvm_custom"
+	or Class == "gmod_subway_81-714_mvm_custom"
+	or Class == "gmod_subway_81-718"
+	or Class == "gmod_subway_81-719"
+	or Class == "gmod_subway_81-719"
+	or Class == "gmod_subway_81-720"
+	or Class == "gmod_subway_81-721"
+	or Class == "gmod_subway_ezh"
+	or Class == "gmod_subway_ezh1"
+	or Class == "gmod_subway_ezh3"
+	or Class == "gmod_subway_em508t"
+	then
+		RouteNumber = RouteNumber / 10
+	end
+	
+	if tonumber(RouteNumber) ~= 0 then
+		table.insert(tbl,1,RouteNumber)
+	end
+	
+	local RouteNumber1 = ent:GetNW2Int("ASNP:RouteNumber",0)
+	if tonumber(RouteNumber1) ~= 0 then 
+		if tonumber(RouteNumber) ~= 0 and RouteNumber ~= RouteNumber1 then
+			RouteNumber = RouteNumber.."/"..RouteNumber1
+			table.insert(tbl,1,RouteNumber1)
+		else
+			RouteNumber = RouteNumber1
+			table.insert(tbl,1,RouteNumber1)
+		end
+	end
+	
+	return RouteNumber,#tbl > 0 and tbl or nil
 end
 
 local function GetTrainRouteNumber(wagon)
 	local routenumber = ""
 	local RouteNumbers = {}
 	for k1,v1 in pairs(wagon.WagonList) do
-		local RouteNumber = GetRouteNumber(v1)
-		if not tonumber(RouteNumber) or tonumber(RouteNumber) == 0 then continue end
-		table.insert(RouteNumbers,1,RouteNumber)
+		local RouteNumberString,RouteNumberTbl = GetRouteNumber(v1)
+		if RouteNumberTbl then
+			for k,v in ipairs(RouteNumberTbl) do
+				if tonumber(v) ~= 0 then table.insert(RouteNumbers,1,v) end
+			end
+		end
 	end
 	for k1,v1 in ipairs(RouteNumbers) do
 		for k2,v2 in ipairs(RouteNumbers) do
@@ -58,9 +148,8 @@ local function GetTrainRouteNumber(wagon)
 		routenumber = routenumber == "" and v1 or routenumber.."/"..v1
 	end
 	
-	return routenumber ~= "" and routenumber or 0
+	return routenumber ~= "" and routenumber or 0,#RouteNumbers > 0 and RouteNumbers or nil
 end
-
 
 local function GetTrainDrivers(wag)
 	local Drivers = {}
@@ -71,6 +160,63 @@ local function GetTrainDrivers(wag)
 	end
 	
 	return Drivers
+end
+
+local function CompareRouteNumbers(wag1,wag2)	--false если разные, true если одинаковые
+--	if not CPPI then return false end		эта проврка есть в функции GetTrains
+	local SameTrain								--вообще эта проверка не нужна, но оставл на всякий случай
+	for k,v in pairs(wag1.WagonList) do
+		for k1,v1 in pairs(wag2.WagonList) do
+			if v1 == v then SameTrain = true break end
+		end
+	end
+	if SameTrain then return false end
+	
+	local string1, RouteNumbers1 = GetTrainRouteNumber(wag1)
+	local string2, RouteNumbers2 = GetTrainRouteNumber(wag2)
+	if not RouteNumbers1 or not RouteNumbers2 then return false end
+	
+	local SameRoutes
+	for k,v in pairs(RouteNumbers1) do
+		for k1,v1 in pairs(RouteNumbers2) do
+			if v == v1 then SameRoutes = true break end
+		end
+	end
+	
+	if SameRoutes then
+		local Users = {}
+	
+		local Drivers1 = GetTrainDrivers(wag1)
+		local Owner1 = wag1:CPPIGetOwner()
+		if IsValid(Owner1) then
+			for k,v in pairs(Drivers1) do
+				if v == Owner1 then Drivers1[k] = nil end
+			end
+			table.insert(Users,1,Owner1)
+		end
+		for k,v in pairs(Drivers1) do
+			table.insert(Users,1,v)
+		end
+		
+		local Drivers2 = GetTrainDrivers(wag2)
+		local Owner2 = wag2:CPPIGetOwner()
+		if IsValid(Owner2) then
+			for k,v in pairs(Drivers2) do
+				if v == Owner2 then Drivers1[k] = nil end
+			end
+			table.insert(Users,1,Owner2)
+		end
+		for k,v in pairs(Drivers2) do
+			table.insert(Users,1,v)
+		end
+		
+		local string = ""
+		for k,v in pairs(Users) do
+			string = string == "" and v:Nick() or string..", "..v:Nick()
+		end
+		ulx.fancyLog(false,"#s имеют одинаковые номера маршрутов!",string)
+	end
+	return true
 end
 
 local function GetTrain(ent)
@@ -114,7 +260,9 @@ local function GetTrain(ent)
 	return ResultTbl
 end
 
-local function GetTrains(calling_ply,target_ply,notif,detectroutes)
+if not ulx then ulx = {} end
+
+ulx.GetTrains = function(calling_ply,target_ply,notif,detectroutes)
 	if target_ply and not CPPI then return nil end
 	local Class1
 	local tbl = {}
@@ -175,11 +323,12 @@ local function GetTrains(calling_ply,target_ply,notif,detectroutes)
 	tbl = tbl2
 	
 	if notif then
+		ulx.fancyLogAdmin(calling_ply,"#A вызвал !!trains")
 		ulx.fancyLog("Вагонов на сервере: #s", Metrostroi.TrainCount())
 		ulx.fancyLog("Составов на сервере: #i", table.Count(tbl))
 		for k,v in pairs(tbl) do
 			if not v.Owner or not v.RouteNumber or not v.WagonCount then continue end
-			ulx.fancyLogAdmin(player.GetBySteamID(v.Owner.SteamID),false,"Владелец #A, маршрут #s, вагонов #s", tostring(v.RouteNumber),tostring(v.WagonCount))
+			ulx.fancyLogAdmin(player.GetBySteamID(v.Owner.SteamID),false,"Владелец #A, состав #s, маршрут #s, вагонов #s",v.Name, tostring(v.RouteNumber),tostring(v.WagonCount))
 			if v.Drivers then
 				local DriversCount = table.Count(v.Drivers)
 				if DriversCount > 1 then
@@ -198,39 +347,11 @@ local function GetTrains(calling_ply,target_ply,notif,detectroutes)
 	
 	if not target_ply and not notif and detectroutes and CPPI then
 		for k,v in pairs(tbl) do
-			for k1,v1 in pairs(v.Entity.WagonList) do
-				for k2,v2 in pairs(tbl) do
-					if k2 == k then continue end
-					for k3,v3 in pairs(v2.Entity.WagonList) do
-						local RouteNumber1 = GetRouteNumber(v1)
-						local RouteNumber2 = GetRouteNumber(v3)
-						if tonumber(RouteNumber1) ~= 0 or tonumber(GetRouteNumber(v3)) ~= 0 then
-							if RouteNumber1 == RouteNumber2 then
-								local Owner1 = v1:CPPIGetOwner()
-								local Owner2 = v3:CPPIGetOwner()
-								if IsValid(Owner1) and IsValid(Owner2) then
-									ulx.fancyLogAdmin(Owner1,false,"#A и #T имеют одинковые номера маршрутов!", Owner2)
-								end
-								local Drivers1 = GetTrainDrivers(v1)
-								local Drivers2 = GetTrainDrivers(v3)
-								for key,Driver in pairs(Drivers1) do
-									if Driver == Owner1 or Driver == Owner2 then continue end
-									for key2,Driver2 in pairs(Drivers2) do
-										if Driver2 == Owner1 or Driver2 == Owner2 or Driver2 == Driver then continue end -- Driver2 == Driver невозможно, но оставлю на всякий случай
-										ulx.fancyLogAdmin(Driver,false,"#A и #T имеют одинковые номера маршрутов!", Driver2)
-									end
-								end
-							end
-						end
-					end
-				end
-			end
+			if v.Entity and tbl[k+1] and tbl[k+1].Entity then CompareRouteNumbers(v.Entity,tbl[k+1].Entity) end
 		end
 	end
 	return #tbl == 0 and nil or tbl
 end
-
-GetTrains(nil,nil,true)
 
 local PeregonsTbl = {}
 local function ScoreBoardFunction(ent)
@@ -363,7 +484,7 @@ local function PrepareDataToSending()
 				if Dist and Dist ~= "" then TblToSend.Players[Index].InTrain.ArrDist = Dist end
 			end
 				
-			TblToSend.Players[Index].Trains = GetTrains(nil,v)
+			TblToSend.Players[Index].Trains = ulx.GetTrains(nil,v)
 			if #TblToSend.Players[Index].Trains < 1 then TblToSend.Players[Index].Trains = nil end
 			if TblToSend.Players[Index].Trains then
 				for k1,v1 in pairs(TblToSend.Players[Index].Trains) do
@@ -381,7 +502,7 @@ local function PrepareDataToSending()
 	end
 	TblToSend.PlayerCount = i
 	TblToSend.MaxPlayers = game.MaxPlayers()
-	TblToSend.Trains = GetTrains()
+	TblToSend.Trains = ulx.GetTrains()
 	if table.Count(TblToSend.Trains) < 1 then TblToSend.Trains = nil end
 	if TblToSend.Trains then
 		for k,v in pairs(TblToSend.Trains) do
@@ -398,12 +519,13 @@ local function PrepareDataToSending()
 	return TblToSend
 end
 
-timer.Create("UpdatePeregonsTbl",1,0,PrepareDataToSending)
-
 timer.Create("Send Server Info to WebServer",5,0,function()
-	TblToSend = PrepareDataToSending()
-	
-	SendToWebServer(TblToSend)
+	local tbl = PrepareDataToSending()
+	if not tbl then return end
+	SendToWebServer(tbl)
 end)
 
 
+timer.Create("CheckSameRoutes",60,0,function()
+	ulx.GetTrains(nil,nil,nil,true)
+end)
