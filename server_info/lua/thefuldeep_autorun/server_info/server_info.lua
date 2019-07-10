@@ -22,31 +22,25 @@ local function SendToWebServer(tbl)
 	http.Post(WebServerUrl, TableToSend)
 end
 
-timer.Create("Overriding ulx.map for sending info to WebServer",1,0,function()
-	if not ulx or not ulx.map then return end
-	if ulx.GotoServerInfoLoaded then timer.Remove("Overriding ulx.map for sending info to WebServer") return end
-	timer.Remove("Overriding ulx.map for sending info to WebServer")
-	print("overriding ulx.map for sending info to WebServer")
-	local OldUlxMap = ulx.map
-	ulx.map = function(calling_ply, map, gamemode)
-		SendToWebServer({"СМЕНА КАРТЫ"})
-		OldUlxMap(calling_ply, map, gamemode)
+--[[timer.Create("Overriding ulx.map for sending info to WebServer",1,0,function()		--TODO не работает
+	if not ulx then return end
+	ulx.map2 = function(calling_ply, map, gamemode)
+		SendToWebServer({"СМЕНА КАРТЫ НА "..map})
 	end
-	ulx.GotoServerInfoLoaded = true
-end)
+end)]]
 
---ulx.WagonsOverWrited = false
+
 --MetrostroiSyncEnabled = true
 timer.Create("Ovewriting ulx.wagons",1,0,function()
-	if not ulx or not ulx.wagons then return end
-	if ulx.WagonsOverWrited then timer.Remove("Ovewriting ulx.wagons") return end
+	if not ulx then return end
 	timer.Remove("Ovewriting ulx.wagons")
-	ulx.wagons = function(ply)
+	ulx.wagons2 = function(ply)
+		if not MetrostroiSyncEnabled then ulx.GetTrains(ply,nil,true) return end
 		http.Fetch(
 			WebServerUrl,
 			function(body)
 				body = util.JSONToTable(body)
-				if not body or not MetrostroiSyncEnabled then ulx.GetTrains(ply,nil,true) return end
+				if not body then ulx.GetTrains(ply,nil,true) return end
 				local ResultTable = {}
 				ResultTable.Trains = {}
 				local Wagons = 0
@@ -264,8 +258,9 @@ local function GetTrain(ent)
 	return ResultTbl
 end
 
-if not ulx then ulx = {} end
-
+--if not ulx then ulx = {} end
+timer.Create("ulx.GetTrains",1,0,function()
+if not ulx then return end
 ulx.GetTrains = function(calling_ply,target_ply,notif,detectroutes)
 	if target_ply and not CPPI then return nil end
 	local Class1
@@ -327,7 +322,7 @@ ulx.GetTrains = function(calling_ply,target_ply,notif,detectroutes)
 	tbl = tbl2
 	
 	if notif then
-		ulx.fancyLogAdmin(calling_ply,"#A вызвал !!trains")
+		ulx.fancyLogAdmin(calling_ply,"#A вызвал !trains")
 		ulx.fancyLog("Вагонов на сервере: #s", Metrostroi.TrainCount())
 		ulx.fancyLog("Составов на сервере: #i", table.Count(tbl))
 		for k,v in pairs(tbl) do
@@ -356,6 +351,7 @@ ulx.GetTrains = function(calling_ply,target_ply,notif,detectroutes)
 	end
 	return #tbl == 0 and nil or tbl
 end
+end)
 
 local PeregonsTbl = {}
 local function ScoreBoardFunction(ent)
@@ -524,13 +520,13 @@ local function PrepareDataToSending()
 	return TblToSend
 end
 
-timer.Create("Send Server Info to WebServer",5,0,function()
+timer.Create("Send Server Info to WebServer",20,0,function()
 	local tbl = PrepareDataToSending()
 	if not tbl then return end
 	SendToWebServer(tbl)
 end)
 
 
-timer.Create("CheckSameRoutes",60,0,function()
+timer.Create("CheckSameRoutes",5,0,function()
 	ulx.GetTrains(nil,nil,nil,true)
 end)

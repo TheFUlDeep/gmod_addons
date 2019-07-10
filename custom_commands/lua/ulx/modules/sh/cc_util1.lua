@@ -684,21 +684,23 @@ if SERVER then
 	--print(Metrostroi.ActiveDispatcher) print("asdasd")
 		--if listener == Metrostroi.ActiveDispatcher or talker == Metrostroi.ActiveDispatcher then return true end
 		--if talker == Metrostroi.ActiveDispatcher then return true end
+		local RankTalker = talker:GetUserGroup()
+		local RankListener = listener:GetUserGroup()
 		if 
-			talker:GetUserGroup() == "superadmin" 
-			or listener:GetUserGroup() == "superadmin" 
-			or talker:GetUserGroup() == "tsar" 
-			or listener:GetUserGroup() == "tsar" 
-			or talker:GetUserGroup() == "zamtsar" 
-			or listener:GetUserGroup() == "zamtsar" 
-			or talker:GetUserGroup() == "admin" 
-			or talker:GetUserGroup() == "tsarbom" 
-			or talker:GetUserGroup() == "tsarbomba" 
-			or listener:GetUserGroup() == "admin" 
-			or  talker:GetUserGroup() == "operator" 
-			or listener:GetUserGroup() == "operator" 
-			or listener:GetUserGroup() == "tsarbom" 
-			or listener:GetUserGroup() == "tsarbomba" 
+			RankTalker == "superadmin" 
+			or RankListener == "superadmin" 
+			or RankTalker == "tsar" 
+			or RankListener == "tsar" 
+			or RankTalker == "zamtsar" 
+			or RankListener == "zamtsar" 
+			or RankTalker == "admin" 
+			or RankTalker == "tsarbom" 
+			or RankTalker == "tsarbomba" 
+			or RankListener == "admin" 
+			or RankTalker == "operator" 
+			or RankListener == "operator" 
+			or RankListener == "tsarbom" 
+			or RankListener == "tsarbomba" 
 			or listener == Metrostroi.ActiveDispatcher 
 			or talker == Metrostroi.ActiveDispatcher 
 		then 
@@ -1080,6 +1082,7 @@ if SERVER then
 	
 	local FirstMethodTbl = {}
 	local function GenerateTblForFirstMethod()
+		print("Generating Tbl for FirstMethod")
 		local i = 0
 		for k,v in pairs(ents.FindByClass("gmod_track_platform")) do
 			if not IsValid(v) then continue end
@@ -1125,6 +1128,7 @@ if SERVER then
 	
 	local ThirdMethodTbl = {}
 	local function GenerateTblForThirdMethod()						-- эта функция создает таблицу на 2000 элементов. Ни в коем случае не исполнять ее в рантайме!!!
+		print("Generating Tbl for ThirdtMethod")
 		if not Metrostroi or not Metrostroi.StationConfigurations then return "" end
 		local StationName,StationPos,CurDist,MinDist,NearestStationName
 		local i = 0
@@ -1164,6 +1168,7 @@ if SERVER then
 	end
 	
 	local function GenerateTrackIDsPathsTbl()
+		print("Generating TrackIDsPathsTbl")
 		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
 			if not IsValid(v) or not v.Name or v.Name == "" or v.ARSOnly or not v.Lenses then continue end
 			curtrack = v.TrackPosition.path and v.TrackPosition.path.id or 0
@@ -1331,115 +1336,20 @@ end
 if SERVER then
 	timer.Create("ulx.map overriding",1,0,function()
 		if not ulx or not ulx.map then return end
+		if ulx.MapOverrided then timer.Remove("ulx.map overriding") return end
 		timer.Remove("ulx.map overriding")
 		print("overriding ulx.map")
 		local OldUlxMap = ulx.map
 		ulx.map = function(calling_ply, map, gamemode)
 			file.Write("lastmap.txt", map)
+			--ulx.map2(calling_ply, map, gamemode)		-- TODO не работает
 			OldUlxMap(calling_ply, map, gamemode)
 		end
+		ulx.MapOverrided = true
 	end)
 end
 
---[[============================= ПОИСК ОДИНАКОВЫХ МАРШРУТОВ ==========================]]
 if SERVER then
-	function findroutes()
-		local Class1
-		local tbl = {}
-		local i = 1 
-		local NA = "N/A"
-		local Class
-		for k,v in pairs (Metrostroi.TrainClasses) do							--переношу все найденные паравозы в отдельную таблицу, чтобы потом уже редактировать ее
-			local ents = ents.FindByClass(v)
-			for k2,v2 in pairs(ents) do
-				tbl[i] = {v2, Class}
-				i = i + 1
-			end
-		end
-		for k,v in pairs(tbl) do	--беру один вагон, смотрю все сцепленные с ним вагоны (они уже есть в таблице) и удаляю все вагоны (кроме первого), если там нет водителя
-			Class = v[1].SubwayTrain.Name
-			for _k, _v in pairs(v[1].WagonList) do
-				if not stringfind(Class, _v.SubwayTrain.Name) then Class = Class.."/".._v.SubwayTrain.Name end	--уточнение вагонов в составе
-			end
-				for k1,v1 in pairs(v[1].WagonList) do
-					if v[1] ~= v1 and not v1:GetDriver() then
-						for k2,v2 in pairs(tbl) do
-							if v1 == v2[1] then tbl[k2] = nil end
-						end
-					end
-				end
-			v[2] = Class
-		end
-		--PrintTable(tbl)
-		--ulx.fancyLog("Вагонов на сервере: #s", Metrostroi.TrainCount())
-		--ulx.fancyLog("Составов на сервере: #i", table.Count(tbl))
-		local i = 1
-		local routes = {}
-		for k,v in pairs(tbl) do
-		local routenumber = 0
-		local routenumber1 = ""
-				for k1,v1 in pairs(v[1].WagonList) do
-					if string.find(v1.SubwayTrain.Name, "722") or string.find(v1.SubwayTrain.Name, "Ema") or (string.find(v1.SubwayTrain.Name, "717") and not string.find(v1.SubwayTrain.Name, "5m")) or string.find(v1.SubwayTrain.Name, ".6") then routenumber = v1:GetNW2Int("RouteNumber") else routenumber = v1:GetNW2Int("RouteNumber") / 10 end
-					if routenumber ~= 0 then
-						if routenumber1 == "" then routenumber1 = tostring(routenumber)
-						elseif routenumber1 ~= tostring(routenumber) then routenumber1 = routenumber1.."/"..tostring(routenumber)
-						end
-					end
-				end
-			if routenumber1 == "" then routenumber1 = "0" end
-			--[[if not v[1]:GetDriver() then
-				ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец: #A, состав: #s, вагонов: #i, маршрут: #s, машинист: #s",v[2], table.Count(v[1].WagonList), routenumber1, NA)
-			elseif v[1]:GetDriver() == v[1]:CPPIGetOwner() then
-					ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец/машинист: #A, состав: #s, вагонов: #i, маршрут: #s",v[2], table.Count(v[1].WagonList), routenumber1)
-			else
-					ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец: #A, состав: #s, вагонов: #i, маршрут: #s, машинист: #T",v[2], table.Count(v[1].WagonList), routenumber1, v[1]:GetDriver())
-			end]]
-			local entity = v[1]
-			routes[i] = {routenumber1, v[1]:CPPIGetOwner(), entity}
-			i = i + 1
-		end
-		for k,v in pairs(routes) do																	-- разделение маршрутов со знаком /
-			if string.find(v[1], "/") then
-				local slashpos = string.find(v[1], "/") 
-				routes[table.Count(routes) + 1] = {(string.sub(v[1],1, slashpos-1)),v[2], (table.Count(routes) + 1)}
-				v[1] = string.sub(v[1],slashpos+1)
-			end
-		end
-		--PrintTable(routes)
-		for k,v in pairs(routes) do
-			for k1,v1 in pairs(routes) do
-				if v1[1] == v[1] and v1[3] ~= v[3] and v1[1] ~= "0" then 
-					local SameTrain
-					if v1[3].WagonList then
-						for k2,wag in pairs(v1[3].WagonList) do
-							if wag == v[3] then SameTrain = true break end
-						end
-					end
-					if SameTrain then continue end
-					ulx.fancyLogAdmin(v1[2],"#A и #T имеют одинаковые номера маршрутов!", v[2])
-					--print(v1[2]:Nick().." i "..v[2]:Nick())
-					for k2,v2 in pairs(routes) do
-						if v2[1] == v1[1] then routes[k2] = nil break
-						elseif v2[1] == v[1] then routes[k2] = nil break
-						end
-					end
-				end
-			end
-		end
-	end
-	
-	local timestamp = 0
-	local IsRoutesCheckingEnabled = true
-	local function CheckRoutes()
-		hook.Add("Think","CheckingRoutesThink",function() 
-			if not IsRoutesCheckingEnabled then hook.Remove("Think","CheckingRoutesThink") return end
-			if CurTime() - timestamp < 60 then return end
-			timestamp = CurTime()
-			findroutes()
-		end)
-	end
-	CheckRoutes()
-
 	--[[============================= NOCLIP ПРИ ПОПЫТКЕ ТЕЛЕПОРТА ==========================]]
 	hook.Add("PlayerSay", "stationnoclip", function(ply, text, team)
 	local text = string.lower(text)
@@ -1662,6 +1572,7 @@ end
 --[[============================= НАСТРОЙКА ЛИМИТОВ ДЛЯ СПАВНЕРА ==========================]]
 function MaximumWagons(ply,self)
 	local Map = game.GetMap()
+	if not ply.GetUserGroup then return 0 end
 	local Rank = ply:GetUserGroup()
 	local maximum = 6
 	local MetrostroiTrainCount = GetGlobalInt("metrostroi_train_count")
@@ -1992,25 +1903,58 @@ if CLIENT then
 	end)
 end
 
-
+--[[============================= полная информаия со всех серверов ==========================]]
 if SERVER then
+	util.AddNetworkString("ServersInfo")
 	local WebServerUrl = "http://"..(file.Read("web_server_ip.txt") or "127.0.0.1").."/serverinfo/"
 	function ulx.info(ply)
 		http.Fetch(
 			WebServerUrl,
 			function(body)
-				body = util.JSONToTable(body)
-				if body then PrintTable(body) end
+				body1 = util.JSONToTable(body)
+				if body1 then 
+					if not IsValid(ply) then
+						PrintTable(body1)
+					else
+						net.Start("ServersInfo")
+							local DataToSend = util.Compress(body)
+							local DataToSendN = #DataToSend
+							net.WriteUInt(DataToSendN,32)
+							net.WriteData(DataToSend,DataToSendN)
+						net.Send(ply)
+					end
+				end
 			end
 		)
 	end
-	local info = ulx.command("Metrostroi", "ulx info", ulx.info, "!info",true)
-	toggletumbler:defaultAccess(ULib.ACCESS_SUPERADMIN)
-	toggletumbler:help("Подробная информация о игроках на сервере.")
+end
+local info = ulx.command("Metrostroi", "ulx info", ulx.info, "!info",true)
+toggletumbler:defaultAccess(ULib.ACCESS_SUPERADMIN)
+toggletumbler:help("Подробная информация о игроках на серверах.")
+if CLIENT then
+	net.Receive("ServersInfo",function()
+		local Len = net.ReadUInt(32)
+		local Data = net.ReadData(Len)
+		Data = util.TableToJSON(Data)
+		if Data then 
+			PrintTable(Data) 
+			chat.AddText(Color( 100, 100, 255 ),"Информация о серверах выведена к консоль.")
+		end
+	end)
 end
 
-
-print("asd")
+timer.Simple(1,function()
+	print("overwriting ulx.wagons")
+	if SERVER then
+		ulx.wagons = function(ply)
+			if not ulx.wagons2 then return end
+			ulx.wagons2(ply)
+		end
+	end
+	local wagons = ulx.command( "Metrostroi", "ulx trains", ulx.wagons, "!trains" )
+	wagons:defaultAccess( ULib.ACCESS_ALL )
+	wagons:help( "Shows you the current wagons." )
+end)
 
 --используй table.insert только если ключи не числа
 --ply.InMetrostroiTrain
