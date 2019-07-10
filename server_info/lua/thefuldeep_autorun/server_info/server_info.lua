@@ -11,9 +11,13 @@ hook.Add("PlayerInitialSpawn","Server_Info_Initialize",function()
 	NotInitialized = false
 end)
 
+--local NotInitialized = false
+--local HostName = game.GetIPAddress()
+--local Map = game.GetMap()
+
 local WebServerUrl = "http://"..(file.Read("web_server_ip.txt") or "127.0.0.1").."/serverinfo/"
 local function SendToWebServer(tbl)
-	PrintTable(tbl)
+	--PrintTable(tbl)
 	local TableToSend = {MainTable = util.TableToJSON(tbl), server = HostName}
 	http.Post(WebServerUrl, TableToSend)
 end
@@ -31,12 +35,12 @@ timer.Create("Overriding ulx.map for sending info to WebServer",1,0,function()
 	ulx.GotoServerInfoLoaded = true
 end)
 
-
+--ulx.WagonsOverWrited = false
+--MetrostroiSyncEnabled = true
 timer.Create("Ovewriting ulx.wagons",1,0,function()
 	if not ulx or not ulx.wagons then return end
 	if ulx.WagonsOverWrited then timer.Remove("Ovewriting ulx.wagons") return end
 	timer.Remove("Ovewriting ulx.wagons")
-	ulx.WagonsOverWrited = true
 	ulx.wagons = function(ply)
 		http.Fetch(
 			WebServerUrl,
@@ -82,7 +86,7 @@ timer.Create("Ovewriting ulx.wagons",1,0,function()
 	end
 end)
 
-ulx.wagons(nil,nil,true)
+--ulx.wagons(nil,nil,true)
 
 local function GetRouteNumber(ent)
 	local tbl = {}
@@ -461,6 +465,7 @@ local function PrepareDataToSending()
 			TblToSend.Players[Index] = {}
 			TblToSend.Players[Index].SteamID = v:SteamID()
 			TblToSend.Players[Index].Nick = v:Nick()
+			TblToSend.Players[Index].Rank = v:GetUserGroup()
 			TblToSend.Players[Index].Time = math.floor(v:TimeConnected())
 			
 			local result,Train,ID,path,Owner,Time,Dist = ScoreBoardFunction(v)

@@ -1341,67 +1341,6 @@ if SERVER then
 	end)
 end
 
---[[============================= НОВАЯ КОМАНДА !TRAINS ==========================]]
-timer.Simple(5, function()
-	if SERVER then
-		function ulx.wagons(ply)
-			ulx.fancyLogAdmin(ply,true,"#A вызвал !trains")
-			local Class1
-			local tbl = {}
-			local i = 1 
-			local NA = "N/A"
-			local Class
-			for k,v in pairs (Metrostroi.TrainClasses) do							--переношу все найденные паравозы в отдельную таблицу, чтобы потом уже редактировать ее
-				local ents = ents.FindByClass(v)
-				for k2,v2 in pairs(ents) do
-					tbl[i] = {v2, Class}
-					i = i + 1
-				end
-			end
-			for k,v in pairs(tbl) do	--беру один вагон, смотрю все сцепленные с ним вагоны (они уже есть в таблице) и удаляю все вагоны (кроме первого), если там нет водителя
-				Class = v[1].SubwayTrain.Name
-				for _k, _v in pairs(v[1].WagonList) do
-					if not stringfind(Class, _v.SubwayTrain.Name) then Class = Class.."/".._v.SubwayTrain.Name end	--уточнение вагонов в составе
-				end
-					for k1,v1 in pairs(v[1].WagonList) do
-						if v[1] ~= v1 and not v1:GetDriver() then
-							for k2,v2 in pairs(tbl) do
-								if v1 == v2[1] then tbl[k2] = nil end
-							end
-						end
-					end
-				v[2] = Class
-			end
-			--PrintTable(tbl)
-			ulx.fancyLog("Вагонов на сервере: #s", Metrostroi.TrainCount())
-			ulx.fancyLog("Составов на сервере: #i", table.Count(tbl))
-			for k,v in pairs(tbl) do
-			local routenumber = 0
-			local routenumber1 = ""
-					for k1,v1 in pairs(v[1].WagonList) do
-						if string.find(v1.SubwayTrain.Name, "722") or string.find(v1.SubwayTrain.Name, "Ema") or (string.find(v1.SubwayTrain.Name, "717") and not string.find(v1.SubwayTrain.Name, "5m")) or string.find(v1.SubwayTrain.Name, ".6") or stringfind(v1.SubwayTrain.Name, "76") then routenumber = v1:GetNW2Int("RouteNumber") else routenumber = v1:GetNW2Int("RouteNumber") / 10 end
-						if routenumber ~= 0 then
-							if routenumber1 == "" then routenumber1 = tostring(routenumber)
-							elseif routenumber1 ~= tostring(routenumber) then routenumber1 = routenumber1.."/"..tostring(routenumber)
-							end
-						end
-					end
-				if routenumber1 == "" then routenumber1 = "0" end
-				if not v[1]:GetDriver() then
-					ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец: #A, состав: #s, вагонов: #i, маршрут: #s, машинист: #s",v[2], table.Count(v[1].WagonList), routenumber1, NA)
-				elseif v[1]:GetDriver() == v[1]:CPPIGetOwner() then
-						ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец/машинист: #A, состав: #s, вагонов: #i, маршрут: #s",v[2], table.Count(v[1].WagonList), routenumber1)
-				else
-						ulx.fancyLogAdmin(v[1]:CPPIGetOwner(),"Владелец: #A, состав: #s, вагонов: #i, маршрут: #s, машинист: #T",v[2], table.Count(v[1].WagonList), routenumber1, v[1]:GetDriver())
-				end
-			end
-		end
-	end
-	local wagons = ulx.command("Metrostroi", "ulx trains", ulx.wagons, "!trains",true)
-	wagons:defaultAccess(ULib.ACCESS_ALL)
-	wagons:help("Shows you the current wagons.")
-end)
-
 --[[============================= ПОИСК ОДИНАКОВЫХ МАРШРУТОВ ==========================]]
 if SERVER then
 	function findroutes()
@@ -2031,7 +1970,8 @@ toggletumbler:help("Переключить и заблокировать тум�
 --[[============================= ПЕРЕГРУЗКА GOTO ==========================]]
 if SERVER then
 	timer.Create("UlxGotoOverwrite", 5, 0, function()
-		if not ulx or not ulx.goto or ulx.gotoOverwrited then return end
+		if not ulx or not ulx.goto then return end
+		if ulx.gotoOverwrited then timer.Remove("UlxGotoOverwrite") return end
 		timer.Remove("UlxGotoOverwrite")
 		ulx.gotoOverwrited = true
 		local oldgoto = ulx.goto
@@ -2045,8 +1985,6 @@ if SERVER then
 	end)
 end
 
-
-
 --[[============================= ClearDecals ==========================]]
 if CLIENT then
 	timer.Create("ClearDecals", 180, 0, function()
@@ -2056,14 +1994,23 @@ end
 
 
 if SERVER then
-	function ulx.info()
-		--TODO
-		--ник игрока, стимайди игрока, время сессии игрока, местоположение игрока, состав, в котором игрок сидит + номер маршрута, все составы игрока
+	local WebServerUrl = "http://"..(file.Read("web_server_ip.txt") or "127.0.0.1").."/serverinfo/"
+	function ulx.info(ply)
+		http.Fetch(
+			WebServerUrl,
+			function(body)
+				body = util.JSONToTable(body)
+				if body then PrintTable(body) end
+			end
+		)
 	end
 	local info = ulx.command("Metrostroi", "ulx info", ulx.info, "!info",true)
 	toggletumbler:defaultAccess(ULib.ACCESS_SUPERADMIN)
 	toggletumbler:help("Подробная информация о игроках на сервере.")
 end
+
+
+print("asd")
 
 --используй table.insert только если ключи не числа
 --ply.InMetrostroiTrain
