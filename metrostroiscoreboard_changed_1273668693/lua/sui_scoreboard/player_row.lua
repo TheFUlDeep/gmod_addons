@@ -130,13 +130,16 @@ end
 local DataTBL = {}
 net.Receive("ScoreBoardAdditional",function()
 	local Pos,Train,SteamID,Path,Owner,Time = net.ReadString(),net.ReadString(),net.ReadString(),net.ReadString(),net.ReadString(),net.ReadString()
+	local ent = ents.GetByIndex(SteamID)
+	if not IsValid(ent) or not ent:IsPlayer() then return end
+	SteamID = ent:SteamID()
 	if not DataTBL[SteamID] then DataTBL[SteamID] = {} end
 	DataTBL[SteamID] = {Pos,Train,Path,Owner,Time}
 end)
 
 timer.Create("TrainArraiveTimeInc", 1, 0, function()
 	for k,v in pairs(DataTBL) do
-		if v[5] and v[5] ~= "" and v[5] > 1 then DataTBL[k][5] = DataTBL[k][5] - 1 end
+		if v[5] and v[5] ~= "" then DataTBL[k][5] = DataTBL[k][5] - 1 end
 	end
 end)
 

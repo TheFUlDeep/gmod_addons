@@ -1,38 +1,7 @@
 if CLIENT then return end
 
---[[============================= СТРИНГФАЙНД ТУТ ВРЕМЕННО ==========================]]
-function stringfind(where, what, lowerr, startpos, endpos)
-	local Exeption = false
-	if not where or not what then --[[print("[STRINGFIND EXEPTION] cant find required arguments")]] return false end
-	if type(where) ~= "string" or type(what) ~= "string" then --[[print("[STRINGFIND EXEPTION] not string")]] return false
-	elseif string.len(what) > string.len(where) then --[[print("[STRINGFIND EXEPTION] string what you want to find bigger than string where you want to find it")]] Exeption = true 
-	end
-	if startpos and type(startpos) ~= "number" then startpos = tonumber(startpos) end
-	if endpos and type(endpos) ~= "number" then endpos = tonumber(endpos) end
-	local strlen1 = string.len(where)
-	local strlen2 = string.len(what)
-	if not startpos or startpos == 0 then startpos = 1 end
-	if startpos < 1 then startpos = strlen1 + startpos + 1 end
-	if not endpos or endpos == 0 then endpos = strlen1 end
-	if endpos < 1 then endpos = strlen1 + endpos + 1 end
-	if endpos > strlen1 then --[[print("[STRINGFIND EXEPTION] end position bigger then source string (source string size = "..#where..")")]] Exeption = true end
-	if endpos < startpos then --[[print("[STRINGFIND EXEPTION] end position smaller then start position")]] Exeption = true end
-	if startpos > strlen1 - strlen2 + 1 then --[[print("[STRINGFIND EXEPTION] string from your start position smaller then string what you want to find")]] Exeption = true end
-	if endpos - startpos + 1 < strlen2 then --[[print("[STRINGFIND EXEPTION] section for finding smaller than string what you want to find")]] Exeption = true end
-	if Exeption then return false end
-	if lowerr then 
-		where = bigrustosmall(where)
-		what = bigrustosmall(what)
-	end
-	for i = startpos, endpos do
-		if i + strlen2 - 1 > endpos then return false
-		elseif string.sub(where, i, i + strlen2 - 1) == what then return i
-		end
-	end
-	return false
-end
 
-local NotInitialized = false			--временно
+local NotInitialized = false --временно
 local HostName = game.GetIPAddress()--временно
 local Map = game.GetMap()--временно
 hook.Add("PlayerInitialSpawn","Server_Info_Initialize",function()
@@ -42,7 +11,7 @@ hook.Add("PlayerInitialSpawn","Server_Info_Initialize",function()
 	NotInitialized = false
 end)
 
-local WebServerUrl = "http://"..(file.Read("web_server_ip.txt") or "127.0.0.1").."/serverinfo/"
+local WebServerUrl = "http://thefuldeep.ddns.net/serverinfo/"
 local function SendToWebServer(tbl)
 	PrintTable(tbl)
 	local TableToSend = {MainTable = util.TableToJSON(tbl), server = HostName}
@@ -104,17 +73,24 @@ local function GetTrainDrivers(wag)
 	return Drivers
 end
 
-local function GetTrain(ply)
-	local Seat = ply:GetVehicle()
-	if not IsValid(Seat) then return nil end
-	local wagon = Seat:GetNW2Entity("TrainEntity",nil)
-	if not IsValid(wagon) then return nil end
+local function GetTrain(ent)
+	local wagon
+	if ent.SteamID then
+		local Seat = ent:GetVehicle()
+		if not IsValid(Seat) then return nil end
+		wagon = Seat:GetNW2Entity("TrainEntity",nil)
+	else
+		wagon = ent
+	end
+	
+	if not IsValid(wagon) then return end
 	
 	local ResultTbl = {}
-	ResultTbl.Class = wagon:GetClass()
+	--ResultTbl.Class = wagon:GetClass()
 	ResultTbl.Name = wagon.SubwayTrain.Name
 	ResultTbl.RouteNumber = GetTrainRouteNumber(wagon)
 	ResultTbl.WagonCount = #wagon.WagonList
+	ResultTbl.Entity = wagon
 	
 	local Owner = CPPI and wagon:CPPIGetOwner()
 	if IsValid(Owner) then
@@ -127,11 +103,13 @@ local function GetTrain(ply)
 	if #Drivers > 0 then
 		ResultTbl.Drivers = {}
 		for k,v in pairs(Drivers) do
-			ResultTbl.Drivers[v:SteamID()] = v:Nick()
+			table.insert(ResultTbl.Drivers,1,{SteamID = v:SteamID(),Nick = v:Nick()})
 		end
 	end
 	
 	ResultTbl.Speed = wagon.Speed < 5 and 0 or math.floor(wagon.Speed)
+	
+	-- TODO ResultTbl["Position"] = 
 	
 	return ResultTbl
 end
@@ -184,15 +162,37 @@ local function GetTrains(calling_ply,target_ply,notif,detectroutes)
 		if #Drivers > 0 then
 			v["Drivers"] = {}
 			for k1,v1 in pairs(Drivers) do
-				v["Drivers"][v1:SteamID()] = v1:Nick()
+				table.insert(v["Drivers"],1,{SteamID = v1:SteamID(), Nick = v1:Nick()})
 			end
 		end
 	end
 	
+	local tbl2 = {}
+	for k,v in pairs(tbl) do
+		table.insert(tbl2,1,v)
+	end
+	
+	tbl = tbl2
+	
 	if notif then
 		ulx.fancyLog("Вагонов на сервере: #s", Metrostroi.TrainCount())
 		ulx.fancyLog("Составов на сервере: #i", table.Count(tbl))
-		
+		for k,v in pairs(tbl) do
+			if not v.Owner or not v.RouteNumber or not v.WagonCount then continue end
+			ulx.fancyLogAdmin(player.GetBySteamID(v.Owner.SteamID),false,"Владелец #A, маршрут #s, вагонов #s", tostring(v.RouteNumber),tostring(v.WagonCount))
+			if v.Drivers then
+				local DriversCount = table.Count(v.Drivers)
+				if DriversCount > 1 then
+					local DriversString = ""
+					for k1,v1 in pairs(v.Drivers) do
+						DriversString = DriversString == "" and v1.Nick or DriversString..", "..v1.Nick
+					end
+					ulx.fancyLog("управляют #s", DriversString)
+				elseif DriversCount == 1 then
+					ulx.fancyLogAdmin(player.GetBySteamID(v.Drivers[1].SteamID),"управляет #A")
+				end
+			end
+		end
 		
 	end
 	
@@ -227,112 +227,183 @@ local function GetTrains(calling_ply,target_ply,notif,detectroutes)
 			end
 		end
 	end
-	
 	return #tbl == 0 and nil or tbl
 end
 
-timer.Create("Send Server Info to WebServer",5,0,function()
+GetTrains(nil,nil,true)
+
+local PeregonsTbl = {}
+local function ScoreBoardFunction(ent)
+	for k,v in pairs(PeregonsTbl) do
+		if --[[not IsValid(player.GetBySteamID(k)) and]] not IsValid(ents.GetByIndex(k)) then PeregonsTbl[k] = nil end
+	end
+	
+	local vector = ent:GetPos()
+	local ID = --[[ent.SteamID and ent:SteamID() or]] ent:EntIndex()
+	
+	--for k,v in pairs(player.GetHumans()) do
+		if not PeregonsTbl[ID] then PeregonsTbl[ID] = {} PeregonsTbl[ID][1] = {} PeregonsTbl[ID][2] = {} end
+		local pos,pos2,path,posx,pos2x,poscurx = detectstation(vector)
+		--if not pos then return end				-- detectstation всегда возвращает pos, поэтому эта строка не нужна?
+		local result = pos
+		local strsub1 = string.sub(pos,-36) --(ближайшая по треку)
+		local strsub2 = string.sub(pos,-42)	--(ближайшая в плоскости)
+		if strsub2 == "(ближайшая в плоскости)" then
+			if path then
+				result = "перегон"
+			elseif stringfind(pos,"депо",true) then
+				result = "депо"
+			else
+				result = "-"
+			end
+		end
+		
+		if strsub1 == "(ближайшая по треку)" then
+			if pos2 then
+				result = "перегон "..string.sub(pos,1,-38).." - "..pos2
+			else
+				result = "тупик "..string.sub(pos,1,-38)
+			end
+		end
+		
+		local GetTrainTbl = GetTrain(ent)
+		local Train = GetTrainTbl and GetTrainTbl.Name and GetTrainTbl.RouteNumber and GetTrainTbl.Name.." ("..GetTrainTbl.RouteNumber..")" or "-"
+		local Owner = GetTrainTbl and GetTrainTbl.Owner and GetTrainTbl.Owner.Nick or ""
+		local Speed = GetTrainTbl and GetTrainTbl.Speed
+		local Time = ""
+		local Dist = ""
+		if string.sub(result,1,15) == "перегон " then							--определяю направление движения по ближайшей стации и сохраняю до тех пор, пока человек в перегоне
+			if pos2 and strsub1 == "(ближайшая по треку)" then
+				local strsub3 = string.sub(pos,1,-38)
+				if PeregonsTbl[ID][1][1] and PeregonsTbl[ID][2][1] then
+					if PeregonsTbl[ID][1][1] == strsub3 or PeregonsTbl[ID][1][1] == pos2 and PeregonsTbl[ID][2][1] == strsub3 or PeregonsTbl[ID][2][1] == pos2 then
+						result = "перегон "..PeregonsTbl[ID][1][1].." - "..PeregonsTbl[ID][2][1]
+					end
+				else
+					PeregonsTbl[ID][1][1] = strsub3
+					PeregonsTbl[ID][2][1] = pos2
+					--PeregonsTbl[ID][1][2] = posx			--мне не нужа позиция станции отправления
+					PeregonsTbl[ID][2][2] = pos2x
+				end
+				
+				if PeregonsTbl[ID][2][2] and poscurx then
+					Dist = math.floor(math.abs(PeregonsTbl[ID][2][2] - poscurx))
+					if Speed and Speed > 5 then
+						--Speed = Speed * 1000 / 60 / 60
+						Time = math.floor((math.abs(PeregonsTbl[ID][2][2] - poscurx) / (50 * 1000 / 60 / 60)))
+					end
+				end
+				
+			else
+				PeregonsTbl[ID][1] = {}
+			end
+		else
+			PeregonsTbl[ID][2] = {}
+		end
+	--end
+		return result,Train,ID,path,Owner,Time,Dist
+end
+
+
+util.AddNetworkString("ScoreBoardAdditional")
+local function MetrostroiInfo()	
+	if not detectstation then print("detectstation is not avaliable") return end
+	for k,v in pairs(player.GetHumans()) do
+		local result,Train,SteamID,path,Owner,Time,Dist = ScoreBoardFunction(v)
+		net.Start("ScoreBoardAdditional")
+			net.WriteString(result)
+			net.WriteString(Train)
+			net.WriteString(SteamID)
+			net.WriteString(path and " (путь "..path..")" or "")
+			net.WriteString(Owner)
+			net.WriteString(Time)
+			net.WriteString(Dist)
+		net.Broadcast()
+	end
+end
+
+timer.Create("ScoreBoardAdditional", 5, 0, MetrostroiInfo)
+
+local function PrepareDataToSending()
 	if NotInitialized then return end
+	if not detectstation then print("detectstation is not avaliable") return end
 	local TblToSend = {}
 	TblToSend.Map = Map
-	TblToSend.Players = {}
+	local Humans = player.GetHumans()
 	local i = 0
-	for k,v in pairs(player.GetHumans()) do
-		i = i + 1
-		local SteamID = v:SteamID()
-		TblToSend.Players[SteamID] = {}
-		TblToSend.Players[SteamID].Nick = v:Nick()
-		TblToSend.Players[SteamID].Time = math.floor(v:TimeConnected())
-		TblToSend.Players[SteamID].InTrain = GetTrain(v)
-		TblToSend.Players[SteamID].Trains = GetTrains(nil,v)
-		--TblToSend.Players[SteamID].Position = GetPosition(v)
+	if table.Count(Humans) > 0 then
+		TblToSend.Players = {}
+		for k,v in pairs(player.GetHumans()) do
+			local Index = table.Count(TblToSend.Players) + 1
+			i = i + 1
+			
+			TblToSend.Players[Index] = {}
+			TblToSend.Players[Index].SteamID = v:SteamID()
+			TblToSend.Players[Index].Nick = v:Nick()
+			TblToSend.Players[Index].Time = math.floor(v:TimeConnected())
+			
+			local result,Train,ID,path,Owner,Time,Dist = ScoreBoardFunction(v)
+			if result and result ~= "" then TblToSend.Players[Index].Position = result end
+			if path and path ~= "" then TblToSend.Players[Index].Path = path end
+			if Time and Time ~= "" then TblToSend.Players[Index].ArrTime = Time end
+			if Dist and Dist ~= "" then TblToSend.Players[Index].ArrDist = Dist end
+			
+			
+			TblToSend.Players[Index].InTrain = GetTrain(v)
+			if TblToSend.Players[Index].InTrain then
+				local result,Train,ID,path,Owner,Time,Dist = ScoreBoardFunction(TblToSend.Players[Index].InTrain.Entity)
+				local Speed = math.floor(TblToSend.Players[Index].InTrain.Entity.Speed)
+				Speed = Speed > 5 and Speed or 0
+				TblToSend.Players[Index].InTrain.Speed = Speed
+				
+				if Time and Time ~= "" then 
+					TblToSend.Players[Index].InTrain.ArrTime = Time 
+					TblToSend.Players[Index].ArrTime = Time 
+				end
+				if Dist and Dist ~= "" then TblToSend.Players[Index].InTrain.ArrDist = Dist end
+			end
+				
+			TblToSend.Players[Index].Trains = GetTrains(nil,v)
+			if #TblToSend.Players[Index].Trains < 1 then TblToSend.Players[Index].Trains = nil end
+			if TblToSend.Players[Index].Trains then
+				for k1,v1 in pairs(TblToSend.Players[Index].Trains) do
+					if v1.Entity then
+						local result,Train,ID,path,Owner,Time,Dist = ScoreBoardFunction(v1.Entity)
+						if result and result ~= "" then v1.Position = result end
+						if path and path ~= "" then v1.Path = path end
+						if Time and Time ~= "" then v1.ArrTime = Time end
+						if Dist and Dist ~= "" then v1.ArrDist = Dist end
+					end
+				end
+			end
+			--TblToSend.Players[Index].Position = GetPosition(v)
+		end
 	end
 	TblToSend.PlayerCount = i
 	TblToSend.MaxPlayers = game.MaxPlayers()
 	TblToSend.Trains = GetTrains()
+	if table.Count(TblToSend.Trains) < 1 then TblToSend.Trains = nil end
+	if TblToSend.Trains then
+		for k,v in pairs(TblToSend.Trains) do
+			if v.Entity then
+				local result,Train,ID,path,Owner,Time,Dist = ScoreBoardFunction(v.Entity)
+				if result and result ~= "-" then v.Position = result end
+				if path and path ~= "" then v.Path = path end
+				if Time and Time ~= "" then v.ArrTime = Time end
+				if Dist and Dist ~= "" then v.ArrDist = Dist end
+			end
+		end
+	end
+	
+	return TblToSend
+end
+
+timer.Create("UpdatePeregonsTbl",1,0,PrepareDataToSending)
+
+timer.Create("Send Server Info to WebServer",5,0,function()
+	TblToSend = PrepareDataToSending()
 	
 	SendToWebServer(TblToSend)
 end)
 
-util.AddNetworkString("ScoreBoardAdditional")
-local PeregonsTbl = {}
-local function MetrostroiInfo(ToNetwork)	
-	timer.Create("ScoreBoardAdditional", 5, 0, function()
-		for k,v in pairs(PeregonsTbl) do
-			if not IsValid(player.GetBySteamID(k)) then PeregonsTbl[k] = nil end
-		end
-		if not detectstation then print("detectstation is not avaliable") return end
-		for k,v in pairs(player.GetAll()) do
-			if not IsValid(v) then continue end
-			local SteamID = v:SteamID()
-			if not PeregonsTbl[SteamID] then PeregonsTbl[SteamID] = {} PeregonsTbl[SteamID][1] = {} PeregonsTbl[SteamID][2] = {} end
-			local pos,pos2,path,posx,pos2x,poscurx = detectstation(v:GetPos())
-			--if not pos then return end				-- detectstation всегда возвращает pos, поэтому эта строка не нужна?
-			local result = pos
-			local strsub1 = string.sub(pos,-36) --(ближайшая по треку)
-			local strsub2 = string.sub(pos,-42)	--(ближайшая в плоскости)
-			if strsub2 == "(ближайшая в плоскости)" then
-				if path then
-					result = "перегон"
-				elseif stringfind(pos,"депо",true) then
-					result = "депо"
-				else
-					result = "-"
-				end
-			end
-			
-			if strsub1 == "(ближайшая по треку)" then
-				if pos2 then
-					result = "перегон "..string.sub(pos,1,-38).." - "..pos2
-				else
-					result = "тупик "..string.sub(pos,1,-38)
-				end
-			end
-			
-			local GetTrainTbl = GetTrain(v)
-			local Train = GetTrainTbl.Name and GetTrainTbl.RouteNumber and GetTrainTbl.Name.." ("..GetTrainTbl.RouteNumber..")" or "-"
-			local Owner = GetTrainTbl.Owner or ""
-			local Speed = GetTrainTbl.Speed
-			local Time = ""
-			if string.sub(result,1,15) == "перегон " then							--определяю направление движения по ближайшей стации и сохраняю до тех пор, пока человек в перегоне
-				if pos2 and strsub1 == "(ближайшая по треку)" then
-					local strsub3 = string.sub(pos,1,-38)
-					if PeregonsTbl[SteamID][1][1] and PeregonsTbl[SteamID][2][1] then
-						if PeregonsTbl[SteamID][1][1] == strsub3 or PeregonsTbl[SteamID][1][1] == pos2 and PeregonsTbl[SteamID][2][1] == strsub3 or PeregonsTbl[SteamID][2][1] == pos2 then
-							result = "перегон "..PeregonsTbl[SteamID][1][1].." - "..PeregonsTbl[SteamID][2][1]
-							if Train ~= "-" then
-								if Speed and Speed > 5 and PeregonsTbl[SteamID][2][2] and poscurx then
-									--Speed = Speed * 1000 / 60 / 60
-									Time = math.floor((math.abs(PeregonsTbl[SteamID][2][2] - poscurx) / (50 * 1000 / 60 / 60)))
-								else
-									Time = ""
-								end
-							end
-						end
-					else
-						PeregonsTbl[SteamID][1][1] = strsub3
-						PeregonsTbl[SteamID][2][1] = pos2
-						--PeregonsTbl[SteamID][1][2] = posx			--мне не нужа позиция станции отправления
-						PeregonsTbl[SteamID][2][2] = pos2x
-					end
-				else
-					PeregonsTbl[SteamID][1] = {}
-				end
-			else
-				PeregonsTbl[SteamID][2] = {}
-			end
-			
-			if ToNetwork then
-				net.Start("ScoreBoardAdditional")
-					net.WriteString(result)
-					net.WriteString(Train)
-					net.WriteString(SteamID)
-					net.WriteString(path and " (путь "..path..")" or "")
-					net.WriteString(Owner)
-					net.WriteString(Time)
-				net.Broadcast()
-			end
-		end
-	end)
-end
 
