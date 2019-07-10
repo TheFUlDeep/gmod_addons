@@ -136,7 +136,7 @@ end)
 
 timer.Create("TrainArraiveTimeInc", 1, 0, function()
 	for k,v in pairs(DataTBL) do
-		if v[5] and v[5] ~= "" then DataTBL[k][5] = DataTBL[k][5] - 1 end
+		if v[5] and v[5] ~= "" and v[5] > 1 then DataTBL[k][5] = DataTBL[k][5] - 1 end
 	end
 end)
 

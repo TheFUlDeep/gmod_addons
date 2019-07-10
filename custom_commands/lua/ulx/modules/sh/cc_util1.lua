@@ -1326,28 +1326,20 @@ if SERVER then
 	if string.find(game.GetMap(), "nvl") then Metrostroi.BogeyOldMap = 1 end
 end
 
-timer.Simple(5, function()
+
 --[[============================= Новая функция смены карты для того, чтобы она сохранялась в файл ==========================]]
-	if SERVER then
-		function ulx.map(calling_ply, map, gamemode)
-			if not gamemode or gamemode == "" then
-				ulx.fancyLogAdmin(calling_ply, "#A changed the map to #s", map)
-			else
-				ulx.fancyLogAdmin(calling_ply, "#A changed the map to #s with gamemode #s", map, gamemode)
-			end
-			if gamemode and gamemode ~= "" then
-				game.ConsoleCommand("gamemode " .. gamemode .. "\n")
-			end
+if SERVER then
+	timer.Create("ulx.map overriding",1,0,function()
+		if not ulx or not ulx.map then return end
+		timer.Remove("ulx.map overriding")
+		print("overriding ulx.map")
+		local OldUlxMap = ulx.map
+		ulx.map = function(calling_ply, map, gamemode)
 			file.Write("lastmap.txt", map)
-			game.ConsoleCommand("changelevel " .. map ..  "\n")
+			OldUlxMap(calling_ply, map, gamemode)
 		end
-	end
-	local map = ulx.command("Utility", "ulx map", ulx.map, "!map")
-	map:addParam{ type=ULib.cmds.StringArg, completes=ulx.maps, hint="map", error="invalid map \"%s\" specified", ULib.cmds.restrictToCompletes }
-	map:addParam{ type=ULib.cmds.StringArg, completes=ulx.gamemodes, hint="gamemode", error="invalid gamemode \"%s\" specified", ULib.cmds.restrictToCompletes, ULib.cmds.optional }
-	map:defaultAccess(ULib.ACCESS_ADMIN)
-	map:help("Changes map and gamemode.")
-end)
+	end)
+end
 
 --[[============================= НОВАЯ КОМАНДА !TRAINS ==========================]]
 timer.Simple(5, function()
@@ -2060,6 +2052,17 @@ if CLIENT then
 	timer.Create("ClearDecals", 180, 0, function()
 		RunConsoleCommand("r_cleardecals", "")
 	end)
+end
+
+
+if SERVER then
+	function ulx.info()
+		--TODO
+		--ник игрока, стимайди игрока, время сессии игрока, местоположение игрока, состав, в котором игрок сидит + номер маршрута, все составы игрока
+	end
+	local info = ulx.command("Metrostroi", "ulx info", ulx.info, "!info",true)
+	toggletumbler:defaultAccess(ULib.ACCESS_SUPERADMIN)
+	toggletumbler:help("Подробная информация о игроках на сервере.")
 end
 
 --используй table.insert только если ключи не числа
