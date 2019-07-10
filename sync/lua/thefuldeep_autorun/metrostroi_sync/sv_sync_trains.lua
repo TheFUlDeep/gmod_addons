@@ -29,7 +29,7 @@ local function MoveSmooth(ent,vec1,vec2,ang1,ang2)
 			--ent:SetPos(vec2)
 			return 
 		end
-		local percent = ((CurTime - lasttime) / interval)
+		local percent = ((CurTime - lasttime) / interval * 0.9)
 		--print(percent)
 		ent:SetPos(LerpVector( percent, vec1, vec2 ))	
 		ent:SetAngles(LerpAngle( percent, ang1, ang2 ))	

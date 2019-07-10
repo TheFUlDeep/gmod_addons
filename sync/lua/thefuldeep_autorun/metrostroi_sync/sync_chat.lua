@@ -125,7 +125,19 @@ if SERVER then
 	end)
 	
 	hook.Add("PlayerConnect","SyncChatPlayerConnect",function(nick)
-		table.insert(ChatTBL,1,{ply = nick,msg = "присоединяется",OsTime = os.clock()})
+		table.insert(ChatTBL,1,{ply = nick,msg = "присоединяется.",OsTime = os.clock()})
+		CheckTableSize(ChatTBL,5)
+		SendChatTBL()
+	end)
+	
+	hook.Add("MetrostroiPassedRed", "MetrostroiPassedRedSync", function(train,ply,mode,arsback)
+		table.insert(ChatTBL,1,{ply = ply:Nick(),msg = "проехал светофор "..arsback.Name.." c запрещмющим показанием.",OsTime = os.clock()})
+		CheckTableSize(ChatTBL,5)
+		SendChatTBL()
+	end)
+	
+	hook.Add("MetrostroiPlombBroken", "BrokenPlombSync", function(train,but,ply)
+		table.insert(ChatTBL,1,{ply = ply:Nick(),msg = "сорвал пломбу "..but.." на составе "..train.SubwayTrain.Name,OsTime = os.clock()})
 		CheckTableSize(ChatTBL,5)
 		SendChatTBL()
 	end)

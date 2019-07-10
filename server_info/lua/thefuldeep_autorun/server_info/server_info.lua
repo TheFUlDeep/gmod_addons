@@ -22,12 +22,13 @@ local function SendToWebServer(tbl)
 	http.Post(WebServerUrl, TableToSend)
 end
 
---[[timer.Create("Overriding ulx.map for sending info to WebServer",1,0,function()		--TODO не работает
+timer.Create("Overriding ulx.map for sending info to WebServer",1,0,function()
 	if not ulx then return end
+	timer.Remove("Overriding ulx.map for sending info to WebServer")
 	ulx.map2 = function(calling_ply, map, gamemode)
 		SendToWebServer({"СМЕНА КАРТЫ НА "..map})
 	end
-end)]]
+end)
 
 
 --MetrostroiSyncEnabled = true
@@ -253,7 +254,6 @@ local function GetTrain(ent)
 	
 	ResultTbl.Speed = wagon.Speed < 5 and 0 or math.floor(wagon.Speed)
 	
-	-- TODO ResultTbl["Position"] = 
 	
 	return ResultTbl
 end
