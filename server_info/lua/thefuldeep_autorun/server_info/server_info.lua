@@ -4,10 +4,12 @@ if CLIENT then return end
 local NotInitialized = true
 local HostName
 local Map
+local ServerName
 hook.Add("PlayerInitialSpawn","Server_Info_Initialize",function()
 	hook.Remove("PlayerInitialSpawn","Server_Info_Initialize")
 	HostName = game.GetIPAddress()
 	Map = game.GetMap()
+	ServerName = GetHostName()
 	NotInitialized = false
 end)
 
@@ -450,6 +452,7 @@ local function PrepareDataToSending()
 	if not detectstation then print("detectstation is not avaliable") return end
 	local TblToSend = {}
 	TblToSend.Map = Map
+	TblToSend.ServerName = ServerName
 	local Humans = player.GetHumans()
 	local i = 0
 	if table.Count(Humans) > 0 then
