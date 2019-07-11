@@ -23,7 +23,7 @@ local function SpawnClocks()
 	for k,v in pairs(ents.FindByClass("gmod_track_clock_interval")) do
 		if not IsValid(v) then continue end
 		local ent = ents.Create("gmod_metrostroi_clock_arrive")
-		if not IsValid(ent) then print("CANT SPAWN CLOCKS") return end
+		if not IsValid(ent) then print("CANT SPAWN CLOCKS") continue end
 		ent:SetPos(v:GetPos() - Vector(0,0,v:OBBMaxs().z * 2))
 		ent:SetAngles(v:GetAngles())
 		ent:SetModel(v:GetModel())
@@ -34,10 +34,10 @@ local function SpawnClocks()
 				Path = Path.trackid		
 			else
 				print("cant detect path for arrive clock")
-				return
+				continue
 			end
 		end
-		if not Station or Station == "" then ent:Remove() print("cant detect station for arrive clock") return end
+		if not Station or Station == "" then ent:Remove() print("cant detect station for arrive clock") continue end
 		local DontNeed = stringfind(Station, " ( ближайшая ")
 		if DontNeed then Station = Station:sub(1,DontNeed - 1) end
 		ent.Station = Station
