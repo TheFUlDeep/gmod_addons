@@ -1,5 +1,6 @@
 if CLIENT then return end
 
+if not THEFULDEEP then THEFULDEEP = {} end
 
 local NotInitialized = true
 local HostName
@@ -522,6 +523,8 @@ local function PrepareDataToSending()
 	
 	return TblToSend
 end
+
+THEFULDEEP.GETSERVERINFOLOCAL = PrepareDataToSending
 
 timer.Create("Send Server Info to WebServer",20,0,function()
 	local tbl = PrepareDataToSending()
