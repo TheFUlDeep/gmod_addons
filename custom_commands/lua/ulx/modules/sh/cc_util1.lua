@@ -1046,6 +1046,7 @@ if SERVER then
 			if not v.names or not v.names[1] then StationName = k else StationName = v.names[1] end
 			if k == index then return StationName end
 		end
+		return ""
 	end
 	
 	local function CompleteTBLTrakcs(tbl)
@@ -1102,7 +1103,7 @@ if SERVER then
 				--FirstMethodTbl[i].PlatformLen = v.PlatformDir:Length()
 				FirstMethodTbl[i].PlatformLen = PlatformLen		-- который из методов поиска длины платформы верный?
 				FirstMethodTbl[i].PlatformPos = PlatformPos		-- который из методов поиска длины платформы верный?
-				FirstMethodTbl[i].StationName = FindNearestStation(PlatformPos)
+				FirstMethodTbl[i].StationName = GetStationByIndex(v.StationIndex)
 			end
 		end
 		CompleteTBLTrakcs(FirstMethodTbl)
