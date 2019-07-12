@@ -34,6 +34,7 @@ local function SpawnClocks()
 				Path = Path.trackid		
 			else
 				print("cant detect path for arrive clock")
+				ent:Remove()
 				continue
 			end
 		end

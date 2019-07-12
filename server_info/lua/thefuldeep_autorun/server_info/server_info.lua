@@ -2,26 +2,10 @@ if CLIENT then return end
 
 if not THEFULDEEP then THEFULDEEP = {} end
 
-local NotInitialized = true
-local HostName
-local Map
-local ServerName
-hook.Add("PlayerInitialSpawn","Server_Info_Initialize",function()
-	hook.Remove("PlayerInitialSpawn","Server_Info_Initialize")
-	HostName = game.GetIPAddress()
-	Map = game.GetMap()
-	ServerName = GetHostName()
-	NotInitialized = false
-end)
-
---local NotInitialized = false
---local HostName = game.GetIPAddress()
---local Map = game.GetMap()
-
 local WebServerUrl = "http://"..(file.Read("web_server_ip.txt") or "127.0.0.1").."/serverinfo/"
 local function SendToWebServer(tbl)
 	--PrintTable(tbl)
-	local TableToSend = {MainTable = util.TableToJSON(tbl), server = HostName}
+	local TableToSend = {MainTable = util.TableToJSON(tbl), server = THEFULDEEP.HOSTNAME}
 	http.Post(WebServerUrl, TableToSend)
 end
 
@@ -50,7 +34,7 @@ timer.Create("Ovewriting ulx.wagons",1,0,function()
 				local Wagons = 0
 				for k,v in pairs(body) do
 					--if type(v) == "table" then PrintTable(v) end
-					if type(v) ~= "table" or not v.Map or v.Map ~= Map or not v.Trains then continue end
+					if type(v) ~= "table" or not v.Map or v.Map ~= THEFULDEEP.MAP or not v.Trains then continue end
 					for k1,v1 in ipairs(v.Trains) do
 						if v1.WagonCount then Wagons = Wagons + v1.WagonCount end
 						table.insert(ResultTable.Trains,1,v1)
@@ -449,11 +433,11 @@ end
 timer.Create("ScoreBoardAdditional", 5, 0, MetrostroiInfo)
 
 local function PrepareDataToSending()
-	if NotInitialized then return end
+	if not THEFULDEEP.SERVERINFOINITIALIZED then return end
 	if not detectstation then print("detectstation is not avaliable") return end
 	local TblToSend = {}
-	TblToSend.Map = Map
-	TblToSend.ServerName = ServerName
+	TblToSend.Map = THEFULDEEP.MAP
+	TblToSend.ServerName = THEFULDEEP.SERVERNAME
 	local Humans = player.GetHumans()
 	local i = 0
 	if table.Count(Humans) > 0 then
