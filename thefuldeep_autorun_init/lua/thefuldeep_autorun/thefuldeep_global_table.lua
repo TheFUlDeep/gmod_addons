@@ -1,11 +1,17 @@
 if CLIENT then return end
 if not THEFULDEEP then THEFULDEEP = {} end		--THEFULDEEP is global table
 
-hook.Add("PlayerInitialSpawn","THEFULDEEPTBL INITIALIZE",function()
-	--THEFULDEEP.SERVERNAME = GetHostName()		мне это пока не нужно
-	THEFULDEEP.HOSTNAME = game.GetIPAddress()
-	THEFULDEEP.MAP = game.GetMap()
-	THEFULDEEP.SERVERINFOINITIALIZED = true
+hook.Add("Initialize","THEFULDEEPTBL SERVERINFO INITIALIZE",function()
+	hook.Remove("Initialize","THEFULDEEPTBL SERVERINFO INITIALIZE")
+	game.ConsoleCommand("sv_hibernate_think 1\n")
+	timer.Create("THEFULDEEP SERVERINFO INITIALIZE",1,0,function()
+		if game.GetIPAddress():find("0.0.0.0") then return end
+		timer.Remove("THEFULDEEP INITIALIZE")
+		--THEFULDEEP.SERVERNAME = GetHostName()		мне это пока не нужно
+		THEFULDEEP.HOSTNAME = game.GetIPAddress()
+		THEFULDEEP.MAP = game.GetMap()
+		THEFULDEEP.SERVERINFOINITIALIZED = true
+	end)
 end)
 
 THEFULDEEP.SERVERINFO = {}			
