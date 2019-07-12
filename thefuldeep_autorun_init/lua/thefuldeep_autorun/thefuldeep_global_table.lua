@@ -7,6 +7,10 @@ hook.Add("Initialize","THEFULDEEPTBL SERVERINFO INITIALIZE",function()
 	timer.Create("THEFULDEEP SERVERINFO INITIALIZE",1,0,function()
 		if game.GetIPAddress():find("0.0.0.0") then return end
 		timer.Remove("THEFULDEEP INITIALIZE")
+		if file.Exists( "lastmap.txt", "DATA" ) then
+			local lastmap = file.Read( "lastmap.txt", "DATA" )
+			if game.GetMap() ~= lastmap then game.ConsoleCommand("changelevel "..lastmap.."\n") end
+		end
 		--THEFULDEEP.SERVERNAME = GetHostName()		мне это пока не нужно
 		THEFULDEEP.HOSTNAME = game.GetIPAddress()
 		THEFULDEEP.MAP = game.GetMap()
