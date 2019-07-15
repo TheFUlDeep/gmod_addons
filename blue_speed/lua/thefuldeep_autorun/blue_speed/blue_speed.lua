@@ -17,10 +17,11 @@ if SERVER then return end
 timer.Create("Change Speed Color",5,0,function()							--использую именно таймер, потому что ентити на клиентской части доступно не всегда
 	for k,v in pairs(ents.FindByClass("gmod_subway_81-717_mvm")) do
 		if not IsValid(v) then continue end
+		local BlueSpeed = v:GetNW2Bool("BlueSpeed",false)
 		for k1,v1 in pairs(v.ClientEnts) do
 			if not IsValid(v1) or not k1:find("SSpeed") then continue end
 			local color = v1:GetColor() 				--проверку на соответствие цветов добавляю, потому что постоянная установка цвета съест больше фпс, чем проверка цвета
-			if v:GetNW2Bool("BlueSpeed",false) then
+			if BlueSpeed then
 				if color.r == 100 and color.g == 100 and color.b == 255 then continue end
 				v1:SetColor(Color(100,100,255))
 			else
