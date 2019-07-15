@@ -19,9 +19,12 @@ timer.Create("Change Speed Color",5,0,function()							--использую им
 		if not IsValid(v) then continue end
 		for k1,v1 in pairs(v.ClientEnts) do
 			if not IsValid(v1) or not k1:find("SSpeed") then continue end
+			local color = v1:GetColor() 				--проверку на соответствие цветов добавляю, потому что постоянная установка цвета съест больше фпс, чем проверка цвета
 			if v:GetNW2Bool("BlueSpeed",false) then
+				if color.r == 100 and color.g == 100 and color.b == 255 then continue end
 				v1:SetColor(Color(100,100,255))
 			else
+				if color.r == 175 and color.g == 250 and color.b == 20 then continue end
 				v1:SetColor(Color(175,250,20))
 			end
 		end
