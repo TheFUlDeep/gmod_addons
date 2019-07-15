@@ -40,6 +40,7 @@ timer.Create("Ovewriting ulx.wagons",1,0,function()
 						table.insert(ResultTable.Trains,1,v1)
 					end
 				end
+				ulx.fancyLogAdmin(ply,"#A вызвал !trains")
 				ulx.fancyLog(false,"Составов в сессии: #i",#ResultTable.Trains)
 				ulx.fancyLog(false,"Вагонов в сессии: #i",Wagons)
 				for k,v in pairs(ResultTable.Trains) do
