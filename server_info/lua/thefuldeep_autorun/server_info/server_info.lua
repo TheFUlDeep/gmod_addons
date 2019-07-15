@@ -41,7 +41,7 @@ timer.Create("Ovewriting ulx.wagons",1,0,function()
 					end
 				end
 				ulx.fancyLog(false,"Составов в сессии: #i",#ResultTable.Trains)
-				ulx.fancyLog(false,"Вгонов в сессии: #i",Wagons)
+				ulx.fancyLog(false,"Вагонов в сессии: #i",Wagons)
 				for k,v in pairs(ResultTable.Trains) do
 					if v.Owner and v.Owner.Nick and v.WagonCount and v.Name and v.RouteNumber then
 						ulx.fancyLog(false,"Владелец #s, состав #s, маршрут #s, вагонов #s",v.Owner.Nick,v.Name,v.RouteNumber,v.WagonCount)

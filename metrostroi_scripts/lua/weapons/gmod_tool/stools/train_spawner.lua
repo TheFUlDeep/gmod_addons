@@ -17,7 +17,7 @@ if CLIENT then
 end
 
 local function CustomSkin(self,OnSpawn)
-	if not IGS or CLIENT then return end
+	if not IGS or not IGS.ITEMS or not IGS.PlayerPurchases or CLIENT then return end
 	local ply = self:GetOwner()
 	
 	local TexturesTbl = {}
