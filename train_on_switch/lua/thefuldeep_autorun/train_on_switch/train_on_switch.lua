@@ -4,7 +4,10 @@ local TrainOnSwitch = Sound("thefuldeeps_sounds/train_on_switch.mp3")
 
 local Props = {}
 
-hook.Add("Initialize","Получить пропы остряков",function()
+hook.Add("PlayerInitialSpawn","Получить пропы остряков",function()
+	hook.Remove("PlayerInitialSpawn","Получить пропы остряков")
+	print("сохраняю остряки")
+	Props = {}
 	for k,v in pairs(ents.FindByClass("prop_door_rotating")) do
 		if not IsValid(v) then continue end
 		local Name = v:GetName()
@@ -14,6 +17,16 @@ hook.Add("Initialize","Получить пропы остряков",function()
 		end
 	end
 end)
+
+	Props = {}
+	for k,v in pairs(ents.FindByClass("prop_door_rotating")) do
+		if not IsValid(v) then continue end
+		local Name = v:GetName()
+		if Name:find("swit") or Name:find("swh") then
+			table.insert(Props,1,v)
+			v.OldSwitchState = v:GetInternalVariable("m_eDoorState") or 0
+		end
+	end
 
 timer.Create("CheckSwitchesState",2,0,function()
 	for k,v in pairs(Props) do
@@ -25,7 +38,8 @@ timer.Create("CheckSwitchesState",2,0,function()
 		else
 			v.OldSwitchState = State 
 		end
-		local NearEnts = ents.FindInSphere(v:GetPos(), 50)
+		print("aaaaaaa")
+		local NearEnts = ents.FindInSphere(v:GetPos(), 80)
 		local Played
 		for k1,v1 in pairs(NearEnts) do
 			if Played then break end
