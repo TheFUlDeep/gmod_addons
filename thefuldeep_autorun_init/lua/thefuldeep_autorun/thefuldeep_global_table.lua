@@ -7,7 +7,7 @@ hook.Add("Initialize","THEFULDEEPTBL SERVERINFO INITIALIZE",function()
 	timer.Create("THEFULDEEP SERVERINFO INITIALIZE",1,0,function()
 		if game.GetIPAddress():find("0.0.0.0") then return end
 		timer.Remove("THEFULDEEP SERVERINFO INITIALIZE")
-		--THEFULDEEP.SERVERNAME = GetHostName()		мне это пока не нужно
+		THEFULDEEP.SERVERNAME = GetHostName()
 		THEFULDEEP.HOSTNAME = game.GetIPAddress()
 		THEFULDEEP.MAP = game.GetMap()
 		THEFULDEEP.SERVERINFOINITIALIZED = true

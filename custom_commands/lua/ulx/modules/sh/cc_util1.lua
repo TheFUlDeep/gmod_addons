@@ -1341,7 +1341,7 @@ timer.Simple(1,function()
 			local OldUlxMap = ulx.map
 			ulx.map = function(calling_ply, map, gamemode)
 				file.Write("lastmap.txt", map)
-				ulx.map2(calling_ply, map, gamemode)
+				if ulx.map2 then ulx.map2(calling_ply, map, gamemode) end
 				OldUlxMap(calling_ply, map, gamemode)
 			end
 			ulx.MapOverrided = true
