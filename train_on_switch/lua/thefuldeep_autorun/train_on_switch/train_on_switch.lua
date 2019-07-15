@@ -26,12 +26,15 @@ timer.Create("CheckSwitchesState",2,0,function()
 			v.OldSwitchState = State 
 		end
 		local NearEnts = ents.FindInSphere(v:GetPos(), 50)
+		local Played
 		for k1,v1 in pairs(NearEnts) do
+			if Played then break end
 			if not IsValid(v1) then continue end
 			local Class = v1:GetClass()
 			for k2,v2 in pairs(Metrostroi.TrainClasses) do
 				if v2 == Class then
 					sound.Play(TrainOnSwitch, v:GetPos(), 100, 100, 1)
+					Played = true
 					break
 				end
 			end
