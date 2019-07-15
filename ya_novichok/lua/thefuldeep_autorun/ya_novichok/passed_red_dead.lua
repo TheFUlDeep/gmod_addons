@@ -17,7 +17,7 @@ end)
 
 if CLIENT then return end
 
-Dead = Sound("thefuldeeps_sounds/passed_red_dead.mp3")
+local Dead = Sound("thefuldeeps_sounds/passed_red_dead.mp3")
 
 timer.Simple(0,function()
 	if MetrostroiHooksOverrided then return end
