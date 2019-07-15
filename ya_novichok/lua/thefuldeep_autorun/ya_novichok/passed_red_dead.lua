@@ -27,7 +27,7 @@ timer.Simple(0,function()
 	local PlombBroken = HooksTbl.MetrostroiPlombBroken and HooksTbl.MetrostroiPlombBroken.PerzostroiAPIPlomb1 or function() end
 	hook.Add("MetrostroiPassedRed","MetrostroiPassedRed1",function(train,ply,mode,arsback)
 		if train:GetNW2Bool("PassedRedDead",false) then
-			sound.Play(Dead, ply:GetPos(), 179, 100, 1)
+			sound.Play(Dead, ply:GetPos(), 120, 100, 1)
 		end
 		PassedRed(train,ply,mode,arsback)
 		return true
@@ -35,7 +35,7 @@ timer.Simple(0,function()
 	
 	hook.Add("MetrostroiPlombBroken", "PerzostroiAPIPlomb1", function(train,but,ply)
 		if train:GetNW2Bool("PassedRedDead",false) then
-			sound.Play(Dead, ply:GetPos(), 179, 100, 1)
+			sound.Play(Dead, ply:GetPos(), 120, 100, 1)
 		end
 		PlombBroken(train,but,ply)
 		return true
