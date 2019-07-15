@@ -38,7 +38,6 @@ timer.Create("CheckSwitchesState",2,0,function()
 		else
 			v.OldSwitchState = State 
 		end
-		print("aaaaaaa")
 		local NearEnts = ents.FindInSphere(v:GetPos(), 80)
 		local Played
 		for k1,v1 in pairs(NearEnts) do
