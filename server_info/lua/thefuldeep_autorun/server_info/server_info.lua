@@ -511,7 +511,7 @@ end
 
 THEFULDEEP.GETSERVERINFOLOCAL = PrepareDataToSending
 
-timer.Create("Send Server Info to WebServer",20,0,function()
+timer.Create("Send Server Info to WebServer",10,0,function()
 	local tbl = PrepareDataToSending()
 	if not tbl then return end
 	SendToWebServer(tbl)

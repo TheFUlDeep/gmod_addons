@@ -53,7 +53,7 @@ end)
 
 --SpawnClocks()
 
-timer.Create("Update ArriveClocks",10,0,function()
+timer.Create("Update ArriveClocks",5,0,function()
 	if not THEFULDEEP or not THEFULDEEP.GETSERVERINFOGLOBAL then return end
 	THEFULDEEP.GETSERVERINFOGLOBAL()
 	if not THEFULDEEP.SERVERINFO then return end
