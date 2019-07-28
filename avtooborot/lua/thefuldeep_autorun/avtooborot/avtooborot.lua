@@ -11,7 +11,7 @@ if SERVER then
 			for StationIndex,Tbl in pairs(AvtooborotTBL) do
 				if not istable(Tbl) then continue end
 				if Tbl.StationName and Tbl.Type then 
-					str = str.."\n"..Tbl.StationName..": "..((not Tbl.Type or Tbl.Type == "none" and "выключен") or Tbl.Type == "near" and "по ближнему пути" or Tbl.Type == "far" and "по дальнему пути" or Tbl.Type == "all" and "по двум путям")
+					str = str.."\n"..Tbl.StationName..": "..((not Tbl.Type or Tbl.Type == "none" and "выключен") or Tbl.Type == "near" and Tbl.Near and "по ближнему пути" or Tbl.Type == "far" and Tbl.Far and "по дальнему пути" or Tbl.Type == "all" and Tbl.Far and Tbl.Near and "по двум путям" or ((Tbl.Far or Tbl.Near) and "по одному пути") or "выключен")
 				end
 			end
 			local DataToSend = util.Compress(str)
@@ -173,7 +173,7 @@ if SERVER then
 			AvtooborotTBL[station].Type = "near"
 			
 			
-			station = 105
+			station = "105"
 			AvtooborotTBL[station] = {}
 			AvtooborotTBL[station].StationName = "Куровская"
 			AvtooborotTBL[station].Type = "none"
@@ -187,9 +187,6 @@ if SERVER then
 			createTrigger("EndStart",station,Vector(3269, 3247 + 1800, -1710),dbg)
 			createTrigger("EndEnd",station,Vector(3269, 3247 + 1800 - 200, -1710),dbg)
 			
-			createTrigger("EndStart",station,Vector(-745 + 200, 12522, -1696),dbg)
-			createTrigger("EndEnd",station,Vector(-745, 12522, -1696),dbg)
-			
 			createTrigger("EndStart",station,Vector(-745 + 200, 12522 - 270, -1696),dbg)
 			createTrigger("EndEnd",station,Vector(-745, 12522 - 270, -1696),dbg)
 			
@@ -198,6 +195,55 @@ if SERVER then
 			
 			createTrigger("EndStart",station,Vector(3269 + 350, 3247 + 1200, -1710),dbg)
 			createTrigger("EndEnd",station,Vector(3269 + 350, 3247 + 1200 - 200, -1710),dbg)
+			
+			createTrigger("EndStart",station,Vector(3269, 3247 + 5570 - 200, -1710),dbg)
+			createTrigger("EndEnd",station,Vector(3269, 3247 + 5570 + 200 - 200, -1710),dbg)
+			
+			--createTrigger("Near",station,Vector(3269, 3247 + 5570, -1710),dbg)
+			--createTrigger("Near",station,Vector(3269, 3247 + 7000, -1710),dbg)
+			--createTrigger("Near",station,Vector(3269 - 1500, 3247 + 9000, -1650),dbg)
+			
+			createTrigger("Far",station,Vector(3269 - 270, 3247 + 5570, -1710),dbg)
+			createTrigger("Far",station,Vector(3269 - 700, 3247 + 7000, -1710),dbg)
+			createTrigger("Far",station,Vector(3269 - 1500, 3247 + 8000, -1710),dbg)
+			
+			--createTrigger("FarDead",station,Vector(3269 + 350, 3247 + 870, -1710),dbg)
+			--createTrigger("FarDead",station,Vector(3269 + 350, 3247, -1710),dbg)
+			
+			AvtooborotTBL[station].RouteToFar = "KR2-3"
+			AvtooborotTBL[station].RouteFromFar = "KR1-1"
+			--AvtooborotTBL[station].RouteFromFarDead = "KR3-1"
+			
+			
+			station = "102"
+			AvtooborotTBL[station] = {}
+			AvtooborotTBL[station].StationName = "Антиколлаборанистическая"
+			AvtooborotTBL[station].Type = "none"
+			
+			createTrigger("Station",station,Vector(15578, -1302-50, -430),dbg)
+			createTrigger("Station",station,Vector(15578, -1302+1000, -430),dbg)
+			
+			createTrigger("EndStart",station,Vector(15578+270, -1302-700, -430),dbg)
+			createTrigger("EndEnd",station,Vector(15578+270, -1302-700+200, -430),dbg)
+			
+			createTrigger("EndStart",station,Vector(15578, -1302-550, -430),dbg)
+			createTrigger("EndEnd",station,Vector(15578, -1302-550+200, -430),dbg)
+			
+			createTrigger("EndStart",station,Vector(15578, -1302+4500, -430),dbg)
+			createTrigger("EndEnd",station,Vector(15578, -1302+4500+200, -430),dbg)
+			
+			createTrigger("Near",station,Vector(15578, -1302-6200, -430),dbg)
+			createTrigger("Near",station,Vector(15578, -1302-6200-200, -430),dbg)
+			createTrigger("Near",station,Vector(15578, -1302-6200-200-1900*0.6, -430),dbg)
+			createTrigger("Near",station,Vector(15578, -1302-6200-200-1900*1.4, -430),dbg)
+			
+			createTrigger("EndStart",station,Vector(15578-260, -1302-6200, -430),dbg)
+			createTrigger("EndEnd",station,Vector(15578-260, -1302-6200-200, -430),dbg)
+			
+			AvtooborotTBL[station].RouteToNear = "KB2-3"
+			AvtooborotTBL[station].RouteFromNear = "KBA-1"
+			
+			
 		end
 		
 		if TriggerCreated then print("Avtooborot created") end
@@ -279,16 +325,18 @@ if SERVER then
 	
 	local function GetEntsFomTriggers(TriggersTbl)
 		local OutputTbl = {}
-		for k,trig in ipairs(TriggersTbl) do
-			--if not IsEntity(trig) then continue end --наверное не нужно
-			if trig.ents then
-				for k1,wag in ipairs(trig.ents) do
-					TableInsert(OutputTbl,wag)
+		if TriggersTbl then
+			for k,trig in ipairs(TriggersTbl) do
+				--if not IsEntity(trig) then continue end --наверное не нужно
+				if trig.ents then
+					for k1,wag in ipairs(trig.ents) do
+						TableInsert(OutputTbl,wag)
+					end
 				end
-			end
-			
-			if trig.occupied then
-				TableInsert(OutputTbl,trig.occupied)
+				
+				if trig.occupied then
+					TableInsert(OutputTbl,trig.occupied)
+				end
 			end
 		end
 		return OutputTbl
@@ -301,20 +349,25 @@ if SERVER then
 		end
 	end
 	
+	local function FindInTable(tbl,value)
+		if not tbl or not istable(tbl) then return end
+		for k,v in pairs(tbl) do
+			if v == value then return true end
+		end
+	end
 	
-	function UpdateAvtooborot()	--TODO эта функция вызывается при сработке триггера
+	
+	function UpdateAvtooborot()	-- эта функция вызывается при сработке триггера
 		--ДЛЯ СПРАВКИ
 		--первый триггер рейки - у светофора, второй - у рейки
 		--первый триггер тупика - у светофора, остальные разброшены по длине всего тупика
 		--триггеры TEndStart - начало очистки, TEndEnd - конец очистки
 		
-		--TODO БАГ если уедешь по станции в непраивльном направлении, то она не очистится
-		
 		if AvtooborotStatus < 1 then return end
 		
 		for StationIndex,Tbl1 in pairs(AvtooborotTBL) do
 			if not istable(Tbl1) then continue end
-			if not Tbl1.Type or Tbl1.Type == "none" then continue end
+			if not Tbl1.Type or Tbl1.Type == "none" then Tbl1.Type = "none" continue end
 			for name,Tbl in pairs(Tbl1) do
 				if not istable(Tbl) then continue end
 				for n,Tent in ipairs(Tbl) do
@@ -331,7 +384,13 @@ if SERVER then
 			-- 2 - выезд из тупика в неправильном направлении
 			if Tbl1.EndStart and #Tbl1.EndStart > 0 then
 				for i = 1,#Tbl1.EndStart do
-					if Tbl1.EndEnd[i].occupied and not Tbl1.EndStart[i].occupied then FindAndClearEntInTriggers(Tbl1.EndEnd[i].occupied--[[,{Tbl1.EndEnd[i]}]],nil,i == 2 and "Station") end
+					if Tbl1.EndEnd[i].occupied and not Tbl1.EndStart[i].occupied then 
+						for n,wag in ipairs(Tbl1.EndEnd[i].ents) do
+							if FindInTable(Tbl1.EndStart[i].ents,wag) then
+								FindAndClearEntInTriggers(wag--[[,{Tbl1.EndEnd[i]}]],nil,i == 2 and "Station") 
+							end
+						end
+					end
 				end
 			end
 			
@@ -345,6 +404,25 @@ if SERVER then
 					end	
 				end
 			end
+			--[[ модифициорванный вариант блока выше
+			--если вагон появился в тупике, то удаляю его из всех триггеров, кроме тупика
+			for name,Tbl in pairs(Tbl1) do
+				if not istable(Tbl) then continue end
+				if name:find("Far") or name:find("Near") then	
+					local NeedContinue
+					for n,Tent in ipairs(Tbl) do
+						if not IsEntity(Tent) then continue end
+						if n == 1 and Tent.occupied then NeedContinue = true end
+					end
+					if NeedContinue then continue end
+					for n,Tent in ipairs(Tbl) do
+						if not IsEntity(Tent) then continue end
+						if Tent.occupied then FindAndClearEntInTriggers(Tent.occupied,nil,name) end
+					end	
+				end
+			end
+			
+			]]
 			
 			
 			--открытие маршрута
@@ -391,10 +469,10 @@ if SERVER then
 			if Tbl1.Station and istable(Tbl1.Station) then
 				local Wagons = GetEntsFomTriggers(Tbl1.Station)
 				if #Wagons > 0 and not Tbl1.Station[1].occupied and OneOfTriggersOccupied(Tbl1.Station) and not Tbl1["OpenedFromNearDead"] and not Tbl1["OpenedFromStation"] and not Tbl1["OpenedFromNear"] and IfTrainInOnlyOneTable(Wagons) then
-					if not Tbl1["OpenedFromFar"] and (Tbl1.Type == "all" or Tbl1.Type == "far") and #GetEntsFomTriggers(Tbl1.Far) == 0 then
+					if not Tbl1["OpenedFromFar"] and (Tbl1.Type == "all" or Tbl1.Type == "far") and #GetEntsFomTriggers(Tbl1.Far) == 0 and Tbl1.Far then
 						Tbl1["OpenedFromStation"] = true
 						ForAvtooborot(Tbl1["RouteToFar"])
-					elseif (Tbl1.Type == "all" or Tbl1.Type == "near") and #GetEntsFomTriggers(Tbl1.Near) == 0 then
+					elseif (Tbl1.Type == "all" or Tbl1.Type == "near") and #GetEntsFomTriggers(Tbl1.Near) == 0 and Tbl1.Near then
 						Tbl1["OpenedFromStation"] = true
 						ForAvtooborot(Tbl1["RouteToNear"])
 					end
@@ -427,7 +505,7 @@ if SERVER then
 		end
 	end
 	
-	hook.Add("PlayerSay","Avtooborot",function(ply,text)	--TODO управление автоборотом. Делаю это через чат-триггер, потому что в ulx будет много кнопок и это будет некрасиво
+	hook.Add("PlayerSay","Avtooborot",function(ply,text)	--управление автоборотом. Делаю это через чат-триггер, потому что в ulx будет много кнопок и это будет некрасиво
 		if text:sub(1,11) == "!avtooborot" then
 			local Rank = ply:GetUserGroup()
 			if Rank ~= "operator" and Rank ~= "admin" and Rank ~= "SuperVIP" and Rank ~= "superadmin" then return end
@@ -454,6 +532,15 @@ if SERVER then
 				if Type ~= "none" and Type ~= "near" and Type ~= "far" and Type ~= "all" then return end
 				if AvtooborotTBL[StationIndex] and AvtooborotTBL[StationIndex].Type and AvtooborotTBL[StationIndex].Type ~= Type then
 					if Type ~= "none" then
+						if Type == "near" and not AvtooborotTBL[StationIndex].Near and AvtooborotTBL[StationIndex].Far then Type = "far"
+						elseif Type == "far" and not AvtooborotTBL[StationIndex].Far and AvtooborotTBL[StationIndex].Near then Type = "near"
+						elseif Type == "all" then
+							if not AvtooborotTBL[StationIndex].Far and AvtooborotTBL[StationIndex].Near then Type = "near" 
+							elseif not AvtooborotTBL[StationIndex].Near and AvtooborotTBL[StationIndex].Far then Type = "far" 
+							else return
+							end
+						else return
+						end
 						--переспавн триггеров
 						for name,Tbl in pairs(AvtooborotTBL[StationIndex]) do
 							if not istable(Tbl) then
