@@ -170,7 +170,7 @@ if SERVER then
 			
 			AvtooborotTBL[station].StationName = "Улица А. Кляйнера"
 			
-			AvtooborotTBL[station].Type = "near"
+			AvtooborotTBL[station].Type = "all"
 			
 			
 			station = "105"
@@ -537,10 +537,9 @@ if SERVER then
 						elseif Type == "all" then
 							if not AvtooborotTBL[StationIndex].Far and AvtooborotTBL[StationIndex].Near then Type = "near" 
 							elseif not AvtooborotTBL[StationIndex].Near and AvtooborotTBL[StationIndex].Far then Type = "far" 
-							else return
 							end
-						else return
 						end
+						if not AvtooborotTBL[StationIndex].Near and not AvtooborotTBL[StationIndex].Far then return end
 						--переспавн триггеров
 						for name,Tbl in pairs(AvtooborotTBL[StationIndex]) do
 							if not istable(Tbl) then
