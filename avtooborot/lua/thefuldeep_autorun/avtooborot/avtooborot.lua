@@ -77,7 +77,7 @@ if SERVER then
 
 	local function createavtooborot()		-- эта функция создает нужные триггеры (может еще какие-то таблицы)
 		local Map = game.GetMap()--так как  функция вызывается в начале Think'a, то карта всегда будет определена верно
-		local dbg = true
+		local dbg = false
 		if Map:find("surfacemetro") then
 			local station = "100"
 		
