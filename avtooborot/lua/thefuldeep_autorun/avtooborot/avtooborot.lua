@@ -23,14 +23,12 @@ if SERVER then
 	
 	local TriggerCreated
 	
-	local TriggerCount = 0
 	local function createTrigger(name, StationIndex, pos, dbg)
 		local ent = ents.Create( "avtooborot" )
 		ent.name = name
 		ent:SetPos(pos)
 		ent:UseTriggerBounds(true)
 		ent:Spawn()
-		TriggerCount = TriggerCount + 1
 		TriggerCreated = true
 		
 		if not AvtooborotTBL[StationIndex] then AvtooborotTBL[StationIndex] = {} end
@@ -81,44 +79,46 @@ if SERVER then
 		local Map = game.GetMap()--так как  функция вызывается в начале Think'a, то карта всегда будет определена верно
 		local dbg = true
 		if Map:find("surfacemetro") then
-			createTrigger("Station",100,Vector(-15507, 7509 + 500, 171),dbg)
-			createTrigger("Station",100,Vector(-15507, 7509, 171),dbg)
+			local station = "100"
+		
+			createTrigger("Station",station,Vector(-15507, 7509 + 500, 171),dbg)
+			createTrigger("Station",station,Vector(-15507, 7509, 171),dbg)
 			--createTrigger("Station",100,Vector(-15507, 7509 - 1000, 171),dbg)
 			
-			createTrigger("Near",100,Vector(-8094, 4124, 182),dbg)
-			createTrigger("Near",100,Vector(-8094, 4124 - 200, 182),dbg)
-			createTrigger("Near",100,Vector(-8094, 4124 - 1900, 182),dbg)
-			createTrigger("Near",100,Vector(-8094, 4124 - 1900*2, 182),dbg)
-			createTrigger("Near",100,Vector(-8094, 4124 - 1900*3, 182),dbg)
-			createTrigger("Near",100,Vector(-8094, 4124 - 1900*4, 182),dbg)
+			createTrigger("Near",station,Vector(-8094, 4124, 182),dbg)
+			createTrigger("Near",station,Vector(-8094, 4124 - 200, 182),dbg)
+			createTrigger("Near",station,Vector(-8094, 4124 - 1900, 182),dbg)
+			createTrigger("Near",station,Vector(-8094, 4124 - 1900*2, 182),dbg)
+			createTrigger("Near",station,Vector(-8094, 4124 - 1900*3, 182),dbg)
+			createTrigger("Near",station,Vector(-8094, 4124 - 1900*4, 182),dbg)
 			
-			createTrigger("Far",100,Vector(-8094 + 250, 4124, 182),dbg)
-			createTrigger("Far",100,Vector(-8094 + 250, 4124 - 200, 182),dbg)
-			createTrigger("Far",100,Vector(-8094 + 250, 4124 - 1900*1, 182),dbg)
-			createTrigger("Far",100,Vector(-8094 + 250, 4124 - 1900*2, 182),dbg)
-			createTrigger("Far",100,Vector(-8094 + 250, 4124 - 1900*3, 182),dbg)
-			createTrigger("Far",100,Vector(-8094 + 250, 4124 - 1900*4, 182),dbg)
+			createTrigger("Far",station,Vector(-8094 + 250, 4124, 182),dbg)
+			createTrigger("Far",station,Vector(-8094 + 250, 4124 - 200, 182),dbg)
+			createTrigger("Far",station,Vector(-8094 + 250, 4124 - 1900*1, 182),dbg)
+			createTrigger("Far",station,Vector(-8094 + 250, 4124 - 1900*2, 182),dbg)
+			createTrigger("Far",station,Vector(-8094 + 250, 4124 - 1900*3, 182),dbg)
+			createTrigger("Far",station,Vector(-8094 + 250, 4124 - 1900*4, 182),dbg)
 			
 			
-			createTrigger("EndStart",100,Vector(-8094 + 250, 4124 + 2200, 182),dbg)
-			createTrigger("EndEnd",100,Vector(-8094 + 250, 4124 + 2200 + 200, 182),dbg)
+			createTrigger("EndStart",station,Vector(-8094 + 250, 4124 + 2200, 182),dbg)
+			createTrigger("EndEnd",station,Vector(-8094 + 250, 4124 + 2200 + 200, 182),dbg)
 			
-			createTrigger("EndStart",100,Vector(-8094, 4124 + 2200, 182),dbg)		--если будешь вызжать из тупика в неправильном направлении, состав очистится из тупика
-			createTrigger("EndEnd",100,Vector(-8094, 4124 + 2200 + 200, 182),dbg)
+			createTrigger("EndStart",station,Vector(-8094, 4124 + 2200, 182),dbg)		--если будешь вызжать из тупика в неправильном направлении, состав очистится из тупика
+			createTrigger("EndEnd",station,Vector(-8094, 4124 + 2200 + 200, 182),dbg)
 			
-			createTrigger("EndStart",100,Vector(-15507, 7509 - 4000, 171),dbg)
-			createTrigger("EndEnd",100,Vector(-15507, 7509 - 4000 - 200, 171),dbg)
+			createTrigger("EndStart",station,Vector(-15507, 7509 - 4000, 171),dbg)
+			createTrigger("EndEnd",station,Vector(-15507, 7509 - 4000 - 200, 171),dbg)
 			
-			AvtooborotTBL[100].RouteToFar = "SV1-4"
-			AvtooborotTBL[100].RouteToNear = "SV1-3"
-			AvtooborotTBL[100].RouteFromFar = "SV4-2"
-			AvtooborotTBL[100].RouteFromNear = "SV3-2"
+			AvtooborotTBL[station].RouteToFar = "SV1-4"
+			AvtooborotTBL[station].RouteToNear = "SV1-3"
+			AvtooborotTBL[station].RouteFromFar = "SV4-2"
+			AvtooborotTBL[station].RouteFromNear = "SV3-2"
 			
-			AvtooborotTBL[100].Type = "all"
+			AvtooborotTBL[station].Type = "all"
 			
-			AvtooborotTBL[100].StationName = "Советская"
+			AvtooborotTBL[station].StationName = "Советская"
 			
-			local station = 106
+			station = "106"
 			local h = -2470
 			
 			createTrigger("Station",station,Vector(6583, 1187 + 1960, h),dbg)
@@ -200,7 +200,7 @@ if SERVER then
 			createTrigger("EndEnd",station,Vector(3269 + 350, 3247 + 1200 - 200, -1710),dbg)
 		end
 		
-		if TriggerCreated then print("Avtooborot created with "..TriggerCount.." triggers") end
+		if TriggerCreated then print("Avtooborot created") end
 		SendAvtooborot()
 		--PrintTable(AvtooborotTBL)
 	end
@@ -428,6 +428,56 @@ if SERVER then
 	end
 	
 	hook.Add("PlayerSay","Avtooborot",function(ply,text)	--TODO управление автоборотом. Делаю это через чат-триггер, потому что в ulx будет много кнопок и это будет некрасиво
+		if text:sub(1,11) == "!avtooborot" then
+			local Rank = ply:GetUserGroup()
+			if Rank ~= "operator" and Rank ~= "admin" and Rank ~= "SuperVIP" and Rank ~= "superadmin" then return end
+			local start = text:find(" ")
+			if not start then 
+				if AvtooborotStatus == 1 then 
+					AvtooborotStatus = 0 
+					SendAvtooborot() 
+					ulx.fancyLogAdmin(ply,false,"#A выключил автооборот")
+					return ""
+				else 
+					deleteavtooborot()
+					createavtooborot() 
+					ulx.fancyLogAdmin(ply,false,"#A включил автооборот")
+					return ""
+				end
+			elseif AvtooborotStatus == 1 then
+				local start2 = text:find(" ",start + 1)
+				if not start2 then return end
+				local StationIndex = text:sub(start + 1, start2 - 1)
+				local start3 = text:find(" ",start2 + 1)
+				local Type
+				if not start3 then Type = text:sub(start2 + 1) else Type = text:sub(start2 + 1, start3 - 1) end
+				if Type ~= "none" and Type ~= "near" and Type ~= "far" and Type ~= "all" then return end
+				if AvtooborotTBL[StationIndex] and AvtooborotTBL[StationIndex].Type and AvtooborotTBL[StationIndex].Type ~= Type then
+					if Type ~= "none" then
+						--переспавн триггеров
+						for name,Tbl in pairs(AvtooborotTBL[StationIndex]) do
+							if not istable(Tbl) then
+								if name:find("Opened") then AvtooborotTBL[StationIndex][name] = nil end
+							else
+								for i,trig in ipairs(Tbl) do
+									--print(trig)
+									if not IsEntity(trig) then continue end
+									local ent = ents.Create( "avtooborot" )
+									ent.name = trig.name
+									ent:SetPos(trig:GetPos())
+									ent:UseTriggerBounds(true)
+									trig:Remove()
+									ent:Spawn()
+									AvtooborotTBL[StationIndex][name][i] = ent
+								end
+							end
+						end
+					end
+					AvtooborotTBL[StationIndex].Type = Type 
+					SendAvtooborot() 
+				end
+			end
+		end
 	end)
 	
 	for k,v in pairs(player.GetHumans()) do	--for debug
@@ -451,7 +501,7 @@ if CLIENT then--отображение информации об автообо�
 	hook.Add( "HUDPaint", "AvtooborotStatus", function()
 		if AvtooborotStatus < 0 then return end
 		local text = "Автооборот: "..(AvtooborotStatus == 1 and "включен" or "выключен")
-		text = text.."\n"..stations
+		text = AvtooborotStatus == 1 and text.."\n"..stations or text
 		surface.SetFont("ChatFont")
 		local w,h = surface.GetTextSize(text)
 		draw.RoundedBox( 5, ScrW() - 20 - w - 4, ScrH()/2 - 100 - 3,w + 10,h + 5, Color(0, 0, 0, 150))
