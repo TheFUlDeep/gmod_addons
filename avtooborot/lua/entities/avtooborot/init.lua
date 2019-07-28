@@ -1,27 +1,38 @@
 
 ENT.Base = "base_entity"
 ENT.Type = "brush"
+ENT.ents = {}
 
-function ENT:StartTouch( entity )
-	local Class = entity:GetClass()
-	for k,v in pairs(Metrostroi.TrainClasses) do
-		if Class == v or stringfind(Class,"base") then
-			self.zanyat = entity
-			--ulx.fancyLog("занят #s", self.name)
-			UpdateAvtooborot()
-			return
-		end
+local function ChatPrint(str)
+	for k,v in pairs(player.GetHumans()) do
+		v:ChatPrint(str)
 	end
 end
 
-function ENT:EndTouch( entity )
-	timer.Simple(2.1, function() 
-		if entity == self.zanyat then self.zanyat = nil
-			UpdateAvtooborot()
-			--ulx.fancyLog("освободился #s", self.name)
-		end
-	end)
+local function TableInsert(tbl,value)
+	for k,v in pairs(tbl) do
+		if v == value then return end
+	end
+	table.insert(tbl,1,value)
 end
 
-function ENT:Initialize()
+function ENT:StartTouch(entity)
+	if entity:GetClass():sub(1,12) == "gmod_subway_" then
+		self.occupied = entity
+		--ChatPrint(self.name.." занят")
+		TableInsert(self.ents,entity)
+		UpdateAvtooborot()
+		--PrintTable(self.ents)
+	end
+end
+
+function ENT:EndTouch(entity)
+	timer.Simple(2.1, function() 
+		if entity == self.occupied then 
+			--ChatPrint(self.name.." освободился")
+			self.occupied = nil
+			UpdateAvtooborot()
+			--PrintTable(self.ents)
+		end
+	end)
 end
