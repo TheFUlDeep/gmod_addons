@@ -19,7 +19,7 @@ end
 function ENT:StartTouch(entity)
 	if entity:GetClass():sub(1,12) == "gmod_subway_" then
 		self.occupied = entity
-		--ChatPrint(self.name.." занят")
+		if self.dbg then ChatPrint(self.name.." занят") end
 		TableInsert(self.ents,entity)
 		UpdateAvtooborot()
 		--PrintTable(self.ents)
@@ -27,9 +27,9 @@ function ENT:StartTouch(entity)
 end
 
 function ENT:EndTouch(entity)
-	timer.Simple(2.1, function() 
+	timer.Simple(0.3, function() 
 		if entity == self.occupied then 
-			--ChatPrint(self.name.." освободился")
+			if self.dbg then ChatPrint(self.name.." освободился") end
 			self.occupied = nil
 			UpdateAvtooborot()
 			--PrintTable(self.ents)
