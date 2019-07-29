@@ -687,20 +687,8 @@ if SERVER then
 		local RankTalker = talker:GetUserGroup()
 		local RankListener = listener:GetUserGroup()
 		if 
-			RankTalker == "superadmin" 
-			or RankListener == "superadmin" 
-			or RankTalker == "tsar" 
-			or RankListener == "tsar" 
-			or RankTalker == "zamtsar" 
-			or RankListener == "zamtsar" 
-			or RankTalker == "admin" 
-			or RankTalker == "tsarbom" 
-			or RankTalker == "tsarbomba" 
-			or RankListener == "admin" 
-			or RankTalker == "operator" 
-			or RankListener == "operator" 
-			or RankListener == "tsarbom" 
-			or RankListener == "tsarbomba" 
+			RankTalker ~= "user" 
+			or RankListener ~= "user"
 			or listener == Metrostroi.ActiveDispatcher 
 			or talker == Metrostroi.ActiveDispatcher 
 		then 
@@ -727,7 +715,7 @@ if SERVER then
 			and ply ~= Metrostroi.ActiveDSCP4
 			and ply ~= Metrostroi.ActiveDSCP5 
 			then
-				if string.match(text, "!sopen") == "!sopen" then ULib.tsayError(ply, "На посту ДЦХ. Не трогай стрелки") return ""
+				if string.match(text, "!sopen") == "!sopen" then ULib.tsayError(ply, "На посту ДЦХ. Не трогай стрелки") return ""--TODO это не работает через данный хук (а точнее будет работать не всегда)
 				elseif string.match(text, "!sclose") == "!sclose" then ULib.tsayError(ply, "На посту ДЦХ. Не трогай стрелки") return ""
 				elseif string.match(text, "!sactiv") == "!sactiv" then ULib.tsayError(ply, "На посту ДЦХ. Не трогай стрелки") return ""
 				elseif string.match(text, "!sdeactiv") == "!sdeactiv" then ULib.tsayError(ply, "На посту ДЦХ. Не трогай стрелки") return ""
@@ -735,7 +723,7 @@ if SERVER then
 				elseif string.match(text, "!sclps") == "!sclps" then ULib.tsayError(ply, "На посту ДЦХ. Не трогай стрелки") return "" 
 				end
 		end
-		if text:find("!sclose") and Rank ~= "superadmin" then
+		if text:find("!sclose") and Rank ~= "superadmin" then	--TODO это не работает через данный хук (а точнее будет работать не всегда)
 			local strsub = string.sub(text,9)
 			if tonumber(strsub) then return "" end
 			if tonumber(string.sub(strsub,1,-2)) then return "" end
@@ -1591,7 +1579,7 @@ function MaximumWagons(ply,self)
 	else maximum = 2
 	end
 	if Rank == "superadmin" then maximum = 6 end
-	if maximum < 4 and (Rank == "operator" or Rank == "admin" or Rank == "zamtsar" or Rank == "tsar") then maximum = 4 end
+	if maximum < 4 and (Rank == "operator" or Rank == "admin" or Rank == "SuperVIP") then maximum = 4 end
 	if (stringfind(Map,"mus_crimson_line") or stringfind(Map, "orange")) and maximum > 3 then maximum = 3 end
 	if (stringfind(Map,"smr") or stringfind(Map,"neocrims") or stringfind(Map, "rural") or stringfind(Map, "remaste") or stringfind(Map,"surface")) and maximum > 4 then maximum = 4 end
 	if (stringfind(Map,"loopline") or stringfind(Map,"gm_metrostroi_b")) and maximum > 5 then maximum = 5 end	
