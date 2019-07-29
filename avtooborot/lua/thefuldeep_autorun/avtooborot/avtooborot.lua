@@ -1,6 +1,7 @@
 --[[============================= АВТООБОРОТ ==========================]]
  
 if SERVER then 
+	local Map
 	local AvtooborotTBL = {} --основная таблица, в которой хранятся триггеры и вся нужная инфа
 	local AvtooborotStatus = -1
 	util.AddNetworkString("Avtooborot")
@@ -76,8 +77,8 @@ if SERVER then
 	end
 
 	local function createavtooborot()		-- эта функция создает нужные триггеры (может еще какие-то таблицы)
-		local Map = game.GetMap()--так как  функция вызывается в начале Think'a, то карта всегда будет определена верно
-		local dbg = false
+		Map = game.GetMap()--так как  функция вызывается в начале Think'a, то карта всегда будет определена верно
+		local dbg = true
 		if Map:find("surfacemetro") then
 			local station = "100"
 		
@@ -223,8 +224,8 @@ if SERVER then
 			createTrigger("Station",station,Vector(15578, -1302-50, -430),dbg)
 			createTrigger("Station",station,Vector(15578, -1302+1000, -430),dbg)
 			
-			createTrigger("EndStart",station,Vector(15578+270, -1302-700, -430),dbg)
-			createTrigger("EndEnd",station,Vector(15578+270, -1302-700+200, -430),dbg)
+			createTrigger("EndStart",station,Vector(15578+270, -1302-50+4500, -430),dbg)
+			createTrigger("EndEnd",station,Vector(15578+270, -1302-50+4500+200, -430),dbg)
 			
 			createTrigger("EndStart",station,Vector(15578, -1302-550, -430),dbg)
 			createTrigger("EndEnd",station,Vector(15578, -1302-550+200, -430),dbg)
@@ -232,16 +233,23 @@ if SERVER then
 			createTrigger("EndStart",station,Vector(15578, -1302+4500, -430),dbg)
 			createTrigger("EndEnd",station,Vector(15578, -1302+4500+200, -430),dbg)
 			
-			createTrigger("Near",station,Vector(15578, -1302-6200, -430),dbg)
-			createTrigger("Near",station,Vector(15578, -1302-6200-200, -430),dbg)
-			createTrigger("Near",station,Vector(15578, -1302-6200-200-1900*0.6, -430),dbg)
-			createTrigger("Near",station,Vector(15578, -1302-6200-200-1900*1.4, -430),dbg)
+			createTrigger("Far",station,Vector(15578, -1302-6200, -430),dbg)
+			createTrigger("Far",station,Vector(15578, -1302-6200-200, -430),dbg)
+			createTrigger("Far",station,Vector(15578, -1302-6200-200-1900*0.6, -430),dbg)
+			createTrigger("Far",station,Vector(15578, -1302-6200-200-1900*1.4, -430),dbg)
+				
+			createTrigger("Near",station,Vector(15578+270, -1302-50, -430),dbg)
+			createTrigger("NearDead",station,Vector(15578+270, -1302-50, -430),dbg)
+			createTrigger("NearDead",station,Vector(15578+270, -1302-50+1500, -430),dbg)
+			createTrigger("NearDead",station,Vector(15578+270, -1302-50+1500*2, -430),dbg)
 			
 			createTrigger("EndStart",station,Vector(15578-260, -1302-6200, -430),dbg)
 			createTrigger("EndEnd",station,Vector(15578-260, -1302-6200-200, -430),dbg)
 			
-			AvtooborotTBL[station].RouteToNear = "KB2-3"
-			AvtooborotTBL[station].RouteFromNear = "KBA-1"
+			AvtooborotTBL[station].RouteToFar = "KB2-3"
+			AvtooborotTBL[station].RouteFromFar = "KBA-1"
+			AvtooborotTBL[station].RouteFromNearDead = "KBD-2"
+			
 			
 			
 		end
@@ -323,7 +331,7 @@ if SERVER then
 		table.insert(tbl,1,value)
 	end
 	
-	local function GetEntsFomTriggers(TriggersTbl)
+	local function GetEntsFromTriggers(TriggersTbl)
 		local OutputTbl = {}
 		if TriggersTbl then
 			for k,trig in ipairs(TriggersTbl) do
@@ -380,14 +388,12 @@ if SERVER then
 				end
 			end
 			
-			-- 1 - выезд из тупика в правильном направлении
-			-- 2 - выезд из тупика в неправильном направлении
 			if Tbl1.EndStart and #Tbl1.EndStart > 0 then
 				for i = 1,#Tbl1.EndStart do
-					if Tbl1.EndEnd[i].occupied and not Tbl1.EndStart[i].occupied then 
+					if Tbl1.EndEnd[i].occupied and not Tbl1.EndStart[i].occupied then
 						for n,wag in ipairs(Tbl1.EndEnd[i].ents) do
 							if FindInTable(Tbl1.EndStart[i].ents,wag) then
-								FindAndClearEntInTriggers(wag--[[,{Tbl1.EndEnd[i]}]],nil,i == 2 and "Station") 
+								FindAndClearEntInTriggers(wag) 
 							end
 						end
 					end
@@ -398,38 +404,25 @@ if SERVER then
 			for name,Tbl in pairs(Tbl1) do
 				if not istable(Tbl) then continue end
 				if name:find("Far") or name:find("Near") then	
+					if Tbl[1] and IsEntity(Tbl[1]) and Tbl[1].occupied then continue end
 					for n,Tent in ipairs(Tbl) do
 						if not IsEntity(Tent) then continue end
-						if Tent.occupied then FindAndClearEntInTriggers(Tent.occupied,nil,name) end
+						if Tent.occupied then
+							FindAndClearEntInTriggers(Tent.occupied,nil,name)
+							for i,wag in ipairs(Tent.ents) do
+								FindAndClearEntInTriggers(wag,nil,name)
+							end
+						end
 					end	
 				end
 			end
-			--[[ модифициорванный вариант блока выше
-			--если вагон появился в тупике, то удаляю его из всех триггеров, кроме тупика
-			for name,Tbl in pairs(Tbl1) do
-				if not istable(Tbl) then continue end
-				if name:find("Far") or name:find("Near") then	
-					local NeedContinue
-					for n,Tent in ipairs(Tbl) do
-						if not IsEntity(Tent) then continue end
-						if n == 1 and Tent.occupied then NeedContinue = true end
-					end
-					if NeedContinue then continue end
-					for n,Tent in ipairs(Tbl) do
-						if not IsEntity(Tent) then continue end
-						if Tent.occupied then FindAndClearEntInTriggers(Tent.occupied,nil,name) end
-					end	
-				end
-			end
-			
-			]]
 			
 			
 			--открытие маршрута
 			if Tbl1.Type == "all" then
 				if Tbl1.FarDead and istable(Tbl1.FarDead) then
-					local Wagons = GetEntsFomTriggers(Tbl1.FarDead)
-					if #Wagons > 0 and not Tbl1.FarDead[1].occupied and OneOfTriggersOccupied(Tbl1.FarDead) and not Tbl1["OpenedFromFar"] and not Tbl1["OpenedFromNear"] and not Tbl1["OpenedFromFarDead"] and IfTrainInOnlyOneTable(Wagons) then
+					local Wagons = GetEntsFromTriggers(Tbl1.FarDead)
+					if #Wagons > 0 and not Tbl1.FarDead[1].occupied and Tbl1["RouteFromFarDead"] and OneOfTriggersOccupied(Tbl1.FarDead) and not Tbl1["OpenedFromFar"] and not Tbl1["OpenedFromNear"] and not Tbl1["OpenedFromFarDead"] and IfTrainInOnlyOneTable(Wagons) then
 						Tbl1["OpenedFromFarDead"] = true
 						ForAvtooborot(Tbl1["RouteFromFarDead"])
 					end
@@ -438,8 +431,11 @@ if SERVER then
 			
 			if Tbl1.Type == "all" or Tbl1.Type == "far" then
 				if Tbl1.Far and istable(Tbl1.Far) then
-					local Wagons = GetEntsFomTriggers(Tbl1.Far)
-					if #Wagons > 0 and not Tbl1.Far[1].occupied and OneOfTriggersOccupied(Tbl1.Far) and not Tbl1["OpenedFromFar"] and not Tbl1["OpenedFromNear"] and not Tbl1["OpenedFromFarDead"] and not Tbl1["OpenedFromStation"] and IfTrainInOnlyOneTable(Wagons) then
+					local Wagons = GetEntsFromTriggers(Tbl1.Far)
+					if #Wagons > 0 and not Tbl1.Far[1].occupied and Tbl1["RouteFromFar"] and OneOfTriggersOccupied(Tbl1.Far) and not Tbl1["OpenedFromFar"] and not Tbl1["OpenedFromNear"] and not Tbl1["OpenedFromFarDead"] and not Tbl1["OpenedFromStation"] and IfTrainInOnlyOneTable(Wagons) 
+					--дополнительное условие сюрфейс антиколлаб
+					and (Map:find("surface") and StationIndex == "102" and Tbl1.Type == "all" and #GetEntsFromTriggers(Tbl1.NearDead) == 0 and not Tbl1["OpenedFromNearDead"] and not Tbl1.Station[1].occupied and not Tbl1.NearDead[1].occupied or not Map:find("surface") or not StationIndex == "102" or Tbl1.Type ~= "all")
+					then
 						Tbl1["OpenedFromFar"] = true
 						ForAvtooborot(Tbl1["RouteFromFar"])
 					end
@@ -448,8 +444,8 @@ if SERVER then
 			
 			if Tbl1.Type == "all" or Tbl1.Type == "near" then
 				if Tbl1.Near and istable(Tbl1.Near) then
-					local Wagons = GetEntsFomTriggers(Tbl1.Near)
-					if #Wagons > 0 and not Tbl1.Near[1].occupied and OneOfTriggersOccupied(Tbl1.Near) and not Tbl1["OpenedFromFar"] and not Tbl1["OpenedFromFarDead"] and not Tbl1["OpenedFromNear"] and not Tbl1["OpenedFromStation"] and #GetEntsFomTriggers(Tbl1.Far) == 0 and IfTrainInOnlyOneTable(Wagons) then
+					local Wagons = GetEntsFromTriggers(Tbl1.Near)
+					if #Wagons > 0 and not Tbl1.Near[1].occupied and Tbl1["RouteFromNear"] and OneOfTriggersOccupied(Tbl1.Near) and not Tbl1["OpenedFromFar"] and not Tbl1["OpenedFromFarDead"] and not Tbl1["OpenedFromNear"] and not Tbl1["OpenedFromStation"] and #GetEntsFromTriggers(Tbl1.Far) == 0 and IfTrainInOnlyOneTable(Wagons) then
 						Tbl1["OpenedFromNear"] = true
 						ForAvtooborot(Tbl1["RouteFromNear"])
 					end
@@ -458,8 +454,8 @@ if SERVER then
 			
 			if Tbl1.Type == "all" then
 				if Tbl1.NearDead and istable(Tbl1.NearDead) then
-					local Wagons = GetEntsFomTriggers(Tbl1.NearDead)
-					if #Wagons > 0 and not Tbl1.NearDead[1].occupied and OneOfTriggersOccupied(Tbl1.NearDead) and not Tbl1["OpenedFromNearDead"] and not Tbl1["OpenedFromStation"] and #GetEntsFomTriggers(Tbl1.Station) == 0 and IfTrainInOnlyOneTable(Wagons) then
+					local Wagons = GetEntsFromTriggers(Tbl1.NearDead)
+					if #Wagons > 0 and not Tbl1.NearDead[1].occupied and Tbl1["RouteFromNearDead"] and OneOfTriggersOccupied(Tbl1.NearDead) and not Tbl1["OpenedFromNearDead"] and not Tbl1["OpenedFromStation"] and #GetEntsFromTriggers(Tbl1.Station) == 0 and IfTrainInOnlyOneTable(Wagons) then
 						Tbl1["OpenedFromNearDead"] = true
 						ForAvtooborot(Tbl1["RouteFromNearDead"])
 					end
@@ -467,12 +463,12 @@ if SERVER then
 			end
 			
 			if Tbl1.Station and istable(Tbl1.Station) then
-				local Wagons = GetEntsFomTriggers(Tbl1.Station)
-				if #Wagons > 0 and not Tbl1.Station[1].occupied and OneOfTriggersOccupied(Tbl1.Station) and not Tbl1["OpenedFromNearDead"] and not Tbl1["OpenedFromStation"] and not Tbl1["OpenedFromNear"] and IfTrainInOnlyOneTable(Wagons) then
-					if not Tbl1["OpenedFromFar"] and (Tbl1.Type == "all" or Tbl1.Type == "far") and #GetEntsFomTriggers(Tbl1.Far) == 0 and Tbl1.Far then
+				local Wagons = GetEntsFromTriggers(Tbl1.Station)
+				if #Wagons > 0 and not Tbl1.Station[1].occupied and OneOfTriggersOccupied(Tbl1.Station) and not Tbl1["OpenedFromNearDead"] and #GetEntsFromTriggers(Tbl1.Near) == 0 and not Tbl1["OpenedFromStation"] and not Tbl1["OpenedFromNear"] and IfTrainInOnlyOneTable(Wagons) then
+					if not Tbl1["OpenedFromFar"] and Tbl1["RouteToFar"] and (Tbl1.Type == "all" or Tbl1.Type == "far") and #GetEntsFromTriggers(Tbl1.Far) == 0 and Tbl1.Far then
 						Tbl1["OpenedFromStation"] = true
 						ForAvtooborot(Tbl1["RouteToFar"])
-					elseif (Tbl1.Type == "all" or Tbl1.Type == "near") and #GetEntsFomTriggers(Tbl1.Near) == 0 and Tbl1.Near then
+					elseif (Tbl1.Type == "all" or Tbl1.Type == "near") and Tbl1["RouteToNear"] and Tbl1.Near then
 						Tbl1["OpenedFromStation"] = true
 						ForAvtooborot(Tbl1["RouteToNear"])
 					end
@@ -540,6 +536,7 @@ if SERVER then
 							end
 						end
 						if not AvtooborotTBL[StationIndex].Near and not AvtooborotTBL[StationIndex].Far then return end
+						if StationIndex == "102" and Type == "near" and Map:find("surface") then Type = "all" end
 						--переспавн триггеров
 						for name,Tbl in pairs(AvtooborotTBL[StationIndex]) do
 							if not istable(Tbl) then
@@ -582,7 +579,6 @@ if CLIENT then--отображение информации об автообо�
 		AvtooborotStatus = net.ReadInt(2)
 		local Len = net.ReadUInt(32)
 		stations = util.Decompress(net.ReadData(Len))
-		print(stations)
 	end)
 	hook.Add( "HUDPaint", "AvtooborotStatus", function()
 		if AvtooborotStatus < 0 then return end
