@@ -1,7 +1,7 @@
 if CLIENT then return end
 
-CreateConVar("antiafk_ply",300,{FCVAR_NEVER_AS_STRING,FCVAR_ARCHIVE},"время до кика игрока в секундах")
-CreateConVar("antiafk_train",600,{FCVAR_NEVER_AS_STRING,FCVAR_ARCHIVE},"время до удаления поезда в секундах")
+CreateConVar("antiafk_ply",300,{FCVAR_ARCHIVE},"время до кика игрока в секундах")
+CreateConVar("antiafk_train",600,{FCVAR_ARCHIVE},"время до удаления поезда в секундах")
 
 local AntiAfkTimeConVar = GetConVar("antiafk_ply")
 local AntiAfkTimeConVar1 = GetConVar("antiafk_train")
