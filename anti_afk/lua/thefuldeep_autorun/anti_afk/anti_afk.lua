@@ -1,8 +1,10 @@
 if CLIENT then return end
 
-CreateConVar("antiafk",300,{FCVAR_NEVER_AS_STRING,FCVAR_ARCHIVE})
+CreateConVar("antiafk_ply",300,{FCVAR_NEVER_AS_STRING,FCVAR_ARCHIVE},"время до кика игрока в секундах")
+CreateConVar("antiafk_train",600,{FCVAR_NEVER_AS_STRING,FCVAR_ARCHIVE},"время до удаления поезда в секундах")
 
-local AntiAfkTimeConVar = GetConVar("antiafk")
+local AntiAfkTimeConVar = GetConVar("antiafk_ply")
+local AntiAfkTimeConVar1 = GetConVar("antiafk_train")
 
 timer.Create("AntiAfk",10,0,function()
 	local AntiAfkTime = AntiAfkTimeConVar:GetInt()
@@ -28,7 +30,7 @@ timer.Create("AntiAfk",10,0,function()
 		end
 	end
 	
-	AntiAfkTime = AntiAfkTime*2
+	AntiAfkTime = AntiAfkTimeConVar1:GetInt()
 	if Metrostroi and Metrostroi.TrainClasses then
 		for k,TrainClass in pairs(Metrostroi.TrainClasses) do
 			for n,wag in pairs(ents.FindByClass(TrainClass)) do
@@ -36,7 +38,7 @@ timer.Create("AntiAfk",10,0,function()
 				if not wag.AntiAfk then wag.AntiAfk = {} end
 				local Pos = wag:GetPos()
 				--local Ang = wag:GetAngles() --wag:EyeAngles()
-				if not wag.AntiAfk.Pos or wag.AntiAfk.Pos:DistToSqr(Pos) > 50*50
+				if not wag.AntiAfk.Pos or wag.AntiAfk.Pos:DistToSqr(Pos) > 50*50 --я не уверен в этом числе
 				--or not wag.AntiAfk.Ang or wag.AntiAfk.Ang ~= Ang 
 				then
 					wag.AntiAfk.Pos = Pos
