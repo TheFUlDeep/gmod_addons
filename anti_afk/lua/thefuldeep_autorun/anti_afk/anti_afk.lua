@@ -17,11 +17,27 @@ timer.Create("AntiAfk",10,0,function()
 			--ply.AntiAfk.Ang = Ang
 			ply.AntiAfk.LastChange = CurTime()
 			ply.AntiAfk.NotifShowed = nil
+			if ply.AntiAfk.Afk then
+				ply.AntiAfk.Afk = nil
+				print(ply:Nick().." not afk")
+				for k,ply1 in pairs(player.GetHumans()) do
+					if not IsValid(ply1) then continue end
+					ply1:ChatPrint(ply:Nick().." not afk")
+				end
+			end
 			--print("PlayerPosChanged")
 		end
 		
 		if ply.AntiAfk.LastChange then
 			local Delta = CurTime() - ply.AntiAfk.LastChange
+			if Delta >= 20 and not ply.AntiAfk.Afk then
+				ply.AntiAfk.Afk = true
+				print(ply:Nick().." afk")
+				for k,ply1 in pairs(player.GetHumans()) do
+					if not IsValid(ply1) then continue end
+					ply1:ChatPrint(ply:Nick().." afk")
+				end
+			end
 			if not ply.AntiAfk.NotifShowed and AntiAfkTime > 120 and AntiAfkTime - Delta < 60 then ply:ChatPrint("Вас кикнет менее чем через минуту, если вы не пошевелнётесь!") ply.AntiAfk.NotifShowed = true end
 			if Delta > AntiAfkTime then ply:Kick("AntiAfk") end
 		end
@@ -58,11 +74,11 @@ timer.Create("AntiAfk",10,0,function()
 							wag.AntiAfk.NotifShowed = true 
 						end
 					end
-				if Delta > AntiAfkTime then
-					local Owner = CPPI and wag:CPPIGetOwner()
-					if IsValid(Owner) then Owner:ChatPrint("Удаляю "..tostring(wag)) end
-					wag:Remove() 
-				end
+					if Delta > AntiAfkTime then
+						local Owner = CPPI and wag:CPPIGetOwner()
+						if IsValid(Owner) then Owner:ChatPrint("Удаляю "..tostring(wag)) end
+						wag:Remove() 
+					end
 				end
 			end
 		end
