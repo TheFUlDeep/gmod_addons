@@ -1871,6 +1871,7 @@ toggletumbler:help("Переключить и заблокировать тум�
 
 
 --[[============================= ПЕРЕГРУЗКА GOTO ==========================]]
+ulx.gotoOverwrited = nil
 timer.Create("UlxGotoOverwrite", 5, 0, function()
 	if SERVER then
 		if not ulx or not ulx.goto then return end
