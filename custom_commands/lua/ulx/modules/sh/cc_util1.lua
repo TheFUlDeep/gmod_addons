@@ -1871,8 +1871,8 @@ toggletumbler:help("Переключить и заблокировать тум�
 
 
 --[[============================= ПЕРЕГРУЗКА GOTO ==========================]]
-if SERVER then
-	timer.Create("UlxGotoOverwrite", 5, 0, function()
+timer.Create("UlxGotoOverwrite", 5, 0, function()
+	if SERVER then
 		if not ulx or not ulx.goto then return end
 		if ulx.gotoOverwrited then timer.Remove("UlxGotoOverwrite") return end
 		timer.Remove("UlxGotoOverwrite")
@@ -1885,8 +1885,12 @@ if SERVER then
 			oldgoto(calling_ply, target_ply)
 		end
 		print("ulx.goto overwrited")
-	end)
-end
+	end
+	local goto = ulx.command( "Teleport", "ulx goto", ulx.goto, "!goto" )
+	goto:addParam{ type=ULib.cmds.PlayerArg, target="!^", ULib.cmds.ignoreCanTarget }
+	goto:defaultAccess( ULib.ACCESS_ADMIN )
+	goto:help( "Goto target." )
+end)
 
 --[[============================= ClearDecals ==========================]]
 if CLIENT then

@@ -268,8 +268,6 @@ if SERVER then
 			AvtooborotTBL[station].RouteFromFar = "KBA-1"
 			AvtooborotTBL[station].RouteFromNearDead = "KBD-2"
 			
-			--TODO при оороте на станции проверяется ли занятость другой станции. при выезде из тупика проверять занятость перегона
-			
 			
 		elseif Map:find("gm_mustox_neocrimson_line_a") then
 			station = "551"
@@ -377,6 +375,8 @@ if SERVER then
 			createTrigger("Near",station,Vector(-1085+5000+200, -14422+370, -3530),dbg)
 			createTrigger("Near",station,Vector(-1085+5000+200+1900*1, -14422+370, -3530),dbg)
 			createTrigger("Near",station,Vector(-1085+5000+200+1900*2, -14422+370, -3530),dbg)
+			
+			--TODO смотреть занятость перегона при открытии маршрута из тупика
 			
 			AvtooborotTBL[station].Type = "none"
 			AvtooborotTBL[station].StationName = "Фауна"
@@ -603,8 +603,8 @@ if SERVER then
 					local Wagons = GetEntsFromTriggers(Tbl1.Far)
 					if #Wagons > 0 and not Tbl1.Far[1].occupied and Tbl1["RouteFromFar"] and OneOfTriggersOccupied(Tbl1.Far) and not Tbl1["OpenedFromFar"] and not Tbl1["OpenedFromStation"] and IfTrainInOnlyOneTable(Wagons) and (Tbl1.Type == "all" and not Tbl1["OpenedFromNear"] and not Tbl1["OpenedFromFarDead"] or Tbl1.Type == "far")
 					--дополнительное условие сюрфейс антиколлаб
-					and (Map:find("surface") and StationIndex == "102" and #GetEntsFromTriggers(Tbl1.FarDead) == 0 or not Map:find("surface") or not StationIndex == "102")
-					and (Map:find("surface") and StationIndex == "102" and Tbl1.Type == "all" and #GetEntsFromTriggers(Tbl1.NearDead) == 0 and not Tbl1["OpenedFromNearDead"] and not Tbl1.Station[1].occupied and not Tbl1.NearDead[1].occupied or not Map:find("surface") or not StationIndex == "102" or Tbl1.Type ~= "all")
+					and (Map:find("surface") and StationIndex == "102" and #GetEntsFromTriggers(Tbl1.FarDead) == 0 or not Map:find("surface") or StationIndex ~= "102")
+					and (Map:find("surface") and StationIndex == "102" and Tbl1.Type == "all" and #GetEntsFromTriggers(Tbl1.NearDead) == 0 and not Tbl1["OpenedFromNearDead"] and not Tbl1.Station[1].occupied and not Tbl1.NearDead[1].occupied or not Map:find("surface") or StationIndex ~= "102" or Tbl1.Type ~= "all")
 					then
 						Tbl1["OpenedFromFar"] = true
 						ForAvtooborot(Tbl1["RouteFromFar"])
@@ -617,7 +617,7 @@ if SERVER then
 					local Wagons = GetEntsFromTriggers(Tbl1.Near)
 					if #Wagons > 0 and not Tbl1.Near[1].occupied and Tbl1["RouteFromNear"] and OneOfTriggersOccupied(Tbl1.Near) and not Tbl1["OpenedFromNear"] and not Tbl1["OpenedFromStation"] and IfTrainInOnlyOneTable(Wagons) and (Tbl1.Type == "all" and not Tbl1["OpenedFromFar"] and not Tbl1["OpenedFromFarDead"] and #GetEntsFromTriggers(Tbl1.Far) == 0 or Tbl1.Type == "near") 
 					--дополнительное условие неомалина пионерская
-					and (Map:find("gm_mustox_neocrimson_line_a") and StationIndex == "552" and #GetEntsFromTriggers(Tbl1.Station) == 0 or not Map:find("gm_mustox_neocrimson_line_a") or not StationIndex == "552")
+					and (Map:find("gm_mustox_neocrimson_line_a") and StationIndex == "552" and #GetEntsFromTriggers(Tbl1.Station) == 0 or not Map:find("gm_mustox_neocrimson_line_a") or StationIndex ~= "552")
 					then
 						Tbl1["OpenedFromNear"] = true
 						ForAvtooborot(Tbl1["RouteFromNear"])
