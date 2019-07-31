@@ -48,7 +48,7 @@ restart_server:help("ВЫРУБАЕТ СЕРВЕР НАХООООООООООЙ 
 	
 if SERVER then
 	function ulx.discord(calling_ply)
-		local discord = "https://discord.gg/p4mJVKr"
+		local discord = "https://discord.gg/4Xdu3N"
 		--local ply = tostring(calling_ply:Nick())
 		ulx.fancyLogAdmin(calling_ply, false, "#A, вот ссылка на наш дискорд: #s", discord)
 		--ULib.tsayColor(nil, true, discord, Color(255,255,255,255))

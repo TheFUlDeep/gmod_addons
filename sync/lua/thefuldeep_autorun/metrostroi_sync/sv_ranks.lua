@@ -29,7 +29,7 @@ if SERVER then
 				timer.Simple(0.1, function()
 					if not IsValid(ply) then return end
 					SendRankToWebServer(WebServerUrl,ply:SteamID(),ply:Nick(),ply:GetUserGroup())
-					print("Saving rank "..ply:GetUserGroup().." to "..ply:Nick())
+					--print("Saving rank "..ply:GetUserGroup().." to "..ply:Nick())
 				end)
 			end
 		)
