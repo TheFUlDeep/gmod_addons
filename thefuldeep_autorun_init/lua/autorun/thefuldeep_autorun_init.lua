@@ -45,3 +45,5 @@ InitAutorun("thefuldeep_autorun_sh/","sh")
 InitAutorun("thefuldeep_autorun_cl/","cl")
 InitAutorun("thefuldeep_autorun_sv/","sv")
 print("TheFulDeep's autorun initialized")
+
+--TODO сделать тут все глобальные переменные + написать IsValid2

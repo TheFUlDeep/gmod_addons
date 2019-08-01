@@ -1,4 +1,4 @@
-if SERVER then 
+if SERVER then --TODO запрет закрытия светофора, если игрок обычный юзер
 	local function CustomozeSignals()
 		print("customizing signals")
 		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do

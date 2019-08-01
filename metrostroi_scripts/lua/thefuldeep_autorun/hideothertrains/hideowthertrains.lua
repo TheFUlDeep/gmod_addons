@@ -69,6 +69,8 @@ timer.Create("PlyInTrainForHideCheck",1,0,function()
 	end
 end)
 
+--TODO если игрок в составе, то не прогружается соседний состав
+--TODO в идеале смотреть не по двум диагоналям, а по двум диагоналям каждой плоскости и по всем граням
 timer.Create("HideTrainClientEnts",10,0,function()		-- каждые 10 секунд я сканирую ентити, и если вижу ентити, в котором функция не изменена - изменяю ее
 	local C_ScreenshotMode      = GetConVar("metrostroi_screenshotmode")		-- прогружаю конвары здесь, чтобы случайно не прогрузить Nil
 	local C_CabFOV              = GetConVar("metrostroi_cabfov")

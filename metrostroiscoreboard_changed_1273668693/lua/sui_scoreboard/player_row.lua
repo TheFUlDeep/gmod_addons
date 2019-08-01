@@ -1,5 +1,6 @@
 include( "player_infocard.lua" )
-
+--TODO можно ли добавить инфу об игроках с других серверов, если синхра включена?
+--TODO убрать здоровье
 // checking for utime for the hours
 utimecheck = false
 if file.Exists("autorun/cl_utime.lua", "LUA") then 

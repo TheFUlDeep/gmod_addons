@@ -251,7 +251,7 @@
 	
 	
 	
- IGS("81-710 (Еж3) Train Budapest Ev (Dark Blue)", "32") --TODO проверить, есть ли пробел
+ IGS("81-710 (Еж3) Train Budapest Ev (Dark Blue)", "32")
  	:SetPrice(0)
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кузова Budapest Ev (Dark Blue) на составе 81-710\n[[gmod_subway_ezh3 Texture Budapest Ev (Dark Blue)]]")

@@ -57,3 +57,5 @@ hook.Add("IGS.CanPlayerBuyItem", "CheckMetrostroiSkin", function(pl,item,global,
 end)
 
 --PrintTable(Metrostroi.Skins)
+
+--TODO добавить скин FullRandom

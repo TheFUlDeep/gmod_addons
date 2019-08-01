@@ -536,7 +536,7 @@ if SERVER then
 
 
 --[[ ======================================= ТП К СОСТАВУ ======================================= ]]		-- return'ы добавил для псевдооптимизации
-	function ulx.traintp(calling_ply,target_ply)
+	function ulx.traintp(calling_ply,target_ply)	--TODO фикс уведомления. на некоторых составах оно некорректное
 	local p = 0
 	local Class = "Class"
 	for k1,v1 in pairs(Metrostroi.TrainClasses) do
@@ -1953,6 +1953,7 @@ timer.Simple(1,function()
 	wagons:defaultAccess( ULib.ACCESS_ALL )
 	wagons:help( "Shows you the current wagons." )
 end)
+--TODO автоподключение удочки
 
 --используй table.insert только если ключи не числа
 --ply.InMetrostroiTrain
