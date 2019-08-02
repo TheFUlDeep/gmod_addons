@@ -1,11 +1,11 @@
 --====================ДИСКОННЕКТ ИГРОКА======================================--
-
 --СЕРВЕРНЫЙ
 if SERVER then
 	util.AddNetworkString("SB_PlayerDisconnectedMessage")
 	gameevent.Listen("player_disconnect")
 
 	hook.Add("player_disconnect","SB_PlayerDisconnectedMessage",function(data)
+		if THEFULDEEP and THEFULDEEP.PLAYERCOUNT then THEFULDEEP.PLAYERCOUNT = THEFULDEEP.PLAYERCOUNT - 1 end
 		net.Start("SB_PlayerDisconnectedMessage")
 			net.WriteString(data.name)
 			net.WriteString(data.networkid)

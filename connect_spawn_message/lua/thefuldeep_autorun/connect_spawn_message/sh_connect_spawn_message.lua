@@ -1,3 +1,6 @@
+if not THEFULDEEP then THEFULDEEP = {} end
+THEFULDEEP.PLAYERCOUNT = 0
+
 if SERVER then
 	util.AddNetworkString("tfd_spawnmsg")
 	util.AddNetworkString("tfd_connectmsg")
@@ -13,6 +16,7 @@ if SERVER then
 	end)
 	
 	hook.Add("PlayerConnect", "tfd_connectmsg",function(nick)
+		THEFULDEEP.PLAYERCOUNT = THEFULDEEP.PLAYERCOUNT + 1
 		net.Start("tfd_connectmsg")
 			net.WriteString(nick)
 		net.Broadcast()
