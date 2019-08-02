@@ -712,7 +712,7 @@ if SERVER then
 		end
 	end
 	
-	function AvtooborotControl(text)-- функция управления автоборотом текстовой командой
+	function AvtooborotControl(ply,text)-- функция управления автоборотом текстовой командой
 		text = string.lower(text)
 		if not text:find("%a") then 
 			if AvtooborotStatus == 1 then 

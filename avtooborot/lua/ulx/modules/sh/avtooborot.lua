@@ -1,6 +1,6 @@
 if SERVER then
 	function ulx.avtooborot(ply,comm)
-		AvtooborotControl(comm)
+		AvtooborotControl(ply,comm)
 	end
 end
 local avtooborot = ulx.command("Metrostroi", "ulx avtooborot", ulx.avtooborot, "!avtooborot",true)
