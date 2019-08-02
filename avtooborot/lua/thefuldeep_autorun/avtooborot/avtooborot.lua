@@ -712,68 +712,67 @@ if SERVER then
 		end
 	end
 	
-	hook.Add("PlayerSay","Avtooborot",function(ply,text)	--управление автоборотом. Делаю это через чат-триггер, потому что в ulx будет много кнопок и это будет некрасиво
-		if text:sub(1,11) == "!avtooborot" then
-			local Rank = ply:GetUserGroup()
-			if Rank ~= "operator" and Rank ~= "admin" and Rank ~= "SuperVIP" and Rank ~= "superadmin" then return end
-			local start = text:find(" ")
-			if not start then 
-				if AvtooborotStatus == 1 then 
-					AvtooborotStatus = 0 
-					SendAvtooborot() 
-					ulx.fancyLogAdmin(ply,false,"#A выключил автооборот")
-					return ""
-				else 
-					deleteavtooborot()
-					createavtooborot() 
-					ulx.fancyLogAdmin(ply,false,"#A включил автооборот")
-					return ""
-				end
-			elseif AvtooborotStatus == 1 then
-				local start2 = text:find(" ",start + 1)
-				if not start2 then return end
-				local StationIndex = text:sub(start + 1, start2 - 1)
-				local start3 = text:find(" ",start2 + 1)
-				local Type
-				if not start3 then Type = text:sub(start2 + 1) else Type = text:sub(start2 + 1, start3 - 1) end
-				if Type ~= "none" and Type ~= "near" and Type ~= "far" and Type ~= "all" then return end
-				if AvtooborotTBL[StationIndex] and AvtooborotTBL[StationIndex].Type and AvtooborotTBL[StationIndex].Type ~= Type then
-					if Type ~= "none" then
-						if Type == "near" and not AvtooborotTBL[StationIndex].Near and AvtooborotTBL[StationIndex].Far then Type = "far"
-						elseif Type == "far" and not AvtooborotTBL[StationIndex].Far and AvtooborotTBL[StationIndex].Near then Type = "near"
-						elseif Type == "all" then
-							if not AvtooborotTBL[StationIndex].Far and AvtooborotTBL[StationIndex].Near then Type = "near" 
-							elseif not AvtooborotTBL[StationIndex].Near and AvtooborotTBL[StationIndex].Far then Type = "far" 
-							end
+	function AvtooborotControl(text)-- функция управления автоборотом текстовой командой
+		text = string.lower(text)
+		if not text:find("%a") then 
+			if AvtooborotStatus == 1 then 
+				AvtooborotStatus = 0 
+				SendAvtooborot() 
+				ulx.fancyLogAdmin(ply,false,"#A выключил автооборот")
+			else 
+				deleteavtooborot()
+				createavtooborot() 
+				ulx.fancyLogAdmin(ply,false,"#A включил автооборот")
+			end
+			return
+		end
+		
+		
+		local start = 0
+		if AvtooborotStatus == 1 then
+			local start2 = text:find(" ",start + 1)
+			if not start2 then return end
+			local StationIndex = text:sub(start + 1, start2 - 1)
+			local start3 = text:find(" ",start2 + 1)
+			local Type
+			if not start3 then Type = text:sub(start2 + 1) else Type = text:sub(start2 + 1, start3 - 1) end
+			if Type ~= "none" and Type ~= "near" and Type ~= "far" and Type ~= "all" then return end
+			if AvtooborotTBL[StationIndex] and AvtooborotTBL[StationIndex].Type and AvtooborotTBL[StationIndex].Type ~= Type then
+				if Type ~= "none" then
+					if Type == "near" and not AvtooborotTBL[StationIndex].Near and AvtooborotTBL[StationIndex].Far then Type = "far"
+					elseif Type == "far" and not AvtooborotTBL[StationIndex].Far and AvtooborotTBL[StationIndex].Near then Type = "near"
+					elseif Type == "all" then
+						if not AvtooborotTBL[StationIndex].Far and AvtooborotTBL[StationIndex].Near then Type = "near" 
+						elseif not AvtooborotTBL[StationIndex].Near and AvtooborotTBL[StationIndex].Far then Type = "far" 
 						end
-						if not AvtooborotTBL[StationIndex].Near and not AvtooborotTBL[StationIndex].Far then return end
-						--переспавн триггеров
-						for name,Tbl in pairs(AvtooborotTBL[StationIndex]) do
-							if not istable(Tbl) then
-								if name:find("Opened") then AvtooborotTBL[StationIndex][name] = nil end
-							else
-								for i,trig in ipairs(Tbl) do
-									--print(trig)
-									if not IsEntity(trig) then continue end
-									local ent = ents.Create( "avtooborot" )
-									ent.name = trig.name
-									ent:SetPos(trig:GetPos())
-									ent:UseTriggerBounds(true)
-									ent.dbg = trig.dbg
-									trig:Remove()
-									ent:Spawn()
-									AvtooborotTBL[StationIndex][name][i] = ent
-								end
+					end
+					if not AvtooborotTBL[StationIndex].Near and not AvtooborotTBL[StationIndex].Far then return end
+					--переспавн триггеров
+					for name,Tbl in pairs(AvtooborotTBL[StationIndex]) do
+						if not istable(Tbl) then
+							if name:find("Opened") then AvtooborotTBL[StationIndex][name] = nil end
+						else
+							for i,trig in ipairs(Tbl) do
+								--print(trig)
+								if not IsEntity(trig) then continue end
+								local ent = ents.Create( "avtooborot" )
+								ent.name = trig.name
+								ent:SetPos(trig:GetPos())
+								ent:UseTriggerBounds(true)
+								ent.dbg = trig.dbg
+								trig:Remove()
+								ent:Spawn()
+								AvtooborotTBL[StationIndex][name][i] = ent
 							end
 						end
 					end
-					AvtooborotTBL[StationIndex].Type = Type 
-					UpdateAvtooborot()
-					SendAvtooborot() 
 				end
+				AvtooborotTBL[StationIndex].Type = Type 
+				UpdateAvtooborot()
+				SendAvtooborot() 
 			end
 		end
-	end)
+	end
 	
 	for k,v in pairs(player.GetHumans()) do	--for debug
 		if v:Nick():find("TheFulDeep") then print(v:GetPos()) end

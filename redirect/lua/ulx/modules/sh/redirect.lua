@@ -1,29 +1,21 @@
 --[[============================= РЕДИРЕКТ ==========================]]
 if SERVER then
-	local WebServerUrl = "http://"..(file.Read("web_server_ip.txt") or "127.0.0.1").."/sync/"
+	local WebServerUrl = "http://"..(file.Read("web_server_ip.txt") or "127.0.0.1").."/serverinfo/"
 	
-	local function GetFromWebServer(url,typ,ply)
+	local function GetFromWebServer(url,ply)
+		if not THEFULDEEP or not THEFULDEEP.HOSTNAME then return end
 		http.Fetch( 
-		url.."?typ="..typ,
-		function (body)
-			local outputTBL = {}
-			if body then
-				outputTBL = util.JSONToTable(body)
-			end
+		url,
+		function (outputTBL)
 			if not outputTBL then return end
-			local tbl2 = {}
-			for k,v in pairs(outputTBL) do
-				if not v.MainTable then continue end
-				table.insert(tbl2,1,v.MainTable)
-			end
-			if not tbl2 then return end
-			for k,v in pairs(tbl2) do
-				if not v.ip or not v.count or not v.maxx or v.password then continue end
-				if v.ip:find("0.0.0.0") then continue end
-				if v.ip ~= game.GetIPAddress() and v.count < v.maxx then 
-					ply:SendLua([[LocalPlayer():ConCommand('connect ]]..tostring(v.ip)..[[')]])
+			outputTBL = util.JSONToTable(outputTBL)
+			if not outputTBL then return end
+			for ip,tbl in pairs(outputTBL) do
+				if ip == THEFULDEEP.HOSTNAME then continue end
+				if not tbl.PlayerCount or not tbl.MaxPlayers then continue end
+				if tbl.MaxPlayers - tbl.PlayerCount > 1 then 
+					ply:SendLua([[LocalPlayer():ConCommand('connect ]]..tostring(ip)..[[')]])
 					ulx.fancyLogAdmin(ply, true, "#A был перенаправлен на другой сервер")
-					break
 				end
 			end
 		end
@@ -31,7 +23,7 @@ if SERVER then
 	end	
 	
 	function ulx.redirect(ply)
-		GetFromWebServer(WebServerUrl,"PlayerCount",ply)
+		GetFromWebServer(WebServerUrl,ply)
 		--print(GetHostName())
 		--print(redirectip)
 	end
@@ -40,3 +32,13 @@ end
 local redirect = ulx.command( "Utility", "ulx redirect", ulx.redirect, "!redirect", true)
 redirect:defaultAccess( ULib.ACCESS_ALL )
 redirect:help( "Перейти на другой сервер" )
+
+if CLIENT then return end
+
+hook.Add("PlayerInitialSpawn","SpawnRedirect",function(ply)
+	timer.Simple(1, function()
+		if ply:GetUserGroup() == "superadmin" then return
+		elseif game.MaxPlayers() == player.GetCount() then ulx.redirect(ply)
+		end
+	end)
+end)
