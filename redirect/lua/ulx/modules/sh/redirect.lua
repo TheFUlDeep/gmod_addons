@@ -12,7 +12,7 @@ if SERVER then
 			if not outputTBL then return end
 			for ip,tbl in pairs(outputTBL) do
 				if ip == THEFULDEEP.HOSTNAME then continue end
-				if not tbl.PlayerCount or not tbl.MaxPlayers then continue end
+				if not istable(tbl) or not tbl.PlayerCount or not tbl.MaxPlayers then continue end
 				if tbl.MaxPlayers - tbl.PlayerCount > 1 then 
 					ply:SendLua([[LocalPlayer():ConCommand('connect ]]..tostring(ip)..[[')]])
 					ulx.fancyLogAdmin(ply, true, "#A был перенаправлен на другой сервер")
