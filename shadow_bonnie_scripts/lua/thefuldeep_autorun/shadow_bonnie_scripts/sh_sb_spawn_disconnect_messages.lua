@@ -35,6 +35,7 @@ if SERVER then
 	util.AddNetworkString("SB_PlayerLoaded")
 
 	net.Receive("SB_PlayerLoaded",function(len,ply)
+		if ply.AntiAfk and ply.AntiAfk.AfkBlock then ply.AntiAfk.AfkBlock = nil end	--this line for anti_afk.lua
 		net.Start("SB_PlayerLoaded")
 			net.WriteString(ply:Nick())
 			net.WriteColor(team.GetColor(ply:Team()))

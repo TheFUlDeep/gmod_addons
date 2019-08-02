@@ -10,7 +10,7 @@ timer.Create("AntiAfk",10,0,function()
 		if not ply.AntiAfk then ply.AntiAfk = {} end
 		local Pos = ply:GetPos()
 		--local Ang = ply:GetAngles() --ply:EyeAngles()
-		if not ply.AntiAfk.Pos or ply.AntiAfk.Pos ~= Pos 
+		if not ply.AntiAfk.Pos or ply.AntiAfk.Pos ~= Pos or ply.AntiAfk.AfkBlock
 		--or not ply.AntiAfk.Ang or ply.AntiAfk.Ang ~= Ang 
 		then
 			ply.AntiAfk.Pos = Pos
@@ -85,3 +85,7 @@ timer.Create("AntiAfk",10,0,function()
 	end
 end)
 
+hook.Add("PlayerInitialSpawn","AnfiAfk",function(ply) 
+	if not ply.AntiAfk then ply.AntiAfk = {} end
+	ply.AntiAfk.AfkBlock = true
+end)
