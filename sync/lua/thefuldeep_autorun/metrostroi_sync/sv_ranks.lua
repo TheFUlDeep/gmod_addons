@@ -37,7 +37,7 @@ if SERVER then
 
 	local function CheckUserRank(ply)
 		if not IsValid(ply) then return end
-		GetRankFromWebServer(WebServerUrl,ply:SteamID(),ply)
+		GetRankFromWebServer(WebServerUrl,ply:SteamID())
 	end
 
 	local function CheckRanks()
@@ -52,7 +52,10 @@ if SERVER then
 	end
 	timer.Create("CheckingRanks",60,0,function() CheckRanks() end)
 
-
+	gameevent.Listen("player_changename")
+	hook.Add( "player_changename", "SendChangedNickToWebServer", function( data )
+		GetRankFromWebServer(WebServerUrl,Player(data.userid):SteamID())
+	end)
 
 	local function CheckIfBanned(SteamID)
 		http.Fetch(
