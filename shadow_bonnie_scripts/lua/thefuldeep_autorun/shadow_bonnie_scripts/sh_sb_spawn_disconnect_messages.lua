@@ -5,7 +5,13 @@ if SERVER then
 	gameevent.Listen("player_disconnect")
 
 	hook.Add("player_disconnect","SB_PlayerDisconnectedMessage",function(data)
-		if THEFULDEEP and THEFULDEEP.PLAYERCOUNT then THEFULDEEP.PLAYERCOUNT = THEFULDEEP.PLAYERCOUNT - 1 end
+		timer.Simple(1,function()
+			if THEFULDEEP and THEFULDEEP.PLAYERCOUNT then 
+				THEFULDEEP.PLAYERCOUNT = THEFULDEEP.PLAYERCOUNT - 1 
+				local PlayerCount = player.GetCount()
+				if THEFULDEEP.PLAYERCOUNT < PlayerCount then THEFULDEEP.PLAYERCOUNT = PlayerCount end --TODO это костыль. Почему-то может произойти, что дисконнектов больше, чем коннектов
+			end
+		end)
 		net.Start("SB_PlayerDisconnectedMessage")
 			net.WriteString(data.name)
 			net.WriteString(data.networkid)
