@@ -221,7 +221,7 @@ if SERVER then
 			--createTrigger("FarDead",station,Vector(3269 + 350, 3247, -1710),dbg)
 			
 			AvtooborotTBL[station].RouteToFar = "KR2-3"
-			AvtooborotTBL[station].RouteFromFar = "KR1-1"
+			AvtooborotTBL[station].RouteFromFar = "KR1531-1"
 			--AvtooborotTBL[station].RouteFromFarDead = "KR3-1"
 			
 			
