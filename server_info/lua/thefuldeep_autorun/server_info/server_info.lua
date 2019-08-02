@@ -490,7 +490,7 @@ local function PrepareDataToSending()
 			--TblToSend.Players[Index].Position = GetPosition(v)
 		end
 	end
-	TblToSend.PlayerCount = i
+	TblToSend.PlayerCount = THEFULDEEP.PLAYERCOUNT or i
 	TblToSend.MaxPlayers = game.MaxPlayers()
 	TblToSend.Trains = ulx.GetTrains()
 	if table.Count(TblToSend.Trains) < 1 then TblToSend.Trains = nil end

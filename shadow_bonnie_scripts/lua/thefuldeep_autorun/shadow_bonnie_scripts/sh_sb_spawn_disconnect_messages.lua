@@ -1,11 +1,11 @@
 --====================ДИСКОННЕКТ ИГРОКА======================================--
-
 --СЕРВЕРНЫЙ
 if SERVER then
 	util.AddNetworkString("SB_PlayerDisconnectedMessage")
 	gameevent.Listen("player_disconnect")
 
 	hook.Add("player_disconnect","SB_PlayerDisconnectedMessage",function(data)
+		if THEFULDEEP and THEFULDEEP.PLAYERCOUNT then THEFULDEEP.PLAYERCOUNT = THEFULDEEP.PLAYERCOUNT - 1 end
 		net.Start("SB_PlayerDisconnectedMessage")
 			net.WriteString(data.name)
 			net.WriteString(data.networkid)
@@ -35,6 +35,7 @@ if SERVER then
 	util.AddNetworkString("SB_PlayerLoaded")
 
 	net.Receive("SB_PlayerLoaded",function(len,ply)
+		if ply.AntiAfk and ply.AntiAfk.AfkBlock then ply.AntiAfk.AfkBlock = nil end	--this line for anti_afk.lua
 		net.Start("SB_PlayerLoaded")
 			net.WriteString(ply:Nick())
 			net.WriteColor(team.GetColor(ply:Team()))

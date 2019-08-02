@@ -114,12 +114,14 @@ if SERVER then
 		timer.Simple(1,function()
 			if not IsValid(ply) then return end
 			CheckUserRank(ply)
-			CheckIfLocalBanned(ply:SteamID())		-- в этом хуке просто на всякий случай
+			local Banned = CheckIfLocalBanned(ply:SteamID())		-- в этом хуке просто на всякий случай
+			if Banned then game.KickID(ply:SteamID(),Banned) return end
 			CheckIfBanned(ply:SteamID())		-- в этом хуке просто на всякий случай
 		end)
 	end)
 
 	hook.Add( "CheckPassword", "SyncBanCheck", function(steamID64,ipAddress,svPassword,clPassword,name)
+		--TODO если имя изменилось, то запостить его в базу рангов. Каждые 30 секунд пуолчать таблица рангов, чтобы не обращаться к серверу каждый раз при заходе игрока. После поста нового ника принудительно получить всю таблицу рангов
 		local SteamID = util.SteamIDFrom64(steamID64)
 		local result = CheckIfLocalBanned(SteamID)
 		if result then return false,result end
@@ -187,6 +189,7 @@ local function OverWriteUlxCommands()
 		if not WhoBanned then WhoBanned = "Console" end
 		if not Nick then Nick = "Unknown" end
 		if IsValid(player.GetBySteamID(SteamID)) then Nick = player.GetBySteamID(SteamID):Nick() end
+		--TODO если ник доступен, запостить его в базу рангов для обновления его ника там.
 		http.Post(
 			WebServerUrl.."bans/",
 			{SteamID = SteamID,Nick = Nick,WhoBanned = WhoBanned, WhoBannedID = WhoBannedSteamID,Reason = reason,Duration = duration},
@@ -312,6 +315,8 @@ local function OverWriteUlxCommands()
 		end
 		SetRank(id,"user")
 	end
+	
+	--TODO ulx.checkban
 	
 	local adduser = ulx.command( CATEGORY_NAME, "ulx adduser", ulx.adduser, nil, false, false, true )
 	adduser:addParam{ type=ULib.cmds.PlayerArg }
