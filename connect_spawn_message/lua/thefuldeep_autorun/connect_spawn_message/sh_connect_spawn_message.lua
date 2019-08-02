@@ -8,6 +8,8 @@ if SERVER then
 	hook.Add("PlayerInitialSpawn", "tfd_spawnmsg",function(ply)
 		timer.Simple(1,function()
 			if not IsValid(ply) then return end
+			local PlayerCount = player.GetCount()
+			if THEFULDEEP.PLAYERCOUNT < PlayerCount then THEFULDEEP.PLAYERCOUNT = PlayerCount end --TODO это костыль. Почему-то может произойти, что дисконнектов больше, чем коннектов
 			net.Start("tfd_spawnmsg")
 				net.WriteString(ply:Nick())
 				net.WriteColor(team.GetColor(ply:Team()))
