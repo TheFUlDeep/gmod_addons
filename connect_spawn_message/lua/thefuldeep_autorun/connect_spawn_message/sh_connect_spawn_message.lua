@@ -15,10 +15,11 @@ if SERVER then
 		end)
 	end)
 	
-	hook.Add("PlayerConnect", "tfd_connectmsg",function(nick)
+	gameevent.Listen( "player_connect" )
+	hook.Add("player_connect", "tfd_connectmsg",function(data)
 		THEFULDEEP.PLAYERCOUNT = THEFULDEEP.PLAYERCOUNT + 1
 		net.Start("tfd_connectmsg")
-			net.WriteString(nick)
+			net.WriteString(data.name)
 		net.Broadcast()
 	end)
 end

@@ -76,6 +76,10 @@ timer.Create("HideTrainClientEnts",10,0,function()		-- каждые 10 секу�
 	local C_CabFOV              = GetConVar("metrostroi_cabfov")
 	local C_FovDesired          = GetConVar("fov_desired")
 	local C_MinimizedShow       = GetConVar("metrostroi_minimizedshow")
+	local hidealltrains = GetConVar("hidealltrains")
+	local hideothertrains = GetConVar("hideothertrains")
+	local hidetrains_behind_props = GetConVar("hidetrains_behind_props")
+	local hidetrains_behind_player = GetConVar("hidetrains_behind_player")
 	local ply = LocalPlayer()
 	if not Metrostroi then return end
 	for _k,class in pairs(Metrostroi.TrainClasses) do
@@ -99,10 +103,10 @@ timer.Create("HideTrainClientEnts",10,0,function()		-- каждые 10 секу�
 				end
 				
 				if not C_ScreenshotMode:GetBool() then
-					if GetConVar("hidealltrains"):GetBool() then
+					if hidealltrains:GetBool() then
 						if not PlyInTrain or PlyInTrain ~= ent then ent.DrawResult = false return ent.DrawResult end
 					else
-						if GetConVar("hideothertrains"):GetBool() then
+						if hideothertrains:GetBool() then
 							local Owner = CPPI and ent:CPPIGetOwner() or nil
 							if not (IsValid(Owner) and Owner == ply or PlyInTrain and PlyInTrain == ent) then ent.DrawResult = false return ent.DrawResult end
 						end
@@ -112,7 +116,7 @@ timer.Create("HideTrainClientEnts",10,0,function()		-- каждые 10 секу�
 				--metrostroi default
 				ent.DrawResult = !ent:IsDormant() and math.abs(ply:EyePos().z-ent:GetPos().z)<500 and (system.HasFocus() or C_MinimizedShow:GetBool()) and LocalPlayer():EyePos():DistToSqr(ent:GetPos())
 				
-				if ent.DrawResult and (GetConVar("hidetrains_behind_props"):GetBool() or GetConVar("hidetrains_behind_player"):GetBool()) and not C_ScreenshotMode:GetBool() then
+				if ent.DrawResult and (hidetrains_behind_props:GetBool() or hidetrains_behind_player:GetBool()) and not C_ScreenshotMode:GetBool() then
 					tracelinesetup.start = ViewPos or ply:EyePos()
 					
 					local TrainSize,Result = ent:OBBMins() / 1
@@ -143,11 +147,11 @@ timer.Create("HideTrainClientEnts",10,0,function()		-- каждые 10 секу�
 							end
 						end
 					end
-					if GetConVar("hidetrains_behind_props"):GetBool() then
+					if hidetrains_behind_player:GetBool() then
 						ent.DrawResult = Result or false
 					end
 					
-					if GetConVar("hidetrains_behind_player"):GetBool() then
+					if hidetrains_behind_player:GetBool() then
 						if not CanSee then ent.DrawResult = false end
 					end
 				end
