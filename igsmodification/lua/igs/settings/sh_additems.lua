@@ -829,6 +829,12 @@
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кабины Default на составе 81-502\n[[gmod_subway_81-502 CabTexture Default]]")
  	:SetCategory("Скины на 81-502 (Ема)")
+	
+ IGS("81-717 МСК (номерной) Train U Got That", "130")
+ 	:SetPrice(15)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова 81-570 на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture U Got That]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
 
 
 
