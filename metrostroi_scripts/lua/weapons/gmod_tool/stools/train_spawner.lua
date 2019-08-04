@@ -1,4 +1,3 @@
-
 --local TOOL = player.GetBySteamID("STEAM_0:1:31566374"):GetTool("train_spawner")
 TOOL.AddToMenu = false
 
@@ -107,9 +106,9 @@ local function CustomSkin(self,OnSpawn)
 	
 	local function ReturnRandomKeyFromTable(tbl,TextureClass)
 		local TBL = tbl
-		for k,v in pairs(TBL) do
-			if IsThisSkinInInventory(self.Train.ClassName,TextureClass,v) then TBL[k] = nil --[[print("nilled",v)]] end		-- выбираю рандомный скин, предварительно очистив купленные
-		end
+--		for k,v in pairs(TBL) do
+--			if IsThisSkinInInventory(self.Train.ClassName,TextureClass,v) then TBL[k] = nil --[[print("nilled",v)]] end		-- выбираю рандомный скин, предварительно очистив купленные
+--		end
 		local TblCount = table.Count(TBL)
 		if TblCount > 1 then NotOnlyOneSkin = true end 	--вообще тут надо ставить > 0, так как по сути будет ставиться рандомный скин, но он будет только один. Так что и так соайдет
 		math.randomseed(os.clock())
@@ -126,7 +125,11 @@ local function CustomSkin(self,OnSpawn)
 		for k1,v1 in pairs(self.Settings) do
 			if k1 == k then
 				if NoSkinsForThisTrain(self,k) then --если этот скин не куплен, то рандомить скин
+					--print("was",self.Settings[k1],k)
+					local was = self.Settings[k1]
 					self.Settings[k1] = ReturnRandomKeyFromTable(v,k)
+					--print("now",self.Settings[k1],k)
+					timer.Simple(0.0001,function() self.Settings[k1] = was end) -- я не уверен, что таким способом оно будет работать всегда корректно
 					randomSkin = true 
 				end 
 				-- v -- таблица всех текстур
@@ -134,12 +137,11 @@ local function CustomSkin(self,OnSpawn)
 			end
 		end
 	end
+	
 	if randomSkin and OnSpawn and NotOnlyOneSkin then 
 		ULib.tsayError(ply,"Скины на некупленные части состава установятся случайно.") 
 		ULib.tsayError(ply,"Купить скин можно в /donate") 
 	end
-	
-	
 end
 
 local function Trace(ply,tr)
@@ -419,6 +421,7 @@ function TOOL:SpawnWagon(trace)
             --print)
 
             LastRot = rot
+			
         end
         table.insert(trains,ent)
         undo.AddEntity(ent)
@@ -448,6 +451,7 @@ function TOOL:SpawnWagon(trace)
         ent.FrontAutoCouple = i > 1 and i < self.Settings.WagNum
         ent.RearAutoCouple = true
         LastEnt = ent
+		
     end
     undo.SetPlayer(ply)
     undo.SetCustomUndoText("Undone a train")
@@ -508,7 +512,6 @@ function TOOL:Reload(trace)
     spawner:SpawnFunction(self:GetOwner())
 end
 function TOOL:LeftClick(trace)
-	CustomSkin(self)
     local class = IsValid(trace.Entity) and trace.Entity:GetClass()
     if class and (trace.Entity.Spawner or class ~= "func_door" and class ~= "prop_door_rotating")  then
         if SERVER then
@@ -540,7 +543,6 @@ function TOOL:LeftClick(trace)
                     hook.Run("MetrostroiSpawnerUpdate",ent,self.Settings)
                     ent:UpdateTextures()
                     table.insert(trains,ent)
-
                 end
                 if self.Train.Spawner.postfunc then self.Train.Spawner.postfunc(trains,self.Settings.WagNum) end
             end

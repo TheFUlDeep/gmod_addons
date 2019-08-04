@@ -829,6 +829,96 @@
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кабины Default на составе 81-502\n[[gmod_subway_81-502 CabTexture Default]]")
  	:SetCategory("Скины на 81-502 (Ема)")
+	
+ IGS("81-717 МСК (номерной) Train U Got That", "130")
+ 	:SetPrice(15)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова U Got That на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture U Got That]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-702 (Д) Train Kiev", "131")
+ 	:SetPrice(10)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова Kiev на составе 81-702\n[[gmod_subway_81-702 Texture Kiev]]")
+ 	:SetCategory("Скины на 81-702 (Д)")
+	
+ IGS("81-707 (Еж) Train Lakden fun skin", "132")
+ 	:SetPrice(10)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова Lakden fun skin на составе 81-707\n[[gmod_subway_ezh Texture Lakden fun skin]]")
+ 	:SetCategory("Скины на 81-707 (Еж)")
+	
+ IGS("81-707 (Еж) Train Kiev", "133")
+ 	:SetPrice(10)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова Kiev на составе 81-707\n[[gmod_subway_ezh Texture Kiev]]")
+ 	:SetCategory("Скины на 81-707 (Еж)")
+	
+ IGS("81-717 МСК (номерной) Cab Pult (№725)", "134")
+ 	:SetPrice(5)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кабины Pult (№725) на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom CabTexture Pult (№725)]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717 МСК (номерной) Cab Pult (№725) Variant 2", "135")
+ 	:SetPrice(5)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кабины Pult (№725) Variant 2 на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom CabTexture Pult (№725) Variant 2]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717 МСК (номерной) Cab Pult (№725) Variant 3", "136")
+ 	:SetPrice(5)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кабины Pult (№725) Variant 3 на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom CabTexture Pult (№725) Variant 3]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717 МСК (номерной) Cab Pult Blue", "137")
+ 	:SetPrice(5)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кабины Pult Blue на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom CabTexture Pult Blue]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717 МСК (номерной) Cab Xray (ostorojno bla)", "138")
+ 	:SetPrice(5)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кабины Xray (ostorojno bla) на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom CabTexture Xray (ostorojno bla)]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717 МСК (номерной) Cab Pult Old", "139")
+ 	:SetPrice(5)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кабины Pult Old на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom CabTexture Pult Old]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717 МСК (номерной) Cab Metal-Pult (OLD)", "140")
+ 	:SetPrice(5)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кабины Metal-Pult (OLD) на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom CabTexture Metal-Pult (OLD)]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717 МСК (номерной) Cab Metal-Pult (NEW)", "141")
+ 	:SetPrice(5)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кабины Metal-Pult (NEW) на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom CabTexture Metal-Pult (NEW)]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717 МСК (номерной) Cab Kolhoz 1", "142")
+ 	:SetPrice(5)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кабины Kolhoz 1 на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom CabTexture Kolhoz 1]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717 МСК (номерной) Cab Kolhoz 2", "143")
+ 	:SetPrice(5)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кабины Kolhoz 2 на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom CabTexture Kolhoz 2]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717 МСК (номерной) Train RGW", "144")
+ 	:SetPrice(15)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова RGW на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture RGW]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
 
 
 
