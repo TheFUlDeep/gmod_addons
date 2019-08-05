@@ -1,4 +1,5 @@
 --local TOOL = player.GetBySteamID("STEAM_0:1:31566374"):GetTool("train_spawner")
+--TODO айтем на месяц с доступом ко всем скинам
 TOOL.AddToMenu = false
 
 if CLIENT then
