@@ -53,9 +53,8 @@ local function CheckSkin(item_description)
 end
 
 hook.Add("IGS.CanPlayerBuyItem", "CheckMetrostroiSkin", function(pl,item,global,invid)
+	if item:Description() == "Разрешает использовать все скины на месяц" then return end
 	if not CheckSkin(item:Description()) then return false,"данного скина нет на сервере. Покупка запрещена" end
 end)
 
 --PrintTable(Metrostroi.Skins)
-
---TODO добавить скин FullRandom

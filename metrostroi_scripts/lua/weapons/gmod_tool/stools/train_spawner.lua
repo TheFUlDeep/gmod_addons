@@ -1,5 +1,4 @@
 --local TOOL = player.GetBySteamID("STEAM_0:1:31566374"):GetTool("train_spawner")
---TODO айтем на месяц с доступом ко всем скинам
 TOOL.AddToMenu = false
 
 if CLIENT then
@@ -19,6 +18,12 @@ end
 local function CustomSkin(self,OnSpawn)
 	if not IGS or not IGS.ITEMS or not IGS.PlayerPurchases or CLIENT then return end
 	local ply = self:GetOwner()
+	
+	if ply:GetUserGroup() == "SuperVIP" then return end
+	
+	for k,v in pairs(IGS.PlayerPurchases(ply) or {}) do
+		if tostring(k) == "9999" then return end
+	end
 	
 	local TexturesTbl = {}
 
