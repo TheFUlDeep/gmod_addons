@@ -3,28 +3,31 @@ if CLIENT then return end
 local AntiAfkTimeConVar = CreateConVar("antiafk_ply",300,{FCVAR_ARCHIVE},"время до кика игрока в секундах")
 local AntiAfkTimeConVar1 = CreateConVar("antiafk_train",600,{FCVAR_ARCHIVE},"время до удаления поезда в секундах")
 
+local function UpdatePlayerAntiAfk(ply)
+	ply.AntiAfk.Pos = ply:GetPos()
+	--ply.AntiAfk.Ang = Ang
+	ply.AntiAfk.LastChange = CurTime()
+	ply.AntiAfk.NotifShowed = nil
+	if ply.AntiAfk.Afk then
+		ply.AntiAfk.Afk = nil
+		print(ply:Nick().." not afk")
+		for k,ply1 in pairs(player.GetHumans()) do
+			if not IsValid(ply1) then continue end
+			ply1:ChatPrint(ply:Nick().." not afk")
+		end
+	end
+end
+
 timer.Create("AntiAfk",10,0,function()
 	local AntiAfkTime = AntiAfkTimeConVar:GetInt()
 	for n,ply in pairs(player.GetHumans()) do
 		if not IsValid(ply) then continue end
 		if not ply.AntiAfk then ply.AntiAfk = {} end
-		local Pos = ply:GetPos()
 		--local Ang = ply:GetAngles() --ply:EyeAngles()
-		if not ply.AntiAfk.Pos or ply.AntiAfk.Pos ~= Pos or ply.AntiAfk.AfkBlock
+		if not ply.AntiAfk.Pos or ply.AntiAfk.Pos ~= ply:GetPos() or ply.AntiAfk.AfkBlock
 		--or not ply.AntiAfk.Ang or ply.AntiAfk.Ang ~= Ang 
 		then
-			ply.AntiAfk.Pos = Pos
-			--ply.AntiAfk.Ang = Ang
-			ply.AntiAfk.LastChange = CurTime()
-			ply.AntiAfk.NotifShowed = nil
-			if ply.AntiAfk.Afk then
-				ply.AntiAfk.Afk = nil
-				print(ply:Nick().." not afk")
-				for k,ply1 in pairs(player.GetHumans()) do
-					if not IsValid(ply1) then continue end
-					ply1:ChatPrint(ply:Nick().." not afk")
-				end
-			end
+			UpdatePlayerAntiAfk(ply)
 			--print("PlayerPosChanged")
 		end
 		
@@ -88,4 +91,14 @@ end)
 hook.Add("PlayerInitialSpawn","AnfiAfk",function(ply) 
 	if not ply.AntiAfk then ply.AntiAfk = {} end
 	ply.AntiAfk.AfkBlock = true
+end)
+
+hook.Add("PlayerButtonDown","AnfiAfk1",function(ply) 
+	if not ply.AntiAfk then ply.AntiAfk = {} end
+	UpdatePlayerAntiAfk(ply)
+end)
+
+hook.Add("PlayerButtonUp","AnfiAfk2",function(ply) 
+	if not ply.AntiAfk then ply.AntiAfk = {} end
+	UpdatePlayerAntiAfk(ply)
 end)
