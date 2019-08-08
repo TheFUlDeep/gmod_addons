@@ -249,6 +249,7 @@ end
 --if not ulx then ulx = {} end
 timer.Create("ulx.GetTrains",1,0,function()
 if not ulx then return end
+timer.Remove("ulx.GetTrains")
 ulx.GetTrains = function(calling_ply,target_ply,notif,detectroutes)
 	if target_ply and not CPPI then return nil end
 	local Class1
