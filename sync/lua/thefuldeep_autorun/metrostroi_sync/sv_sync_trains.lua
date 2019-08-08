@@ -440,7 +440,7 @@ function ForAvtooborot(route,hidenotif)
 	--PrintTable(SopensTBL)
 end
 
-MetrostroiSyncEnabled = true
+MetrostroiSyncEnabled = false
 hook.Remove("Think","SyncTrainsThink")
 function SyncTrainsThink()
 	hook.Add("Think","SyncTrainsThink", function() 
