@@ -1584,11 +1584,12 @@ if SERVER then
 			return true 
 		end
 		--if not ULib.ucl.query(ply,Settings.Train) then return true end--добавил просто по приколу. мне это не нужно
-		if not THEFULDEEP.TwoToSixInSignals then return end
-		if Settings.Train == "gmod_subway_81-703" or Settings.Train == "gmod_subway_em508" or Settings.Train == "gmod_subway_81-702" then
-			if not ULib.ucl.query(ply,"AllowNoARSWithTwoToSix") then 
-				--ULib.tsayError(ply, "Тебе нельзя спавнить этот состав", true)	
-				return true 
+		if THEFULDEEP.TwoToSixInSignals then
+			if Settings.Train == "gmod_subway_81-703" or Settings.Train == "gmod_subway_em508" or Settings.Train == "gmod_subway_81-702" then
+				if not ULib.ucl.query(ply,"AllowNoARSWithTwoToSix") then 
+					--ULib.tsayError(ply, "Тебе нельзя спавнить этот состав", true)	
+					return true 
+				end
 			end
 		end
 		
