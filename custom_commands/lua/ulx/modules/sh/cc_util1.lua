@@ -1,5 +1,7 @@
+if not THEFULDEEP then THEFULDEEP = {} end
 local TrackIDsPaths = {}
 local NoSignals = true
+
 
 if SERVER then
 	for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
@@ -1302,17 +1304,17 @@ if SERVER then
 	end)
 
 	--[[============================= РАЗРЕШЕНИЕ СПАВНА ТОЛЬКО В ОПРЕДЕЛЕННЫХ МЕСТАХ ==========================]]
+	ULib.ucl.registerAccess("AllowSpawnTrainOnStations", ULib.ACCESS_ALL, "Разрешить спавнить на станциях", "Cmds - Metrostroi")
 	hook.Add("CanTool", "AllowSpawnTrain", function(ply, tr, tool)
 		if tool ~= "train_spawner" then return end
 		local ourstation = bigrustosmall(detectstation(tr.HitPos))
-		if Metrostroi.ActiveDispatcher ~= nil
-			and string.match(ourstation, "пто") ~= "пто"
-			and string.match(ourstation, "депо") ~= "депо"
-			and string.match(ourstation, "ближайшая") ~= "ближайшая"
+		if (not ULib.ucl.query(ply,"AllowSpawnTrainOnStations") or IsValid(Metrostroi.ActiveDispatcher))
+			and not ourstation:find("пто") and not ourstation:find("депо") and not ourstation:find("ближайшая")
 			and not ourstation:find("depo")
 			and not ourstation:find("ддэ")
 			then 
-				if SERVER then ply:LimitHit("Запрещено спавнить на станциях") end return false
+				ply:LimitHit("Запрещено спавнить на станциях")
+				return false
 		end
 	end)
 
@@ -1561,40 +1563,54 @@ if SERVER then
 	end)
 end
 
+--[[============================= НАСТРОЙКА ЛИМИТОВ ДЛЯ СПАВНЕРА ==========================]]
 --добавил просто по приколу. мне это не нужно
 --[[if SERVER then
-	timer.Create("Generate trains restrictions",1,0,function() 
-		if not Metrostroi or not Metrostroi.TrainClasses or table.IsEmpty(Metrostroi.TrainClasses) then return end
-		timer.Remove("Generate trains restrictions")
+	hook.Add("MetrostroiLoaded","Create ulx trains restrictions",function() 
 		for k,class in pairs(Metrostroi.TrainClasses) do
-			ULib.ucl.registerAccess(class, ULib.ACCESS_ALL, class--[[придумать коммент]], "Metrostroi")
+			ULib.ucl.registerAccess(class, ULib.ACCESS_ALL, "Разрешить спавнить "..class, "Cmds - Metrostroi")
 		end
 	end)
 end]]
 if SERVER then
-	ULib.ucl.registerAccess("IgnoreMapWagLimit", ULib.ACCESS_SUPERADMIN, "Игнорировать лимит вагонов карты", "Metrostroi")
-end
-
-if SERVER then
-	util.AddNetworkString("IgnoreMapWagLimit")
-	timer.Create("UpdateIgnoreMapWagLimit",2,0,function()
-		for _,ply in pairs(player.GetHumans()) do
-			net.Start("IgnoreMapWagLimit")
-				net.WriteBool(ULib.ucl.query(ply,"IgnoreMapWagLimit"))
-			net.Send(ply)
+	ULib.ucl.registerAccess("ignoremapwaglimit", ULib.ACCESS_SUPERADMIN, "Игнорировать лимит вагонов карты", "Cmds - Metrostroi")
+	
+	ULib.ucl.registerAccess("AllowNoARSWithTwoToSix", ULib.ACCESS_OPERATOR, "Разрешить составы без АРС при 2/6", "Cmds - Metrostroi")
+	
+	local LastTrainSpawned = os.time()
+	hook.Add("MetrostroiSpawnerRestrict","AllowNoARSWithTwoToSix",function(ply,Settings)
+		if os.time() - LastTrainSpawned < 6 then 
+			ULib.tsayError( ply, "Подожди " .. math.Round(LastTrainSpawned + 6 - os.time()) .. " seconds, чтобы заспавнить состав")
+			return true 
+		end
+		--if not ULib.ucl.query(ply,Settings.Train) then return true end--добавил просто по приколу. мне это не нужно
+		if not THEFULDEEP.TwoToSixInSignals then return end
+		if Settings.Train == "gmod_subway_81-703" or Settings.Train == "gmod_subway_em508" or Settings.Train == "gmod_subway_81-702" then
+			if not ULib.ucl.query(ply,"AllowNoARSWithTwoToSix") then 
+				--ULib.tsayError(ply, "Тебе нельзя спавнить этот состав", true)	
+				return true 
+			end
+		end
+		
+		LastTrainSpawned = os.time()
+	end)
+	
+	
+	hook.Add("PlayerInitialSpawn","Send ignoremapwaglimit on spawn",function(ply)
+		ply:SetNW2Bool("ignoremapwaglimit",ULib.ucl.query(ply,"ignoremapwaglimit"))
+	end)
+	
+	hook.Add("ULibGroupAccessChanged", "ignoremapwaglimit access update",function(group,access,revoke)
+		for i,name in ipairs(access) do
+			if name ~= "ignoremapwaglimit" then continue end
+			for _,ply in pairs(player.GetHumans()) do
+				if string.lower(ply:GetUserGroup()) ~= group then continue end
+				ply:SetNW2Bool("ignoremapwaglimit",not revoke)
+			end
 		end
 	end)
 end
 
-
-local IgnoreMapWagLimit
-if CLIENT then
-	net.Receive("IgnoreMapWagLimit",function()
-		IgnoreMapWagLimit = net.ReadBool()
-	end)
-end
-
---[[============================= НАСТРОЙКА ЛИМИТОВ ДЛЯ СПАВНЕРА ==========================]]
 function MaximumWagons(ply,self)
 	local Map = game.GetMap()
 	if not ply.GetUserGroup then return 0 end
@@ -1613,13 +1629,12 @@ function MaximumWagons(ply,self)
 	end
 	if Rank == "superadmin" then maximum = 6 end
 	if maximum < 4 and (Rank == "operator" or Rank == "admin" or Rank == "SuperVIP") then maximum = 4 end
-	if not IgnoreMapWagLimit then
+	if not ply:GetNW2Bool("ignoremapwaglimit",false) then
 		if (stringfind(Map,"mus_crimson_line") or stringfind(Map, "orange")) and maximum > 3 then maximum = 3 end
 		if (stringfind(Map,"smr") or stringfind(Map,"neocrims") or stringfind(Map, "rural") or stringfind(Map, "remaste") or stringfind(Map,"surface")) and maximum > 4 then maximum = 4 end
 		if (stringfind(Map,"loopline") or stringfind(Map,"gm_metrostroi_b")) and maximum > 5 then maximum = 5 end
 	end
 	if SERVER and self then
-		--if not ULib.ucl.query(ply,self.Train.ClassName) then self.Settings.WagNum = 0 end --добавил просто по приколу. мне это не нужно
 		if maximum < 6 and self.Train.ClassName == "gmod_subway_81-722" then self.Settings.WagNum = 3 end
 	end
 	return maximum
@@ -1632,7 +1647,7 @@ if SERVER then
 		hook.Remove("PlayerInitialSpawn","FindTwoToSix")
 		print("Seaching for TwoToSix in signals...")
 		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
-			if IsValid(v) and v.TwoToSix then print("Found TwoToSix in signals!") TwoToSixInSignals = true return end
+			if IsValid(v) and v.TwoToSix then print("Found TwoToSix in signals!") THEFULDEEP.TwoToSixInSignals = true return end
 		end
 	end)
 end
