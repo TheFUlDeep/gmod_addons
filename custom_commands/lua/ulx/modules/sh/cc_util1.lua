@@ -1561,6 +1561,39 @@ if SERVER then
 	end)
 end
 
+--добавил просто по приколу. мне это не нужно
+--[[if SERVER then
+	timer.Create("Generate trains restrictions",1,0,function() 
+		if not Metrostroi or not Metrostroi.TrainClasses or table.IsEmpty(Metrostroi.TrainClasses) then return end
+		timer.Remove("Generate trains restrictions")
+		for k,class in pairs(Metrostroi.TrainClasses) do
+			ULib.ucl.registerAccess(class, ULib.ACCESS_ALL, class--[[придумать коммент]], "Metrostroi")
+		end
+	end)
+end]]
+if SERVER then
+	ULib.ucl.registerAccess("IgnoreMapWagLimit", ULib.ACCESS_SUPERADMIN, "Игнорировать лимит вагонов карты", "Metrostroi")
+end
+
+if SERVER then
+	util.AddNetworkString("IgnoreMapWagLimit")
+	timer.Create("UpdateIgnoreMapWagLimit",2,0,function()
+		for _,ply in pairs(player.GetHumans()) do
+			net.Start("IgnoreMapWagLimit")
+				net.WriteBool(ULib.ucl.query(ply,"IgnoreMapWagLimit"))
+			net.Send(ply)
+		end
+	end)
+end
+
+
+local IgnoreMapWagLimit
+if CLIENT then
+	net.Receive("IgnoreMapWagLimit",function()
+		IgnoreMapWagLimit = net.ReadBool()
+	end)
+end
+
 --[[============================= НАСТРОЙКА ЛИМИТОВ ДЛЯ СПАВНЕРА ==========================]]
 function MaximumWagons(ply,self)
 	local Map = game.GetMap()
@@ -1580,10 +1613,13 @@ function MaximumWagons(ply,self)
 	end
 	if Rank == "superadmin" then maximum = 6 end
 	if maximum < 4 and (Rank == "operator" or Rank == "admin" or Rank == "SuperVIP") then maximum = 4 end
-	if (stringfind(Map,"mus_crimson_line") or stringfind(Map, "orange")) and maximum > 3 then maximum = 3 end
-	if (stringfind(Map,"smr") or stringfind(Map,"neocrims") or stringfind(Map, "rural") or stringfind(Map, "remaste") or stringfind(Map,"surface")) and maximum > 4 then maximum = 4 end
-	if (stringfind(Map,"loopline") or stringfind(Map,"gm_metrostroi_b")) and maximum > 5 then maximum = 5 end	
+	if not IgnoreMapWagLimit then
+		if (stringfind(Map,"mus_crimson_line") or stringfind(Map, "orange")) and maximum > 3 then maximum = 3 end
+		if (stringfind(Map,"smr") or stringfind(Map,"neocrims") or stringfind(Map, "rural") or stringfind(Map, "remaste") or stringfind(Map,"surface")) and maximum > 4 then maximum = 4 end
+		if (stringfind(Map,"loopline") or stringfind(Map,"gm_metrostroi_b")) and maximum > 5 then maximum = 5 end
+	end
 	if SERVER and self then
+		--if not ULib.ucl.query(ply,self.Train.ClassName) then self.Settings.WagNum = 0 end --добавил просто по приколу. мне это не нужно
 		if maximum < 6 and self.Train.ClassName == "gmod_subway_81-722" then self.Settings.WagNum = 3 end
 	end
 	return maximum
