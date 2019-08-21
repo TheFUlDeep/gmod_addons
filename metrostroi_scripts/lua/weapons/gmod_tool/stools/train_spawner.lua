@@ -310,13 +310,6 @@ end
 function TOOL:SpawnWagon(trace)
     if CLIENT then return end
     local ply = self:GetOwner()
-
-		if lasttimeusage == nil then lasttimeusage = CurTime() - 5 end
-		if lasttimeusage + 5 > CurTime() then
-		ULib.tsayError( ply, "Подожди " .. math.Round(lasttimeusage + 5 - CurTime()) .. " seconds, чтобы заспавнить состав", true )
-		return
-		end
-		lasttimeusage = CurTime()
 	
     local FIXFIXFIX = {}
     for i=1,math.random(12) do
@@ -341,7 +334,6 @@ function TOOL:SpawnWagon(trace)
                 undo.Create(self.Train.Spawner.head or self.Train.ClassName)
             else
                 self:GetOwner():LimitHit("spawner_wrong_pos")
-				lasttimeusage = CurTime() - 5
                 return false
             end
             --if self:GetOwner():GetNW2Bool("metrostroi_train_spawner_rev") then
@@ -558,9 +550,6 @@ function TOOL:LeftClick(trace)
     if not self.AllowSpawn or not self.Train then return end
     if SERVER then
 		local ply = self:GetOwner()
-		if ply:GetUserGroup() == "user" and (self.Train.ClassName == "gmod_subway_81-703" or self.Train.ClassName == "gmod_subway_em508" or self.Train.ClassName == "gmod_subway_81-702") then
-			if TwoToSixInSignals then ULib.tsayError( ply, "Тебе нельзя спавнить этот состав", true ) return end
-		end
 	--self.Settings.WagNum = 6
 	--if (self.Train.ClassName == "gmod_subway_81-703" or self.Train.ClassName == "gmod_subway_em508" or self.Train.ClassName == "gmod_subway_81-702") and ply:GetUserGroup() == "user" then ULib.tsayError( ply, "Тебе нельзя спавнить этот состав", true ) return end
 	--if self.Train.ClassName == "gmod_subway_81-717_6" and ply:GetUserGroup() ~= "superadmin"  then ULib.tsayError( ply, "Тебе нельзя спавнить этот состав", true ) return end
