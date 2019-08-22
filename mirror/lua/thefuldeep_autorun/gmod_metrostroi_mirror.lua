@@ -1,13 +1,15 @@
---TODO наклоны по вертикали
 --TODO модели
 --TODO фикс конфликта с камерами метростроя
 
+
 if SERVER then
-	if not THEFULDEEP then THEFULDEEP = {} end
-	local function SpawnMirror(pos,ang)
+	local function SpawnMirror(pos,ang,scale,model)
 		local mirror = ents.Create("gmod_metrostroi_mirror")
 		if not IsValid(mirror) then print("ERROR with createin mirror") return end
+		if model and not model:find("%a") then model = nil end
+		mirror.Model = model
 		mirror:Spawn()
+		mirror:SetModelScale(scale or 1)
 		timer.Simple(0.3,function()
 			mirror:SetPos(pos)
 			mirror:SetAngles(ang)
@@ -15,7 +17,7 @@ if SERVER then
 		print("Mirror spawned")
 		return mirror
 	end
-	
+	if not THEFULDEEP then THEFULDEEP = {} end
 	THEFULDEEP.SpawnMirror = SpawnMirror
 	
 	--[[hook.Add("Think","DisableMirrors",function()
@@ -26,20 +28,23 @@ if SERVER then
 	end)
 	hook.Remove("Think","DisableMirrors")]]
 	
-	concommand.Add("mirrors_save", function()
+	concommand.Add("mirrors_save", function(ply)
+		if not ply:IsSuperAdmin() then return end
 		local File = file.Read("mirrors.txt")
 		local Mirrors = File and util.JSONToTable(File) or {}
 		local Map = game.GetMap()
 		Mirrors[Map] = {}
 		for _,ent in pairs(ents.FindByClass("gmod_metrostroi_mirror")) do
-			if IsValid(ent) then table.insert(Mirrors[Map],1,{ent:GetPos(),ent:GetAngles()}) end
+			if IsValid(ent) then table.insert(Mirrors[Map],1,{ent:GetPos(),ent:GetAngles(),ent:GetModelScale()}) end
 		end
-		if #Mirrors[Map] < 1 then print("no mirrors") return end
+		--if #Mirrors[Map] < 1 then print("no mirrors") ply:ChatPrint("no mirrors") return end
 		file.Write("mirrors.txt", util.TableToJSON(Mirrors))
 		print("mirrors saved")
+		ply:ChatPrint("saved "..#Mirrors[Map].." mirrors")
 	end)
 	
-	concommand.Add("mirrors_load", function()
+	concommand.Add("mirrors_load", function(ply)
+		if not ply:IsSuperAdmin() then return end
 		local File = file.Read("mirrors.txt")
 		local Mirrors = File and util.JSONToTable(File) or {}
 		local Map = game.GetMap()
@@ -49,14 +54,15 @@ if SERVER then
 			v:Remove()
 		end
 		timer.Simple(1,function()
-		if not Mirrors[Map] or #Mirrors[Map] < 1 then print("no mirrors for this map") 
+		if not Mirrors[Map] or #Mirrors[Map] < 1 then print("no mirrors for this map") ply:ChatPrint("no mirrors for this map")
 			return 
 		else
 			for _,mirror in ipairs(Mirrors[Map]) do
-				SpawnMirror(mirror[1],mirror[2])
+				SpawnMirror(mirror[1],mirror[2],mirror[3])
 			end
 		end
-		print("loaded "..table.Count(ents.FindByClass("gmod_metrostroi_mirror")).." mirrors")
+		print("loaded "..#Mirrors[Map].." mirrors")
+		ply:ChatPrint("loaded "..#Mirrors[Map].." mirrors")
 		end)
 	end)
 	
@@ -68,19 +74,99 @@ if SERVER then
 end
 if SERVER then return end
 
+local MetrostroiDrawCams--,C_CabFOV,C_FovDesired
+timer.Simple(0,function()
+	MetrostroiDrawCams = GetConVar("metrostroi_drawcams")
+	--C_CabFOV              = GetConVar("metrostroi_cabfov")
+	--C_FovDesired          = GetConVar("fov_desired")
+end)
+if not THEFULDEEP then THEFULDEEP = {} end
+THEFULDEEP.MirrorDraw = function(self)
+	if MetrostroiDrawCams and not MetrostroiDrawCams:GetBool() then return end
+	--if not self:ShouldRenderClientEnts() then return end
+	if not IsValid(self.RTCam) then self.RTCam = GetGlobalEntity("MirrorRTCam") return end
 
---[[local w,h = 512,512
-local rtTexture = surface.GetTextureID( "pp/rt" )
-		
+	self:DrawModel()
+	--[[if #Metrostroi.CamQueue > 0 then
+		if self.RTCam.GlobalOverride1 then
+			self.RTCam:SetNW2Bool("GlobalOverride",false)
+			self.RTCam.GlobalOverride1 = false
+		end
+		print("a")
+		return 
+	end
+	print("b")
+	
+	if not self.RTCam.GlobalOverride1 then
+		self.RTCam:SetNW2Bool("GlobalOverride",true)
+		self.RTCam.GlobalOverride1 = true
+	end]]
+	
+	local MirrorPos = self:LocalToWorld(self:OBBCenter())
+	self.RTCam:SetPos(MirrorPos)
+	--if self.RTCam:GetPos():DistToSqr(MirrorPos) > 300*300 then return end
+	local ply = LocalPlayer()
+	local plypos = ply:EyePos()
+	local ang = (plypos - MirrorPos):Angle()
+	local mirrorang = self:GetAngles()
+	local worldmirrorang = self:LocalToWorldAngles(mirrorang)
+	ang = -ang + Angle(-mirrorang.r*2,worldmirrorang.y+180,-mirrorang.p*2)
+	self.RTCam:SetAngles(ang)
+	
+	--[[local FOV
+	local Dist = plypos:DistToSqr(MirrorPos)
+	local veh = ply:GetVehicle()
+	if IsValid(veh) then
+		veh = veh:GetNW2Entity("TrainEntity")
+	end
+	if IsValid(veh) then
+		FOV = C_CabFOV:GetFloat()
+	else
+		FOV = C_FovDesired:GetFloat()
+	end]]
+end
 
-local function DrawRTTexture()
-	if 1 then return end
+local MirrorPreview = CreateClientConVar("mirror_preview", "0", false)
+local MirrorDistance = CreateClientConVar("mirror_distance", "50", false)
+local MirrorAngleP = CreateClientConVar("mirror_angle_p", "0", false)
+local MirrorAngleY = CreateClientConVar("mirror_angle_y", "0", false)
+local MirrorAngleR = CreateClientConVar("mirror_angle_r", "0", false)
+local MirrorScale = CreateClientConVar("mirror_scale", "1", false)
+local MirrorModel = CreateClientConVar("mirror_model", "", false) --TODO
+
+local w,h = 512,512
+local rtTexture = surface.GetTextureID( "pp/rt" )		
+
+local MirrorEnt
+
+hook.Add("Think","MirrorPreview",function()
+	if not MirrorPreview:GetBool() then
+		if IsValid(MirrorEnt) then 
+			MirrorEnt:Remove() 
+		end
+		return 
+	end
+	
+	
+	if not IsValid(GetGlobalEntity("MirrorRTCam")) then return end
+	
+	if not IsValid(MirrorEnt) then 
+		MirrorEnt = ents.CreateClientProp("models/thefuldeeps_models/mirror.mdl")
+		MirrorEnt:Spawn()
+		MirrorEnt:SetMaterial("models/rendertarget")
+	end
+	local ply = LocalPlayer()
+	MirrorEnt:SetModelScale(MirrorScale:GetFloat())
+	MirrorEnt:SetPos(ply:LocalToWorld(Vector(MirrorDistance:GetFloat()))+Vector(0,0,60))
+	
+	local plyang = ply:GetEyeTraceNoCursor().Normal:Angle()
+	MirrorEnt:SetAngles(Angle(plyang.r+MirrorAngleP:GetFloat(),plyang.y+90+MirrorAngleY:GetFloat(),plyang.p+MirrorAngleR:GetFloat()))
+	
+	THEFULDEEP.MirrorDraw(MirrorEnt)
+	
 	-- draw render target
 	surface.SetTexture( rtTexture )
 	surface.SetDrawColor( 255, 255, 255, 255 )
-	surface.DrawTexturedRect( 0 , 0, w, h )
-end
+	surface.DrawTexturedRect( 0 , 0, 256, 256 )
+end)
 
-timer.Create("DrawMetrostroiMirror",1,0,function()
-	hook.Add( "HUDPaint", "DrawRTTexture", DrawRTTexture )
-end)]]

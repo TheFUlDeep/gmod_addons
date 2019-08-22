@@ -10,13 +10,11 @@ end
 
 function ENT:Initialize()
 
-	self:SetModel(self.Model)
+	self:SetModel(self.Model or "models/thefuldeeps_models/mirror.mdl")
 	--self:PhysicsInit( SOLID_VPHYSICS )
 	--self:SetMoveType( MOVETYPE_VPHYSICS )
 	--self:SetSolid( SOLID_VPHYSICS )
 	self:DrawShadow( false )
-	
-	self:SetModelScale(1)
 	
 	self:SetMaterial("models/rendertarget")
 	
