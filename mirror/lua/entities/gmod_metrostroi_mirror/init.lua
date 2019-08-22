@@ -29,7 +29,7 @@ function ENT:Initialize()
 		SetGlobalEntity("MirrorRTCam",RTCam)
 	else
 		local ang = self:GetAngles()
-		self:SetAngles(Angle(0,ang.y+90,ang.r))
+		self:SetAngles(Angle(0,ang.y-90,ang.r))
 		local Pos = self:LocalToWorld(self:OBBCenter())
 		RTCam:SetPos(Pos)
 	end

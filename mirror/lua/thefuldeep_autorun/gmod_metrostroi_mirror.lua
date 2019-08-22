@@ -22,7 +22,7 @@ if SERVER then
 		end
 	end
 	SpawnMirrors()
-	hook.Add("PlayerInitialSpawn","SpawnMirrors",SpawnMirrors)
+	hook.Add("PlayerInitialSpawn","SpawnMirrors",function() timer.Simple(1,function() SpawnMirrors() end) end)
 end
 if SERVER then return end
 
