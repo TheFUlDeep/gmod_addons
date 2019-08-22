@@ -69,26 +69,38 @@ timer.Create("PlyInTrainForHideCheck",1,0,function()
 	end
 end)
 
+local ENTS = {}
+
+hook.Add("MetrostroiLoaded","CreateCustomEntsTbl for hidetrains",function()
+	ENTS = Metrostroi.TrainClasses
+	table.insert(ENTS,1,"gmod_metrostroi_mirror")
+end)
+
+local C_ScreenshotMode,C_CabFOV,C_FovDesired,C_MinimizedShow,hidealltrains,hideothertrains,hidetrains_behind_props,hidetrains_behind_player
+timer.Simple(0,function() 
+	C_ScreenshotMode      = GetConVar("metrostroi_screenshotmode")		-- прогружаю конвары здесь, чтобы случайно не прогрузить Nil
+	C_CabFOV              = GetConVar("metrostroi_cabfov")
+	C_FovDesired          = GetConVar("fov_desired")
+	C_MinimizedShow       = GetConVar("metrostroi_minimizedshow")
+	hidealltrains = GetConVar("hidealltrains")
+	hideothertrains = GetConVar("hideothertrains")
+	hidetrains_behind_props = GetConVar("hidetrains_behind_props")
+	hidetrains_behind_player = GetConVar("hidetrains_behind_player")
+end)
+
 --TODO если игрок в составе, то не прогружается соседний состав
 --TODO в идеале смотреть не по двум диагоналям, а по двум диагоналям каждой плоскости и по всем граням
 timer.Create("HideTrainClientEnts",10,0,function()		-- каждые 10 секунд я сканирую ентити, и если вижу ентити, в котором функция не изменена - изменяю ее
-	local C_ScreenshotMode      = GetConVar("metrostroi_screenshotmode")		-- прогружаю конвары здесь, чтобы случайно не прогрузить Nil
-	local C_CabFOV              = GetConVar("metrostroi_cabfov")
-	local C_FovDesired          = GetConVar("fov_desired")
-	local C_MinimizedShow       = GetConVar("metrostroi_minimizedshow")
-	local hidealltrains = GetConVar("hidealltrains")
-	local hideothertrains = GetConVar("hideothertrains")
-	local hidetrains_behind_props = GetConVar("hidetrains_behind_props")
-	local hidetrains_behind_player = GetConVar("hidetrains_behind_player")
+	if not C_ScreenshotMode or not hidealltrains then timer.Remove("HideTrainClientEnts") print("HIDETRAINS ERROR") return end
 	local ply = LocalPlayer()
 	if not Metrostroi then return end
-	for _k,class in pairs(Metrostroi.TrainClasses) do
+	for _k,class in pairs(ENTS) do
 		for k,ent in pairs(ents.FindByClass(class)) do
 			if not IsValid(ent) or ent.CustomRenderClientEntsLoaded or not ent.ShouldRenderClientEnts then continue end
 			ent.CustomRenderClientEntsLoaded = true
 			ent.LastDrawCheckClientEnts = os.time()
 			print("changing draw function on "..tostring(ent))
-			ent.ShouldRenderClientEnts = function()
+			ent.ShouldRenderClientEnts = function(ent)
 				local asd = !Metrostroi or !Metrostroi.ReloadClientside
 				if not asd then return false elseif os.time() - ent.LastDrawCheckClientEnts > 0 then ent.LastDrawCheckClientEnts = os.time() else return ent.DrawResult or false end
 				if PlyInTrain == ent then ent.DrawResult = true return ent.DrawResult end
