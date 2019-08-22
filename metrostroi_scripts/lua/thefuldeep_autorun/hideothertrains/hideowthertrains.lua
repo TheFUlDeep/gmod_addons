@@ -69,11 +69,11 @@ timer.Create("PlyInTrainForHideCheck",1,0,function()
 	end
 end)
 
-local ENTS = {}
+local ENTS = Metrostroi.TrainClasses or {}
+table.insert(ENTS,1,"gmod_metrostroi_mirror")
 
 hook.Add("MetrostroiLoaded","CreateCustomEntsTbl for hidetrains",function()
 	ENTS = Metrostroi.TrainClasses
-	table.insert(ENTS,1,"gmod_metrostroi_mirror")
 end)
 
 local C_ScreenshotMode,C_CabFOV,C_FovDesired,C_MinimizedShow,hidealltrains,hideothertrains,hidetrains_behind_props,hidetrains_behind_player
@@ -159,7 +159,7 @@ timer.Create("HideTrainClientEnts",10,0,function()		-- каждые 10 секу�
 							end
 						end
 					end
-					if hidetrains_behind_player:GetBool() then
+					if hidetrains_behind_props:GetBool() then
 						ent.DrawResult = Result or false
 					end
 					
