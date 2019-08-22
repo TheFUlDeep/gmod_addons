@@ -18,7 +18,7 @@ function TOOL:LeftClick( trace )
 	local plyang = ply:GetEyeTraceNoCursor().Normal:Angle()
 	local mirror = THEFULDEEP.SpawnMirror(
 		ply:LocalToWorld(Vector(MirrorDistance:GetFloat()))+Vector(0,0,60),
-		Angle(plyang.r+MirrorAngleP:GetFloat(),plyang.y+90+MirrorAngleY:GetFloat(),plyang.p+MirrorAngleP:GetFloat()),
+		Angle(plyang.r+MirrorAngleP:GetFloat(),plyang.y+90+MirrorAngleY:GetFloat(),plyang.p+MirrorAngleR:GetFloat()),
 		MirrorScale:GetFloat()
 	)
 	
