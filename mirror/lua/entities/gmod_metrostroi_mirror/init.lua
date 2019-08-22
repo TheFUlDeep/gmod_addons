@@ -16,9 +16,7 @@ function ENT:Initialize()
 	--self:SetSolid( SOLID_VPHYSICS )
 	self:DrawShadow( false )
 	
-	--self:SetPos(self:GetPos()+Vector(0,0,250))
-	
-	self:SetModelScale(2)
+	self:SetModelScale(1)
 	
 	self:SetMaterial("models/rendertarget")
 	
@@ -26,12 +24,14 @@ function ENT:Initialize()
 	if not IsValid(RTCam) then
 		RTCam = ents.Create( "point_camera" )
 		RTCam:SetKeyValue( "GlobalOverride", 1 )
+		--RTCam:Activate()
+		--RTCam:Spawn()
 		SetGlobalEntity("MirrorRTCam",RTCam)
-	else
-		local ang = self:GetAngles()
-		self:SetAngles(Angle(0,ang.y-90,ang.r))
 	end
 	
-	
-	--RenderTargetCamera:Spawn()
 end
+
+--[[function ENT:OnRemove()
+	local RTCam = GetGlobalEntity("MirrorRTCam")
+	if IsValid(RTCam) then RTCam:Remove() print("removed") end
+end]]
