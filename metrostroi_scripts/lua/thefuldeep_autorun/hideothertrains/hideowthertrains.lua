@@ -74,6 +74,7 @@ table.insert(ENTS,1,"gmod_metrostroi_mirror")
 
 hook.Add("MetrostroiLoaded","CreateCustomEntsTbl for hidetrains",function()
 	ENTS = Metrostroi.TrainClasses
+	table.insert(ENTS,1,"gmod_metrostroi_mirror")
 end)
 
 local C_ScreenshotMode,C_CabFOV,C_FovDesired,C_MinimizedShow,hidealltrains,hideothertrains,hidetrains_behind_props,hidetrains_behind_player
