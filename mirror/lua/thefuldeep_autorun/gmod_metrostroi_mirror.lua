@@ -3,6 +3,8 @@
 
 
 if SERVER then
+	util.AddNetworkString("SpawnMirror")
+
 	local function SpawnMirror(pos,ang,scale,model)
 		local mirror = ents.Create("gmod_metrostroi_mirror")
 		if not IsValid(mirror) then print("ERROR with createin mirror") return end
@@ -17,6 +19,18 @@ if SERVER then
 		print("Mirror spawned")
 		return mirror
 	end
+	
+	net.Receive("SpawnMirror", function(len,ply)
+		if not ply:IsSuperAdmin() then return end
+		local a,b,c,d,e,f,g = net.ReadFloat(),net.ReadFloat(),net.ReadFloat(),net.ReadFloat(),net.ReadFloat(),net.ReadFloat(),net.ReadFloat()
+		local Mirror = SpawnMirror(Vector(a,b,c),Angle(d,e,f),g)
+		
+		undo.Create("Mirror")
+			undo.AddEntity( Mirror )
+			undo.SetPlayer( ply )
+		undo.Finish()
+	end)
+	
 	if not THEFULDEEP then THEFULDEEP = {} end
 	THEFULDEEP.SpawnMirror = SpawnMirror
 	
@@ -133,26 +147,6 @@ local MirrorAngleY = CreateClientConVar("mirror_angle_y", "0", false)
 local MirrorAngleR = CreateClientConVar("mirror_angle_r", "0", false)
 local MirrorScale = CreateClientConVar("mirror_scale", "1", false)
 local MirrorModel = CreateClientConVar("mirror_model", "", false) --TODO
-
-cvars.AddChangeCallback("mirror_distance", function(convar,oldValue,newValue)
-	LocalPlayer():SetNW2Int("mirror_distance",newValue)
-end)
-
-cvars.AddChangeCallback("mirror_angle_p", function(convar,oldValue,newValue)
-	LocalPlayer():SetNW2Int("mirror_angle_p",newValue)
-end)
-
-cvars.AddChangeCallback("mirror_angle_y", function(convar,oldValue,newValue)
-	LocalPlayer():SetNW2Int("mirror_angle_y",newValue)
-end)
-
-cvars.AddChangeCallback("mirror_angle_r", function(convar,oldValue,newValue)
-	LocalPlayer():SetNW2Int("mirror_angle_r",newValue)
-end)
-
-cvars.AddChangeCallback("mirror_scale", function(convar,oldValue,newValue)
-	LocalPlayer():SetNW2Int("mirror_scale",newValue)
-end)
 
 local w,h = 512,512
 local rtTexture = surface.GetTextureID( "pp/rt" )		

@@ -4,27 +4,31 @@ TOOL.Command		= nil
 TOOL.ConfigName		= nil
 
 function TOOL:LeftClick( trace )
-	if CLIENT then return end
+	if SERVER then return end
+	if self.LastUse and os.time() - self.LastUse < 5 then return end
+	self.LastUse = os.time()
 	local ply = self:GetOwner()
 	if not ply:IsSuperAdmin() then return end
 	
-	local MirrorDistance = ply:GetNW2Int("mirror_distance",0)
-	local MirrorAngleP = ply:GetNW2Int("mirror_angle_p",0)
-	local MirrorAngleY = ply:GetNW2Int("mirror_angle_y",0)
-	local MirrorAngleR = ply:GetNW2Int("mirror_angle_r",0)
-	local MirrorScale = ply:GetNW2Int("mirror_scale",1)
+	local MirrorDistance = GetConVar("mirror_distance"):GetFloat()
+	local MirrorAngleP = GetConVar("mirror_angle_p"):GetFloat()
+	local MirrorAngleY = GetConVar("mirror_angle_y"):GetFloat()
+	local MirrorAngleR = GetConVar("mirror_angle_r"):GetFloat()
+	local MirrorScale = GetConVar("mirror_scale"):GetFloat()
 	
 	local plyang = ply:GetEyeTraceNoCursor().Normal:Angle()
-	local mirror = THEFULDEEP.SpawnMirror(
-		ply:LocalToWorld(Vector(MirrorDistance,0,0))+Vector(0,0,60),
-		Angle(plyang.r+MirrorAngleP,plyang.y+90+MirrorAngleY,plyang.p+MirrorAngleR),
-		MirrorScale
-	)
 	
-	undo.Create("Mirror")
-		undo.AddEntity( mirror )
-		undo.SetPlayer( ply )
-	undo.Finish()
+	net.Start("SpawnMirror")
+		local pos = ply:LocalToWorld(Vector(MirrorDistance,0,0))+Vector(0,0,60)
+		net.WriteFloat(pos.x)
+		net.WriteFloat(pos.y)
+		net.WriteFloat(pos.z)
+		net.WriteFloat(plyang.r+MirrorAngleP)
+		net.WriteFloat(plyang.y+90+MirrorAngleY)
+		net.WriteFloat(plyang.p+MirrorAngleR)
+		net.WriteFloat(MirrorScale)
+	net.SendToServer()
+
 end
 
 
