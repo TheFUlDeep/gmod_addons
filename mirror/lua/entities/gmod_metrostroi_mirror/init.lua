@@ -16,7 +16,9 @@ function ENT:Initialize()
 	--self:SetSolid( SOLID_VPHYSICS )
 	self:DrawShadow( false )
 	
-	self:SetMaterial("models/rendertarget")
+	--local Mat = Material("models/rendertarget")	--тут я "вычислял" параметры материала "рендертаргет"
+	--print(Mat)
+	--print(Mat:GetString("$basetexture"))
 	
 	local RTCam = GetGlobalEntity("MirrorRTCam")
 	if not IsValid(RTCam) then
