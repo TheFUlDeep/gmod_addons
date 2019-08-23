@@ -146,7 +146,7 @@ THEFULDEEP.MirrorDraw = function(self)
 	local ply = LocalPlayer()
 	
 	if ViewFunction then
-		local ViewTbl = ViewFunction(ply,Lastpos,Lastang,Lastfov,Lastznear,Lastzfar)
+		local ViewTbl = ViewFunction(ply,ply:EyePos(),Lastang,Lastfov,Lastznear,Lastzfar)
 		if ViewTbl then
 			ViewPos,ViewAng = ViewTbl.origin,ViewTbl.angles
 		else
