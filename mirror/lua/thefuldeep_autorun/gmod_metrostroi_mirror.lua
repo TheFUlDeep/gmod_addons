@@ -1,6 +1,5 @@
 --TODO модели
 --TODO фикс конфликта с камерами метростроя
---TODO определять, на какое зеркало смотрит игрок (traceline, fov)
 
 
 if SERVER then
@@ -100,6 +99,19 @@ if SERVER then
 end
 if SERVER then return end
 
+local Lastply,Lastpos,Lastang,Lastfov,Lastznear,Lastzfar
+hook.Add("CalcView", "Get_Metrostroi_TrainView1", function(ply,pos,ang,fov,znear,zfar)
+	Lastply,Lastpos,Lastang,Lastfov,Lastznear,Lastzfar = ply,pos,ang,fov,znear,zfar
+end)
+local ViewPos,ViewAng,ViewFunction
+timer.Create("FindMetrostroiCameras1",1,0,function()
+	local HooksTbl = hook.GetTable()
+	if not HooksTbl.CalcView or not HooksTbl.CalcView.Metrostroi_TrainView then return end
+	print("Found metrostroi view changer hook")
+	timer.Remove("FindMetrostroiCameras1")
+	ViewFunction = HooksTbl.CalcView.Metrostroi_TrainView
+end)
+
 local MetrostroiDrawCams--,C_CabFOV,C_FovDesired
 timer.Simple(0,function()
 	MetrostroiDrawCams = GetConVar("metrostroi_drawcams")
@@ -132,7 +144,17 @@ THEFULDEEP.MirrorDraw = function(self)
 	self.RTCam:SetPos(MirrorPos)
 	--if self.RTCam:GetPos():DistToSqr(MirrorPos) > 300*300 then return end
 	local ply = LocalPlayer()
-	local plypos = ply:EyePos()
+	
+	if ViewFunction then
+		local ViewTbl = ViewFunction(ply,Lastpos,Lastang,Lastfov,Lastznear,Lastzfar)
+		if ViewTbl then
+			ViewPos,ViewAng = ViewTbl.origin,ViewTbl.angles
+		else
+			ViewPos,ViewAng = nil,nil
+		end
+	end
+	
+	local plypos = ViewPos or ply:EyePos()
 	local ang = (plypos - MirrorPos):Angle()
 	local mirrorang = self:GetAngles()
 	local worldmirrorang = self:LocalToWorldAngles(mirrorang)
