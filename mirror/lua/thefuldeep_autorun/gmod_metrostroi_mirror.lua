@@ -53,7 +53,7 @@ if SERVER then
 			if IsValid(ent) then table.insert(Mirrors[Map],1,{ent:GetPos(),ent:GetAngles(),ent:GetModelScale()}) end
 		end
 		--if #Mirrors[Map] < 1 then print("no mirrors") ply:ChatPrint("no mirrors") return end
-		file.Write("mirrors.txt", util.TableToJSON(Mirrors))
+		file.Write("mirrors.txt", util.TableToJSON(Mirrors,true))
 		print("mirrors saved")
 		ply:ChatPrint("saved "..#Mirrors[Map].." mirrors")
 	end)
@@ -63,21 +63,32 @@ if SERVER then
 		local File = file.Read("mirrors.txt")
 		local Mirrors = File and util.JSONToTable(File) or {}
 		local Map = game.GetMap()
+		Mirrors = Mirrors[Map]
 		
 		for k,v in pairs(ents.FindByClass("gmod_metrostroi_mirror")) do
 			print("removed mirror")
 			v:Remove()
 		end
 		timer.Simple(1,function()
-		if not Mirrors[Map] or #Mirrors[Map] < 1 then print("no mirrors for this map") ply:ChatPrint("no mirrors for this map")
-			return 
+		if not Mirrors or #Mirrors < 1 then 
+			File = file.Read("mirrors_data/mirrors_"..Map..".lua","LUA")
+			Mirrors = File and util.JSONToTable(File) or {}
+			
+			if not Mirrors or #Mirrors < 1 then
+				print("no mirrors for this map") ply:ChatPrint("no mirrors for this map")
+				return 
+			else
+				for _,mirror in ipairs(Mirrors) do
+					SpawnMirror(mirror[1],mirror[2],mirror[3])
+				end
+			end
 		else
-			for _,mirror in ipairs(Mirrors[Map]) do
+			for _,mirror in ipairs(Mirrors) do
 				SpawnMirror(mirror[1],mirror[2],mirror[3])
 			end
 		end
-		print("loaded "..#Mirrors[Map].." mirrors")
-		ply:ChatPrint("loaded "..#Mirrors[Map].." mirrors")
+		print("loaded "..#Mirrors.." mirrors")
+		ply:ChatPrint("loaded "..#Mirrors.." mirrors")
 		end)
 	end)
 	
