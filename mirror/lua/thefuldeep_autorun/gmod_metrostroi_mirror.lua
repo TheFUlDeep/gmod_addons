@@ -134,6 +134,26 @@ local MirrorAngleR = CreateClientConVar("mirror_angle_r", "0", false)
 local MirrorScale = CreateClientConVar("mirror_scale", "1", false)
 local MirrorModel = CreateClientConVar("mirror_model", "", false) --TODO
 
+cvars.AddChangeCallback("mirror_distance", function(convar,oldValue,newValue)
+	LocalPlayer():SetNW2Int("mirror_distance",newValue)
+end)
+
+cvars.AddChangeCallback("mirror_angle_p", function(convar,oldValue,newValue)
+	LocalPlayer():SetNW2Int("mirror_angle_p",newValue)
+end)
+
+cvars.AddChangeCallback("mirror_angle_y", function(convar,oldValue,newValue)
+	LocalPlayer():SetNW2Int("mirror_angle_y",newValue)
+end)
+
+cvars.AddChangeCallback("mirror_angle_r", function(convar,oldValue,newValue)
+	LocalPlayer():SetNW2Int("mirror_angle_r",newValue)
+end)
+
+cvars.AddChangeCallback("mirror_scale", function(convar,oldValue,newValue)
+	LocalPlayer():SetNW2Int("mirror_scale",newValue)
+end)
+
 local w,h = 512,512
 local rtTexture = surface.GetTextureID( "pp/rt" )		
 

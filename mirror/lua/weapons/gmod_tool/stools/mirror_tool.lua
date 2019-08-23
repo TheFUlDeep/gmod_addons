@@ -8,18 +8,17 @@ function TOOL:LeftClick( trace )
 	local ply = self:GetOwner()
 	if not ply:IsSuperAdmin() then return end
 	
-	local MirrorPreview = GetConVar("mirror_preview", "0", true)
-	local MirrorDistance = GetConVar("mirror_distance", "0", true)
-	local MirrorAngleP = GetConVar("mirror_angle_p", "0", true)
-	local MirrorAngleY = GetConVar("mirror_angle_y", "0", true)
-	local MirrorAngleR = GetConVar("mirror_angle_r", "0", true)
-	local MirrorScale = GetConVar("mirror_scale", "1", true)
+	local MirrorDistance = ply:GetNW2Int("mirror_distance",0)
+	local MirrorAngleP = ply:GetNW2Int("mirror_angle_p",0)
+	local MirrorAngleY = ply:GetNW2Int("mirror_angle_y",0)
+	local MirrorAngleR = ply:GetNW2Int("mirror_angle_r",0)
+	local MirrorScale = ply:GetNW2Int("mirror_scale",1)
 	
 	local plyang = ply:GetEyeTraceNoCursor().Normal:Angle()
 	local mirror = THEFULDEEP.SpawnMirror(
-		ply:LocalToWorld(Vector(MirrorDistance:GetFloat()))+Vector(0,0,60),
-		Angle(plyang.r+MirrorAngleP:GetFloat(),plyang.y+90+MirrorAngleY:GetFloat(),plyang.p+MirrorAngleR:GetFloat()),
-		MirrorScale:GetFloat()
+		ply:LocalToWorld(Vector(MirrorDistance,0,0))+Vector(0,0,60),
+		Angle(plyang.r+MirrorAngleP,plyang.y+90+MirrorAngleY,plyang.p+MirrorAngleR),
+		MirrorScale
 	)
 	
 	undo.Create("Mirror")
