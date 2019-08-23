@@ -5,7 +5,7 @@ TOOL.ConfigName		= nil
 
 function TOOL:LeftClick( trace )
 	if SERVER then return end
-	if self.LastUse and os.time() - self.LastUse < 5 then return end
+	if self.LastUse and os.time() - self.LastUse < 1 then return end
 	self.LastUse = os.time()
 	local ply = self:GetOwner()
 	if not ply:IsSuperAdmin() then return end
