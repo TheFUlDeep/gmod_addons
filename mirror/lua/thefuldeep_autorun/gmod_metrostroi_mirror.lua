@@ -154,7 +154,7 @@ local rtTexture = surface.GetTextureID( "pp/rt" )
 local MirrorEnt
 
 hook.Add("Think","MirrorPreview",function()
-	if not MirrorPreview:GetBool() then
+	if not MirrorPreview:GetBool() or LocalPlayer():GetActiveWeapon():GetClass() ~= "gmod_tool" then
 		if IsValid(MirrorEnt) then 
 			MirrorEnt:Remove() 
 		end
