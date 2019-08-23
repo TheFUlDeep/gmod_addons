@@ -4,6 +4,30 @@ TOOL.Command		= nil
 TOOL.ConfigName		= nil
 
 function TOOL:LeftClick( trace )
+	if game.SinglePlayer() then
+		--будет вызываться только на сервере (в одиночке)
+		local ply = self:GetOwner()
+		if not ply:IsSuperAdmin() then return end
+		
+		local MirrorDistance = GetConVar("mirror_distance"):GetFloat()
+		local MirrorAngleP = GetConVar("mirror_angle_p"):GetFloat()
+		local MirrorAngleY = GetConVar("mirror_angle_y"):GetFloat()
+		local MirrorAngleR = GetConVar("mirror_angle_r"):GetFloat()
+		local MirrorScale = GetConVar("mirror_scale"):GetFloat()
+		
+		local plyang = ply:GetEyeTraceNoCursor().Normal:Angle()
+		local pos = ply:LocalToWorld(Vector(MirrorDistance,0,0))+Vector(0,0,60)
+		local ang = Angle(plyang.r+MirrorAngleP,plyang.y+90+MirrorAngleY,plyang.p+MirrorAngleR)
+		
+		local Mirror = THEFULDEEP.SpawnMirror(pos,ang,MirrorScale)
+		
+		undo.Create("Mirror")
+			undo.AddEntity( Mirror )
+			undo.SetPlayer( ply )
+		undo.Finish()
+		
+		return true
+	end
 	if SERVER then return end
 	if self.LastUse and os.time() - self.LastUse < 1 then return end
 	self.LastUse = os.time()
