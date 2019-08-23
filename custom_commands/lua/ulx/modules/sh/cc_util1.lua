@@ -1162,7 +1162,7 @@ if SERVER then
 		print("Generating TrackIDsPathsTbl")
 		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
 			if not IsValid(v) or not v.Name or v.Name == "" or v.ARSOnly or not v.Lenses then continue end
-			curtrack = v.TrackPosition.path and v.TrackPosition.path.id or 0
+			curtrack = v.TrackPosition and v.TrackPosition.path and v.TrackPosition.path.id or 0
 			if curtrack == 0 then continue end
 			if not TrackIDsPaths[curtrack] then 
 				local Path = GetSignalPath(v)
