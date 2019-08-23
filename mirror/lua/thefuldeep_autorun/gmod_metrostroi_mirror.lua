@@ -58,7 +58,7 @@ if SERVER then
 	end)
 	
 	concommand.Add("mirrors_load", function(ply)
-		if not IsValid(ply) or not ply:IsSuperAdmin() then return end
+		if IsValid(ply) and not ply:IsSuperAdmin() then return end
 		local File = file.Read("mirrors.txt")
 		local Mirrors = File and util.JSONToTable(File) or {}
 		local Map = game.GetMap()
