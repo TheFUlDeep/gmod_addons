@@ -28,9 +28,31 @@ function TOOL:LeftClick( trace )
 		net.WriteFloat(plyang.p+MirrorAngleR)
 		net.WriteFloat(MirrorScale)
 	net.SendToServer()
+	
+	return true
 
 end
 
+function TOOL:RightClick( trace )
+	if CLIENT then return end
+	if not self:GetOwner():IsSuperAdmin() then return end
+	
+	local Ents = ents.FindInSphere(trace.HitPos, 300 ) or {}
+	
+	local mirrors = {}
+	
+	for _,ent in pairs(Ents) do
+		if ent:GetClass() == "gmod_metrostroi_mirror" then table.insert(mirrors,1,ent) end
+	end
+	
+	local CurDist,MinDist,NearestMirror
+	for _,mirror in pairs(mirrors) do
+		CurDist = trace.HitPos:DistToSqr(mirror:GetPos())
+		if not MinDist or MinDist > CurDist then MinDist = CurDist NearestMirror = mirror end
+	end
+	
+	if NearestMirror then NearestMirror:Remove() return true end
+end
 
 function TOOL.BuildCPanel( panel )
 	panel:AddControl( "header", { 
