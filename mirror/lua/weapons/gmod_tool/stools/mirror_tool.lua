@@ -14,12 +14,14 @@ function TOOL:LeftClick( trace )
 		local MirrorAngleY = GetConVar("mirror_angle_y"):GetFloat()
 		local MirrorAngleR = GetConVar("mirror_angle_r"):GetFloat()
 		local MirrorScale = GetConVar("mirror_scale"):GetFloat()
+		local MirrorModel = GetConVar("mirror_model_type"):GetInt()
+		local StickDown = GetConVar("mirror_stick_down"):GetBool()
 		
 		local plyang = ply:GetEyeTraceNoCursor().Normal:Angle()
 		local pos = ply:LocalToWorld(Vector(MirrorDistance,0,0))+Vector(0,0,60)
 		local ang = Angle(plyang.r+MirrorAngleP,plyang.y+90+MirrorAngleY,plyang.p+MirrorAngleR)
 		
-		local Mirror = THEFULDEEP.SpawnMirror(pos,ang,MirrorScale)
+		local Mirror = THEFULDEEP.SpawnMirror(pos,ang,MirrorScale,MirrorModel,StickDown)
 		
 		undo.Create("Mirror")
 			undo.AddEntity( Mirror )
@@ -39,6 +41,8 @@ function TOOL:LeftClick( trace )
 	local MirrorAngleY = GetConVar("mirror_angle_y"):GetFloat()
 	local MirrorAngleR = GetConVar("mirror_angle_r"):GetFloat()
 	local MirrorScale = GetConVar("mirror_scale"):GetFloat()
+	local MirrorModel = GetConVar("mirror_model_type"):GetInt()
+	local StickDown = GetConVar("mirror_stick_down"):GetBool()
 	
 	local plyang = ply:GetEyeTraceNoCursor().Normal:Angle()
 	
@@ -51,6 +55,8 @@ function TOOL:LeftClick( trace )
 		net.WriteFloat(plyang.y+90+MirrorAngleY)
 		net.WriteFloat(plyang.p+MirrorAngleR)
 		net.WriteFloat(MirrorScale)
+		net.WriteFloat(MirrorModel)
+		net.WriteBool(StickDown)
 	net.SendToServer()
 	
 	return true
@@ -103,6 +109,11 @@ function TOOL.BuildCPanel( panel )
 		Command = "mirror_preview"
 	} )
 	
+	panel:AddControl( "numpad", {
+		command = "mirror_preview_hotkey",
+		label = "Хоткей переключения превью",
+	} )
+	
 	panel:AddControl( "slider", { 
 		Label = "Дальность",
 		Command = "mirror_distance",
@@ -112,7 +123,7 @@ function TOOL.BuildCPanel( panel )
 	} )
 	
 	panel:AddControl( "slider", { 
-		Label = "Angle P",
+		Label = "Угол P",
 		Command = "mirror_angle_p",
 		type = "float",
 		min = 0,
@@ -120,7 +131,7 @@ function TOOL.BuildCPanel( panel )
 	} )
 	
 	panel:AddControl( "slider", { 
-		Label = "Angle Y",
+		Label = "Угол Y",
 		Command = "mirror_angle_y",
 		type = "float",
 		min = -90,
@@ -128,7 +139,7 @@ function TOOL.BuildCPanel( panel )
 	} )
 	
 	panel:AddControl( "slider", { 
-		Label = "Angle R",
+		Label = "Угол R",
 		Command = "mirror_angle_r",
 		type = "float",
 		min = -90,
@@ -143,12 +154,15 @@ function TOOL.BuildCPanel( panel )
 		max = 100
 	} )
 	
-	panel:AddControl( "label", { --TODO
-		text = "Все, что ниже - пока не исопльзуется",
-	} )
+	panel:AddControl( "slider", { 
+		label = "Тип модели",
+		command = "mirror_model_type",
+		min = 1,
+		max = 2
+	})
 	
-	panel:AddControl( "textbox", { --TODO
-		Label = "Модель",
-		Command = "mirror_model",
-	} )
+	panel:AddControl( "Checkbox", { 
+		label = "Палка сверху/снизу",
+		command = "mirror_stick_down",
+	})
 end

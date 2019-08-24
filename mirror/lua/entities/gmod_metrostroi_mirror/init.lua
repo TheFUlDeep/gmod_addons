@@ -10,7 +10,7 @@ end
 
 function ENT:Initialize()
 
-	self:SetModel(self.Model or "models/thefuldeeps_models/mirror.mdl")
+	self:SetModel(self.Model or "models/thefuldeeps_models/mirror_square.mdl")
 	--self:PhysicsInit( SOLID_VPHYSICS )
 	--self:SetMoveType( MOVETYPE_VPHYSICS )
 	--self:SetSolid( SOLID_VPHYSICS )
