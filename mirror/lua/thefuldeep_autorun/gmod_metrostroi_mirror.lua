@@ -1,29 +1,40 @@
---TODO модели
 --TODO фикс конфликта с камерами метростроя
+local models = {
+	"models/thefuldeeps_models/mirror_square.mdl",
+	"models/thefuldeeps_models/mirror_rectangle.mdl"
+}
+local function GetModelByType(int)
+	return models[int]
+end
+
+local function GetTypeByModel(model)
+	return table.KeyFromValue(models, model)
+end
 
 
 if SERVER then
 	util.AddNetworkString("SpawnMirror")
+	
 
-	local function SpawnMirror(pos,ang,scale,model)
+	local function SpawnMirror(pos,ang,scale,model,stickdown)
 		local mirror = ents.Create("gmod_metrostroi_mirror")
 		if not IsValid(mirror) then print("ERROR with createin mirror") return end
-		if model and not model:find("%a") then model = nil end
-		mirror.Model = model
-		mirror:Spawn()
+		mirror.Model = GetModelByType(model) or GetModelByType(1)
 		mirror:SetModelScale(scale or 1)
-		timer.Simple(0.3,function()
+		mirror:SetNW2Bool("StickDown",stickdown)
+		--timer.Simple(0.3,function()
 			mirror:SetPos(pos)
 			mirror:SetAngles(ang)
-		end)
+			mirror:Spawn()
+		--end)
 		print("Mirror spawned")
 		return mirror
 	end
 	
 	net.Receive("SpawnMirror", function(len,ply)
 		if not ply:IsSuperAdmin() then return end
-		local a,b,c,d,e,f,g = net.ReadFloat(),net.ReadFloat(),net.ReadFloat(),net.ReadFloat(),net.ReadFloat(),net.ReadFloat(),net.ReadFloat()
-		local Mirror = SpawnMirror(Vector(a,b,c),Angle(d,e,f),g)
+		local a,b,c,d,e,f,g,h,i = net.ReadFloat(),net.ReadFloat(),net.ReadFloat(),net.ReadFloat(),net.ReadFloat(),net.ReadFloat(),net.ReadFloat(),net.ReadFloat(),net.ReadBool()
+		local Mirror = SpawnMirror(Vector(a,b,c),Angle(d,e,f),g,h,i)
 		
 		undo.Create("Mirror")
 			undo.AddEntity( Mirror )
@@ -49,7 +60,7 @@ if SERVER then
 		local Map = game.GetMap()
 		Mirrors[Map] = {}
 		for _,ent in pairs(ents.FindByClass("gmod_metrostroi_mirror")) do
-			if IsValid(ent) then table.insert(Mirrors[Map],1,{ent:GetPos(),ent:GetAngles(),ent:GetModelScale()}) end
+			if IsValid(ent) then table.insert(Mirrors[Map],1,{ent:GetPos(),ent:GetAngles(),ent:GetModelScale(),GetTypeByModel(ent:GetModel()),ent:GetNW2Bool("StickDown")}) end
 		end
 		--if #Mirrors[Map] < 1 then print("no mirrors") ply:ChatPrint("no mirrors") return end
 		file.Write("mirrors.txt", util.TableToJSON(Mirrors,true))
@@ -78,12 +89,12 @@ if SERVER then
 				return 
 			else
 				for _,mirror in ipairs(Mirrors) do
-					SpawnMirror(mirror[1],mirror[2],mirror[3])
+					SpawnMirror(mirror[1],mirror[2],mirror[3],mirror[4],mirror[5])
 				end
 			end
 		else
 			for _,mirror in ipairs(Mirrors) do
-				SpawnMirror(mirror[1],mirror[2],mirror[3])
+				SpawnMirror(mirror[1],mirror[2],mirror[3],mirror[4],mirror[5])
 			end
 		end
 		print("loaded "..#Mirrors.." mirrors")
@@ -95,6 +106,15 @@ if SERVER then
 		hook.Remove("PlayerInitialSpawn","SpawnMirrors")
 		RunConsoleCommand("mirrors_load")
 	end)
+	
+	if game.SinglePlayer() then	
+		hook.Add("PlayerButtonDown","Mirror_preview_toggle",function(ply, button )
+			local MirrorPreviewHotkey1 = GetConVar("mirror_preview_hotkey"):GetInt()
+			if MirrorPreviewHotkey1 and MirrorPreviewHotkey1 ~= 0 and button == MirrorPreviewHotkey1 then 
+				RunConsoleCommand("mirror_preview",GetConVar("mirror_preview"):GetBool() and 0 or 1)
+			end
+		end)
+	end
 	
 end
 if SERVER then return end
@@ -141,7 +161,7 @@ THEFULDEEP.MirrorDraw = function(self)
 	end]]
 	
 	local MirrorPos = self:LocalToWorld(self:OBBCenter())
-	self.RTCam:SetPos(MirrorPos)
+	self.RTCam:SetPos(self:GetPos())
 	--if self.RTCam:GetPos():DistToSqr(MirrorPos) > 300*300 then return end
 	local ply = LocalPlayer()
 	
@@ -180,10 +200,18 @@ local MirrorAngleP = CreateClientConVar("mirror_angle_p", "0", false)
 local MirrorAngleY = CreateClientConVar("mirror_angle_y", "0", false)
 local MirrorAngleR = CreateClientConVar("mirror_angle_r", "0", false)
 local MirrorScale = CreateClientConVar("mirror_scale", "1", false)
-local MirrorModel = CreateClientConVar("mirror_model", "", false) --TODO
+local MirrorModel = CreateClientConVar("mirror_model_type", "1", false)
+local MirrorPreviewHotkey = CreateClientConVar("mirror_preview_hotkey", "", true)
+local MirrorSrickDown = CreateClientConVar("mirror_stick_down", "0", false)
 
-local w,h = 512,512
-local rtTexture = surface.GetTextureID( "pp/rt" )		
+if not game.SinglePlayer() then
+	hook.Add("PlayerButtonDown","Mirror_preview_toggle",function(ply, button )
+		local MirrorPreviewHotkey1 = MirrorPreviewHotkey:GetInt()
+		if MirrorPreviewHotkey1 and MirrorPreviewHotkey1 ~= 0 and button == MirrorPreviewHotkey1 then 
+			RunConsoleCommand("mirror_preview",MirrorPreview:GetBool() and 0 or 1)
+		end
+	end)
+end
 
 local MirrorEnt
 
@@ -199,9 +227,12 @@ hook.Add("Think","MirrorPreview",function()
 	if not IsValid(GetGlobalEntity("MirrorRTCam")) then return end
 	
 	if not IsValid(MirrorEnt) then 
-		MirrorEnt = ents.CreateClientProp("models/thefuldeeps_models/mirror.mdl")
+		MirrorEnt = ents.CreateClientProp(GetModelByType(MirrorModel:GetInt()))
 		MirrorEnt:Spawn()
 	end
+	
+	if MirrorEnt:GetModel() ~= GetModelByType(MirrorModel:GetInt()) then MirrorEnt:SetModel(GetModelByType(MirrorModel:GetInt())) end
+	
 	local ply = LocalPlayer()
 	MirrorEnt:SetModelScale(MirrorScale:GetFloat())
 	MirrorEnt:SetPos(ply:LocalToWorld(Vector(MirrorDistance:GetFloat()))+Vector(0,0,60))
@@ -210,10 +241,5 @@ hook.Add("Think","MirrorPreview",function()
 	MirrorEnt:SetAngles(Angle(plyang.r+MirrorAngleP:GetFloat(),plyang.y+90+MirrorAngleY:GetFloat(),plyang.p+MirrorAngleR:GetFloat()))
 	
 	THEFULDEEP.MirrorDraw(MirrorEnt)
-	
-	-- draw render target
-	surface.SetTexture( rtTexture )
-	surface.SetDrawColor( 255, 255, 255, 255 )
-	surface.DrawTexturedRect( 0 , 0, 256, 256 )
 end)
 
