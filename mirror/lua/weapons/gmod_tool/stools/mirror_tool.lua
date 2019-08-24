@@ -94,6 +94,11 @@ function TOOL.BuildCPanel( panel )
 	} )
 	
 	panel:AddControl( "Checkbox", { 
+		Label = "Отображение зеркал", 
+		Command = "metrostroi_drawcams"
+	} )
+	
+	panel:AddControl( "Checkbox", { 
 		Label = "Превью", 
 		Command = "mirror_preview"
 	} )

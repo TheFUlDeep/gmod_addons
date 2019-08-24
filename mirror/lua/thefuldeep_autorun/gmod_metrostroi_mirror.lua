@@ -201,7 +201,6 @@ hook.Add("Think","MirrorPreview",function()
 	if not IsValid(MirrorEnt) then 
 		MirrorEnt = ents.CreateClientProp("models/thefuldeeps_models/mirror.mdl")
 		MirrorEnt:Spawn()
-		MirrorEnt:SetMaterial("models/rendertarget")
 	end
 	local ply = LocalPlayer()
 	MirrorEnt:SetModelScale(MirrorScale:GetFloat())
