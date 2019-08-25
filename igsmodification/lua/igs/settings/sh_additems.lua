@@ -925,6 +925,102 @@
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кузова RGW на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture RGW]]")
  	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717 МСК (номерной) Train Tashkent", "145")
+ 	:SetPrice(15)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова Tashkent на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Tashkent]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717 МСК (номерной) Train Kharkov Biscuit", "146")
+ 	:SetPrice(15)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова Kharkov Biscuit на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Kharkov Biscuit]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717 МСК (номерной) Train Крюковец (Харьков)", "147")
+ 	:SetPrice(15)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова Крюковец (Харьков) на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Крюковец (Харьков)]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717 МСК (номерной) Train Крюковец (Киев)", "148")
+ 	:SetPrice(15)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова Крюковец (Киев) на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Крюковец (Киев)]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717 МСК (номерной) Train KD", "149")
+ 	:SetPrice(15)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова KD на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture KD]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717.6 Train 81-717.6_1945", "150")
+ 	:SetPrice(10)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова 81-717.6_1945 на составе 81-717.6\n[[gmod_subway_81-717_6 Texture 81-717.6_1945]]")
+ 	:SetCategory("Скины на 81-717.6")
+	
+ IGS("81-717.6 Pass 81-717.6_1945", "151")
+ 	:SetPrice(5)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин салона 81-717.6_1945 на составе 81-717.6\n[[gmod_subway_81-717_6 PassTexture 81-717.6_1945]]")
+ 	:SetCategory("Скины на 81-717.6")
+	
+ IGS("81-717 МСК (номерной) Train Нижний Новгород (герб)", "152")
+ 	:SetPrice(15)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова Нижний Новгород (герб) на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Нижний Новгород (герб)]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717 МСК (номерной) Train Нижний Новгород (старый)", "153")
+ 	:SetPrice(15)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова Нижний Новгород (старый) на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Нижний Новгород (старый)]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717 МСК (номерной) Train Нижний Новгород (ПИОНЕР)", "154")
+ 	:SetPrice(15)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова Нижний Новгород (ПИОНЕР) на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Нижний Новгород (ПИОНЕР)]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717 МСК (номерной) Train Нижний Новгород (новый)", "155")
+ 	:SetPrice(15)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова Нижний Новгород (новый) на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Нижний Новгород (новый)]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717.6 Train Нижний Новогород (К.Минин)", "156")
+ 	:SetPrice(10)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова Нижний Новогород (К.Минин) на составе 81-717.6\n[[gmod_subway_81-717_6 Texture Нижний Новогород (К.Минин)]]")
+ 	:SetCategory("Скины на 81-717.6")
+	
+ IGS("81-717.6 Pass Нижний Новогород (К.Минин)", "157")
+ 	:SetPrice(5)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин салона Нижний Новогород (К.Минин) на составе 81-717.6\n[[gmod_subway_81-717_6 PassTexture Нижний Новогород (К.Минин)]]")
+ 	:SetCategory("Скины на 81-717.6")
+	
+ IGS("81-717.6 Train Нижний Новогород (герб)", "158")
+ 	:SetPrice(10)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова Нижний Новогород (герб) на составе 81-717.6\n[[gmod_subway_81-717_6 Texture Нижний Новогород (герб)]]")
+ 	:SetCategory("Скины на 81-717.6")
+	
+ IGS("81-717.6 Pass Нижний Новогород (герб)", "159")
+ 	:SetPrice(5)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин салона Нижний Новогород (герб) на составе 81-717.6\n[[gmod_subway_81-717_6 PassTexture Нижний Новогород (герб)]]")
+ 	:SetCategory("Скины на 81-717.6")
+	
+ IGS("81-717 МСК (номерной) Train Народный ополченец", "160")
+ 	:SetPrice(15)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова Народный ополченец на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Народный ополченец]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
 
 
 
