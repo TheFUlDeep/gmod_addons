@@ -1021,6 +1021,24 @@
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кузова Народный ополченец на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Народный ополченец]]")
  	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717 МСК (номерной) Train Згущёнка", "161")
+ 	:SetPrice(15)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова Згущёнка на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Згущёнка]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717 МСК (номерной) Train Самарский", "162")
+ 	:SetPrice(10)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова Самарский на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Самарский]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717 МСК (номерной) Train София (старый)", "163")
+ 	:SetPrice(15)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова София на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture София (старый)]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
 
 
 
