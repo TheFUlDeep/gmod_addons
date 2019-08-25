@@ -1,6 +1,7 @@
 if CLIENT then return end
 
 local function ConvertDescriptionToUse(v)
+	if not v or not v:find("%a") then return end
 	v = string.sub(v,stringfind(v,"\n[[") + 3, - 3)
 	local start1 = string.find(v," ")
 	if not start1 then return nil end
@@ -56,5 +57,98 @@ hook.Add("IGS.CanPlayerBuyItem", "CheckMetrostroiSkin", function(pl,item,global,
 	if item:Description() == "Разрешает использовать все скины на месяц" then return end
 	if not CheckSkin(item:Description()) then return false,"данного скина нет на сервере. Покупка запрещена" end
 end)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local function DetectNoAddedSkins()
+	if not IGS or not Metrostroi or not Metrostroi.Skins or not IGS.ITEMS then return end
+	local SkinsOnServer = {}--имя, тип, айди
+	for k,v in pairs(Metrostroi.Skins) do
+		
+		if istable(v) and k == "train" or k == "pass" or k == "cab" then
+			for k1,v1 in pairs(v) do
+				for k2,v2 in pairs(v1) do
+					if k2 == "name" then table.insert(SkinsOnServer,1,{v2,k,k1}) end
+				end
+			end
+		end
+	end
+	--PrintTable(SkinsOnServer)
+		
+	local SkinsInDonate = {}
+	for k,v in pairs(IGS.ITEMS) do
+		if not istable(v) then continue end
+		for k1,v1 in pairs(v) do
+			if not istable(v1) then continue end
+			local TrainClass1,TextureClass1,TextureName1 = ConvertDescriptionToUse(v1.description)
+			if not TrainClass1 or not TextureClass1 or not TextureName1 then continue end
+			if TextureClass1 == "Texture" then TextureClass1 = "train" end
+			if TextureClass1 == "Pass" then TextureClass1 = "pass" end
+			if TextureClass1 == "Cab" then TextureClass1 = "cab" end
+			if TextureClass1 == "CabTexture" then TextureClass1 = "cab" end
+			if TextureClass1 == "PassTexture" then TextureClass1 = "pass" end
+			table.insert(SkinsInDonate,1,{--[[v1.name,]]TrainClass1,TextureClass1,TextureName1,v1.id,v1.id})
+		end
+		
+		--PrintTable(SkinsInDonate)
+	end
+
+	local FoundDifference = {}
+	for k,v in pairs(SkinsOnServer) do
+		if v[1] == "Random" then continue end
+		local FoundName = {}
+		for k1,v1 in pairs(SkinsInDonate) do
+			if v[1] == v1[3] then
+				table.insert(FoundName,k1)
+			end
+		end
+		
+		if #FoundName > 0 then
+			for k1,v1 in pairs(FoundName) do
+				if SkinsInDonate[v1][2] ~= v[2] then 
+					table.insert(FoundDifference,1,k)
+					print(SkinsInDonate[v1][2],v[2])
+				end
+			end
+		else
+			table.insert(FoundDifference,1,k)
+		end
+		
+	end	
+
+	for k,v in pairs(FoundDifference) do
+		for k1,v1 in pairs(FoundDifference) do
+			if k ~= k1 and v == v1 then FoundDifference[k1] = nil end
+		end
+	end	
+	
+	local FoundDifferenceCount = table.Count(FoundDifference)
+	if FoundDifferenceCount > 0 then
+		print("Найдены скины, недобавленные в донаты! Игроки не смогут ими пользоваться!",FoundDifferenceCount)
+		for _,v in pairs(FoundDifference) do
+			PrintTable(SkinsOnServer[v])
+			print("-----------------------------------")
+		end
+	end
+	
+
+end
+
+DetectNoAddedSkins()
 
 --PrintTable(Metrostroi.Skins)
