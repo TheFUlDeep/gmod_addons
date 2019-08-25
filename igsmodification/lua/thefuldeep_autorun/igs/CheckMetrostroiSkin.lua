@@ -79,11 +79,11 @@ local function DetectNoAddedSkins()
 	if not IGS or not Metrostroi or not Metrostroi.Skins or not IGS.ITEMS then return end
 	local SkinsOnServer = {}--имя, тип, айди
 	for k,v in pairs(Metrostroi.Skins) do
-		
 		if istable(v) and k == "train" or k == "pass" or k == "cab" then
 			for k1,v1 in pairs(v) do
+				if v1.typ:find("_spb") then continue end
 				for k2,v2 in pairs(v1) do
-					if k2 == "name" then table.insert(SkinsOnServer,1,{v2,k,k1}) end
+					if k2 == "name" then table.insert(SkinsOnServer,1,{v2,k,k1,v1.typ}) end
 				end
 			end
 		end
@@ -122,7 +122,6 @@ local function DetectNoAddedSkins()
 			for k1,v1 in pairs(FoundName) do
 				if SkinsInDonate[v1][2] ~= v[2] then 
 					table.insert(FoundDifference,1,k)
-					print(SkinsInDonate[v1][2],v[2])
 				end
 			end
 		else
@@ -137,10 +136,34 @@ local function DetectNoAddedSkins()
 		end
 	end	
 	
+	local function AddSkinToDonate(name,typ,id,train)	--я это не дописал, но лучше  добавлять все вручную
+		local typ1,price,word
+		if typ == "pass" then typ1 = "PassTexture" price = 5 word = "салона"
+		elseif typ == "cab" then typ1 = "CabTexture" price = 5 word = "кабины"
+		elseif typ == "train" then typ1 = "Texture" price = 15 word = "кузова"
+		else return
+		end
+		
+		local BeautyName,DscriptionName,EntName
+		if train == "81-717_msk" then BeautyName,EntName = "81-717 МСК (номерной)","gmod_subway_81-717_mvm_custom"
+		elseif train == "81-702" then BeautyName,EntName = "81-702 (Д)","gmod_subway_81-702"
+		elseif train == "81-703" then BeautyName,EntName = "81-703 (E)","gmod_subway_81-703"
+		else return
+		end
+		
+		print("adding "..BeautyName.." "..name.." "..typ)
+		IGS(BeautyName.." "..typ.." "..name, id)
+		:SetPrice(price)
+		:SetPerma()
+		:SetDescription("Разрешает использовать скин "..word.." "..name.." на составе "..train.."\n[[.."..EntName.." "..typ1.." "..name.."]]")
+		:SetCategory("Скины на "..BeautyName)
+	end
+	
 	local FoundDifferenceCount = table.Count(FoundDifference)
 	if FoundDifferenceCount > 0 then
 		print("Найдены скины, недобавленные в донаты! Игроки не смогут ими пользоваться!",FoundDifferenceCount)
 		for _,v in pairs(FoundDifference) do
+			--AddSkinToDonate(SkinsOnServer[v][1],SkinsOnServer[v][2],SkinsOnServer[v][3],SkinsOnServer[v][4])
 			PrintTable(SkinsOnServer[v])
 			print("-----------------------------------")
 		end
@@ -150,5 +173,4 @@ local function DetectNoAddedSkins()
 end
 
 DetectNoAddedSkins()
-
 --PrintTable(Metrostroi.Skins)
