@@ -161,7 +161,9 @@ THEFULDEEP.MirrorDraw = function(self)
 	end]]
 	
 	local MirrorPos = self:LocalToWorld(self:OBBCenter())
-	self.RTCam:SetPos(self:GetPos())
+	if self.RTCam:GetPos() ~= self:GetPos() then
+		self.RTCam:SetPos(self:GetPos())
+	end
 	--if self.RTCam:GetPos():DistToSqr(MirrorPos) > 300*300 then return end
 	local ply = LocalPlayer()
 	
