@@ -24,7 +24,7 @@ timer.Create("AntiAfk",10,0,function()
 		if not IsValid(ply) then continue end
 		if not ply.AntiAfk then ply.AntiAfk = {} end
 		--local Ang = ply:GetAngles() --ply:EyeAngles()
-		if not ply.AntiAfk.Pos or ply.AntiAfk.Pos ~= ply:GetPos() or ply.AntiAfk.AfkBlock
+		if --[[not ply.AntiAfk.Pos or ply.AntiAfk.Pos ~= ply:GetPos() or]] ply.AntiAfk.AfkBlock
 		--or not ply.AntiAfk.Ang or ply.AntiAfk.Ang ~= Ang 
 		then
 			UpdatePlayerAntiAfk(ply)
