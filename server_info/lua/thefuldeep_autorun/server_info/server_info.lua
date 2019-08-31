@@ -494,6 +494,8 @@ local function PrepareDataToSending()
 	TblToSend.PlayerCount = THEFULDEEP.PLAYERCOUNT or i
 	TblToSend.MaxPlayers = game.MaxPlayers()
 	TblToSend.Trains = ulx.GetTrains()
+	TblToSend.MaxWagons = GetGlobalInt("metrostroi_maxwagons")
+	TblToSend.Wagons = GetGlobalInt("metrostroi_train_count")
 	if table.Count(TblToSend.Trains) < 1 then TblToSend.Trains = nil end
 	if TblToSend.Trains then
 		for k,v in pairs(TblToSend.Trains) do
