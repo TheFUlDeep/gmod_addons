@@ -33,7 +33,7 @@ timer.Create("AntiAfk",10,0,function()
 		
 		if ply.AntiAfk.LastChange then
 			local Delta = CurTime() - ply.AntiAfk.LastChange
-			if Delta >= 20 and not ply.AntiAfk.Afk then
+			if Delta >= 40 and not ply.AntiAfk.Afk then
 				ply.AntiAfk.Afk = true
 				print(ply:Nick().." afk")
 				for k,ply1 in pairs(player.GetHumans()) do
