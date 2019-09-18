@@ -31,6 +31,7 @@ local function ChangeModel(ent)
 	
 	--обновление модели при нажатии спавнером на вагон
 	if ent.TrainSpawnerUpdate and not ent.TrainSpawnerUpdate540modelchanched then
+		ent.TrainSpawnerUpdate540modelchanched = true
 		local OldTrainSpawnerUpdate = ent.TrainSpawnerUpdate
 		ent.TrainSpawnerUpdate = function(ent)
 			OldTrainSpawnerUpdate(ent)
