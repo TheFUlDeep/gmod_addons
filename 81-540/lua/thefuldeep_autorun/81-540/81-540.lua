@@ -38,7 +38,7 @@ local function SetPrevModel(ent)
 		if k == "mask22_1" or k == "mask222_lvz" or k == "mask22_2" and v:GetModelScale() ~= 1 then
 			v:SetModelScale(1)
 		end
-		if k == "cabine_old" or k == "cabine_new" or k == "RedLights" or k == "Headlights222_1" or k == "Headlights22_1" or k == "Headlights222_2" or k == "Headlights22_2" or k == "Lamps_cab2" or k == "Lamps_cab1" then --внутренняя кабина
+		if k == "cabine_old" or k == "cabine_new" or k == "RedLights" or k == "Headlights222_1" or k == "Headlights22_1" or k == "Headlights222_2" or k == "Headlights22_2" or k == "Lamps_cab2" or k == "Lamps_cab1" or k == "Lamps2_cab1" or k == "Lamps2_cab2" then --внутренняя кабина
 			local EntModel = v:GetModel()
 			if ent.model540[k] and EntModel ~= ent.model540[k] then v:SetModel(ent.model540[k]) end
 		end
@@ -93,7 +93,7 @@ timer.Create("UpdateClientEnts on 540",1,0,function()
 				ent.model540[k] = EntModel
 				v:SetModel("models/metrostroi_train/81-5402/lamp_cab1.mdl")
 			end
-			if (k == "Lamps_cab2" or k == "Lamps2_cab2") and EntModel ~= "models/metrostroi_train/81-5402/lamp_cab2.mdl" then --TODO вторая ламп не вешается
+			if (k == "Lamps_cab2" or k == "Lamps2_cab2") and EntModel ~= "models/metrostroi_train/81-5402/lamp_cab2.mdl" then
 				ent.model540[k] = EntModel
 				v:SetModel("models/metrostroi_train/81-5402/lamp_cab2.mdl")
 			end
