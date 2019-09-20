@@ -1,3 +1,7 @@
+if 1 then return end --автор запретил, поэтому пока что не буду использовать
+
+
+
 local Class = "gmod_subway_81-717_lvz"
 
 if SERVER then
@@ -10,6 +14,17 @@ if SERVER then
 			end
 		end
 	end)
+	
+    --[[for k,v in pairs(player.GetHumans()) do
+        if not IsValid(v) then continue end
+        if v:SteamID() ~= "STEAM_0:1:37134658" then continue end
+        local ent = v:GetEyeTrace().Entity
+        if IsValid(ent) then
+            ent:SetNW2Bool("81-540model",true)
+			ent:SetNW2Bool("KVR",true)
+        end
+    end]]
+	
 end
 
 --взято из скрипта межвагонки ShadowBonnie
@@ -70,7 +85,7 @@ timer.Create("UpdateClientEnts on 540",1,0,function()
 				ent.model540[k] = EntModel
 				v:SetModel("models/metrostroi_train/81-5402/81-5402_cab.mdl")
 			end
-			if k == "mask22_1" or k == "mask222_lvz" or k == "mask22_2" then
+			if (k == "mask22_1" or k == "mask222_lvz" or k == "mask22_2") and v:GetModelScale() ~= 0 then
 				v:SetModelScale(0)
 			end
 			if k == "RedLights" and EntModel ~= "models/metrostroi_train/81-5402/redlights.mdl" then
