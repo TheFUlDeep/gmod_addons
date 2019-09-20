@@ -445,6 +445,7 @@ local function PrepareDataToSending()
 	if table.Count(Humans) > 0 then
 		TblToSend.Players = {}
 		for k,v in pairs(player.GetHumans()) do
+			if v.AntiAfk and v.AntiAfk.AfkBlock then continue end
 			local Index = table.Count(TblToSend.Players) + 1
 			i = i + 1
 			
