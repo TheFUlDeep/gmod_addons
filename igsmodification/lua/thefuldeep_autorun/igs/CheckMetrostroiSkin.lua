@@ -1,3 +1,5 @@
+--TODO добавить инфу об обще суме игрока (общая сумма пополнений или баланс+все затраты)
+
 if CLIENT then return end
 
 local function ConvertDescriptionToUse(v)
