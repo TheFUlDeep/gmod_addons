@@ -359,10 +359,10 @@
  	:SetDescription("Разрешает использовать скин кузова Ахегао на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Admin]]")
  	:SetCategory("Скины на 81-717 МСК (номерной)")
 	
- IGS("81-717 МСК (номерной) Train Belarus BANK", "48")
+ IGS("81-717 МСК (номерной) Train Belarus Bank", "48")
  	:SetPrice(15)
 	:SetPerma()
- 	:SetDescription("Разрешает использовать скин кузова Belarus BANK на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Belarus BANK]]")
+ 	:SetDescription("Разрешает использовать скин кузова Belarus Bank на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Belarus Bank]]")
  	:SetCategory("Скины на 81-717 МСК (номерной)")
 	
  IGS("81-717 МСК (номерной) Train Condensed milk", "49")
@@ -950,10 +950,10 @@
  	:SetDescription("Разрешает использовать скин кузова Крюковец (Киев) на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Крюковец (Киев)]]")
  	:SetCategory("Скины на 81-717 МСК (номерной)")
 	
- IGS("81-717 МСК (номерной) Train KD", "149")
+ IGS("81-717 МСК (номерной) Train Blue (Kajdiy Den')", "149")
  	:SetPrice(15)
 	:SetPerma()
- 	:SetDescription("Разрешает использовать скин кузова KD на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture KD]]")
+ 	:SetDescription("Разрешает использовать скин кузова Blue (Kajdiy Den') на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Blue (Kajdiy Den')]]")
  	:SetCategory("Скины на 81-717 МСК (номерной)")
 	
  IGS("81-717.6 Train 81-717.6_1945", "150")
@@ -1039,6 +1039,54 @@
 	:SetPerma()
  	:SetDescription("Разрешает использовать скин кузова София на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture София (старый)]]")
  	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-718 (ТИСУ) Train LGBT", "164")
+ 	:SetPrice(0)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова LGBT на составе 81-718\n[[gmod_subway_81-718 Texture LGBT]]")
+ 	:SetCategory("Скины на 81-718 (ТИСУ)")
+	
+ IGS("81-717 МСК (номерной) Train Blue Toshkent", "165")
+ 	:SetPrice(15)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова Blue Toshkent на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Blue Toshkent]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717 МСК (номерной) Train Toshkent", "166")
+ 	:SetPrice(15)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова Toshkent на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Toshkent]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717 МСК (номерной) Train Toshkent 2", "167")
+ 	:SetPrice(15)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова Toshkent 2 на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Toshkent 2]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717 МСК (номерной) Train Красная Стрела (Новый тип)", "168")
+ 	:SetPrice(15)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова Красная Стрела (Новый тип) на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Красная Стрела (Новый тип)]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-717 МСК (номерной) Train Нижнегородский", "169")
+ 	:SetPrice(15)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова Нижнегородский на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Нижнегородский]]")
+ 	:SetCategory("Скины на 81-717 МСК (номерной)")
+	
+ IGS("81-702 (Д) Train LGBT", "170")
+ 	:SetPrice(15)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова LGBT на составе 81-702\n[[gmod_subway_81-702 Texture LGBT]]")
+ 	:SetCategory("Скины на 81-702 (Д)")
+	
+ IGS("81-710 (Еж3) Train kyev", "171")
+ 	:SetPrice(15)
+	:SetPerma()
+ 	:SetDescription("Разрешает использовать скин кузова kyev на составе 81-710\n[[gmod_subway_ezh3 Texture kyev]]")
+ 	:SetCategory("Скины на 81-710 (Еж3")
 
 
 

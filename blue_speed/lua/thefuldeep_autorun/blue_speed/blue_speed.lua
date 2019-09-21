@@ -14,7 +14,7 @@ end)
 
 if SERVER then return end
 
-timer.Create("Change Speed Color",5,0,function()							--использую именно таймер, потому что ентити на клиентской части доступно не всегда
+timer.Create("Change Speed Color",1,0,function()							--использую именно таймер, потому что ентити на клиентской части доступно не всегда
 	for k,v in pairs(ents.FindByClass("gmod_subway_81-717_mvm")) do
 		if not IsValid(v) or not v.ClientEnts then continue end
 		--можно добавить еще, но я не уверен, что это что-то оптимизирует if not v.ShouldRenderClientEnts or not v:ShouldRenderClientEnts() then continue end
