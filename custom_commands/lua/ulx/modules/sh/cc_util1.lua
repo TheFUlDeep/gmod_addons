@@ -1632,7 +1632,7 @@ function MaximumWagons(ply,self)
 	if maximum < 4 and (Rank == "operator" or Rank == "admin" or Rank == "SuperVIP") then maximum = 4 end
 	if not ply:GetNW2Bool("ignoremapwaglimit",false) then
 		if (stringfind(Map,"mus_crimson_line") or stringfind(Map, "orange")) and maximum > 3 then maximum = 3 end
-		if (stringfind(Map,"smr") or stringfind(Map,"neocrims") or stringfind(Map, "rural") or stringfind(Map, "remaste") or stringfind(Map,"surface")) and maximum > 4 then maximum = 4 end
+		if (stringfind(Map,"smr") or stringfind(Map,"neocrims") or stringfind(Map, "rural") or stringfind(Map, "remaste") or stringfind(Map,"surface")) or Map:find("gm_jar_pll_redux",1,true) and maximum > 4 then maximum = 4 end
 		if (stringfind(Map,"loopline") or stringfind(Map,"gm_metrostroi_b")) and maximum > 5 then maximum = 5 end
 	end
 	if SERVER and self then
