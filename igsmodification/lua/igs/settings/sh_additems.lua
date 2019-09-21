@@ -950,10 +950,10 @@
  	:SetDescription("Разрешает использовать скин кузова Крюковец (Киев) на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Крюковец (Киев)]]")
  	:SetCategory("Скины на 81-717 МСК (номерной)")
 	
- IGS("81-717 МСК (номерной) Train Blue (Kajdiy Den')", "149")
+ IGS("81-717 МСК (номерной) Train Brand (Kajdiy Den')", "149")
  	:SetPrice(15)
 	:SetPerma()
- 	:SetDescription("Разрешает использовать скин кузова Blue (Kajdiy Den') на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Blue (Kajdiy Den')]]")
+ 	:SetDescription("Разрешает использовать скин кузова Brand (Kajdiy Den') на составе 81-717 mvm\n[[gmod_subway_81-717_mvm_custom Texture Brand (Kajdiy Den')]]")
  	:SetCategory("Скины на 81-717 МСК (номерной)")
 	
  IGS("81-717.6 Train 81-717.6_1945", "150")
