@@ -65,7 +65,7 @@ if SERVER then
 		--if #Mirrors[Map] < 1 then print("no mirrors") ply:ChatPrint("no mirrors") return end
 		file.Write("mirrors.txt", util.TableToJSON(Mirrors,true))
 		print("mirrors saved")
-		ply:ChatPrint("saved "..#Mirrors[Map].." mirrors")
+		if IsValid(ply) then ply:ChatPrint("saved "..#Mirrors[Map].." mirrors") end
 	end)
 	
 	concommand.Add("mirrors_load", function(ply)
@@ -85,7 +85,8 @@ if SERVER then
 			Mirrors = File and util.JSONToTable(File) or {}
 			
 			if not Mirrors or #Mirrors < 1 then
-				print("no mirrors for this map") ply:ChatPrint("no mirrors for this map")
+				print("no mirrors for this map") 
+				if IsValid(ply) then ply:ChatPrint("no mirrors for this map") end
 				return 
 			else
 				for _,mirror in ipairs(Mirrors) do
@@ -98,7 +99,7 @@ if SERVER then
 			end
 		end
 		print("loaded "..#Mirrors.." mirrors")
-		ply:ChatPrint("loaded "..#Mirrors.." mirrors")
+		if IsValid(ply) then ply:ChatPrint("loaded "..#Mirrors.." mirrors") end
 		end)
 	end)
 	
