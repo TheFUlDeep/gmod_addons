@@ -1,8 +1,9 @@
 if CLIENT then return end
 
 for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
-    if not v.Routes then continue end
+    if not v.Routes or not v.Name then continue end
     for k1,v1 in pairs(v.Routes) do
+		if not v1.RouteName then continue end
         hook.Remove("PlayerSay","PSNotAllowed on "..v.Name.." route "..v1.RouteName)
     end
 end
@@ -34,7 +35,9 @@ local function PSNotAllowed(SignalName,Route)
     if not Added then error("cant find route "..Route.." on signal "..SignalName) end
 end
 
-hook.Add("PlayerInitialSpawn","PSNotAllowed Load",function()
-    hook.Remove("PlayerInitialSpawn","PSNotAllowed Load")
-    --PSNotAllowed("KB112","KB2-2")
-end)
+if false then--отключил, потому что пока не нужно
+	hook.Add("PlayerInitialSpawn","PSNotAllowed Load",function()
+		hook.Remove("PlayerInitialSpawn","PSNotAllowed Load")
+		--PSNotAllowed("KB112","KB2-2")
+	end)
+end

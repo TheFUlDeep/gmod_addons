@@ -1792,6 +1792,7 @@ if SERVER then
 		StationsCfg = {}
 		--createavtooborot()
 		RunConsoleCommand("metrostroi_load")
+		RunConsoleCommand("mirrors_load")
 		timer.Simple(2,function() GenerateStationsCfg() end)
 		ulx.fancyLogAdmin(calling_ply, "[SERVER] #A ВОССТАНОВИЛ КАРТУ")
 	end
