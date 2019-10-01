@@ -415,10 +415,23 @@ local function ScoreBoardFunction(ent)
 end
 
 
+local function GetPlayersTrainCount(ply)
+	if not CPPI or not Metrostroi or not Metrostroi.TrainClasses then return 0 end
+	local wagoncount = 0
+	for _,class in pairs(Metrostroi.TrainClasses) do
+		for _,ent in pairs(ents.FindByClass(class)) do
+			if not IsValid(ent) or not ent.CPPIGetOwner then continue end
+			if ply == ent:CPPIGetOwner() then wagoncount = wagoncount + 1 end
+		end
+	end
+	return wagoncount
+end
+
 util.AddNetworkString("ScoreBoardAdditional")
 local function MetrostroiInfo()	
 	if not detectstation then print("detectstation is not avaliable") return end
 	for k,v in pairs(player.GetHumans()) do
+		if not IsValid(v) then continue end
 		local result,Train,SteamID,path,Owner,Time,Dist = ScoreBoardFunction(v)
 		net.Start("ScoreBoardAdditional")
 			net.WriteString(result)
@@ -428,6 +441,7 @@ local function MetrostroiInfo()
 			net.WriteString(Owner)
 			net.WriteString(Time)
 			net.WriteString(Dist)
+			net.WriteString(GetPlayersTrainCount(v))
 		net.Broadcast()
 	end
 end

@@ -67,7 +67,7 @@ function PANEL:Init()
 	self.SuiSc:SetText( "SUI Scoreboard v2.6 PolarWolf edited" )
 	
 	self.Description = vgui.Create( "DLabel", self )
-	self.Description:SetText( "Metrostroi no rank Reborn" )
+	self.Description:SetText( "Вагонов: "..(GetGlobalInt("metrostroi_train_count") or 0).."/"..(GetGlobalInt("metrostroi_maxwagons") or 0))
 	
 	self.PlayerFrame = vgui.Create( "suiplayerframe", self )
 	
@@ -94,7 +94,7 @@ function PANEL:Init()
 	self.lblPos:SetText( "Местоположение" )
 
 	self.lblHealth = vgui.Create( "DLabel", self )
-	self.lblHealth:SetText( "Здоровье" )
+	self.lblHealth:SetText( "Вагоны" )
 
 	if utimecheck then self.lblHours = vgui.Create( "DLabel", self ) end
 	if utimecheck then self.lblHours:SetText( "Часы" ) end
@@ -335,6 +335,10 @@ function PANEL:UpdateScoreboard( force )
 		if not self:GetPlayerRow( pl ) then
 			self:AddPlayerRow( pl )
 		end
+	end
+	
+	if self.Description then
+		self.Description:SetText( "Вагонов: "..(GetGlobalInt("metrostroi_train_count") or 0).."/"..(GetGlobalInt("metrostroi_maxwagons") or 0))
 	end
 	
 	// Always invalidate the layout so the order gets updated

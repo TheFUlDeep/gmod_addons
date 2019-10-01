@@ -130,12 +130,12 @@ end
 
 local DataTBL = {}
 net.Receive("ScoreBoardAdditional",function()
-	local Pos,Train,SteamID,Path,Owner,Time = net.ReadString(),net.ReadString(),net.ReadString(),net.ReadString(),net.ReadString(),net.ReadString()
+	local Pos,Train,SteamID,Path,Owner,Time,Dist,WagCount = net.ReadString(),net.ReadString(),net.ReadString(),net.ReadString(),net.ReadString(),net.ReadString(),net.ReadString(),net.ReadString()
 	local ent = ents.GetByIndex(SteamID)
 	if not IsValid(ent) or not ent:IsPlayer() then return end
 	SteamID = ent:SteamID()
 	if not DataTBL[SteamID] then DataTBL[SteamID] = {} end
-	DataTBL[SteamID] = {Pos,Train,Path,Owner,Time}
+	DataTBL[SteamID] = {Pos,Train,Path,Owner,Time,WagCount}
 end)
 
 timer.Create("TrainArraiveTimeInc", 1, 0, function()
@@ -159,7 +159,6 @@ function PANEL:UpdatePlayerData()
 		if ulibcheck then self.lblTeam:SetText( "Плейгокс" ) end
 	end
 	if utimecheck then self.lblHours:SetText( math.floor( ply:GetUTimeTotalTime() / 3600 ) ) end
-	self.lblHealth:SetText( ply:Health() )
 	self.lblFrags:SetText( ply:Frags() )
 	self.lblDeaths:SetText( ply:Deaths() )
 	self.lblPing:SetText( ply:Ping() )
@@ -171,13 +170,18 @@ function PANEL:UpdatePlayerData()
 	local Path = ""
 	local Owner = ""
 	local Time = ""
+	local WagCount = "0"
 	if DataTBL[SteamID] then
 		Pos = DataTBL[SteamID][1]
 		Train = DataTBL[SteamID][2]
 		Path = DataTBL[SteamID][3]
 		Owner = DataTBL[SteamID][4]
 		Time = DataTBL[SteamID][5]
+		WagCount = DataTBL[SteamID][6]
 	end
+	
+	self.lblHealth:SetText(WagCount or "0")
+	
 	if ScrW() < 1800 then
 		if string.sub(Pos,1,15) == "перегон " then
 			Pos = "перегон "
@@ -413,15 +417,16 @@ function PANEL:PerformLayout()
 	self.lblMute:SetPos( self:GetParent():GetWide() - 45 - 8, 2)
 	self.lblPing:SetPos( self:GetParent():GetWide() - 85, 10)
 	if utimecheck then self.lblHours:SetPos( self:GetParent():GetWide() - 85 - 34, 10) end
-	self.lblHealth:SetPos( self:GetParent():GetWide() - 85 - 34 - 54, 10)
-	self.lblDeaths:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48, 10)
-	self.lblFrags:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48 - 64, 10)
-	self.lblInTrain:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48 - 64 - 198 - res + 80 + 6, 10)
+	local pos = 44
+	self.lblHealth:SetPos( self:GetParent():GetWide() - 85 - 34 - pos, 10)
+	self.lblDeaths:SetPos( self:GetParent():GetWide() - 85 - 34 - pos - 48, 10)
+	self.lblFrags:SetPos( self:GetParent():GetWide() - 85 - 34 - pos - 48 - 64, 10)
+	self.lblInTrain:SetPos( self:GetParent():GetWide() - 85 - 34 - pos - 48 - 64 - 198 - res + 80 + 6, 10)
 	local j = 0
 	if ScrW() > 1800 then
 		j = 120
 	end
-	self.lblPos:SetPos( self:GetParent():GetWide() - 85 - 34 - 54 - 48 - 64 - 198 - 234 - res + 80 + 6 - 68 - 20 - j, 10)
+	self.lblPos:SetPos( self:GetParent():GetWide() - 85 - 34 - pos - 48 - 64 - 198 - 234 - res + 80 + 6 - 68 - 20 - j, 10)
 	if ulibcheck then self.lblTeam:SetPos( self:GetParent():GetWide() / 4 - 3 + k, 10) end
 	
 	

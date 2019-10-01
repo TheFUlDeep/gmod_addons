@@ -1,10 +1,12 @@
+--TODO CUserCmd, StartCommand
+
 if CLIENT then return end
 
 local AntiAfkTimeConVar = CreateConVar("antiafk_ply",300,{FCVAR_ARCHIVE},"время до кика игрока в секундах")
 local AntiAfkTimeConVar1 = CreateConVar("antiafk_train",600,{FCVAR_ARCHIVE},"время до удаления поезда в секундах")
 
 local function UpdatePlayerAntiAfk(ply)
-	ply.AntiAfk.Pos = ply:GetPos()
+	--ply.AntiAfk.Pos = ply:GetPos()
 	--ply.AntiAfk.Ang = Ang
 	ply.AntiAfk.LastChange = CurTime()
 	ply.AntiAfk.NotifShowed = nil
@@ -33,7 +35,7 @@ timer.Create("AntiAfk",10,0,function()
 		
 		if ply.AntiAfk.LastChange then
 			local Delta = CurTime() - ply.AntiAfk.LastChange
-			if Delta >= 40 and not ply.AntiAfk.Afk then
+			if Delta >= 180 and not ply.AntiAfk.Afk then
 				ply.AntiAfk.Afk = true
 				print(ply:Nick().." afk")
 				for k,ply1 in pairs(player.GetHumans()) do
