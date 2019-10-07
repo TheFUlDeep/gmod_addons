@@ -1,6 +1,7 @@
 -- This is an automatically generated cache file for serverside globals, metas, and enums
 -- Don't touch it, or you'll probably mess up your syntax highlighting
 
+print("loaded")
 luapad._sG = {};
 luapad._sG["WireGateExpressionSendPacket"] = "f";
 luapad._sG["TableToKeyValues"] = "f";
