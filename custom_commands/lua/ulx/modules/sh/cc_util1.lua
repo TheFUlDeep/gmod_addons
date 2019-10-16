@@ -1793,6 +1793,7 @@ if SERVER then
 		--createavtooborot()
 		RunConsoleCommand("metrostroi_load")
 		RunConsoleCommand("mirrors_load")
+		RunConsoleCommand("auto_route_cutting_load")
 		timer.Simple(2,function() GenerateStationsCfg() end)
 		ulx.fancyLogAdmin(calling_ply, "[SERVER] #A ВОССТАНОВИЛ КАРТУ")
 	end
@@ -2007,7 +2008,7 @@ timer.Simple(1,function()
 	wagons:help( "Shows you the current wagons." )
 end)
 --TODO автоподключение удочки
-
+--for k,v in ipairs(tbl) медленнее, чем pairs(tbl), медленнее, чем next,tbl
 
 --pairs работает быстрее, чем ipairs
 --используй table.insert только если ключи не числа
