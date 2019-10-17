@@ -1734,16 +1734,12 @@ if SERVER then
 	end
 	
 	util.AddNetworkString("SendIntervalsNetworkString")	
-	local timestamp = 0
 	local IntervalsTbl = {}
 	local IntervalsEnabled = true
-	local function EnableIntervalClocks()
-		hook.Add("Think","SendIntevals",function() 
-			if not IntervalsEnabled then hook.Remove("Think","SendIntevals") return end
-			if CurTime() - timestamp < 5 then return end
-			timestamp = CurTime()
+	timer.Create("Send Intervals  info",5,0,function()
+			if not IntervalsEnabled then return end
 			if NoSignals then return end
-			if not StationsCfg or table.Count(StationsCfg) < 1 then GenerateStationsCfg() return end
+			if (not StationsCfg or table.Count(StationsCfg) < 1) and #player.GetHumans() > 1 then GenerateStationsCfg() return end
 			for i = 1, #StationsCfg do
 				if not StationsCfg[i] then continue end
 				IntervalsTbl[i] = GetIntervalTime(StationsCfg[i]["ent"])
@@ -1755,9 +1751,7 @@ if SERVER then
 				net.WriteUInt(TableToSendN, 32)
 				net.WriteData(TableToSend, TableToSendN)
 			net.Broadcast()
-		end)
-	end
-	EnableIntervalClocks()
+	end)
 
 	util.AddNetworkString("SendStationsCfgNetworkString")
 	local function SendStationsCfgToClient(ply)
