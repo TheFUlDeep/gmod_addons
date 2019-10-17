@@ -1071,6 +1071,13 @@ if SERVER then
 		end
 	end
 	
+	local function GetPlatformTrackData(Platform)
+		local track = Metrostroi.GetPositionOnTrack(LerpVector(0.5, Platform.PlatformEnd, Platform.PlatformStart))
+		if not track[1] or not track[1].path or not track[1].path.id or not track[1].x then return end
+		local PosInWorld = Metrostroi.GetTrackPosition(track[1].path,track[1].x)
+		return {trackid = track[1].path.id, vector = PosInWorld, trakcpos = track[1].x}
+	end
+	
 	local FirstMethodTbl = {}
 	local function GenerateTblForFirstMethod()
 		print("Generating Tbl for FirstMethod")
@@ -1080,7 +1087,8 @@ if SERVER then
 			local PlatformPos = LerpVector(0.5, v.PlatformStart, v.PlatformEnd)
 			local PlatformLen = v.PlatformStart:Distance(v.PlatformEnd)
 			--function FindTrackInSquare(vector,TrackID,customraduis,customwlimit,customstep,autoscale,donotclear)
-			local Track = FindTrackInSquare(PlatformPos,nil,PlatformLen / 3,100,nil,nil,true)
+			local Track = GetPlatformTrackData(v)
+			if not Track then Track = FindTrackInSquare(PlatformPos,nil,PlatformLen / 3,100,nil,nil,true) end
 			--print(v.StationIndex)
 			if not Track then continue end
 			for k1,v1 in pairs(Track) do
