@@ -1,3 +1,5 @@
+if CLIENT then return end
+
 local function SpawnPlatform(platformpos,startpos,endpos,stationindex,platformindex,islast,horlift)
     local Platform = ents.Create("gmod_track_platform")
     Platform.Type = "lua platform"
