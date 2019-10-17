@@ -1075,7 +1075,7 @@ if SERVER then
 		local track = Metrostroi.GetPositionOnTrack(LerpVector(0.5, Platform.PlatformEnd, Platform.PlatformStart))
 		if not track[1] or not track[1].path or not track[1].path.id or not track[1].x then return end
 		local PosInWorld = Metrostroi.GetTrackPosition(track[1].path,track[1].x)
-		return {trackid = track[1].path.id, vector = PosInWorld, trakcpos = track[1].x}
+		return {{trackid = track[1].path.id, vector = PosInWorld, trakcpos = track[1].x}}
 	end
 	
 	local FirstMethodTbl = {}
