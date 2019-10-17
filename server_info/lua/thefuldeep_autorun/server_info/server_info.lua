@@ -1,5 +1,5 @@
 if CLIENT then return end
-
+--TODO пост на веб-сервер о перезапуске сервера при его выключении
 if not THEFULDEEP then THEFULDEEP = {} end
 
 local WebServerUrl = "http://"..(file.Read("web_server_ip.txt") or "127.0.0.1").."/serverinfo/"
