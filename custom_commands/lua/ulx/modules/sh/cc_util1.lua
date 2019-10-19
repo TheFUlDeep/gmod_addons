@@ -1182,17 +1182,19 @@ if SERVER then
 	
 	hook.Add("PlayerInitialSpawn","GenerateTblsForStations",function() 
 		hook.Remove("PlayerInitialSpawn","GenerateTblsForStations")
-		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
-			table.insert(SignalNamesTbl,1,v.Name or "")
-			if IsValid(v) and NoSignals then NoSignals = false end
-		end
 		timer.Simple(1,function()
-			if not NoSignals then 
-				print("Generating Tbls for detectstation")
-				GenerateTblForThirdMethod()
-				GenerateTblForFirstMethod()
-				GenerateTrackIDsPathsTbl()
+			for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
+				table.insert(SignalNamesTbl,1,v.Name or "")
+				if IsValid(v) and NoSignals then NoSignals = false end
 			end
+			timer.Simple(1,function()
+				if not NoSignals then 
+					print("Generating Tbls for detectstation")
+					GenerateTblForThirdMethod()
+					GenerateTblForFirstMethod()
+					GenerateTrackIDsPathsTbl()
+				end
+			end)
 		end)
 	end)
 	
