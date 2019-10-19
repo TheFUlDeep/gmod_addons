@@ -1773,7 +1773,7 @@ if SERVER then
 	end
 	
 	hook.Add("PlayerInitialSpawn","SendStationsCfgOnSpawn",function(ply) 
-			timer.Simple(3,function()
+			timer.Simple(4,function()
 				if not NoSignals then SendStationsCfgToClient(ply) end
 			end)
 	end)
