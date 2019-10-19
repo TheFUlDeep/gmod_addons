@@ -1182,7 +1182,7 @@ if SERVER then
 	
 	hook.Add("PlayerInitialSpawn","GenerateTblsForStations",function() 
 		hook.Remove("PlayerInitialSpawn","GenerateTblsForStations")
-		timer.Simple(1,function()
+		timer.Simple(2,function()
 			for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
 				table.insert(SignalNamesTbl,1,v.Name or "")
 				if IsValid(v) and NoSignals then NoSignals = false end
@@ -1556,7 +1556,7 @@ changecabin:help("Телепортация в заднюю кабиную.")
 --[[============================= АВТОМАТИЧЕСКАЯ УСТАНОВКА ДЕШИФРАТОРА ==========================]]
 if SERVER then
 	hook.Add("OnEntityCreated", "AlsFReq", function(ent)
-			timer.Simple(2, function()
+			timer.Simple(3, function()
 				if not NoSignals then
 					if not IsValid(ent) then return
 					elseif not stringfind(ent:GetClass(), "717_m") then return
@@ -1773,7 +1773,7 @@ if SERVER then
 	end
 	
 	hook.Add("PlayerInitialSpawn","SendStationsCfgOnSpawn",function(ply) 
-			timer.Simple(2,function()
+			timer.Simple(3,function()
 				if not NoSignals then SendStationsCfgToClient(ply) end
 			end)
 	end)
