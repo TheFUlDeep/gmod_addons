@@ -1,6 +1,4 @@
 include("shared.lua")
---TODO проверить, не исчезают ли пропы методом ClientsideModel
---TODO узнать, когда вызывается инициализация и когда вызывается хук onentitycreated
 function ENT:Initialize()
 	self.RTCam = GetGlobalEntity("MirrorRTCam")
 	--self.RTCam:SetKeyValue("FOV",10)
