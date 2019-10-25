@@ -50,11 +50,14 @@ timer.Create("no_entry_arr",2,0,function()
 		if v.CurrentTrain and (not v.LastCurrentTrain or v.CurrentTrain ~= v.LastCurrentTrain) then
 			v.LastCurrentTrain = v.CurrentTrain
 			local LastStation = GetLastStation(v.CurrentTrain)
-			if LastStation and LastStation == v.StationIndex then 
-				local PlatformLen = v.PlatformStart:Distance(v.PlatformEnd)
+			local NumLast LastStation and tonumber(LastStation)
+			local NumIndex = v.StationIndex and tonumber(v.StationIndex)
+			if not NumLast or not NumIndex then continue end
+			if NumLast == NumIndex then 
+				local PlatformLen = v.PlatformStart:DistToSqr(v.PlatformEnd)
 				
 				--делю платформу на участки по 1000
-				local sections = PlatformLen / 1000
+				local sections = PlatformLen / 1000*1000 --возвожу в квадрат, так как длину искал в квадрате
 				--на каждом отрезке проигрываю звук
 				for i = 1, sections do
 					local percent = i/sections

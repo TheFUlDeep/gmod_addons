@@ -1554,6 +1554,8 @@ local function SpawnButtons()
 		{0,0,0,0,0,0}
 	)
 	MoveButton(button,Vector(5*9+he,5*26+g,0+flat))
+	
+	--TODO депо
 end
 
 
