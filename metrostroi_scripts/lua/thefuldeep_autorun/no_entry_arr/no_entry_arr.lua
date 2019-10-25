@@ -50,7 +50,7 @@ timer.Create("no_entry_arr",2,0,function()
 		if v.CurrentTrain and (not v.LastCurrentTrain or v.CurrentTrain ~= v.LastCurrentTrain) then
 			v.LastCurrentTrain = v.CurrentTrain
 			local LastStation = GetLastStation(v.CurrentTrain)
-			local NumLast LastStation and tonumber(LastStation)
+			local NumLast = LastStation and tonumber(LastStation)
 			local NumIndex = v.StationIndex and tonumber(v.StationIndex)
 			if not NumLast or not NumIndex then continue end
 			if NumLast == NumIndex then 
