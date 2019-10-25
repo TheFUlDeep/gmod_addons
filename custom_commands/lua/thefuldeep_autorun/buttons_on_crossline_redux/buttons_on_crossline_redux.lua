@@ -1554,6 +1554,8 @@ local function SpawnButtons()
 		{0,0,0,0,0,0}
 	)
 	MoveButton(button,Vector(5*9+he,5*26+g,0+flat))
+	
+	--TODO депо
 end
 
 
@@ -1593,7 +1595,7 @@ hook.Add("PlayerInitialSpawn","Получить пропы остряков и �
 		if not IsValid(v) then continue end
 		local Name = v:GetName()
 		if Name:find("swit") or Name:find("swh") then
-			table.insert(SwitchProps,1,ent)
+			table.insert(SwitchProps,1,v)
 			v.OldSwitchState2 = v:GetInternalVariable("m_eDoorState") or 0
 		end
 	end
