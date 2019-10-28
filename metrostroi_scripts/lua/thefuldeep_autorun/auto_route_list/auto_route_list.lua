@@ -1,3 +1,14 @@
+--[[============================= string.lower ДЛЯ РУССКИХ СИМВОЛОВ ==========================]]
+local BIGRUS = {"А","Б","В","Г","Д","Е","Ё","Ж","З","И","Й","К","Л","М","Н","О","П","Р","С","Т","У","Ф","Х","Ц","Ч","Ш","Щ","Ъ","Ы","Ь","Э","Ю","Я"}
+local smallrus = {"а","б","в","г","д","е","ё","ж","з","и","й","к","л","м","н","о","п","р","с","т","у","ф","х","ц","ч","ш","щ","ъ","ы","ь","э","ю","я"}
+
+local function bigrustosmall(str)
+	for i,letter in pairs(BIGRUS) do
+		str = str:gsub(BIGRUS[i],smallrus[i])
+	end
+	return string.lower(str)
+end
+
 --КЛИЕНТ - отрисовка маршрутников из гитхаба https://github.com/TheFUlDeep/gmod_metrostroi_routes_from_google_sheets
 if CLIENT then	
 	local Font = CreateClientConVar("metrostroi_routes_font", "Trebuchet24", true)--ScrW() default
@@ -642,13 +653,26 @@ local function GenerateRoutes()
 	
 	local IndexesToSort = {}
 	
-	for index,v in pairs(Metrostroi.StationConfigurations) do
+	--[[for index,v in pairs(Metrostroi.StationConfigurations) do --поиск индексов по луа файлу станций
 		if not tonumber(index) or not v.names or not istable(v.names) or table.Count(v.names) < 1 then continue end
 		local index = tonumber(index)
 		if not GetPlatformByIndex(index) then continue end
-		Metrostroi.StationNames[index] = GetAnyValueFromTable(v.names)
+		--Metrostroi.StationNames[index] = GetAnyValueFromTable(v.names)
+		table.insert(IndexesToSort,index)
+	end]]
+	
+	--поиск индексов по платформам
+	local IndexesWas = {}
+	for _,Platform in pairs(ents.FindByClass("gmod_track_platform")) do
+		if not IsValid(Platform) or not Platform.StationIndex then continue end
+		local index = tonumber(Platform.StationIndex)
+		if not index then continue end
+		if IndexesWas[index] then continue end
+		IndexesWas[index] = true
+		Metrostroi.StationNames[index] = GetStationByIndex(index) or "ERROR"--"ERROR" потому что "" не будет создавать маршрут
 		table.insert(IndexesToSort,index)
 	end
+	
 	table.sort(IndexesToSort,function(a,b) return a < b end)
 	
 	local SortedNames = IndexesToSort
@@ -686,13 +710,6 @@ timer.Simple(0,function()
 	GenerateRoutes()
 end)
 
-hook.Add("PlayerInitialSpawn","metrostroi_schedules_generate for metrostroi_auto_route_lists",function()
-	hook.Remove("PlayerInitialSpawn","metrostroi_schedules_generate for metrostroi_auto_route_lists")
-	timer.Simple(5,function()
-		GenerateRoutes()
-	end)
-end)
-
 concommand.Add("metrostroi_schedules_generate",GenerateRoutes)
 
 --concommand.Add("metrostroi_route_list", function(ply, _, args)
@@ -701,7 +718,30 @@ concommand.Add("metrostroi_schedules_generate",GenerateRoutes)
 --metrostroi_print_scheduleinfo
 --metrostroi_resetschedules
 
+local function GetStationIndexByName(str)
+	if not str or not Metrostroi or not Metrostroi.StationConfigurations then return end
+	
+	for index,v in pairs(Metrostroi.StationConfigurations) do
+		if not tonumber(index) or not v.names or not istable(v.names) or table.Count(v.names) < 1 then continue end
+		local index = tonumber(index)
+		for _,name in pairs(v.names) do
+			if bigrustosmall(name) == str then return index end
+		end
+	end
+end
 
+local function GetStationIndexByNameFromPA(ent,StationName)
+	local Path = ent:ReadCell(49170)
+	local Line = 1
+	local stations = Metrostroi.PAMConfTest and Metrostroi.PAMConfTest[Line] and Metrostroi.PAMConfTest[Line][Path] and Metrostroi.PAMConfTest[Line][Path][1] and Metrostroi.PAMConfTest[Line][Path][1].stations
+	if not stations or not istable(stations) then return end
+	for _,v in pairs(stations) do
+		if not v.name or not v.id or not tonumber(v.id) then continue end
+		if v.isLast then return tonumber(v.id) end
+		--if bigrustosmall(v.name) == StationName then return tonumber(v.id) end
+	end
+
+end
 
 local function GetLastStation(self)
 	if not Metrostroi.StationConfigurations
@@ -737,6 +777,10 @@ local function GetLastStation(self)
 			Station = Station and Station[1] or nil
 			--if Station and (not tonumber(Station) or not Line.Loop and (Station == Line[#Line][1] or Station == Line[1][1])) then Station = nil end
 		end
+		if not Station and self:GetNW2String("PAM:TargetStation","") ~= "" then
+			local StationName = bigrustosmall(self:GetNW2String("PAM:TargetStation"))
+			Station = GetStationIndexByNameFromPA(self,StationName) or GetStationIndexByName(StationName)
+		end
 		--[[if not Station and Metrostroi.UPOSetup  --не хочу пихать первую станцию на линии без возможности настройки
 		and self:GetNW2Int("SarmatState",-228) == -228 
 		and self:GetNW2Int("ASNP:State",-228) == -228 
@@ -748,7 +792,7 @@ local function GetLastStation(self)
 			Station = tbl and tbl[1] and tbl[1].stations and tbl[1].stations[#tbl[1].stations] and tbl[1].stations[#tbl[1].stations].id
 		end]]
 		
-		
+		if not Station then return end
 		
 		local FirstStation
 		if not FirstStation and Metrostroi.ASNPSetup then
@@ -779,6 +823,10 @@ local function GetLastStation(self)
 			FirstStation = FirstStation and FirstStation[1] or nil
 			--if FirstStation and (not tonumber(FirstStation) or not Line.Loop and (FirstStation == Line[#Line][1] or FirstStation == Line[1][1])) then FirstStation = nil end
 		end
+		if not FirstStation and self:GetNW2String("PAM:StationS","") ~= "" then
+			FirstStation = tonumber(self:GetNW2String("PAM:StationS"))
+		end
+		
 		--[[if not FirstStation and Metrostroi.UPOSetup --не хочу пихать последнюю станцию на линии без возможности настройки
 		and self:GetNW2Int("SarmatState",-228) == -228 
 		and self:GetNW2Int("ASNP:State",-228) == -228 
@@ -791,13 +839,14 @@ local function GetLastStation(self)
 		end]]
 		
 		--print(Station)
+		
 		return FirstStation,Station
 	end
 end
 
 local TrackIDPaths = {}
 
-timer.Simple(5,function()
+timer.Simple(0,function()
 	for _,Platform in pairs(ents.FindByClass("gmod_track_platform")) do
 		if not IsValid(Platform) or not Platform.PlatformEnd or not Platform.PlatformStart or not Platform.PlatformIndex then continue end
 		
@@ -806,8 +855,23 @@ timer.Simple(5,function()
 		
 		TrackIDPaths[track[1].path.id] = Platform.PlatformIndex
 	end
+end)
+
+hook.Add("PlayerInitialSpawn","metrostroi_schedules_generate for metrostroi_auto_route_lists",function()
+	hook.Remove("PlayerInitialSpawn","metrostroi_schedules_generate for metrostroi_auto_route_lists")
+	timer.Simple(5,function()
 	
-	--PrintTable(TrackIDPaths)
+		for _,Platform in pairs(ents.FindByClass("gmod_track_platform")) do
+			if not IsValid(Platform) or not Platform.PlatformEnd or not Platform.PlatformStart or not Platform.PlatformIndex then continue end
+			
+			local track = Metrostroi.GetPositionOnTrack(LerpVector(0.5, Platform.PlatformEnd, Platform.PlatformStart))
+			if not track[1] or not track[1].path or not track[1].path.id then continue end
+			
+			TrackIDPaths[track[1].path.id] = Platform.PlatformIndex
+		end
+	
+		GenerateRoutes()
+	end)
 end)
 
 local function GetPath(vec)
@@ -820,9 +884,8 @@ end
 --[[
 Что можно сделать
 	При continue отправлять водителям пустой стринг
-	Если таблица уже есть, то менять только при self.Speed and self.Speed > 5
 ]]
-timer.Create("Update/Set Route list",10,0,function()
+timer.Create("Update/Set Route list",1,0,function()
 	--расписание присваивается поезду. Если игрок в составе, то дать ему это расписание, иначе отнять
 	if not Metrostroi or not Metrostroi.TrainClasses then return end
 	for _,trainclass in pairs(Metrostroi.TrainClasses) do
@@ -842,14 +905,12 @@ timer.Create("Update/Set Route list",10,0,function()
 			if not TrackID or not TrackIDPaths[TrackID] then --[[metrostroi_route_list.list = nil]] --[[print("continue3",TrackID)]] continue end
 			TrackID = TrackIDPaths[TrackID]
 			
-			
-			
 			if not metrostroi_route_list.list -- если маршрутника никогда не было, то он выдастся при настройке информатора. Если же он уже есть, то поменяется только при движении и при ненулевом реверсе
 			or (TrackID ~= metrostroi_route_list.Track 
 			or FirstStation ~= metrostroi_route_list.FirstStation 
 			or LastStation ~= metrostroi_route_list.LastStation)
-			and wag.Speed and wag.Speed > 5
-			and (wag.KV and wag.KV.ReverserPosition ~= 0--не определять станции в составах, у которых реверс в нуле
+			and wag.Speed and wag.Speed > 5--если скорость больше пяти
+			and (wag.KV and wag.KV.ReverserPosition ~= 0--если реверс не в нуле
 			or wag.KR and wag.KR.Position ~= 0
 			or wag.KRO and wag.KRO.Value ~= 1
 			or wag.RV and wag.RV.KROPosition ~= 0)
@@ -874,7 +935,7 @@ timer.Create("Update/Set Route list",10,0,function()
 				local TblToSend = {}
 				for i,d in ipairs(metrostroi_route_list.list) do
 					TblToSend[i] = TblToSend[i] or {}
-					TblToSend[i][1] = GetStationByIndex(d[1])
+					TblToSend[i][1] = GetStationByIndex(d[1]) or "ERROR"
 					TblToSend[i][2] = d.arrivalTimeStr
 				end
 				
