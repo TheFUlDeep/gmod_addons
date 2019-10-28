@@ -706,10 +706,6 @@ local function GenerateRoutes()
 	Metrostroi.LoadSchedulesData(data)
 end
 
-timer.Simple(0,function()
-	GenerateRoutes()
-end)
-
 concommand.Add("metrostroi_schedules_generate",GenerateRoutes)
 
 --concommand.Add("metrostroi_route_list", function(ply, _, args)
@@ -778,8 +774,12 @@ local function GetLastStation(self)
 			--if Station and (not tonumber(Station) or not Line.Loop and (Station == Line[#Line][1] or Station == Line[1][1])) then Station = nil end
 		end
 		if not Station and self:GetNW2String("PAM:TargetStation","") ~= "" then
-			local StationName = bigrustosmall(self:GetNW2String("PAM:TargetStation"))
-			Station = GetStationIndexByNameFromPA(self,StationName) or GetStationIndexByName(StationName)
+			--local StationName = bigrustosmall(self:GetNW2String("PAM:TargetStation"))
+			--Station = GetStationIndexByNameFromPA(self,StationName) or GetStationIndexByName(StationName)
+			local Path = self:ReadCell(49170)
+			local Line = 1
+			local tbl = Metrostroi.PAMConfTest and Metrostroi.PAMConfTest[Line] and Metrostroi.PAMConfTest[Line][Path]
+			Station = tbl and tbl[1] and tbl[1].stations and tbl[1].stations[#tbl[1].stations] and tbl[1].stations[#tbl[1].stations].id
 		end
 		--[[if not Station and Metrostroi.UPOSetup  --не хочу пихать первую станцию на линии без возможности настройки
 		and self:GetNW2Int("SarmatState",-228) == -228 
@@ -855,6 +855,8 @@ timer.Simple(0,function()
 		
 		TrackIDPaths[track[1].path.id] = Platform.PlatformIndex
 	end
+	
+	GenerateRoutes()
 end)
 
 hook.Add("PlayerInitialSpawn","metrostroi_schedules_generate for metrostroi_auto_route_lists",function()
@@ -885,7 +887,7 @@ end
 Что можно сделать
 	При continue отправлять водителям пустой стринг
 ]]
-timer.Create("Update/Set Route list",1,0,function()
+timer.Create("Update/Set Route list",10,0,function()
 	--расписание присваивается поезду. Если игрок в составе, то дать ему это расписание, иначе отнять
 	if not Metrostroi or not Metrostroi.TrainClasses then return end
 	for _,trainclass in pairs(Metrostroi.TrainClasses) do
