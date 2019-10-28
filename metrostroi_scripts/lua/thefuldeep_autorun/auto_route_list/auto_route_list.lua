@@ -714,8 +714,8 @@ local function GetLastStation(self)
 	else
 		local Station
 		if not Station and Metrostroi.ASNPSetup then --искать станцию только если аснп полностью настроен
-			local Selected = self:GetNW2Int("ASNP:State",0) >=7 and Metrostroi.ASNPSetup[self:GetNW2Int("Announcer",0)] or nil
-			local Line = Selected and Selected[self:GetNW2Int("ASNP:Line",0)] or nil
+			local Selected = Metrostroi.ASNPSetup[self:GetNW2Int("Announcer",0)] or nil
+			local Line = self:GetNW2Int("ASNP:State",0) >=7 and Selected and Selected[self:GetNW2Int("ASNP:Line",0)] or nil
 			local Path = self:GetNW2Bool("ASNP:Path",false)
 			Station = Line and (not Path and Line[self:GetNW2Int("ASNP:LastStation",0)] or Path and Line[self:GetNW2Int("ASNP:FirstStation",0)]) or nil
 			if Station then Station = Station[1] or nil end
@@ -741,19 +741,23 @@ local function GetLastStation(self)
 			Station = Station and Station[1] or nil
 			--if Station and (not tonumber(Station) or not Line.Loop and (Station == Line[#Line][1] or Station == Line[1][1])) then Station = nil end
 		end
-		if not Station and Metrostroi.UPOSetup and self:GetNW2Int("SarmatState",-228) == -228 and self:GetNW2Int("ASNP:State",-228) == -228 and self:GetNW2Int("RRI:Line",-228) == -228 then
+		--[[if not Station and Metrostroi.UPOSetup  --не хочу пихать первую станцию на линии без возможности настройки
+		and self:GetNW2Int("SarmatState",-228) == -228 
+		and self:GetNW2Int("ASNP:State",-228) == -228 
+		and self:GetNW2Int("RRI:Line",-228) == -228 
+		then
 			local Path = self:ReadCell(49170)
 			local Line = 1
 			local tbl = Metrostroi.PAMConfTest and Metrostroi.PAMConfTest[Line] and Metrostroi.PAMConfTest[Line][Path]
 			Station = tbl and tbl[1] and tbl[1].stations and tbl[1].stations[#tbl[1].stations] and tbl[1].stations[#tbl[1].stations].id
-		end
+		end]]
 		
 		
 		
 		local FirstStation
 		if not FirstStation and Metrostroi.ASNPSetup then
-			local Selected = self:GetNW2Int("ASNP:State",0) >=7 and Metrostroi.ASNPSetup[self:GetNW2Int("Announcer",0)] or nil
-			local Line = Selected and Selected[self:GetNW2Int("ASNP:Line",0)] or nil
+			local Selected = Metrostroi.ASNPSetup[self:GetNW2Int("Announcer",0)] or nil
+			local Line = self:GetNW2Int("ASNP:State",0) >=7 and Selected and Selected[self:GetNW2Int("ASNP:Line",0)] or nil
 			local Path = self:GetNW2Bool("ASNP:Path",false)
 			FirstStation = Line and (Path and Line[self:GetNW2Int("ASNP:LastStation",0)] or not Path and Line[self:GetNW2Int("ASNP:FirstStation",0)]) or nil
 			if FirstStation then FirstStation = FirstStation[1] or nil end
@@ -779,13 +783,16 @@ local function GetLastStation(self)
 			FirstStation = FirstStation and FirstStation[1] or nil
 			--if FirstStation and (not tonumber(FirstStation) or not Line.Loop and (FirstStation == Line[#Line][1] or FirstStation == Line[1][1])) then FirstStation = nil end
 		end
-		
-		if not FirstStation and Metrostroi.UPOSetup and self:GetNW2Int("SarmatState",-228) == -228 and self:GetNW2Int("ASNP:State",-228) == -228 and self:GetNW2Int("RRI:Line",-228) == -228 then
+		--[[if not FirstStation and Metrostroi.UPOSetup --не хочу пихать последнюю станцию на линии без возможности настройки
+		and self:GetNW2Int("SarmatState",-228) == -228 
+		and self:GetNW2Int("ASNP:State",-228) == -228 
+		and self:GetNW2Int("RRI:Line",-228) == -228 
+		then
 			local Path = self:ReadCell(49170)
 			local Line = 1
 			local tbl = Metrostroi.PAMConfTest and Metrostroi.PAMConfTest[Line] and Metrostroi.PAMConfTest[Line][Path]
 			FirstStation = tbl and tbl[1] and tbl[1].stations and tbl[1].stations[1] and tbl[1].stations[1].id
-		end
+		end]]
 		
 		--print(Station)
 		return FirstStation,Station
@@ -814,7 +821,11 @@ local function GetPath(vec)
 	return Track[1].path.id
 end
 
-local DriversWithList = {}
+--[[
+Что можно сделать
+	При continue отправлять водителям пустой стринг
+	Если таблица уже есть, то менять только при self.Speed and self.Speed > 5
+]]
 timer.Create("Update/Set Route list",10,0,function()
 	--расписание присваивается поезду. Если игрок в составе, то дать ему это расписание, иначе отнять
 	if not Metrostroi or not Metrostroi.TrainClasses then return end
@@ -829,10 +840,10 @@ timer.Create("Update/Set Route list",10,0,function()
 			local FirstStation,LastStation = GetLastStation(wag)
 			FirstStation = tonumber(FirstStation)
 			LastStation = tonumber(LastStation)
-			if not FirstStation or not LastStation then metrostroi_route_list.list = nil --[[print("continue2",FirstStation,LastStation)]] continue end
+			if not FirstStation or not LastStation then --[[metrostroi_route_list.list = nil]] --[[print("continue2",FirstStation,LastStation)]] continue end
 			
 			local TrackID = GetPath(wag:GetPos())
-			if not TrackID or not TrackIDPaths[TrackID] then metrostroi_route_list.list = nil --[[print("continue3",TrackID)]] continue end
+			if not TrackID or not TrackIDPaths[TrackID] then --[[metrostroi_route_list.list = nil]] --[[print("continue3",TrackID)]] continue end
 			TrackID = TrackIDPaths[TrackID]
 			
 			if not metrostroi_route_list.list or TrackID ~= metrostroi_route_list.Track or FirstStation ~= metrostroi_route_list.FirstStation or LastStation ~= metrostroi_route_list.LastStation then
