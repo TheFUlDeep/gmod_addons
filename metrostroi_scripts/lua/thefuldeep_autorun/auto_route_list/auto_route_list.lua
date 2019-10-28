@@ -705,10 +705,6 @@ concommand.Add("metrostroi_schedules_generate",GenerateRoutes)
 
 local function GetLastStation(self)
 	if not Metrostroi.StationConfigurations
-	--or self.KV and self.KV.ReverserPosition == 0--не определять станции в составах, у которых реверс в нуле
-	--or self.KR and self.KR.Position == 0
-	--or self.KRO and self.KRO.Value == 1
-	--or self.RV and self.RV.KROPosition == 0
 	then
 		return nil
 	else
@@ -831,7 +827,7 @@ timer.Create("Update/Set Route list",10,0,function()
 	if not Metrostroi or not Metrostroi.TrainClasses then return end
 	for _,trainclass in pairs(Metrostroi.TrainClasses) do
 		for _,wag in pairs(ents.FindByClass(trainclass)) do
-			if not IsValid(wag) or not wag.DriverSeat --[[or not wag.SubwayTrain or wag.SubwayTrain.WagType ~= 1]] then --[[print("continue1")]] continue end
+			if not IsValid(wag) or not wag.DriverSeat or not IsValid(wag.DriverSeat:GetDriver()) --[[or not wag.SubwayTrain or wag.SubwayTrain.WagType ~= 1]] then --[[print("continue1")]] continue end-- нужен машинист в кабине
 			
 			wag.metrostroi_route_list = wag.metrostroi_route_list or {}
 			
@@ -846,11 +842,17 @@ timer.Create("Update/Set Route list",10,0,function()
 			if not TrackID or not TrackIDPaths[TrackID] then --[[metrostroi_route_list.list = nil]] --[[print("continue3",TrackID)]] continue end
 			TrackID = TrackIDPaths[TrackID]
 			
-			if not metrostroi_route_list.list -- если маршрутника никогда не было, то он выдастся при настройке информатора. Если же он уже есть, то поменяется только при движении
+			
+			
+			if not metrostroi_route_list.list -- если маршрутника никогда не было, то он выдастся при настройке информатора. Если же он уже есть, то поменяется только при движении и при ненулевом реверсе
 			or (TrackID ~= metrostroi_route_list.Track 
 			or FirstStation ~= metrostroi_route_list.FirstStation 
 			or LastStation ~= metrostroi_route_list.LastStation)
 			and wag.Speed and wag.Speed > 5
+			and (wag.KV and wag.KV.ReverserPosition ~= 0--не определять станции в составах, у которых реверс в нуле
+			or wag.KR and wag.KR.Position ~= 0
+			or wag.KRO and wag.KRO.Value ~= 1
+			or wag.RV and wag.RV.KROPosition ~= 0)
 			then
 				metrostroi_route_list.Track = TrackID
 				metrostroi_route_list.FirstStation = FirstStation
