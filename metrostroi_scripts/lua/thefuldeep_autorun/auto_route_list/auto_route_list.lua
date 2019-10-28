@@ -775,6 +775,7 @@ local function GetLastStation(self)
 		end
 		if not Station and self:GetNW2String("PAM:TargetStation","") ~= "" then
 			--local StationName = bigrustosmall(self:GetNW2String("PAM:TargetStation"))
+			--Station = GetStationIndexByNameFromPA(self,StationName) or GetStationIndexByName(StationName)
 			local Path = self:ReadCell(49170)
 			local Line = 1
 			local tbl = Metrostroi.PAMConfTest and Metrostroi.PAMConfTest[Line] and Metrostroi.PAMConfTest[Line][Path]
