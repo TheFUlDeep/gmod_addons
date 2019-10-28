@@ -846,7 +846,12 @@ timer.Create("Update/Set Route list",10,0,function()
 			if not TrackID or not TrackIDPaths[TrackID] then --[[metrostroi_route_list.list = nil]] --[[print("continue3",TrackID)]] continue end
 			TrackID = TrackIDPaths[TrackID]
 			
-			if not metrostroi_route_list.list or TrackID ~= metrostroi_route_list.Track or FirstStation ~= metrostroi_route_list.FirstStation or LastStation ~= metrostroi_route_list.LastStation then
+			if not metrostroi_route_list.list -- если маршрутника никогда не было, то он выдастся при настройке информатора. Если же он уже есть, то поменяется только при движении
+			or (TrackID ~= metrostroi_route_list.Track 
+			or FirstStation ~= metrostroi_route_list.FirstStation 
+			or LastStation ~= metrostroi_route_list.LastStation)
+			and wag.Speed and wag.Speed > 5
+			then
 				metrostroi_route_list.Track = TrackID
 				metrostroi_route_list.FirstStation = FirstStation
 				metrostroi_route_list.LastStation = LastStation
