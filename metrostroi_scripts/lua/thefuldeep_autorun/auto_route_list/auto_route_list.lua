@@ -921,7 +921,7 @@ timer.Create("Update/Set Route list",10,0,function()
 				
 			end
 			
-			if not metrostroi_route_list.list then --[[print("continue4",metrostroi_route_list.list)]] continue end2
+			if not metrostroi_route_list.list then --[[print("continue4",metrostroi_route_list.list)]] continue end
 			
 			
 			for i = 1,5 do
