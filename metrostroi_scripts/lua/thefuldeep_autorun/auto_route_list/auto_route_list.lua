@@ -487,7 +487,7 @@ local function GetStationByIndex(index)
 end
 
 timer.Simple(0,function()
-function Metrostroi.GenerateSchedule(routeID,starts,ends,path)
+function Metrostroi.GenerateSchedule(routeID,starts,ends,path,AlreadyOnStation)
 	Metrostroi.InitializeSchedules()
 	
 	if not Metrostroi.ScheduleRoutes[routeID] then print("Error generating schedule, line or path not found") return end
@@ -510,13 +510,9 @@ function Metrostroi.GenerateSchedule(routeID,starts,ends,path)
 	if not fen then print("Metrostroi: Warning! Station "..ends.." not found") en = #Metrostroi.ScheduleRoutes[routeID] end
 
 	-- Time padding (extra time before schedule starts, wait time between trains)
-	local paddingTime = timeToSec("1:30")
+	local paddingTime = AlreadyOnStation and 30 or 90
 	-- Current server time
 	local serverTime = Metrostroi.ServerTime()/60
-	-- hack
-	if routeID == "Line1_Platform2" then
-		paddingTime = timeToSec("3:00")
-	end
 
 	-- Determine schedule configuration
 	local interval
@@ -527,14 +523,14 @@ function Metrostroi.GenerateSchedule(routeID,starts,ends,path)
 			interval = timeToSec(config[4])
 		end
 		
-		interval = timeToSec(config[4])--мое
+		interval = timeToSec(config[4])--мое.      --можно добавить зависимость от интервала на карте. Но, вроде как, тогда, каждый раз при смене интервала надо будет перегенирировать роуты. А я не знаю, обнулит ли это таблицу Metrostroi.DepartureTime
 	end
 
 	-- If no interval, then no schedules available
 	if not interval then print("no interval") return end
 
 	-- If no schedules started
-	if not Metrostroi.DepartureTime[routeID] then
+	if not Metrostroi.DepartureTime[routeID] then						--вообще можно хранить время отправления с каждой станции. Потому что, я не знаю, что произойдет, если один состав выйдет в начале линии, а другой с центра
 		Metrostroi.DepartureTime[routeID] = serverTime + paddingTime/60
 	else
 		-- If schedules started, depart with interval
@@ -614,10 +610,10 @@ local function RouteIDByStatsionAndPath(starts,ends,path)
 	end
 end
 
-local function GenerateSchedule1(starts,ends,path)
+local function GenerateSchedule1(starts,ends,path,AlreadyOnStation)
 	local routeID = RouteIDByStatsionAndPath(starts,ends,path) or ""
 	--if not routeID then SendChatMessageOrTbl(ply,false,"") return end
-	return Metrostroi.GenerateSchedule(routeID,starts,ends,path)
+	return Metrostroi.GenerateSchedule(routeID,starts,ends,path,AlreadyOnStation)
 	
 	--[[local TblToSend = {}
 	for i,d in ipairs(nt.metrostroi_route_list) do
@@ -921,11 +917,11 @@ timer.Create("Update/Set Route list",10,0,function()
 				metrostroi_route_list.FirstStation = FirstStation
 				metrostroi_route_list.LastStation = LastStation
 				
-				metrostroi_route_list.list = GenerateSchedule1(FirstStation,LastStation,TrackID)
+				metrostroi_route_list.list = GenerateSchedule1(FirstStation,LastStation,TrackID, not metrostroi_route_list.list)
 				
 			end
 			
-			if not metrostroi_route_list.list then --[[print("continue4",metrostroi_route_list.list)]] continue end
+			if not metrostroi_route_list.list then --[[print("continue4",metrostroi_route_list.list)]] continue end2
 			
 			
 			for i = 1,5 do
