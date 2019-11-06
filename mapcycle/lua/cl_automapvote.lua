@@ -109,6 +109,16 @@ net.Receive("_updatevotemap",function(len)
 end)
 
 local function StartVote( len )
+
+	sound.PlayURL( 
+		"https://cdn.discordapp.com/attachments/622487500308611101/641716714119364644/2006_online-audio-converter.com.mp3",
+		"mono",
+		function(audio)	--я не понимаю, зачем эта функция. Оно восрпоизводит, даже если функция пустая
+			if not IsValid(audio) then return end
+			--audio:Play()
+		end
+	)
+
 	local decoded = net.ReadTable();
 	title = decoded.title
 	local str = "%i: %s (%s)"
@@ -142,6 +152,16 @@ end
 net.Receive("_startvotemap",StartVote)
 
 function CloseVote()
+
+	sound.PlayURL( 
+		math.random(1,2) == 1 and "https://cdn.discordapp.com/attachments/622487500308611101/641717154282078305/417478b0a90b1722.mp3" or "https://cdn.discordapp.com/attachments/622487500308611101/641713426141413376/-__Inkompmusic.ru.mp3",
+		"mono",
+		function(audio)	--я не понимаю, зачем эта функция. Оно восрпоизводит, даже если функция пустая
+			if not IsValid(audio) then return end
+			--audio:Play()
+		end
+	)
+
 	hook.Remove("HUDPaint","DrawVotes")
 	hook.Remove("PlayerBindPress", "BindVoteButtons")
 	table.Empty(maps)
