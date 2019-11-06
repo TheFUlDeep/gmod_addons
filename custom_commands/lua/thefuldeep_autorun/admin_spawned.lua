@@ -4,7 +4,7 @@ gameevent.Listen("player_spawn")
 hook.Add("player_spawn","AudioNotificationWhenSuperAdminSpawned",function(data)
 	timer.Simple(1,function()
 		local ply  = Player(data.userid)
-		if not IsValid(ply) --[[or not ply:IsSuperAdmin()]] then return end
+		if not IsValid(ply) or not ply:IsSuperAdmin() then return end
 		sound.PlayURL( 
 			"https://cdn.discordapp.com/attachments/622487500308611101/641683411471171595/vv324513450981jh.mp3",
 			"mono",
