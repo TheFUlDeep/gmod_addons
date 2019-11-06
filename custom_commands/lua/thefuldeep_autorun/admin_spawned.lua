@@ -1,3 +1,11 @@
+if SERVER then
+	local WebServerUrl = "http://"..(file.Read("web_server_ip.txt") or "127.0.0.1").."/loading_screen/"
+
+	timer.Simple(0,function()
+		RunConsoleCommand("sv_loadingurl",WebServerUrl)
+	end)
+end
+
 if SERVER then return end
 
 gameevent.Listen("player_spawn")
@@ -14,10 +22,4 @@ hook.Add("player_spawn","AudioNotificationWhenSuperAdminSpawned",function(data)
 			end
 		)
 	end)
-end)
-
-local WebServerUrl = "http://"..(file.Read("web_server_ip.txt") or "127.0.0.1").."/loading_screen/"
-
-timer.Simple(0,function()
-	RunConsoleCommand("sv_loadingurl",WebServerUrl)
 end)
