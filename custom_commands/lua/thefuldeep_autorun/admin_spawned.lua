@@ -2,7 +2,7 @@ if SERVER then
 	local WebServerUrl = "http://"..(file.Read("web_server_ip.txt") or "127.0.0.1").."/loading_screen/"
 
 	timer.Simple(0,function()
-		RunConsoleCommand("sv_loadingurl",WebServerUrl)
+		--RunConsoleCommand("sv_loadingurl",WebServerUrl)--это ломает клиент
 	end)
 end
 

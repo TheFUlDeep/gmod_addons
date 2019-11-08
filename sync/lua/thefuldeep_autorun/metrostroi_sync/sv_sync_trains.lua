@@ -11,14 +11,6 @@ local GetSyncedSwitchesTbl = {}
 local TrainsTBL = {}
 local CurTime = os.clock()
 local NotInitialized = true
-local HostName
-local Map
-hook.Add("PlayerInitialSpawn","Sync_Trains_Initialize",function()
-	hook.Remove("PlayerInitialSpawn","Sync_Trains_Initialize")
-	HostName = game.GetIPAddress()
-	Map = game.GetMap()
-	NotInitialized = false
-end)
 
 local function MoveSmooth(ent,vec1,vec2,ang1,ang2)
 	hook.Add("Think",tostring(ent), function()
@@ -38,7 +30,7 @@ end
 
 local WebServerUrl = "http://"..(file.Read("web_server_ip.txt") or "127.0.0.1").."/sync/"
 local function SendToWebServer(tbl,url,typ)
-	local TableToSend = {MainTable = util.TableToJSON(tbl), server = HostName, map = Map,typ = typ}
+	local TableToSend = {MainTable = util.TableToJSON(tbl), server = THEFULDEEP.HOSTNAME, map = THEFULDEEP.MAP,typ = typ}
 	http.Post(url, TableToSend)
 end
 
@@ -93,7 +85,7 @@ local function GetFromWebServer(url,typ)
 	end]]
 	local tbl2 = {}
 	for k,v in pairs(outputTBL[typ]) do
-		if k == HostName or (v.map and v.map ~= Map) then continue end
+		if k == THEFULDEEP.HOSTNAME or (v.map and v.map ~= THEFULDEEP.MAP) then continue end
 		if not v.MainTable then continue end		
 		for k1,v1 in pairs(v.MainTable) do
 			table.insert(tbl2,1,v1)
@@ -116,7 +108,7 @@ local function SendSyncedTrains(arg)
 			if IsValid(v1:CPPIGetOwner()) then
 				Owner = v1:CPPIGetOwner():Nick()
 			end
-			TrainsTBLL[(HostName)..v1:EntIndex()] = {
+			TrainsTBLL[(THEFULDEEP.HOSTNAME)..v1:EntIndex()] = {
 				OsTime = os.clock(),
 				model = v1:GetModel(),
 				pos = v1:GetPos(),
@@ -244,106 +236,12 @@ end
 local function GetSyncedRoutes(arg)
 	GetSyncedRoutesTbl = GetFromWebServer(WebServerUrl,"routes")
 	if not GetSyncedRoutesTbl then return end
-	local comm
 	for key1,value1 in pairs(GetSyncedRoutesTbl) do
 		if not value1.comm then continue end
 			print("route "..(value1.comm))
 		for key,value in pairs(ents.FindByClass("gmod_track_signal")) do
-			comm = value1.comm
-			if comm:sub(1,8) == "!sactiv " then
-				comm = comm:sub(9,-1):upper()
-
-				comm = string.Explode(":",comm)
-				if value.Routes then
-					for k,v in pairs(value.Routes) do
-						if (v.RouteName and v.RouteName:upper() == comm[1] or comm[1] == "*") and v.Emer then
-							if value.LastOpenedRoute and k ~= value.LastOpenedRoute then value:CloseRoute(value.LastOpenedRoute) end
-							v.IsOpened = true
-							break
-						end
-					end
-				end
-			elseif comm:sub(1,10) == "!sdeactiv " then
-				comm = comm:sub(11,-1):upper()
-
-				comm = string.Explode(":",comm)
-				if value.Routes then
-					for k,v in pairs(value.Routes) do
-						if (v.RouteName and v.RouteName:upper() == comm[1] or comm[1] == "*") and v.Emer then
-							v.IsOpened = false
-							break
-						end
-					end
-				end
-			elseif comm:sub(1,8) == "!sclose " then
-				comm = comm:sub(9,-1):upper()
-
-				comm = string.Explode(":",comm)
-				if comm[1] == value.Name then
-					if value.Routes[1] and value.Routes[1].Manual then
-						value:CloseRoute(1)
-					else
-						if not value.Close then
-							value.Close = true
-						end
-						if value.InvationSignal then
-							value.InvationSignal = false
-						end
-						if (value.LastOpenedRoute and value.LastOpenedRoute == 1) or value.Routes[1].Repeater then
-							value:CloseRoute(1)
-						else
-							value:OpenRoute(1)
-						end
-					end
-				elseif value.Routes then
-					for k,v in pairs(value.Routes) do
-						if v.RouteName and v.RouteName:upper() == comm[1] then
-							if value.LastOpenedRoute and k ~= value.LastOpenedRoute then value:CloseRoute(value.LastOpenedRoute) end
-							value:CloseRoute(k)
-						end
-					end
-				end
-			elseif comm:sub(1,7) == "!sopen " then
-				comm = comm:sub(8,-1):upper()
-				comm = string.Explode(":",comm)
-				if comm[1] == value.Name then
-					RunConsoleCommand("say",comm)
-					if comm[2] then
-						if value.NextSignals[comm[2]] then
-							local Route
-							for k,v in pairs(value.Routes) do
-								if v.NextSignal == comm[2] then Route = k break end
-							end
-							value:OpenRoute(Route)
-						end
-					else
-						if value.Routes[1] and value.Routes[1].Manual then
-							value:OpenRoute(1)
-						elseif value.Close then
-							value.Close = false
-						end
-					end
-				elseif value.Routes then
-					for k,v in pairs(value.Routes) do
-						if v.RouteName and v.RouteName:upper() == comm[1] then
-							if value.LastOpenedRoute and k ~= value.LastOpenedRoute then value:CloseRoute(value.LastOpenedRoute) end
-							value:OpenRoute(k)
-						end
-					end
-				end
-			elseif comm:sub(1,7) == "!sopps " then
-				comm = comm:sub(8,-1):upper()
-				comm = string.Explode(":",comm)
-				if comm[1] == value.Name then
-					value.InvationSignal = true
-				end
-			elseif comm:sub(1,7) == "!sclps " then
-				comm = comm:sub(8,-1):upper()
-				comm = string.Explode(":",comm)
-				if comm[1] == value.Name then
-					value.InvationSignal = false
-				end
-			end
+			if not IsValid(value) or not value.SayHook then continue end
+			value:SayHook(value1.comm,value1.comm)--TODO проверить на ошибки
 		end
 	end
 end
@@ -440,35 +338,38 @@ function ForAvtooborot(route,hidenotif)
 	--PrintTable(SopensTBL)
 end
 
-MetrostroiSyncEnabled = false
-hook.Remove("Think","SyncTrainsThink")
-function SyncTrainsThink()
-	hook.Add("Think","SyncTrainsThink", function() 
-		if not MetrostroiSyncEnabled then 
+
+local EmptySended
+timer.Create("SyncTrainsThink",interval,0,function()
+	if not MetrostroiSyncEnabled or not THEFULDEEP or not THEFULDEEP.SERVERINFOINITIALIZED then 
+		if not EmptySended then
+			EmptySended = true
 			SendToWebServer({},WebServerUrl,"trains")
 			SendToWebServer({},WebServerUrl,"routes")
 			SendToWebServer({},WebServerUrl,"switches")
 			for k,v in pairs(ents.FindByClass("gmod_subway_base")) do
 				if IsValid(v) and v.name and v.name == "SyncedTrain" then v:Remove() end
 			end
-			hook.Remove("Think","SyncTrainsThink") 
 		end
-		if lasttime + interval > os.clock() then return end
-		lasttime = os.clock()
-		if NotInitialized then return end
-		SendSyncedTrains(nil)
-		GetSyncedTrains(nil)
-		
-		CheckRoutes(nil)
-		SendSyncedRoutes(nil)
-		GetSyncedRoutes(nil)
-		
-		CheckSwitchesTBL(nil)
-		SendSyncedSwitches(nil)
-		GetSyncedSwitches(nil)
-	end)
-end
-timer.Simple(0,function() SyncTrainsThink() end)
+		return
+	end
+	
+	lasttime = os.clock()
+	
+	EmptySended = false
+	
+	SendSyncedTrains()
+	GetSyncedTrains()
+	
+	CheckRoutes()
+	SendSyncedRoutes()
+	GetSyncedRoutes()
+	
+	CheckSwitchesTBL()
+	SendSyncedSwitches()
+	GetSyncedSwitches()
+	
+end)
 
 
 hook.Add("ShutDown","SyncTrainsSendClearTbls",function()
