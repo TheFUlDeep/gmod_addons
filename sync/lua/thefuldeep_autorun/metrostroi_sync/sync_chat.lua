@@ -143,17 +143,10 @@ if SERVER then
 	end)
 	
 	local interval = 1
-	local lasttime = os.clock()
-	hook.Remove("Think","SyncChatThink")
-	function SyncChatThink()
-		hook.Add("Think","SyncChatThink",function() 
-			if not MetrostroiSyncEnabled then hook.Remove("Think","SyncChatThink") end
-			if lasttime + interval > os.clock() then return end
-			lasttime = os.clock()
-			GetFromWebServer(WebServerUrl,WebServerTyp)
-		end)
-	end
-	timer.Simple(0,function() SyncChatThink() end)
+	timer.Create("SyncChatThink",interval,0,function()
+		if not MetrostroiSyncEnabled then return end
+		GetFromWebServer(WebServerUrl,WebServerTyp)
+	end)
 end
 
 if CLIENT then
