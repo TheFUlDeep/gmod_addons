@@ -1,14 +1,6 @@
 if SERVER then
 	function ulx.metrostroisync(ply)
-		if not MetrostroiSyncEnabled then
-			MetrostroiSyncEnabled = true
-			SyncTrainsThink()
-			SyncChatThink()
-			ulx.fancyLogAdmin(ply, "#A включил синхронизацию чата и поездов")
-		else
-			MetrostroiSyncEnabled = false
-			ulx.fancyLogAdmin(ply, "#A отключил синхронизацию чата и поездов")
-		end
+		MetrostroiSyncEnabled = not MetrostroiSyncEnabled
 	end
 end
 
