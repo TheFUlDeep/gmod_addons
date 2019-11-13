@@ -9,7 +9,7 @@ local function SendToWebServer(tbl)
 	http.Post(WebServerUrl, TableToSend)
 end
 
-timer.Create("Overriding ulx.map for sending info to WebServer",1,0,function()
+timer.Create("Overriding ulx.map for sending info to WebServer",5,0,function()
 	if not ulx then return end
 	timer.Remove("Overriding ulx.map for sending info to WebServer")
 	ulx.map2 = function(calling_ply, map, gamemode)
@@ -247,7 +247,7 @@ local function GetTrain(ent)
 end
 
 --if not ulx then ulx = {} end
-timer.Create("ulx.GetTrains",1,0,function()
+timer.Create("ulx.GetTrains",5,0,function()
 if not ulx then return end
 timer.Remove("ulx.GetTrains")
 ulx.GetTrains = function(calling_ply,target_ply,notif,detectroutes)
@@ -446,7 +446,7 @@ local function MetrostroiInfo()
 	end
 end
 
-timer.Create("ScoreBoardAdditional", 1, 0, MetrostroiInfo)
+timer.Create("ScoreBoardAdditional", 5, 0, MetrostroiInfo)
 
 local function PrepareDataToSending()
 	if not THEFULDEEP.SERVERINFOINITIALIZED then return end
