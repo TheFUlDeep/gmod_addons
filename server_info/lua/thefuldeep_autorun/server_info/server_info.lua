@@ -508,7 +508,7 @@ local function PrepareDataToSending()
 	end
 	TblToSend.PlayerCount = THEFULDEEP.PLAYERCOUNT or i
 	TblToSend.MaxPlayers = game.MaxPlayers()
-	TblToSend.Trains = ulx.GetTrains and ulx.GetTrains()
+	TblToSend.Trains = ulx.GetTrains and ulx.GetTrains() or {}
 	TblToSend.MaxWagons = GetGlobalInt("metrostroi_maxwagons")
 	TblToSend.Wagons = GetGlobalInt("metrostroi_train_count")
 	if table.Count(TblToSend.Trains) < 1 then TblToSend.Trains = nil end
