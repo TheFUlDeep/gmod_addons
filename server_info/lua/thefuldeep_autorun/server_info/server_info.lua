@@ -9,7 +9,7 @@ local function SendToWebServer(tbl)
 	http.Post(WebServerUrl, TableToSend)
 end
 
-timer.Create("Overriding ulx.map for sending info to WebServer",1,0,function()
+timer.Create("Overriding ulx.map for sending info to WebServer",5,0,function()
 	if not ulx then return end
 	timer.Remove("Overriding ulx.map for sending info to WebServer")
 	ulx.map2 = function(calling_ply, map, gamemode)
@@ -19,7 +19,7 @@ end)
 
 
 --MetrostroiSyncEnabled = true
-timer.Create("Ovewriting ulx.wagons",1,0,function()
+timer.Create("Ovewriting ulx.wagons",5,0,function()
 	if not ulx then return end
 	timer.Remove("Ovewriting ulx.wagons")
 	ulx.wagons2 = function(ply)
@@ -247,7 +247,7 @@ local function GetTrain(ent)
 end
 
 --if not ulx then ulx = {} end
-timer.Create("ulx.GetTrains",1,0,function()
+timer.Create("ulx.GetTrains",5,0,function()
 if not ulx then return end
 timer.Remove("ulx.GetTrains")
 ulx.GetTrains = function(calling_ply,target_ply,notif,detectroutes)
@@ -353,7 +353,7 @@ local function ScoreBoardFunction(ent)
 	
 	--for k,v in pairs(player.GetHumans()) do
 		if not PeregonsTbl[ID] then PeregonsTbl[ID] = {} PeregonsTbl[ID][1] = {} PeregonsTbl[ID][2] = {} end
-		local pos,pos2,path,posx,pos2x,poscurx = detectstation(vector)
+		local pos,pos2,path,posx,pos2x,poscurx = THEFULDEEP.DETECTSTATION(vector)
 		--if not pos then return end				-- detectstation всегда возвращает pos, поэтому эта строка не нужна?
 		local result = pos
 		local strsub1 = string.sub(pos,-36) --(ближайшая по треку)
@@ -429,7 +429,7 @@ end
 
 util.AddNetworkString("ScoreBoardAdditional")
 local function MetrostroiInfo()	
-	if not detectstation then print("detectstation is not avaliable") return end
+	if not THEFULDEEP or not THEFULDEEP.DETECTSTATION then print("detectstation is not avaliable") return end
 	for k,v in pairs(player.GetHumans()) do
 		if not IsValid(v) then continue end
 		local result,Train,SteamID,path,Owner,Time,Dist = ScoreBoardFunction(v)
@@ -450,7 +450,7 @@ timer.Create("ScoreBoardAdditional", 5, 0, MetrostroiInfo)
 
 local function PrepareDataToSending()
 	if not THEFULDEEP.SERVERINFOINITIALIZED then return end
-	if not detectstation then print("detectstation is not avaliable") return end
+	if not THEFULDEEP or not THEFULDEEP.DETECTSTATION then print("detectstation is not avaliable") return end
 	local TblToSend = {}
 	TblToSend.Map = THEFULDEEP.MAP
 	TblToSend.ServerName = THEFULDEEP.SERVERNAME

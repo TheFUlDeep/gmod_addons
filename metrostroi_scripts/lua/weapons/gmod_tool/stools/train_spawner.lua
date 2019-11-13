@@ -1,6 +1,48 @@
 --local TOOL = player.GetBySteamID("STEAM_0:1:31566374"):GetTool("train_spawner")
 TOOL.AddToMenu = false
 
+local function SpawnNotif(ply, self, vector, WagNum)	-- SpawnNotif(ply, self.Train.ClassName, trace.HitPos, self.Settings.WagNum) в функции TOOL:SpawnWagon
+	if not THEFULDEEP or not THEFULDEEP.DETECTSTATION then return end
+	local TrainName = self.Train.SubwayTrain.Name
+	ulx.fancyLogAdmin(ply, true, "#A заспавнил #s", TrainName--[[, self.Train.ClassName, self.Train.Spawner.interim]])
+	
+	local ourstation = THEFULDEEP.DETECTSTATION(vector)
+	if ourstation == "" or ourstation == nil 
+		then ulx.fancyLog(true, "Вагонов: #i", WagNum)
+	else ulx.fancyLog(true, "Станция: #s. Вагонов: #i", ourstation, WagNum)
+	end
+end
+
+local function MaximumWagons(ply,self)
+	local Map = game.GetMap()
+	if not ply.GetUserGroup then return 0 end
+	local Rank = ply:GetUserGroup()
+	local maximum = 6
+	local MetrostroiTrainCount = GetGlobalInt("metrostroi_train_count")
+	local MetrostroiMaxWagons = GetGlobalInt("metrostroi_maxwagons")
+	if MetrostroiTrainCount <= 0 then MetrostroiTrainCount = 1 end
+	if MetrostroiMaxWagons <= 0 then MetrostroiMaxWagons = 1 end
+	if MetrostroiMaxWagons <= MetrostroiTrainCount then return 0 end
+	local percent = MetrostroiTrainCount / MetrostroiMaxWagons 
+	if percent < 0.25 then maximum = 6
+	elseif percent < 0.5 then maximum = 4
+	elseif percent < 0.75 then maximum = 3
+	else maximum = 2
+	end
+	if Rank == "superadmin" then maximum = 6 end
+	if maximum < 4 and (Rank == "operator" or Rank == "admin" or Rank == "SuperVIP") then maximum = 4 end
+	if not ply:GetNW2Bool("ignoremapwaglimit",false) then
+		--if (stringfind(Map,"mus_crimson_line") or stringfind(Map, "orange")) and maximum > 3 then maximum = 3 end
+		--if (stringfind(Map,"smr") or stringfind(Map,"neocrims") or stringfind(Map, "rural") or stringfind(Map, "remaste") or stringfind(Map,"surface") or Map:find("gm_jar_pll_redux",1,true)) and maximum > 4 then maximum = 4 end
+		--if (stringfind(Map,"loopline") or stringfind(Map,"gm_metrostroi_b")) and maximum > 5 then maximum = 5 end
+	end
+	if SERVER and self then
+		if maximum < 6 and self.Train.ClassName == "gmod_subway_81-722" then self.Settings.WagNum = 3 end
+	end
+	return maximum
+end
+
+
 if CLIENT then
     language.Add("Tool.train_spawner.name", "Train Spawner")
     language.Add("Tool.train_spawner.desc", "Spawn a train")
