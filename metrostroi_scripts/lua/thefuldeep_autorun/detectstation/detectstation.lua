@@ -42,6 +42,8 @@ local function UpgradeStationsPotitions()				--отцентровка точек
 	
 end
 
+local PlatformsTbl = {}
+
 local function UpgradePlatformEnt(ent)
 	if ent:GetClass() ~= "gmod_track_platform" or not ent.PlatformStart or not ent.PlatformEnd or not ent.StationIndex or not ent.PlatformIndex then return end
 	--тут определение трека, позиции на треке, установка треку номера пути
@@ -51,17 +53,20 @@ local function UpgradePlatformEnt(ent)
 	local TrackStart = Metrostroi.GetPositionOnTrack(ent.PlatformStart)
 	local TrackEnd = Metrostroi.GetPositionOnTrack(ent.PlatformEnd)
 	if not Track[1] or not TrackStart[1] or not TrackEnd[1] then return end
+	
 	TrackIDPath[Track[1].path.id] = ent.PlatformIndex
 	ent.TrackPos = Track[1].x
 	ent.TrackID = Track[1].path.id
 	ent.PlatformLen = ent.PlatformStart:DistToSqr(ent.PlatformEnd)
 	ent.PlatformLenX = math.abs(TrackStart[1].x - TrackEnd[1].x)
+	table.insert(PlatformsTbl,ent)
 end
+
+
 
 timer.Simple(0,function()
 	for _,ent in pairs(ents.FindByClass("gmod_track_platform")) do
 		UpgradePlatformEnt(ent)
-		UpgradeStationsPotitions()
 		-----------------------------DEBUG-------------------------------------------
 		--print(math.sqrt(ent.PlatformLen))
 		--local Track1 = Metrostroi.GetPositionOnTrack(ent.PlatformStart)
@@ -69,15 +74,37 @@ timer.Simple(0,function()
 		--print("conver cof:",ent.PlatformStart:DistToSqr(ent.PlatformEnd)/math.abs(Track1[1].x - Track2[1].x))
 		-----------------------------------------------------------------------------
 	end
+	UpgradeStationsPotitions()
 end)
 
+--[[hook.Add("PlayerInitialSpawn","DetectstationInitialize",function()
+	timer.Simple(5,function()
+		for _,ent in pairs(ents.FindByClass("gmod_track_platform")) do
+			UpgradePlatformEnt(ent)
+		end
+		UpgradeStationsPotitions()
+	end)
+end)]]
+
 hook.Add("OnEntityCreated","Save platforms for detectstation",function(ent)
-	timer.Simple(1,function()
+	timer.Simple(2,function()
 		if not IsValid(ent) then return end
 		UpgradePlatformEnt(ent)
 		UpgradeStationsPotitions()
 	end)
 end)
+
+hook.Add("EntityRemoved","Remove platforms from local table for detectstation",function(ent)
+	if not IsValid(ent) then return end
+	local keys = table.KeysFromValue( PlatformsTbl, ent)
+	if keys and #keys > 0 then
+		for _,key in pairs(keys) do
+			table.remove(PlatformsTbl,key)
+		end
+	end
+end)
+
+
 
 local function GetAnyValueFromTable(tbl) --эту функцию можно заменить на получение имени станции на нужном языке
 	for _,v in pairs(tbl) do
@@ -163,9 +190,8 @@ local function detectstation(vec,try)
 
 		--сначала определение по платформам (по треку)
 		local NearestPlatform1,NearestPlatform1Dist,NearestPlatform2,NotOnPlatform
-		for _,Platform in pairs(ents.FindByClass("gmod_track_platform")) do
-			--if not IsValid(Platform) then continue end
-			if not Platform.TrackPos or Platform.TrackID ~= TrackID or Path ~= Platform.PlatformIndex or not Platform.StationIndex then continue end--возможно проверка по TrackID не нужна, так как уже есть проверка по пути, но оставлю на всякий случай
+		for _,Platform in pairs(PlatformsTbl) do
+			if not IsValid(Platform) or Platform.TrackID ~= TrackID or Path ~= Platform.PlatformIndex then continue end--возможно проверка по TrackID не нужна, так как уже есть проверка по пути, но оставлю на всякий случай
 			
 			local CurDist = math.abs(Posx - Platform.TrackPos)
 			if not NearestPlatform1Dist or NearestPlatform1Dist > CurDist then 
