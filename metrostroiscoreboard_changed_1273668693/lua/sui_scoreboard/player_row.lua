@@ -235,7 +235,7 @@ function PANEL:UpdatePlayerData()
 				if start then
 					if Time == "" then Time = "Не удалось определить время прибытия." else Time = "Примерное прибытие через "..Time.." сек." end
 					if Time ~= "" then chat.AddText((color_white),Time) end
-					text = string.sub(text,start + 4,-14)
+					text = string.sub(text,start + 3,-14)
 				end
 			end
 		end
