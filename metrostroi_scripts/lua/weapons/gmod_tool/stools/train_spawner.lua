@@ -61,7 +61,7 @@ local function CustomSkin(self,OnSpawn)
 	if not IGS or not IGS.ITEMS or not IGS.PlayerPurchases or CLIENT then return end
 	local ply = self:GetOwner()
 	
-	if ply:GetUserGroup() == "SuperVIP" then return end
+	if ply:GetUserGroup() == "SuperVIP" or ply:IsSuperAdmin() then return end
 	
 	for k,v in pairs(IGS.PlayerPurchases(ply) or {}) do
 		if tostring(k) == "9999" then return end
