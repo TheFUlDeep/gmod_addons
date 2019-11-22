@@ -58,7 +58,7 @@ if CLIENT then
 end
 
 local function CustomSkin(self,OnSpawn)
-	if not IGS or not IGS.ITEMS or not IGS.PlayerPurchases or CLIENT then return end
+	if not IGS or not IGS.ITEMS or not IGS.PlayerPurchases or CLIENT or not self.Train or not self.Train.ClassName or self.Train.ClassName == "gmod_subway_81-540_2" then return end
 	local ply = self:GetOwner()
 	
 	if ply:GetUserGroup() == "SuperVIP" or ply:IsSuperAdmin() then return end
