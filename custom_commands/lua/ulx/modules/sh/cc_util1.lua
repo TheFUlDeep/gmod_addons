@@ -1522,16 +1522,6 @@ if SERVER then
 		NextMapTable = NewMapTable
 	end)
 	
-	
---[[============================= УДАЛЕНИЕ ПРОСТА ДЛЯ ИМАДЖИНА ==========================]]
-	hook.Add("PlayerInitialSpawn", "ProstImagine",function()
-		hook.Remove("PlayerInitialSpawn", "ProstImagine")
-		if game.GetMap():find("imagine") then 
-			print("deleting PROST")
-			for k,v in pairs(ents.FindByClass("gmod_track_autodrive_plate")) do if v.PlateType == 760 then v:Remove() end end
-		end
-	end)
-	
 --[[============================= ТЕЛЕПОРТАЦИЯ В ПРОТИВОПОЛОЖНУЮ КАБИНУ ==========================]]
 	function ulx.changecabin(ply)
 		if not ply:InVehicle() then ULib.tsayError(ply, "Ты не в кабине.", true) return end
