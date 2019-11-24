@@ -13,6 +13,7 @@ end
 
 
 if SERVER then
+	local MirrorsCount = 0
 	util.AddNetworkString("SpawnMirror")
 	
 
@@ -99,6 +100,7 @@ if SERVER then
 			end
 		end
 		print("loaded "..#Mirrors.." mirrors")
+		MirrorsCount = #Mirrors
 		if IsValid(ply) then ply:ChatPrint("loaded "..#Mirrors.." mirrors") end
 		end)
 	end)
@@ -106,6 +108,13 @@ if SERVER then
 	hook.Add("PlayerInitialSpawn","SpawnMirrors",function() 
 		hook.Remove("PlayerInitialSpawn","SpawnMirrors")
 		RunConsoleCommand("mirrors_load")
+	end)
+	
+	hook.Add("OnEntityCreated", "AlsFReq", function(ent)
+		timer.Simple(3, function()
+			if not IsValid(ent) or MirrorsCount < 1 or not ent:GetClass():find("81-76",1,true) or not ent.SF19 or not ent.SF19.TriggerInput then return end
+			ent.SF19:TriggerInput("Set",0)
+		end)
 	end)
 	
 	if game.SinglePlayer() then	

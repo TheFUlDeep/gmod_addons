@@ -1558,16 +1558,16 @@ if SERVER then
 	hook.Add("OnEntityCreated", "AlsFReq", function(ent)
 			timer.Simple(3, function()
 				if not NoSignals then
-					if not IsValid(ent) then return
-					elseif not stringfind(ent:GetClass(), "717_m") then return
-					end
+					if not IsValid(ent) or not stringfind(ent:GetClass(), "717_m") and not ent:GetClass():find("81-76",1,true) then return end
 					local blizhniy = nil
 					for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
 						if blizhniy == nil then blizhniy = v
 						elseif ent:GetPos():DistToSqr(v:GetPos()) < ent:GetPos():DistToSqr(blizhniy:GetPos()) then blizhniy = v
 						end
 					end
-					if blizhniy.TwoToSix then ent.ALSFreq:TriggerInput("Set",1) return end
+					if not blizhniy.TwoToSix then return end
+					if ent:GetClass():find("717_m",1,true) and ent.ALSFreq and ent.ALSFreq.TriggerInput then ent.ALSFreq:TriggerInput("Set",1) end
+					if ent:GetClass():find("81-76",1,true) and ent.SA14 and ent.SA14.TriggerInput then ent.SA14:TriggerInput("Set",1) end
 				end
 			end)
 	end)
