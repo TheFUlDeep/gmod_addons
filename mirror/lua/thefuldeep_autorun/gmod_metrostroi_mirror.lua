@@ -110,7 +110,7 @@ if SERVER then
 		RunConsoleCommand("mirrors_load")
 	end)
 	
-	hook.Add("OnEntityCreated", "AlsFReq", function(ent)
+	hook.Add("OnEntityCreated", "DisableVideoCameras in subway", function(ent)
 		timer.Simple(3, function()
 			if not IsValid(ent) or MirrorsCount < 1 or not ent:GetClass():find("81-76",1,true) or not ent.SF19 or not ent.SF19.TriggerInput then return end
 			ent.SF19:TriggerInput("Set",0)
