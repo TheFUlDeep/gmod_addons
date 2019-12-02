@@ -253,6 +253,7 @@ local function UpdateTrainList()
 	frame:Center()
 	if VGUI.Close then VGUI.Close() end
 	if VGUI.spawn then VGUI.spawn() end
+	if VGUI.preview then VGUI.preview() end
 end
 local function Draw()
 	local Trains = {}
@@ -286,6 +287,10 @@ local function Draw()
 
 	UpdateTrainList()
 end
+
+
+
+local PreviewEnts = {}
 local function createFrame()
 	MaxWagons = GetGlobalInt("metrostroi_maxwagons")
 	maximum = MaximumWagons(LocalPlayer())
@@ -351,6 +356,73 @@ local function createFrame()
 			if ENT and ENT.Spawner then tool.Train = ENT end
 			frame:Close()
 		end
+		
+		
+		
+		local preview = vgui.Create("DButton", frame)
+		preview:SetWide(80)
+		preview:SetText("PreviewSkin")
+		preview:SetPos(frame:GetWide() - spawn:GetWide()*2 - 10, frame:GetTall() - preview:GetTall() - 5)
+		VGUI["preview"] = function()
+			if IsValid(preview) and IsValid(frame) and IsValid(spawn) then preview:SetPos(frame:GetWide() - spawn:GetWide()*2 - 10, frame:GetTall() - preview:GetTall() - 5) end
+		end
+		preview.DoClick = function()
+			local ply = LocalPlayer()
+			--local settings = Settings
+			--PrintTable(Settings[Settings.Train])
+			if IsValid(ply.TrainPreviewEnt) then 
+				for _,v in pairs(PreviewEnts) do
+					v:Remove()
+				end
+				ply.TrainPreviewEnt = nil
+				PreviewEnts = {}
+				return 
+			end
+			--local Settings = table.Copy(Settings)
+			ply.TrainPreviewEnebled = true
+			local TrainEnt = scripted_ents.Get(Settings.Train)
+			if Settings.Train:find("_custom",1,true) then 
+				TrainEnt = scripted_ents.Get(Settings.Train:sub(1,-8))
+			end
+			if not TrainEnt then return end
+			local TrainModel = TrainEnt.Model
+			if not TrainModel then return end
+			local ClientEnt = ClientsideModel(TrainModel)
+			if not IsValid(ClientEnt) then return end
+			table.insert(PreviewEnts,ClientEnt)
+			ClientEnt.ClientEnts = {}
+			ClientEnt.ClientProps = {}
+			table.insert(ClientEnt.ClientEnts,ClientEnt)
+			table.insert(ClientEnt.ClientProps,{})
+			ply.TrainPreviewEnt = ClientEnt
+			ClientEnt:SetPos(ply:GetPos())
+			print(TrainEnt,"asd")
+			if not TrainEnt then return end
+			for _,ClientProp in pairs(TrainEnt.ClientProps) do
+				if not ClientProp.model then continue end
+				local CProp = ClientsideModel(ClientProp.model)
+				if not IsValid(CProp) then continue end
+				table.insert(PreviewEnts,CProp)
+				table.insert(ClientEnt.ClientEnts,CProp)
+				table.insert(ClientEnt.ClientProps,{})
+				CProp:SetPos(ClientEnt:LocalToWorld(isvector(ClientProp.pos) and ClientProp.pos or Vector(0)))
+				CProp:SetAngles(ClientEnt:LocalToWorldAngles(isangle(ClientProp.ang) and ClientProp.ang or Angle(0)))
+			end
+			
+			
+			local base = scripted_ents.Get("gmod_subway_base")
+			if not base then return end
+			local UpdateTextures = base.UpdateTextures
+			if not UpdateTextures then return end
+			ClientEnt:SetNW2String("Texture",Settings[Settings.Train].Texture)
+			ClientEnt:SetNW2String("PassTexture",Settings[Settings.Train].PassTexture)
+			ClientEnt:SetNW2String("CabTexture",Settings[Settings.Train].CabTexture)
+			UpdateTextures(ClientEnt)
+			MetrostroiDotSixLoadTextures(ClientEnt)
+		end
+		
+		
+		
 	end
 end
 
