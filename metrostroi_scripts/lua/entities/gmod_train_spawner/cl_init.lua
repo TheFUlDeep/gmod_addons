@@ -418,7 +418,9 @@ local function createFrame()
 			ClientEnt:SetNW2String("PassTexture",Settings[Settings.Train].PassTexture)
 			ClientEnt:SetNW2String("CabTexture",Settings[Settings.Train].CabTexture)
 			UpdateTextures(ClientEnt)
-			MetrostroiDotSixLoadTextures(ClientEnt)
+			if MetrostroiDotSixLoadTextures then
+				MetrostroiDotSixLoadTextures(ClientEnt,0)
+			end
 		end
 		
 		
