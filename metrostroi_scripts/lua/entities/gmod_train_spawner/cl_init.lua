@@ -287,6 +287,10 @@ local function Draw()
 
 	UpdateTrainList()
 end
+
+
+
+local PreviewEnts = {}
 local function createFrame()
 	MaxWagons = GetGlobalInt("metrostroi_maxwagons")
 	maximum = MaximumWagons(LocalPlayer())
