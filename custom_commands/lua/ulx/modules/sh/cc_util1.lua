@@ -1336,15 +1336,21 @@ end
 --[[============================= Новая функция смены карты для того, чтобы она сохранялась в файл ==========================]]
 timer.Simple(1,function()
 	if SERVER then
-			if ulx.MapOverrided then return end
+			--if ulx.MapOverrided then return end
 			print("overriding ulx.map")
-			local OldUlxMap = ulx.map
+			--local OldUlxMap = ulx.map
 			ulx.map = function(calling_ply, map, gamemode)
+				ulx.fancyLogAdmin( calling_ply, "#A changed the map to #s", map )
 				file.Write("lastmap.txt", map)
 				if ulx.map2 then ulx.map2(calling_ply, map, gamemode) end
-				OldUlxMap(calling_ply, map, gamemode)
+				--OldUlxMap(calling_ply, map, gamemode)
+				--game.ConsoleCommand( "gamemode " .. gamemode .. "\n" )
+				for _,plyr in pairs(player.GetHumans()) do
+					plyr:SendLua("RunConsoleCommand('retry')")
+				end
+				RunConsoleCommand("_restart")
 			end
-			ulx.MapOverrided = true
+			--ulx.MapOverrided = true
 	end
 	local map = ulx.command( "Utility", "ulx map", ulx.map, "!map" )
 	map:addParam{ type=ULib.cmds.StringArg, completes=ulx.maps, hint="map", error="invalid map \"%s\" specified", ULib.cmds.restrictToCompletes }

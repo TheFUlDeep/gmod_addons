@@ -41,7 +41,7 @@ local function TimerFunction()
 		print("Generating random failure in",tostring(wag1))
 		wag1:TriggerInput("FailSimFail",1)
 	end
-	timer.Create("MetrostroiRandomFailure",Rand(),0,TimerFunction)
+	timer.Simple(Rand(),TimerFunction)
 end
 
-timer.Create("MetrostroiRandomFailure",Rand(),0,TimerFunction)
+timer.Simple(Rand(),TimerFunction)

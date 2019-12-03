@@ -252,7 +252,7 @@ function AVMS.VoteFinished(t)
 			local winnertbl = t.options[math.random(1, #t.options - 1)]
 			map,gmode = winnertbl.map,winnertbl.gmode
 			str = "Никто не проголосовал. Смена карты на "..map.." через "..AVMS.timeToStr( changetime ).." !abort для админов"
-			timer.Create("VoteMapTimer",changetime,1, function() game.ConsoleCommand("gamemode "..gmode.."\n"); file.Write( "lastmap.txt", map ); game.ConsoleCommand("changelevel "..map.."\n") end)
+			timer.Create("VoteMapTimer",changetime,1, function() game.ConsoleCommand("ulx map"..map.."\n") end)
 			hook.Add("PlayerSay", "VoteMapAbort", function(ply,txt)
 				txt = string.lower(txt)
 				local texttbl = string.Explode(" ",txt)
@@ -279,7 +279,7 @@ function AVMS.VoteFinished(t)
 	else
 		map,gmode = t.options[winner].map,t.options[winner].gmode
 		str = "Следущая карта "..map.." ("..gmode.."). Смена через "..AVMS.timeToStr( changetime )..". Admin write !abort to abort the mapchange."
-		timer.Create("VoteMapTimer",changetime,1, function() game.ConsoleCommand("gamemode "..gmode.."\n"); file.Write( "lastmap.txt", map ); game.ConsoleCommand("changelevel "..map.."\n") end)
+		timer.Create("VoteMapTimer",changetime,1, function() game.ConsoleCommand("ulx map"..map.."\n") end)
 		hook.Add("PlayerSay", "VoteMapAbort", function(ply,txt)
 			txt = string.lower(txt)
 			local texttbl = string.Explode(" ",txt)
