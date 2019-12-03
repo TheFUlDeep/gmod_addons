@@ -1348,7 +1348,9 @@ timer.Simple(1,function()
 				for _,plyr in pairs(player.GetHumans()) do
 					plyr:SendLua("RunConsoleCommand('retry')")
 				end
-				RunConsoleCommand("_restart")
+				timer.Simple(0.5,function()
+					RunConsoleCommand("_restart")
+				end
 			end
 			--ulx.MapOverrided = true
 	end
