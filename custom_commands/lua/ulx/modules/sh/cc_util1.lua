@@ -1350,7 +1350,7 @@ timer.Simple(1,function()
 				end
 				timer.Simple(0.5,function()
 					RunConsoleCommand("_restart")
-				end
+				end)
 			end
 			--ulx.MapOverrided = true
 	end
