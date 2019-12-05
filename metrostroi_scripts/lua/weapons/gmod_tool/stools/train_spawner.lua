@@ -65,6 +65,7 @@ local function CustomSkin(self,OnSpawn)
 		or self.Train.ClassName == "gmod_subway_81-761" 
 		or self.Train.ClassName == "gmod_subway_81-761a" 
 		or self.Train.ClassName == "gmod_subway_81-763a" 
+		or self.Train.ClassName == "gmod_subway_em508" 
 	then return end
 	local ply = self:GetOwner()
 	
