@@ -53,6 +53,8 @@ local PANEL = {}
 --[[---------------------------------------------------------
    Name: Paint
 ---------------------------------------------------------]]
+local CurrentMap = ""
+timer.Simple(0,function()CurrentMap=game.GetMap()end)
 function PANEL:Init()
 	SCOREBOARD = self
 
@@ -67,7 +69,7 @@ function PANEL:Init()
 	self.SuiSc:SetText( "SUI Scoreboard v2.6 PolarWolf edited" )
 	
 	self.Description = vgui.Create( "DLabel", self )
-	self.Description:SetText( "Вагонов: "..(GetGlobalInt("metrostroi_train_count") or 0).."/"..(GetGlobalInt("metrostroi_maxwagons") or 0))
+	self.Description:SetText("Карта: "..CurrentMap.." Вагонов: "..(GetGlobalInt("metrostroi_train_count") or 0).."/"..(GetGlobalInt("metrostroi_maxwagons") or 0))
 	
 	self.PlayerFrame = vgui.Create( "suiplayerframe", self )
 	
@@ -338,7 +340,7 @@ function PANEL:UpdateScoreboard( force )
 	end
 	
 	if self.Description then
-		self.Description:SetText( "Вагонов: "..(GetGlobalInt("metrostroi_train_count") or 0).."/"..(GetGlobalInt("metrostroi_maxwagons") or 0))
+		self.Description:SetText("Карта: "..CurrentMap.." Вагонов: "..(GetGlobalInt("metrostroi_train_count") or 0).."/"..(GetGlobalInt("metrostroi_maxwagons") or 0))
 	end
 	
 	// Always invalidate the layout so the order gets updated
