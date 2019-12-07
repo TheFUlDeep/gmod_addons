@@ -138,7 +138,6 @@ if CLIENT then
 		
 		local base = wag
 		local wag = base.wag
-		print("SetPos")
 		wag:SetPos(base.WagPos)
 		wag:SetAngles(base.WagAng)
 		
@@ -546,6 +545,7 @@ end
 util.AddNetworkString("MetrostroiChatSync")
 local function onMessage(txt)
 	local data = util.JSONToTable(txt)
+	if not data then return end
 	if data.map ~= CurrentMap then return end
 
 	if data.type == "chatMessage" then
