@@ -5,7 +5,7 @@ if CLIENT then
 	local SyncedWags = Metrostroi.MetrostroiSync.SyncedWags
 	
 	hook.Add("OnEntityCreated","SyncedTrainsSave",function(ent)
-		timer.Simple(2,function()
+		timer.Simple(1,function()
 			if not IsValid(ent) or ent:GetClass() ~= "gmod_subway_base" --[[or not ent:GetNWBool("SyncedWag",false)]] then return end
 			ent.ShouldDrawClientEnt = function() end
 			ent.UpdateTextures = function() end
@@ -24,6 +24,27 @@ if CLIENT then
 			table.insert(text,tbl.Texts[i])
 		end
 		chat.AddText(unpack(text))
+	end)
+	
+	local MetrostroiDotSixLoadTextures1 = function() end
+	timer.Simple(0,function()
+		if not MetrostroiDotSixLoadTextures then return end
+		MetrostroiDotSixLoadTextures1 = function(wag)
+			local baseent
+			for _,v in pairs(ents.FindByClass("gmod_subway_base")) do
+				if not IsValid(v) then continue end
+				baseent = v
+				break
+			end
+			if not baseent then return end
+			baseent.ClientProps = wag.ClientProps
+			baseent.ClientEnts = wag.ClientProps
+			local basetbl = wag.base
+			baseent:SetNW2String("Texture",basetbl.Texture)
+			baseent:SetNW2String("CabTexture",basetbl.CabTexture)
+			baseent:SetNW2String("PassTexture",basetbl.PassTexture)
+			MetrostroiDotSixLoadTextures(baseent,0)
+		end
 	end)
 	
 	local UpdateTextures = function() end
@@ -46,9 +67,8 @@ if CLIENT then
 			baseent:SetNW2String("Texture",basetbl.Texture)
 			baseent:SetNW2String("CabTexture",basetbl.CabTexture)
 			baseent:SetNW2String("PassTexture",basetbl.PassTexture)
-			base.UpdateTextures(baseent)--TODO почему не меняется скин?
+			base.UpdateTextures(baseent)
 		end
-		
 		
 		SetLightPower = base.SetLightPower or SetLightPower
 		ShouldRenderClientEnts = base.ShouldRenderClientEnts or ShouldRenderClientEnts
@@ -121,25 +141,25 @@ if CLIENT then
 		wag.ClientProps = wag.ClientProps or {}
 		local ClientProps = wag.ClientProps
 
-		--[[ClientProps.fb = ClientsideModel(base.fbm)--тележки со сепками в движении ставятся криво в движении 
-		ClientProps.fb:SetPos(base.fbp)
-		ClientProps.fb:SetAngles(base.fba)
+		ClientProps.fb = ClientsideModel(base.fbm)
+		ClientProps.fb:SetPos(wag:LocalToWorld(base.fbp))
+		ClientProps.fb:SetAngles(wag:LocalToWorldAngles(base.fba))
 		ClientProps.fb:SetParent(wag)
 
 		ClientProps.rb = ClientsideModel(base.rbm)
-		ClientProps.rb:SetPos(base.rbp)
-		ClientProps.rb:SetAngles(base.rba)
+		ClientProps.rb:SetPos(wag:LocalToWorld(base.rbp))
+		ClientProps.rb:SetAngles(wag:LocalToWorldAngles(base.rba))
 		ClientProps.rb:SetParent(wag)
 
 		ClientProps.rc = ClientsideModel(base.rcm)
-		ClientProps.rc:SetPos(base.rcp)
-		ClientProps.rc:SetAngles(base.rca)
+		ClientProps.rc:SetPos(wag:LocalToWorld(base.rcp))
+		ClientProps.rc:SetAngles(wag:LocalToWorldAngles(base.rca))
 		ClientProps.rc:SetParent(wag)
 
 		ClientProps.fc = ClientsideModel(base.fcm)
-		ClientProps.fc:SetPos(base.fcp)
-		ClientProps.fc:SetAngles(base.fca)
-		ClientProps.fc:SetParent(wag)]]
+		ClientProps.fc:SetPos(wag:LocalToWorld(base.fcp))
+		ClientProps.fc:SetAngles(wag:LocalToWorldAngles(base.fca))
+		ClientProps.fc:SetParent(wag)
 		
 		local ENT = scripted_ents.Get(base.Class)
 		if not ENT then return end
@@ -180,6 +200,9 @@ if CLIENT then
 			SafeRemoveEntity(prop)
 			wag.ClientProps[i] = nil
 		end
+		if wag.Lights and wag.Lights[1] then
+			SetLightPower(wag,1,wag.base.HeadLights,0)
+		end
 		--wag.ClientProps = nil
 	end
 	
@@ -210,7 +233,7 @@ if CLIENT then
 			end
 			if not IsValid(wag) or not DrawClientProps(wag) then continue end
 			UpdateTextures(wag)
-			if MetrostroiDotSixLoadTextures then MetrostroiDotSixLoadTextures(wag,0) end--TODO не работает на точкушесть
+			MetrostroiDotSixLoadTextures1(wag,0)--TODO не работает на точкушесть
 			for name,prop in pairs(wag.ClientProps) do
 				local namelower = tostring(name):lower()
 				if namelower:find("door",1,true) and namelower:find("x1",1,true) then--скрытие и раскрытие дверей левых
@@ -223,7 +246,7 @@ if CLIENT then
 					prop:SetModelScale(base.RedLight and prop.scale or 0)
 				end
 			end
-			if wag and wag.Lights and wag.Lights[1] then
+			if wag.Lights and wag.Lights[1] then
 				--if wag.wag.GlowingLights then PrintTable(wag.wag.GlowingLights) end
 				SetLightPower(wag,1,base.HeadLights,1)--свет от фар
 			end
@@ -400,21 +423,6 @@ local function SendNetValues(wag,params,onspawn)
 	
 	TblToSend.WagPos = params.pos
 	TblToSend.WagAng = params.ang
-	
-	
-	TblToSend.fbp = params.fbp
-	TblToSend.fba = params.fba
-	
-	TblToSend.rbp = params.rbp
-	TblToSend.rba = params.rba
-	
-	TblToSend.fcp = params.fcp
-	TblToSend.fca = params.fca
-	
-	TblToSend.rcp = params.rcp
-	TblToSend.rca = params.rca
-	
-
 		
 	if onspawn then
 		TblToSend.EntID = params.syncid
@@ -423,9 +431,20 @@ local function SendNetValues(wag,params,onspawn)
 		TblToSend.SyncedWag = true
 		
 		TblToSend.fbm = params.fbm
+		TblToSend.fbp = params.fbp
+		TblToSend.fba = params.fba
+		
 		TblToSend.rbm = params.rbm
+		TblToSend.rbp = params.rbp
+		TblToSend.rba = params.rba
+
 		TblToSend.fcm = params.fcm
+		TblToSend.fcp = params.fcp
+		TblToSend.fca = params.fca
+	
 		TblToSend.rcm = params.rcm
+		TblToSend.rcp = params.rcp
+		TblToSend.rca = params.rca
 	end
 	
 	net.Start("MetrostroiSync WagonsInfo")
@@ -478,7 +497,7 @@ end
 local function OpenRoute(command)
 	for _,signal in pairs(ents.FindByClass("gmod_track_signal")) do
 		if not IsValid(signal) or not signal.SayHook then continue end
-		signal:SayHook(nil,command)--TODO возможны ерроры
+		signal:SayHook(command,command)--TODO возможны ерроры
 	end
 end
 
@@ -652,18 +671,20 @@ hook.Add("Think","SyncTrains",function()
 						rl = v1:GetNW2Bool("RedLight") or v1:GetNW2Bool("RedLights"),
 						
 						rbm = v1.RearBogey:GetModel(),
-						rbp = v1.RearBogey:GetPos(),
-						rba = v1.RearBogey:GetAngles(),
+						rbp = v1:WorldToLocal(v1.RearBogey:GetPos()),
+						rba = v1:WorldToLocalAngles(v1.RearBogey:GetAngles()),
+						
 						fbm = v1.FrontBogey:GetModel(),
-						fbp = v1.FrontBogey:GetPos(),
-						fba = v1.FrontBogey:GetAngles(),
+						fbp = v1:WorldToLocal(v1.FrontBogey:GetPos()),
+						fba = v1:WorldToLocalAngles(v1.FrontBogey:GetAngles()),
 						
 						fcm = v1.FrontCouple:GetModel(),
-						fcp = v1.FrontCouple:GetPos(),
-						fca = v1.FrontCouple:GetAngles(),
+						fcp = v1:WorldToLocal(v1.FrontCouple:GetPos()),
+						fca = v1:WorldToLocalAngles(v1.FrontCouple:GetAngles()),
+						
 						rcm = v1.RearCouple:GetModel(),
-						rcp = v1.RearCouple:GetPos(),
-						rca = v1.RearCouple:GetAngles(),
+						rcp = v1:WorldToLocal(v1.RearCouple:GetPos()),
+						rca = v1:WorldToLocalAngles(v1.RearCouple:GetAngles())
 					}
 					table.insert(data.trains,train)
 				end
