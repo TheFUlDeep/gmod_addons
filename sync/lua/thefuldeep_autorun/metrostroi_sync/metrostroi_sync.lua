@@ -332,6 +332,31 @@ local function sendRoute(command)
 	sendData(dat)
 end
 
+local function GetSignalsFile(type,onlytxt)
+	local path = "metrostroi_data/"..type.."_"..CurrentMap
+	if file.Exists(path..".txt","DATA") then
+		return file.Read(path..".txt", "DATA" ) or ""
+	end
+	if onlytxt then return "" end
+	if file.Exists(path..".lua","LUA") then
+		return file.Read(path..".lua", "LUA" ) or ""
+	end
+	return ""
+end
+
+local function sendSignals()
+	local dat = {
+		type = "signals",
+		msg = {
+			auto = GetSignalsFile("auto"),
+			pa = GetSignalsFile("pa"),
+			signs = GetSignalsFile("signs"),
+			track = GetSignalsFile("track")
+		}
+	}
+	sendData(dat)
+end
+
 
 
 local function CheckForOldWagons()
@@ -422,13 +447,13 @@ end
 local function OpenRoute(command)
 	for _,signal in pairs(ents.FindByClass("gmod_track_signal")) do
 		if not IsValid(signal) or not signal.SayHook then continue end
-		signal:SayHook(command,command)
+		signal:SayHook(nil,command)--TODO возможны ерроры
 	end
 end
 
 local function SendChatMessageToClients(tbl)
 	for i = 1,#tbl.Texts do
-		MsgC(string.ToColor(tbl.Colors[i] or ""),tbl.Texts[i])
+		MsgC(i == 1 and Color(255,255,255) or string.ToColor(tbl.Colors[i] or ""),tbl.Texts[i])--i == 1 and Color(255,255,255) чтобы в консоли имя сервера было белым
 	end
 	Msg("\n")
 	net.Start("MetrostroiChatSync")
@@ -437,6 +462,28 @@ local function SendChatMessageToClients(tbl)
 		net.WriteUInt(dataN,32)
 		net.WriteData(data,dataN)
 	net.Broadcast()
+end
+
+local function LoadSignals(data)
+	local signals = {
+		auto = GetSignalsFile("auto",true),
+		pa = GetSignalsFile("pa",true),
+		signs = GetSignalsFile("signs",true),
+		track = GetSignalsFile("track",true)
+	}
+	
+	for type,str in pairs(signals) do
+		local path = "metrostroi_data/"..type.."_"..CurrentMap.."_backup.txt"
+		if str ~= "" and not file.Exists(path,"DATA") then
+			file.Write(path, str)
+		end
+	end
+	
+	for type,str in pairs(data) do
+		file.Write("metrostroi_data/"..type.."_"..CurrentMap..".txt",str)
+	end
+	RunConsoleCommand("metrostroi_load")
+	
 end
 
 util.AddNetworkString("MetrostroiChatSync")
@@ -462,6 +509,9 @@ local function onMessage(txt)
 	if data.type == "routes" then
 		OpenRoute(data.msg)
 	end
+	if data.type == "signals" then
+		LoadSignals(data.msg)
+	end
 end
 
 function socket:onError(txt)
@@ -471,6 +521,7 @@ end
 function socket:onConnected()
 	MetrostroiSync.connected = true
 	--TODO отправление сигналки
+	sendSignals()
 	print("MetrostroiBD Sync enabled")
 end
 
