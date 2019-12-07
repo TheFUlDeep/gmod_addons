@@ -4,6 +4,16 @@ if CLIENT then
 	Metrostroi.MetrostroiSync.SyncedWags = Metrostroi.MetrostroiSync.SyncedWags or {}
 	local SyncedWags = Metrostroi.MetrostroiSync.SyncedWags
 	
+	hook.Add("OnEntityCreated","SyncedTrainsSave",function(ent)
+		timer.Simple(2,function()
+			if not IsValid(ent) or ent:GetClass() ~= "gmod_subway_base" --[[or not ent:GetNWBool("SyncedWag",false)]] then return end
+			ent.ShouldDrawClientEnt = function() end
+			ent.UpdateTextures = function() end
+			ent.Think = function() end
+			ent.Draw = function() end
+		end)
+	end)
+	
 	net.Receive("MetrostroiChatSync", function()
 		local dataN = net.ReadUInt(32)
 		local tbl = util.JSONToTable(util.Decompress(net.ReadData(dataN)))
@@ -16,14 +26,30 @@ if CLIENT then
 		chat.AddText(unpack(text))
 	end)
 	
-	
 	local UpdateTextures = function() end
 	local SetLightPower = function() end
 	local ShouldRenderClientEnts = function() end
 	timer.Simple(0,function()
 		local base = scripted_ents.Get("gmod_subway_base")
 		if not base then return end
-		UpdateTextures = base.UpdateTextures or UpdateTextures
+		UpdateTextures = function(wag)
+			local baseent
+			for _,v in pairs(ents.FindByClass("gmod_subway_base")) do
+				if not IsValid(v) then continue end
+				baseent = v
+				break
+			end
+			if not baseent then return end
+			baseent.ClientProps = wag.ClientProps
+			baseent.ClientEnts = wag.ClientProps
+			local basetbl = wag.base
+			baseent:SetNW2String("Texture",basetbl.Texture)
+			baseent:SetNW2String("CabTexture",basetbl.CabTexture)
+			baseent:SetNW2String("PassTexture",basetbl.PassTexture)
+			base.UpdateTextures(baseent)--TODO почему не меняется скин?
+		end
+		
+		
 		SetLightPower = base.SetLightPower or SetLightPower
 		ShouldRenderClientEnts = base.ShouldRenderClientEnts or ShouldRenderClientEnts
 		local OldShouldRenderClientEnts = ShouldRenderClientEnts
@@ -33,27 +59,28 @@ if CLIENT then
 		end
 	end)
 
-	local function MoveSmooth(ent)
-		if not IsValid(ent) or not IsValid(ent.wag) then return end
-		local vec2 = ent:GetPos()
+	local function MoveSmooth(ent,vec2,ang2)
+		--не двигать,если vec2 такой же, как и в прошлый раз
 		if vec2 == ent.prevpos then return end--тут еще можно добавить проверку по ang, но так как позиция почти всегда будет обновляться, так как поезд качатеся, то она лишняя
 		ent.prevpos = vec2
-		local ang2 = ent:GetAngles()
-		ent = ent.wag
 		local vec1 = ent:GetPos()
 		local ang1 = ent:GetAngles()
 		local CallTime = CurTime()
 		local HookName = "MoveSmooth"..ent.base.EntID
-		local light = ent.GlowingLights and ent.GlowingLights[1]
-		local lightpos = ent.Lights[1][2]
-		local lightang = ent.Lights[1][3]
+		local light = ent.Lights and ent.GlowingLights and ent.GlowingLights[1]
+		local lightpos,lightang
+		if light then
+			lightpos = ent.Lights[1][2]
+			lightang = ent.Lights[1][3]
+		end
 		local interval = CallTime - (ent.prevmovecall or (CallTime-0.001))
+		ent.interval = interval
 		ent.prevmovecall = CallTime
 		--print(interval)
 		hook.Add("Think",HookName, function()
 			if not IsValid(ent) then hook.Remove("Think",HookName) return end
 			local CurTime = CurTime()
-			if CurTime - CallTime > interval or ent:GetPos() == vec2 then 
+			if CurTime - CallTime > interval --[[or ent:GetPos() == vec2]] then 
 				hook.Remove("Think",HookName)
 				--ent:SetPos(vec2)
 				return 
@@ -70,7 +97,7 @@ if CLIENT then
 	end
 	
 	local function AddCProp(wag,propstbl,params,name)
-		if propstbl[name] then return end
+		--if propstbl[name] then return end
 		local prop = ClientsideModel(params.model)
 		prop:SetPos(wag:LocalToWorld(params.pos or Vector(0)))
 		prop:SetAngles(wag:LocalToWorldAngles(params.ang or Angle(0)))
@@ -84,53 +111,36 @@ if CLIENT then
 	end
 	
 	local function CreateClientProps(wag)
-		if wag.ClientProps then
-			for k,prop in pairs(wag.ClientProps) do
-				if not IsValid(prop) then prop:Remove() wag.ClientProps[k]=nil end
-			end
-		end
-		if wag.wag and not IsValid(wag.wag) then wag.wag:Remove() wag.wag = nil end
-	
-		wag.EntID = wag:GetNW2String("EntID")
 		if not wag.wag then
-			wag.wag = ClientsideModel(wag:GetNW2String("WagModel"))
-			wag.wag:SetAngles(wag:GetNW2Angle("WagAng"))
-			wag.wag:SetPos(wag:GetNW2Vector("WagPos"))
+			wag.wag = ClientsideModel(wag.WagModel)
 			wag.wag.base = wag
 		end
+		
 		local base = wag
 		local wag = base.wag
 		wag.ClientProps = wag.ClientProps or {}
 		local ClientProps = wag.ClientProps
-		if not ClientProps.fb then
-		ClientProps.fb = ClientsideModel(base:GetNW2String("fbm"))
-		ClientProps.fb:SetPos(base:GetNW2Vector("fbp"))
-		ClientProps.fb:SetAngles(base:GetNW2Angle("fba"))
-		ClientProps.fb:SetParent(wag)
-		end
-		
-		if not ClientProps.rb then
-		ClientProps.rb = ClientsideModel(base:GetNW2String("rbm"))
-		ClientProps.rb:SetPos(base:GetNW2Vector("rbp"))
-		ClientProps.rb:SetAngles(base:GetNW2Angle("rba"))
-		ClientProps.rb:SetParent(wag)
-		end
-		
-		if not ClientProps.rc then
-		ClientProps.rc = ClientsideModel(base:GetNW2String("rcm"))
-		ClientProps.rc:SetPos(base:GetNW2Vector("rcp"))
-		ClientProps.rc:SetAngles(base:GetNW2Angle("rca"))
-		ClientProps.rc:SetParent(wag)
-		end
 
-		if not ClientProps.fc then
-		ClientProps.fc = ClientsideModel(base:GetNW2String("fcm"))
-		ClientProps.fc:SetPos(base:GetNW2Vector("fcp"))
-		ClientProps.fc:SetAngles(base:GetNW2Angle("fca"))
-		ClientProps.fc:SetParent(wag)
-		end
+		--[[ClientProps.fb = ClientsideModel(base.fbm)--тележки со сепками в движении ставятся криво в движении 
+		ClientProps.fb:SetPos(base.fbp)
+		ClientProps.fb:SetAngles(base.fba)
+		ClientProps.fb:SetParent(wag)
+
+		ClientProps.rb = ClientsideModel(base.rbm)
+		ClientProps.rb:SetPos(base.rbp)
+		ClientProps.rb:SetAngles(base.rba)
+		ClientProps.rb:SetParent(wag)
+
+		ClientProps.rc = ClientsideModel(base.rcm)
+		ClientProps.rc:SetPos(base.rcp)
+		ClientProps.rc:SetAngles(base.rca)
+		ClientProps.rc:SetParent(wag)
+
+		ClientProps.fc = ClientsideModel(base.fcm)
+		ClientProps.fc:SetPos(base.fcp)
+		ClientProps.fc:SetAngles(base.fca)
+		ClientProps.fc:SetParent(wag)]]
 		
-		base.Class = base:GetNW2String("Class")
 		local ENT = scripted_ents.Get(base.Class)
 		if not ENT then return end
 		local d,s,c,m,h = 1,1,1,1,1
@@ -159,87 +169,89 @@ if CLIENT then
 			end
 		end
 		
-		wag.Lights = ENT.Lights--это я добавил ради фар
-		table.insert(wag.ClientProps,wag)
-		wag.ClientEnts = wag.ClientProps
-		base.ClientEnts = wag.ClientProps
-		base.ClientProps = wag.ClientProps
-		base.AllPropsCreated = true
-		--print(table.Count(wag.ClientProps))
+		wag.Lights = ENT.Lights
+		table.insert(ClientProps,wag)
+		base.ClientProps = ClientProps
 	end
-	
-	hook.Add("OnEntityCreated","SyncedTrainsSave",function(ent)
-		timer.Simple(1,function()
-			if not IsValid(ent) or ent:GetClass() ~= "gmod_subway_base" or not ent:GetNW2Bool("SyncedWag",false) then return end
-			CreateClientProps(ent)
-			ent.ShouldDrawClientEnt = function() end
-			ent.UpdateTextures = function() end
-			table.insert(SyncedWags,ent)
-		end)
-	end)
-	
-	hook.Add("EntityRemoved","SyncedTrainsClear",function(ent)
-		if not IsValid(ent) or ent:GetClass() ~= "gmod_subway_base" or not ent:GetNW2Bool("SyncedWag",false) then return end
-		for _,prop in pairs(ent.wag.ClientProps or {}) do
-			if prop == ent.wag then continue end
-			prop:Remove()
-		end
-		if ent.wag then ent.wag:Remove() end
-		local k = table.KeyFromValue(SyncedWags, ent)
-		if k then table.remove(SyncedWags,k) end
-	end)
 	
 	local function RemoveWagProps(wag)
-		if wag.ClientProps then
-			for i,prop in pairs(wag.ClientProps) do
-				if prop == wag.wag or i == "rc" or i == "fc" or i == "rb" or i == "fb" then continue end
-				prop:Remove()
-				wag.ClientProps[i] = nil
-			end
+		for i,prop in pairs(wag.ClientProps or {}) do
+			if prop == wag then continue end
+			SafeRemoveEntity(prop)
+			wag.ClientProps[i] = nil
 		end
+		--wag.ClientProps = nil
 	end
 	
-	local function DrawClientProps(base)
+	local function DrawClientProps(wag)
 		local bool
-		if Metrostroi.ShouldHideTrain then bool = Metrostroi.ShouldHideTrain(base) else bool = ShouldRenderClientEnts(base) end
-		if not bool then RemoveWagProps(base)return false end
-		CreateClientProps(base)
+		if Metrostroi.ShouldHideTrain then bool = Metrostroi.ShouldHideTrain(wag) else bool = ShouldRenderClientEnts(wag) end
+		if not bool then RemoveWagProps(wag) wag.PropsRemoved = true return false end
+		if wag.PropsRemoved then
+			wag.PropsRemoved = false
+			CreateClientProps(wag.base)
+		end
 		return true
 	end
 
 	
 	timer.Create("Update SyncedWags",2,0,function()
-		for k,wag in pairs(SyncedWags) do
+		local CurTime = CurTime()
+		for _,wag in pairs(SyncedWags) do
+			local base = wag
+			local wag = wag.wag
+			if CurTime - base.Update > (IsValid(wag) and wag.interval and wag.interval > 0.4 and wag.interval*2 or 5) then 
+				if wag then
+					RemoveWagProps(wag)
+					SafeRemoveEntity(wag)
+					SyncedWags[base.EntID] = nil
+				end
+				continue
+			end
 			if not IsValid(wag) or not DrawClientProps(wag) then continue end
 			UpdateTextures(wag)
 			if MetrostroiDotSixLoadTextures then MetrostroiDotSixLoadTextures(wag,0) end--TODO не работает на точкушесть
-			local DoorL = wag:GetNW2Bool("DoorL")
-			local DoorR = wag:GetNW2Bool("DoorR")
-			local RL = wag:GetNW2Bool("RedLight",false)
 			for name,prop in pairs(wag.ClientProps) do
-				if not IsValid(prop) then continue end
 				local namelower = tostring(name):lower()
 				if namelower:find("door",1,true) and namelower:find("x1",1,true) then--скрытие и раскрытие дверей левых
-					prop:SetModelScale(DoorL and 0 or prop.scale)
+					prop:SetModelScale(base.DoorL and 0 or prop.scale)
 				end
 				if namelower:find("door",1,true) and namelower:find("x0",1,true) then--скрытие и раскрытие дверей правых
-					prop:SetModelScale(DoorR and 0 or prop.scale)
+					prop:SetModelScale(base.DoorR and 0 or prop.scale)
 				end
 				if namelower:find("redl",1,true) then--скрытие и раскрытие красных огней
-					prop:SetModelScale(RL and prop.scale or 0)
+					prop:SetModelScale(base.RedLight and prop.scale or 0)
 				end
 			end
-			if wag.wag and wag.wag.Lights then
+			if wag and wag.Lights and wag.Lights[1] then
 				--if wag.wag.GlowingLights then PrintTable(wag.wag.GlowingLights) end
-				SetLightPower(wag.wag,1,wag:GetNW2Bool("HeadLights"),1)--свет от фар
+				SetLightPower(wag,1,base.HeadLights,1)--свет от фар
 			end
 		end
 	end)
 	
-	hook.Add("Think","SyncedWagsMove",function()
-		for k,wag in pairs(SyncedWags) do
-			MoveSmooth(wag)
+	net.Receive("MetrostroiSync WagonsInfo",function()--TODO можно поулчить net.ReadType: Couldn't read type X, если передавать объекты (https://wiki.garrysmod.com/page/net/ReadTable)
+		local tbl = net.ReadTable()
+		local wag = SyncedWags[tbl.EntID]
+		if not wag then
+			SyncedWags[tbl.EntID] = tbl
+			wag = SyncedWags[tbl.EntID]
+			CreateClientProps(wag)
+			UpdateTextures(wag.wag)
+			wag.wag:SetPos(wag.WagPos)
+			wag.wag:SetAngles(wag.WagAng)
+			wag.Update = CurTime()
+		else
+			local ent = wag.wag
+			if not IsValid(ent) then SafeRemoveEntity(ent) RemoveWagProps(wag) wag.wag = nil SyncedWags[tbl.EntID] = nil return end
+			wag = tbl
+			wag.wag = ent
+			ent.base = wag
+			
+			wag.Update = CurTime()
+			MoveSmooth(ent,tbl.WagPos,tbl.WagAng)
 		end
+		SyncedWags[tbl.EntID] = tbl
 	end)
 end
 if CLIENT then return end
@@ -251,9 +263,9 @@ end
 
 require("gwsockets")
 
-if Metrostroi and Metrostroi.MetrostroiSync and Metrostroi.MetrostroiSync.socket then
+--[[if Metrostroi and Metrostroi.MetrostroiSync and Metrostroi.MetrostroiSync.socket then
 	Metrostroi.MetrostroiSync.socket:close()
-end
+end]]
 
 Metrostroi = Metrostroi or {}
 Metrostroi.MetrostroiSync = Metrostroi.MetrostroiSync or {}
@@ -369,42 +381,57 @@ local function CheckForOldWagons()
 	end
 end
 
+util.AddNetworkString("MetrostroiSync WagonsInfo")
 local function SendNetValues(wag,params,onspawn)
-	wag:SetNW2String("RouteNumber",params.route)
+	wag.TblToSend = wag.TblToSend or {}
+	local TblToSend = wag.TblToSend
 	
-	wag:SetNW2String("Texture",params.texture)
-	wag:SetNW2String("PassTexture",params.passtexture)
-	wag:SetNW2String("CabTexture",params.cabtexture)
+	TblToSend.RouteNumber = params.route
 	
-	wag:SetNW2Bool("DoorL",params.doorL)
-	wag:SetNW2Bool("DoorR",params.doorR)
+	TblToSend.Texture = params.texture
+	TblToSend.PassTexture = params.passtexture
+	TblToSend.CabTexture = params.cabtexture
 	
-	wag:SetNW2Bool("HeadLights",params.hl)
-	wag:SetNW2Bool("RedLight",params.rl)
+	TblToSend.DoorL = params.doorL
+	TblToSend.DoorR = params.doorR
 	
+	TblToSend.HeadLights = params.hl
+	TblToSend.RedLight = params.rl
+	
+	TblToSend.WagPos = params.pos
+	TblToSend.WagAng = params.ang
+	
+	
+	TblToSend.fbp = params.fbp
+	TblToSend.fba = params.fba
+	
+	TblToSend.rbp = params.rbp
+	TblToSend.rba = params.rba
+	
+	TblToSend.fcp = params.fcp
+	TblToSend.fca = params.fca
+	
+	TblToSend.rcp = params.rcp
+	TblToSend.rca = params.rca
+	
+
+		
 	if onspawn then
-		wag:SetNW2String("EntID",params.syncid)
-		wag:SetNW2String("WagModel",params.model)
-		wag:SetNW2String("Class",params.class)
-	
-		wag:SetNW2Bool("SyncedWag",true)
-		wag:SetNW2Vector("WagPos",params.pos)
-		wag:SetNW2Angle("WagAng",params.ang)
+		TblToSend.EntID = params.syncid
+		TblToSend.WagModel = params.model
+		TblToSend.Class = params.class
+		TblToSend.SyncedWag = true
 		
-		wag:SetNW2String("fbm",params.fbm)
-		wag:SetNW2Vector("fbp",params.fbp)
-		wag:SetNW2Angle("fba",params.fba)
-		wag:SetNW2String("rbm",params.rbm)
-		wag:SetNW2Vector("rbp",params.rbp)
-		wag:SetNW2Angle("rba",params.rba)
-		
-		wag:SetNW2String("fcm",params.fcm)
-		wag:SetNW2Vector("fcp",params.fcp)
-		wag:SetNW2Angle("fca",params.fca)
-		wag:SetNW2String("rcm",params.rcm)
-		wag:SetNW2Vector("rcp",params.rcp)
-		wag:SetNW2Angle("rca",params.rca)
+		TblToSend.fbm = params.fbm
+		TblToSend.rbm = params.rbm
+		TblToSend.fcm = params.fcm
+		TblToSend.rcm = params.rcm
 	end
+	
+	net.Start("MetrostroiSync WagonsInfo")
+		net.WriteTable(TblToSend)
+	net.Broadcast()
+	
 end
 
 local function SetWagonPos(params)
@@ -430,9 +457,13 @@ local function SetWagonPos(params)
 	wagon.type = "syncedwagon"
 	wagon.update = time
 	wagon:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
-	SendNetValues(wagon,params,true)
 	wagon:Spawn()
+	SendNetValues(wagon,params,true)
 	table.insert(Wagons,wagon)
+	--[[for k,v in pairs(player.GetHumans()) do
+		v:SetPos(params.pos)
+		break
+	end]]
 end
 
 
@@ -520,7 +551,6 @@ end
 
 function socket:onConnected()
 	MetrostroiSync.connected = true
-	--TODO отправление сигналки
 	sendSignals()
 	print("MetrostroiBD Sync enabled")
 end
@@ -560,7 +590,7 @@ concommand.Add("metrostroibd_sync_disable",function(ply,_,args)
 	Wagons = {}
 end)
 
-concommand.Add("metrostroibd_sync_trains_inreval",function(ply,_,args)
+concommand.Add("metrostroibd_sync_trains_interval",function(ply,_,args)
 	if not args[1] or not tonumber(args[1]) then return end
 	arg = tonumber(args[1])
 	if IsValid(ply) then 
@@ -571,7 +601,7 @@ concommand.Add("metrostroibd_sync_trains_inreval",function(ply,_,args)
 	end
 end)
 
-concommand.Add("metrostroibd_sync_switches_inreval",function(ply,_,args)
+concommand.Add("metrostroibd_sync_switches_interval",function(ply,_,args)
 	if not args[1] or not tonumber(args[1]) then return end
 	arg = math.floor(tonumber(args[1]+0.5))--округляю о целых
 	if IsValid(ply) then 
@@ -680,7 +710,7 @@ local function HookAdd(type,name,func)
 	::hookadd::
 	local hooks = hook.GetTable()[type]
 	if not hooks then hook.Add(type,name,function(...)return func(...)end) return end
-	if hooks[name] then hook.Remove(type,name) --[[print("removed",name,"goto")]] goto hookadd end
+	if hooks[name] then hook.Remove(type,name) --[[print("removed",name,"goto")]] goto hookadd end--мне лент писать повторную проверку, поэтому goto
 	local hookfuncs = {}
 	for hookname,hookfunc in pairs(hooks) do
 		table.insert(hookfuncs,hookfunc)
