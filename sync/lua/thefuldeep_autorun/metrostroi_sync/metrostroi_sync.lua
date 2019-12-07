@@ -196,7 +196,7 @@ if CLIENT then
 	
 	local function RemoveWagProps(wag)
 		for i,prop in pairs(wag.ClientProps or {}) do
-			if prop == wag then continue end
+			if prop == wag.wag then continue end
 			SafeRemoveEntity(prop)
 			wag.ClientProps[i] = nil
 		end
@@ -223,12 +223,10 @@ if CLIENT then
 		for _,wag in pairs(SyncedWags) do
 			local base = wag
 			local wag = wag.wag
-			if CurTime - base.Update > (IsValid(wag) and wag.interval and wag.interval > 0.4 and wag.interval*2 or 5) then 
-				if wag then
-					RemoveWagProps(wag)
-					SafeRemoveEntity(wag)
-					SyncedWags[base.EntID] = nil
-				end
+			if CurTime - base.Update > (wag.interval and wag.interval > 0.4 and wag.interval*2 or 5) then 
+				RemoveWagProps(wag)
+				SafeRemoveEntity(wag)
+				SyncedWags[base.EntID] = nil
 				continue
 			end
 			if not IsValid(wag) or not DrawClientProps(wag) then continue end
