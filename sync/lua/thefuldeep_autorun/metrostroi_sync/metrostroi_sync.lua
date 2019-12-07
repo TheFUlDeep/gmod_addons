@@ -74,7 +74,7 @@ if CLIENT then
 		ShouldRenderClientEnts = base.ShouldRenderClientEnts or ShouldRenderClientEnts
 		local OldShouldRenderClientEnts = ShouldRenderClientEnts
 		ShouldRenderClientEnts = function(ent)
-			if IsValid(ent) and IsValid(ent.wag) and LocalPlayer():GetPos():DistToSqr(ent.wag:GetPos()) > 3000*3000 then return false end
+			if IsValid(ent) and LocalPlayer():GetPos():DistToSqr(ent:GetPos()) > 3000*3000 then return false end
 			return OldShouldRenderClientEnts(ent)
 		end
 	end)
@@ -138,6 +138,14 @@ if CLIENT then
 		
 		local base = wag
 		local wag = base.wag
+		print("SetPos")
+		wag:SetPos(base.WagPos)
+		wag:SetAngles(base.WagAng)
+		
+		local bool
+		if Metrostroi.ShouldHideTrain then bool = Metrostroi.ShouldHideTrain(wag) else bool = ShouldRenderClientEnts(wag) end
+		if not bool then return end
+		
 		wag.ClientProps = wag.ClientProps or {}
 		local ClientProps = wag.ClientProps
 
@@ -192,11 +200,12 @@ if CLIENT then
 		wag.Lights = ENT.Lights
 		table.insert(ClientProps,wag)
 		base.ClientProps = ClientProps
+		return true
 	end
 	
 	local function RemoveWagProps(wag)
 		for i,prop in pairs(wag.ClientProps or {}) do
-			if prop == wag.wag then continue end
+			if prop == wag then continue end
 			SafeRemoveEntity(prop)
 			wag.ClientProps[i] = nil
 		end
@@ -223,7 +232,7 @@ if CLIENT then
 		for _,wag in pairs(SyncedWags) do
 			local base = wag
 			local wag = wag.wag
-			if CurTime - base.Update > (wag.interval and wag.interval > 0.4 and wag.interval*2 or 5) then 
+			if base.Update and CurTime - base.Update > (wag.interval and wag.interval > 0.4 and wag.interval*2 or 5) then 
 				RemoveWagProps(wag)
 				SafeRemoveEntity(wag)
 				SyncedWags[base.EntID] = nil
@@ -257,7 +266,7 @@ if CLIENT then
 		if not wag then
 			SyncedWags[tbl.EntID] = tbl
 			wag = SyncedWags[tbl.EntID]
-			CreateClientProps(wag)
+			if not CreateClientProps(wag) then return end
 			UpdateTextures(wag.wag)
 			wag.wag:SetPos(wag.WagPos)
 			wag.wag:SetAngles(wag.WagAng)
@@ -270,9 +279,9 @@ if CLIENT then
 			ent.base = wag
 			
 			wag.Update = CurTime()
+			SyncedWags[tbl.EntID] = wag
 			MoveSmooth(ent,tbl.WagPos,tbl.WagAng)
 		end
-		SyncedWags[tbl.EntID] = tbl
 	end)
 end
 if CLIENT then return end
