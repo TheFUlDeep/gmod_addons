@@ -4,6 +4,19 @@ if CLIENT then
 	Metrostroi.MetrostroiSync.SyncedWags = Metrostroi.MetrostroiSync.SyncedWags or {}
 	local SyncedWags = Metrostroi.MetrostroiSync.SyncedWags
 	
+	net.Receive("MetrostroiChatSync", function()
+		local dataN = net.ReadUInt(32)
+		local tbl = util.JSONToTable(util.Decompress(net.ReadData(dataN)))
+		local text = {}
+		for i = 1,#tbl.Texts do
+			local color = string.ToColor(tbl.Colors[i] or "")
+			table.insert(text,color)
+			table.insert(text,tbl.Texts[i])
+		end
+		chat.AddText(unpack(text))
+	end)
+	
+	
 	local UpdateTextures = function() end
 	local SetLightPower = function() end
 	local ShouldRenderClientEnts = function() end
@@ -20,22 +33,27 @@ if CLIENT then
 		end
 	end)
 
-	local function MoveSmooth(ent,vec2,ang2)
-		if not IsValid(ent) or ent.moving then return end
+	local function MoveSmooth(ent)
+		if not IsValid(ent) or not IsValid(ent.wag) then return end
+		local vec2 = ent:GetPos()
+		if vec2 == ent.prevpos then return end--тут еще можно добавить проверку по ang, но так как позиция почти всегда будет обновляться, так как поезд качатеся, то она лишняя
+		ent.prevpos = vec2
+		local ang2 = ent:GetAngles()
+		ent = ent.wag
 		local vec1 = ent:GetPos()
 		local ang1 = ent:GetAngles()
 		local CallTime = CurTime()
 		local HookName = "MoveSmooth"..ent.base.EntID
-		local interval = GetGlobalFloat("MetrostroiSyncInterval",5)
 		local light = ent.GlowingLights and ent.GlowingLights[1]
 		local lightpos = ent.Lights[1][2]
 		local lightang = ent.Lights[1][3]
-		ent.moving = true
+		local interval = CallTime - (ent.prevmovecall or (CallTime-0.001))
+		ent.prevmovecall = CallTime
+		--print(interval)
 		hook.Add("Think",HookName, function()
 			if not IsValid(ent) then hook.Remove("Think",HookName) return end
 			local CurTime = CurTime()
 			if CurTime - CallTime > interval or ent:GetPos() == vec2 then 
-				ent.moving = false
 				hook.Remove("Think",HookName)
 				--ent:SetPos(vec2)
 				return 
@@ -220,9 +238,7 @@ if CLIENT then
 	
 	hook.Add("Think","SyncedWagsMove",function()
 		for k,wag in pairs(SyncedWags) do
-			if not IsValid(wag) then table.remove(SyncedWags,k) continue end
-			--local Wag = wag.ClientProps.wag
-			MoveSmooth(wag.wag,wag:GetPos(),wag:GetAngles())
+			MoveSmooth(wag)
 		end
 	end)
 end
@@ -265,7 +281,6 @@ local Wagons = MetrostroiSync.Wagons
 local send_data = CreateConVar( "metrostroibd_sync_time", "5", FCVAR_ARCHIVE, "Interval between send data", 0, 60 )
 local SwitchesInterval = CreateConVar( "metrostroibd_sync_switches_time", "5", FCVAR_ARCHIVE, "Interval between send data", 1, 60 )
 local SyncEnabled = CreateConVar( "metrostroibd_sync_enabled", "0", FCVAR_ARCHIVE, "", 0, 1 )
-SetGlobalFloat("MetrostroiSyncInterval",send_data:GetFloat())
 timer.Simple(0,function()
 	if SyncEnabled:GetBool() then RunConsoleCommand("metrostroibd_sync_enable") end
 end)
@@ -275,41 +290,46 @@ timer.Simple(0,function()
 	CurrentMap = game.GetMap()
 end)
 
+local function sendData(tbl)
+	tbl.map = CurrentMap
+	socket:write(util.TableToJSON(tbl))
+end
+
 local function sendText(text)
 	local dat = {
 		type = "chatMessage",
 		msg = text,
-		map = CurrentMap
 	}
-	socket:write(util.TableToJSON(dat))
+	table.insert(dat.msg.Colors,1,"133 133 133 0")
+	table.insert(dat.msg.Texts,1,"["..GetHostName().."] ")
+	sendData(dat)
 end
+MetrostroiSync.sendText = sendText
 
 local function sendTrains(tbl)
 	local dat = {
 		type = "trains",
 		msg = tbl,
-		map = CurrentMap
 	}
-	socket:write(util.TableToJSON(dat))
+	sendData(dat)
 end
 
+local LastSettingSwitchesState = 0
 local function sendSwitches(tbl)
+	if CurTime() - LastSettingSwitchesState < SwitchesInterval:GetInt()*2 then return end--возможно надо будет добавить еще небольшой оффсет, потому что при одновременном получении данных сервера смогут одновременно отправить
 	local dat = {
 		type = "switches",
 		msg = tbl,
-		map = CurrentMap
 	}
-	socket:write(util.TableToJSON(dat))
+	sendData(dat)
 end
 
 local function sendRoute(command)
-	print("sending route")
 	local dat = {
 		type = "routes",
 		msg = command,
-		map = CurrentMap
 	}
-	socket:write(util.TableToJSON(dat))
+	sendData(dat)
 end
 
 
@@ -390,6 +410,7 @@ local function SetWagonPos(params)
 	table.insert(Wagons,wagon)
 end
 
+
 local function SetSwitchState(name,state)
 	local swhs = ents.FindByName(name)
 	for _,swh in pairs(swhs or {}) do
@@ -405,12 +426,26 @@ local function OpenRoute(command)
 	end
 end
 
+local function SendChatMessageToClients(tbl)
+	for i = 1,#tbl.Texts do
+		MsgC(string.ToColor(tbl.Colors[i] or ""),tbl.Texts[i])
+	end
+	Msg("\n")
+	net.Start("MetrostroiChatSync")
+		local data = util.Compress(util.TableToJSON(tbl))
+		local dataN = #data
+		net.WriteUInt(dataN,32)
+		net.WriteData(data,dataN)
+	net.Broadcast()
+end
 
+util.AddNetworkString("MetrostroiChatSync")
 local function onMessage(txt)
 	local data = util.JSONToTable(txt)
 	if data.map ~= CurrentMap then return end
+
 	if data.type == "chatMessage" then
-		PrintMessage(3,data.msg)
+		SendChatMessageToClients(data.msg)
 	end
 	if data.type == "trains" then
 		local trains = data.msg.trains
@@ -422,6 +457,7 @@ local function onMessage(txt)
 		for name,state in pairs(data.msg) do
 			SetSwitchState(name,state)
 		end
+		LastSettingSwitchesState = CurTime()
 	end
 	if data.type == "routes" then
 		OpenRoute(data.msg)
@@ -434,6 +470,7 @@ end
 
 function socket:onConnected()
 	MetrostroiSync.connected = true
+	--TODO отправление сигналки
 	print("MetrostroiBD Sync enabled")
 end
 
@@ -478,10 +515,8 @@ concommand.Add("metrostroibd_sync_trains_inreval",function(ply,_,args)
 	if IsValid(ply) then 
 		if not ply:IsSuperAdmin() then return end
 		send_data:SetFloat(arg)
-		SetGlobalFloat("MetrostroiSyncInterval",arg)
 	else
 		send_data:SetFloat(arg)
-		SetGlobalFloat("MetrostroiSyncInterval",arg)
 	end
 end)
 
@@ -571,22 +606,30 @@ end)
 
 timer.Simple(0,function()--чтобы етот хук добавлялся последним
 hook.Add("PlayerSay","SyncChat",function(ply,text)
-	if text ~= "/stoprpc" then
-		sendText("["..GetHostName().."] "..ply:Nick()..": " ..text)
-		local low = text:lower()
-		if low:find("!sopen",1,true) or low:find("!sclose",1,true) or low:find("!sopps",1,true) or low:find("!sclps",1,true) or low:find("!sactiv",1,true) or low:find("!sdeactiv",1,true) then
-			sendRoute(text)
-		end
-	else
-		socket:close()
+	local NickColor = team.GetColor(ply:Team())
+	local text1 = {
+		Colors = {
+			NickColor.r.." "..NickColor.g.." "..NickColor.b.." "..NickColor.a
+		},
+		Texts = {
+			ply:Nick(),
+			": "..text
+		}
+	}
+	sendText(text1)
+	local low = text:lower()
+	if low:find("!sopen",1,true) or low:find("!sclose",1,true) or low:find("!sopps",1,true) or low:find("!sclps",1,true) or low:find("!sactiv",1,true) or low:find("!sdeactiv",1,true) then
+		sendRoute(text)
 	end
 end)
 end)
 
 
 local function HookAdd(type,name,func)
-	local hooks = hook.GetTable().type
+	::hookadd::
+	local hooks = hook.GetTable()[type]
 	if not hooks then hook.Add(type,name,function(...)return func(...)end) return end
+	if hooks[name] then hook.Remove(type,name) --[[print("removed",name,"goto")]] goto hookadd end
 	local hookfuncs = {}
 	for hookname,hookfunc in pairs(hooks) do
 		table.insert(hookfuncs,hookfunc)
@@ -604,9 +647,87 @@ end
 
 timer.Simple(0,function()
 HookAdd("MetrostroiPassedRed","MetrostroiPassedRedSync",function(Train,ply,mode,arsback)
-	sendText("["..GetHostName().."] "..ply:Nick().." проехал светофор "..name.." с запрещающим показанием.")
+	local NickColor = team.GetColor(ply:Team())
+	local text = {
+		Colors = {
+			NickColor.r.." "..NickColor.g.." "..NickColor.b.." "..NickColor.a,
+			"",
+			"0 255 0 0"
+		},
+		Texts = {
+			ply:Nick(),
+			" проеxaл светофор ",
+			arsback.Name,
+			" c запрещающим показанием."
+		}
+	}
+	sendText(text)
 end)
 HookAdd("MetrostroiPlombBroken","MetrostroiPlombBrokenSync",function(self,but,ply)
-	sendText("["..GetHostName().."] "..ply:Nick().." снял пломбу "..but..".")
+	local NickColor = team.GetColor(ply:Team())
+	local text = {
+		Colors = {
+			NickColor.r.." "..NickColor.g.." "..NickColor.b.." "..NickColor.a,
+			"",
+			"0 255 0 0"
+		},
+		Texts = {
+			ply:Nick(),
+			" сорвал пломбу ",
+			but,
+			"."
+		}
+	}
+	sendText(text)
 end)
 end)
+
+
+
+
+
+
+
+
+
+
+
+
+--[[
+
+
+код на nodeJS
+
+const WebSocket = require('ws');
+ 
+const wss = new WebSocket.Server({ port: 228 });
+ 
+wss.on('connection', function connection(ws) {
+	var now = new Date();
+	console.log(now);
+	console.log("NEW CONNECTION");
+	//console.log(wss.clients);
+  ws.on('message', function incoming(message) {
+	  //console.log("recieved");
+    //let data = JSON.parse(message)
+   // if (data.type == "chatMessage") {
+    	wss.clients.forEach(function each(client) {
+			//console.log("client");
+	    	if (client !== ws && client.readyState === WebSocket.OPEN) {
+	    	//if (client.readyState === WebSocket.OPEN) {
+				//console.log("sending");
+	    		//let dat = {
+	    			//"type": "syncChat",
+	    			//"msg": data.msg
+	    		//}
+	    		client.send(message);
+	    	}
+	   	});
+    //}
+  });
+});
+
+
+
+
+]]
