@@ -11,8 +11,9 @@ if SERVER then
 			local PlayerCount = player.GetCount()
 			if THEFULDEEP.PLAYERCOUNT < PlayerCount then THEFULDEEP.PLAYERCOUNT = PlayerCount end --TODO это костыль. Почему-то может произойти, что дисконнектов больше, чем коннектов
 			local NickColor = team.GetColor(ply:Team())
+			local Nick = ply:Nick()
 			net.Start("tfd_spawnmsg")
-				net.WriteString(ply:Nick())
+				net.WriteString(Nick)
 				net.WriteColor(NickColor)
 				net.WriteBool(ply:IsSuperAdmin())
 			net.Broadcast()
@@ -26,7 +27,7 @@ if SERVER then
 				},
 				Texts = {
 					'Игрок "',
-					data.name,
+					Nick,
 					'"',
 					" присоединяется",
 					"."
