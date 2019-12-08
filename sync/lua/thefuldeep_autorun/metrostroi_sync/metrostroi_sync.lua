@@ -322,7 +322,7 @@ local Wagons = MetrostroiSync.Wagons
 local send_data = CreateConVar( "metrostroibd_sync_time", "5", FCVAR_ARCHIVE, "Interval between send data", 0, 60 )
 local SwitchesInterval = CreateConVar( "metrostroibd_sync_switches_time", "5", FCVAR_ARCHIVE, "Interval between send data", 1, 60 )
 local SyncEnabled = CreateConVar( "metrostroibd_sync_enabled", "0", FCVAR_ARCHIVE, "", 0, 1 )
-timer.Simple(0,function()
+timer.Simple(5,function()
 	if SyncEnabled:GetBool() then RunConsoleCommand("metrostroibd_sync_enable") end
 end)
 
@@ -385,17 +385,27 @@ local function GetSignalsFile(type,onlytxt)
 	return ""
 end
 
-local function sendSignals()
-	local dat = {
-		type = "signals",
-		msg = {
-			auto = GetSignalsFile("auto"),
-			pa = GetSignalsFile("pa"),
-			signs = GetSignalsFile("signs"),
-			track = GetSignalsFile("track")
-		}
+local function sendSignals()--может крашнуться на етой функции???
+	local signs = {
+		auto = GetSignalsFile("auto"),
+		pa = GetSignalsFile("pa"),
+		signs = GetSignalsFile("signs"),
+		track = GetSignalsFile("track")
 	}
-	sendData(dat)
+	local i = 0
+	for type,str in pairs(signs) do
+		i = i + 1
+		timer.Simple(i,function()
+		local dat = {
+			type = "signals",
+			msg = {
+				[type] = str
+			}
+		}
+		sendData(dat)
+		end)
+	end
+
 end
 
 
@@ -520,7 +530,8 @@ local function SendChatMessageToClients(tbl)
 	net.Broadcast()
 end
 
-local function LoadSignals(data)
+local signsloaded = {}
+local function LoadSignals(data)--эта функция выполняется слишком много раз, но в итоге она выполнится максимум 4 раза при проиоединении нового сервера, так что покс
 	local signals = {
 		auto = GetSignalsFile("auto",true),
 		pa = GetSignalsFile("pa",true),
@@ -537,8 +548,10 @@ local function LoadSignals(data)
 	
 	for type,str in pairs(data) do
 		file.Write("metrostroi_data/"..type.."_"..CurrentMap..".txt",str)
+		signsloaded[type] = true
 	end
-	RunConsoleCommand("metrostroi_load")
+	--PrintTable(signsloaded)
+	if signsloaded.auto and signsloaded.pa and signsloaded.signs and signsloaded.track then RunConsoleCommand("metrostroi_load") signsloaded = {} end
 	
 end
 
@@ -803,7 +816,7 @@ end)
 
 
 --[[
-
+dll модуль https://github.com/FredyH/GWSockets/releases
 
 код на nodeJS
 
