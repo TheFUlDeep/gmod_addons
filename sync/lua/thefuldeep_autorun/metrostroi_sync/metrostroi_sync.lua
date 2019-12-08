@@ -61,8 +61,8 @@ if CLIENT then
 				break
 			end
 			if not baseent then return end
-			baseent.ClientProps = wag.ClientProps
-			baseent.ClientEnts = wag.ClientProps
+			baseent.ClientProps = wag.ClientProps or {}
+			baseent.ClientEnts = wag.ClientProps or {}
 			local basetbl = wag.base
 			baseent:SetNW2String("Texture",basetbl.Texture)
 			baseent:SetNW2String("CabTexture",basetbl.CabTexture)
@@ -142,7 +142,7 @@ if CLIENT then
 		wag:SetAngles(base.WagAng)
 		
 		local bool
-		if Metrostroi.ShouldHideTrain then bool = Metrostroi.ShouldHideTrain(wag) else bool = ShouldRenderClientEnts(wag) end
+		if Metrostroi.ShouldHideTrain then wag.LastDrawCheckClientEnts = 0 bool = Metrostroi.ShouldHideTrain(wag) else bool = ShouldRenderClientEnts(wag) end
 		if not bool then return end
 		
 		wag.ClientProps = wag.ClientProps or {}
@@ -216,7 +216,7 @@ if CLIENT then
 	
 	local function DrawClientProps(wag)
 		local bool
-		if Metrostroi.ShouldHideTrain then bool = Metrostroi.ShouldHideTrain(wag) else bool = ShouldRenderClientEnts(wag) end
+		if Metrostroi.ShouldHideTrain then wag.LastDrawCheckClientEnts = 0 bool = Metrostroi.ShouldHideTrain(wag) else bool = ShouldRenderClientEnts(wag) end
 		if not bool then RemoveWagProps(wag) wag.PropsRemoved = true return false end
 		if wag.PropsRemoved then
 			wag.PropsRemoved = false
@@ -231,7 +231,7 @@ if CLIENT then
 		for _,wag in pairs(SyncedWags) do
 			local base = wag
 			local wag = wag.wag
-			if base.Update and CurTime - base.Update > (wag.interval and wag.interval > 0.4 and wag.interval*2 or 5) then 
+			if not base.Update or CurTime - base.Update > (wag.interval and wag.interval > 0.4 and wag.interval*2 or 5) then 
 				RemoveWagProps(wag)
 				SafeRemoveEntity(wag)
 				SyncedWags[base.EntID] = nil
@@ -239,8 +239,8 @@ if CLIENT then
 			end
 			if not IsValid(wag) or not DrawClientProps(wag) then continue end
 			UpdateTextures(wag)
-			MetrostroiDotSixLoadTextures1(wag,0)--TODO не работает на точкушесть
-			for name,prop in pairs(wag.ClientProps) do
+			--MetrostroiDotSixLoadTextures1(wag,0)--TODO не работает на точкушесть
+			for name,prop in pairs(wag.ClientProps or {}) do
 				local namelower = tostring(name):lower()
 				if namelower:find("door",1,true) and namelower:find("x1",1,true) then--скрытие и раскрытие дверей левых
 					prop:SetModelScale(base.DoorL and 0 or prop.scale)
