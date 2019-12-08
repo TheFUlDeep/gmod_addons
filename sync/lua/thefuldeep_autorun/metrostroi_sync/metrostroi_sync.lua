@@ -748,10 +748,8 @@ end)
 
 
 local function HookAdd(type,name,func)
-	::hookadd::
 	local hooks = hook.GetTable()[type]
 	if not hooks then hook.Add(type,name,function(...)return func(...)end) return end
-	if hooks[name] then hook.Remove(type,name) --[[print("removed",name,"goto")]] goto hookadd end--мне лент писать повторную проверку, поэтому goto
 	local hookfuncs = {}
 	for hookname,hookfunc in pairs(hooks) do
 		table.insert(hookfuncs,hookfunc)
@@ -816,6 +814,9 @@ end)
 
 
 --[[
+есть еще такой варик в качестве альтернативы https://github.com/Bromvlieg/gm_bromsock, https://github.com/HunterNL/Gmod-Websockets
+
+
 dll модуль https://github.com/FredyH/GWSockets/releases
 
 код на nodeJS
