@@ -17,6 +17,19 @@ if SERVER then
 			net.WriteString(data.networkid)
 			net.WriteString(data.reason)
 		net.Broadcast()
+		if not Metrostroi or not Metrostroi.MetrostroiSync or not Metrostroi.MetrostroiSync.sendText then return end
+		local text1 = {
+			Colors = {
+				"",
+				"255 0 0 0"
+			},
+			Texts = {
+				'Игрок "'..data.name..'"'.."("..data.networkid..")",
+				" вышел",
+				" c сервера ("..data.reason..")."
+			}
+		}
+		Metrostroi.MetrostroiSync.sendText(text1)
 	end)
 end
 
@@ -25,7 +38,7 @@ if CLIENT then
 	net.Receive("SB_PlayerDisconnectedMessage",function(len)
 		local nick,steam,reason = net.ReadString(),net.ReadString(),net.ReadString()
 
-		chat.AddText(color_white,"Игрок \"",nick,"\"(",steam,") ",Color(255,0,0),"вышел ",color_white,"с сервера (",reason,")")
+		chat.AddText(color_white,"Игрок \"",nick,"\"(",steam,") ",Color(255,0,0),"вышел ",color_white,"с сервера (",reason,").")
 	end)
 end
 
@@ -42,10 +55,29 @@ if SERVER then
 
 	net.Receive("SB_PlayerLoaded",function(len,ply)
 		if ply.AntiAfk and ply.AntiAfk.AfkBlock then ply.AntiAfk.AfkBlock = nil end	--this line for anti_afk.lua
+		local NickColor = team.GetColor(ply:Team())
+		local Nick = ply:Nick()
 		net.Start("SB_PlayerLoaded")
-			net.WriteString(ply:Nick())
-			net.WriteColor(team.GetColor(ply:Team()))
+			net.WriteString(Nick)
+			net.WriteColor(NickColor)
 		net.Broadcast()
+		if not Metrostroi or not Metrostroi.MetrostroiSync or not Metrostroi.MetrostroiSync.sendText then return end
+		local text1 = {
+			Colors = {
+				"",
+				NickColor.r.." "..NickColor.g.." "..NickColor.b.." "..NickColor.a,
+				"",
+				"0 255 0 0"
+			},
+			Texts = {
+				'Игрок "',
+				Nick,
+				'"',
+				" загрузился",
+				"."
+			}
+		}
+		Metrostroi.MetrostroiSync.sendText(text1)
 
 		hook.Run("PlayerLoaded",ply)
 	end)

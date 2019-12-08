@@ -10,11 +10,30 @@ if SERVER then
 			if not IsValid(ply) then return end
 			local PlayerCount = player.GetCount()
 			if THEFULDEEP.PLAYERCOUNT < PlayerCount then THEFULDEEP.PLAYERCOUNT = PlayerCount end --TODO это костыль. Почему-то может произойти, что дисконнектов больше, чем коннектов
+			local NickColor = team.GetColor(ply:Team())
+			local Nick = ply:Nick()
 			net.Start("tfd_spawnmsg")
-				net.WriteString(ply:Nick())
-				net.WriteColor(team.GetColor(ply:Team()))
+				net.WriteString(Nick)
+				net.WriteColor(NickColor)
 				net.WriteBool(ply:IsSuperAdmin())
 			net.Broadcast()
+			if not Metrostroi or not Metrostroi.MetrostroiSync or not Metrostroi.MetrostroiSync.sendText then return end
+			local text1 = {
+				Colors = {
+					"",
+					NickColor.r.." "..NickColor.g.." "..NickColor.b.." "..NickColor.a,
+					"",
+					"150 255 0 0"
+				},
+				Texts = {
+					'Игрок "',
+					Nick,
+					'"',
+					" присоединяется",
+					"."
+				}
+			}
+			Metrostroi.MetrostroiSync.sendText(text1)
 		end)
 	end)
 	
@@ -24,6 +43,19 @@ if SERVER then
 		net.Start("tfd_connectmsg")
 			net.WriteString(data.name)
 		net.Broadcast()
+		if not Metrostroi or not Metrostroi.MetrostroiSync or not Metrostroi.MetrostroiSync.sendText then return end
+		local text1 = {
+			Colors = {
+				"",
+				"255 255 255 0"
+			},
+			Texts = {
+				'Игрок "'..data.name..'"',
+				" присоединяется",
+				"."
+			}
+		}
+		Metrostroi.MetrostroiSync.sendText(text1)
 	end)
 end
 

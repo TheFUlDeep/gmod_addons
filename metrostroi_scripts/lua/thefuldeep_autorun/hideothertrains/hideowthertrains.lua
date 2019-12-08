@@ -174,6 +174,9 @@ local function HideTrain(ent)
 					return ent.DrawResult
 end
 
+Metrostroi = Metrostroi or {}
+Metrostroi.ShouldHideTrain = HideTrain
+
 hook.Add( "OnEntityCreated", "UpdateTrainsDrawFunction", function( ent )
 	timer.Simple(0.5,function()
 		if not IsValid(ent) or not string.find(ent:GetClass(),"gmod_subway",1,true) then return end
