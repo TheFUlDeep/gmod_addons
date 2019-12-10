@@ -58,6 +58,7 @@ if CLIENT then
 end
 
 local function CustomSkin(self,OnSpawn)
+	if 1 then return end
 	if not IGS or not IGS.ITEMS or not IGS.PlayerPurchases or CLIENT or not self.Train or not self.Train.ClassName 
 		or self.Train.ClassName == "gmod_subway_81-540_2" 
 		or self.Train.ClassName == "gmod_subway_81-760" 
