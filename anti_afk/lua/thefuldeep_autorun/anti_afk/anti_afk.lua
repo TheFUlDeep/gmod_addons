@@ -23,7 +23,7 @@ end
 timer.Create("AntiAfk",10,0,function()
 	local AntiAfkTime = AntiAfkTimeConVar:GetInt()
 	for n,ply in pairs(player.GetHumans()) do
-		if not IsValid(ply) then continue end
+		if not IsValid(ply) or ply:IsSuperAdmin() then continue end
 		if not ply.AntiAfk then ply.AntiAfk = {} end
 		--local Ang = ply:GetAngles() --ply:EyeAngles()
 		if --[[not ply.AntiAfk.Pos or ply.AntiAfk.Pos ~= ply:GetPos() or]] ply.AntiAfk.AfkBlock
@@ -53,6 +53,8 @@ timer.Create("AntiAfk",10,0,function()
 		for k,TrainClass in pairs(Metrostroi.TrainClasses) do
 			for n,wag in pairs(ents.FindByClass(TrainClass)) do
 				if not IsValid(wag) then continue end
+				local Owner wag.CPPIGetOwner and wag:CPPIGetOwner() end
+				if IsValid(Owner) and Owner:IsSuperAdmin() then continue end
 				if not wag.AntiAfk then wag.AntiAfk = {} end
 				local Pos = wag:GetPos()
 				--local Ang = wag:GetAngles() --wag:EyeAngles()
@@ -69,7 +71,7 @@ timer.Create("AntiAfk",10,0,function()
 				if wag.AntiAfk.LastChange then
 					local Delta = CurTime() - wag.AntiAfk.LastChange
 					if not wag.AntiAfk.NotifShowed and AntiAfkTime > 120 and AntiAfkTime - Delta < 60 and CPPI and IsValid(wag:CPPIGetOwner()) then
-						wag:CPPIGetOwner():ChatPrint("Ваш состав удлится менее чем через минуту, если он не сдвинется!") 
+						if IsValid(Owner) then Owner:ChatPrint("Ваш состав удлится менее чем через минуту, если он не сдвинется!") end
 						if wag.WagonList then
 							for i,wag1 in pairs(wag.WagonList) do
 								if not wag1.AntiAfk then wag1.AntiAfk = {} end
@@ -80,7 +82,6 @@ timer.Create("AntiAfk",10,0,function()
 						end
 					end
 					if Delta > AntiAfkTime then
-						local Owner = CPPI and wag:CPPIGetOwner()
 						if IsValid(Owner) then Owner:ChatPrint("Удаляю "..tostring(wag)) end
 						wag:Remove() 
 					end
