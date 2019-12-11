@@ -372,6 +372,7 @@ local function sendRoute(command)
 	}
 	sendData(dat)
 end
+MetrostroiSync.sendRoute = sendRoute
 
 local function GetSignalsFile(type,onlytxt)
 	local path = "metrostroi_data/"..type.."_"..CurrentMap
