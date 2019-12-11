@@ -531,6 +531,16 @@ if SERVER then
 		end
 	end
 	
+	local function ForAvtooborot(routename)
+		local comm = "!sopen "..routename
+		for _,v in pairs(ents.FindByClass("gmod_track_signal")) do
+			if not IsValid(v) or not v.SayHook then continue end
+			v:SayHook(comm,comm)
+		end
+		if Metrostroi.MetrostroiSync then
+			Metrostroi.MetrostroiSync.sendRoute(comm)
+		end
+	end
 	
 	function UpdateAvtooborot()	-- эта функция вызывается при сработке триггера
 		--ДЛЯ СПРАВКИ
