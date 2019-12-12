@@ -540,8 +540,9 @@ local function LoadSignals(data)--эта функция выполняется �
 		track = GetSignalsFile("track",true)
 	}
 	
+	local date = os.date("%d_%m_%Y-%H_%M_%S", os.time())
 	for type,str in pairs(signals) do
-		local path = "metrostroi_data/"..type.."_"..CurrentMap.."_backup.txt"
+		local path = "metrostroi_data/"..type.."_"..CurrentMap.."_backup_"..date..".txt"
 		if str ~= "" and not file.Exists(path,"DATA") then
 			file.Write(path, str)
 		end
