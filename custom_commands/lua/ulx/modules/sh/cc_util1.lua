@@ -13,7 +13,7 @@ if SERVER then
 		ulx.fancyLogAdmin(calling_ply, "[SERVER] #A ПЕРЕЗАГРУЗИЛ СИГНАЛКУ")
 	end
 end
-local reloadsignals = ulx.command("Signals", "ulx reloadsignals", ulx.reloadsignals, "!reloadsignals", true, false, true)
+local reloadsignals = ulx.command("Metrostroi", "ulx reloadsignals", ulx.reloadsignals, "!reloadsignals", true, false, true)
 reloadsignals:defaultAccess(ULib.ACCESS_SUPERADMIN)
 reloadsignals:help("Перезагружает сигналку")
 
@@ -23,7 +23,7 @@ if SERVER then
 		ulx.fancyLogAdmin(calling_ply, "[SERVER] #A СОХРАНИЛ СИГНАЛКУ")
 	end
 end
-local savesignals = ulx.command("Signals", "ulx savesignals", ulx.savesignals, "!savesignals", true, false, true)
+local savesignals = ulx.command("Metrostroi", "ulx savesignals", ulx.savesignals, "!savesignals", true, false, true)
 savesignals:defaultAccess(ULib.ACCESS_SUPERADMIN)
 savesignals:help("Сохраняет сигналку")
 
@@ -1314,7 +1314,7 @@ if SERVER then
 	end)
 
 	--[[============================= РАЗРЕШЕНИЕ СПАВНА ТОЛЬКО В ОПРЕДЕЛЕННЫХ МЕСТАХ ==========================]]
-	ULib.ucl.registerAccess("AllowSpawnTrainOnStations", ULib.ACCESS_ALL, "Разрешить спавнить на станциях", "Cmds - Metrostroi")
+	--[[ULib.ucl.registerAccess("AllowSpawnTrainOnStations", ULib.ACCESS_ALL, "Разрешить спавнить на станциях", "Cmds - Metrostroi") -- временно отключил, потому что поменялась функция detectstation
 	hook.Add("CanTool", "AllowSpawnTrain", function(ply, tr, tool)
 		if tool ~= "train_spawner" then return end
 		local ourstation = bigrustosmall(detectstation(tr.HitPos))
@@ -1326,7 +1326,7 @@ if SERVER then
 				ply:LimitHit("Запрещено спавнить на станциях")
 				return false
 		end
-	end)
+	end)]]
 
 	--[[============================= СТАРОЕ РАССТОЯНИЕ МЕЖДУ ВАГОНАМИ НА НВЛ ==========================]]
 	if string.find(game.GetMap(), "nvl") then Metrostroi.BogeyOldMap = 1 end
