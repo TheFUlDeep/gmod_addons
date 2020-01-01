@@ -506,7 +506,7 @@ end
 local function SetSwitchState(name,state)
 	local swhs = ents.FindByName(name)
 	for _,swh in pairs(swhs or {}) do
-		if not IsValid(swh) then return end
+		if not IsValid(swh) then continue end
 		swh:Fire((state == 0 or state == 3) and "Close" or "Open","","0")
 	end
 end
