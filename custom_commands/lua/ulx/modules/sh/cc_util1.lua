@@ -1556,9 +1556,10 @@ if SERVER then
 	hook.Add("OnEntityCreated", "AlsFReq", function(ent)
 		timer.Simple(3, function()
 			if not IsValid(ent) or ent.Base ~= "gmod_subway_base" then return end
+			local EntPos = ent:GetPos()
 			local blizhniy
 			for k,v in pairs(ents.FindByClass("gmod_track_signal") or {}) do
-				if IsValid(v) and (not blizhniy or ent:GetPos():DistToSqr(v:GetPos()) < ent:GetPos():DistToSqr(blizhniy:GetPos())) then blizhniy = v end
+				if IsValid(v) and (not blizhniy or EntPos:DistToSqr(v:GetPos()) < EntPos:DistToSqr(blizhniy:GetPos())) then blizhniy = v end
 			end
 			if not blizhniy or not blizhniy.TwoToSix then return end
 			if ent:GetClass():find("717_m",1,true) and ent.ALSFreq and ent.ALSFreq.TriggerInput then ent.ALSFreq:TriggerInput("Set",1) end
