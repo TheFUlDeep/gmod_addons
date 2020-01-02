@@ -1557,11 +1557,16 @@ if SERVER then
 		timer.Simple(3, function()
 			if not IsValid(ent) or ent.Base ~= "gmod_subway_base" then return end
 			local EntPos = ent:GetPos()
-			local blizhniy
+			local DistToNearest,NearestEnt
 			for k,v in pairs(ents.FindByClass("gmod_track_signal") or {}) do
-				if IsValid(v) and (not blizhniy or EntPos:DistToSqr(v:GetPos()) < EntPos:DistToSqr(blizhniy:GetPos())) then blizhniy = v end
+				if not IsValid(v) then continue end
+				local DistToSignal = EntPos:DistToSqr(v:GetPos())
+				if not NearestEnt or DistToSignal < DistToNearest then 
+					NearestEnt = v 
+					DistToNearest = DistToSignal
+				end
 			end
-			if not blizhniy or not blizhniy.TwoToSix then return end
+			if not NearestEnt or not NearestEnt.TwoToSix then return end
 			if ent:GetClass():find("717_m",1,true) and ent.ALSFreq and ent.ALSFreq.TriggerInput then ent.ALSFreq:TriggerInput("Set",1) end
 			if ent:GetClass():find("81-76",1,true) and ent.SA14 and ent.SA14.TriggerInput then ent.SA14:TriggerInput("Set",1) end
 		end)
