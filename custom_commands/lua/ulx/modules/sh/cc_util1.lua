@@ -1557,7 +1557,7 @@ if SERVER then
 		timer.Simple(3, function()
 			if not IsValid(ent) or ent.Base ~= "gmod_subway_base" then return end
 			local blizhniy
-			for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
+			for k,v in pairs(ents.FindByClass("gmod_track_signal") or {}) do
 				if IsValid(v) and (not blizhniy or ent:GetPos():DistToSqr(v:GetPos()) < ent:GetPos():DistToSqr(blizhniy:GetPos())) then blizhniy = v end
 			end
 			if not blizhniy or not blizhniy.TwoToSix then return end
