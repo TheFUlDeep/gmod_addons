@@ -1884,6 +1884,7 @@ if SERVER then
 			ply:ChatPrint("Такой переключатель не найден. Список переключателей выведен в консоль.")
 			local Relays = ""
 			for k,v in pairs(ent.SyncTable) do
+				if not ent[v] or not ent[v].Value or (ent[v].Value ~= 1 and ent[v].Value ~= 0) then continue end
 				if Relays == "" then 
 					Relays = v 
 				else
