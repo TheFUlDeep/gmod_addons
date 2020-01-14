@@ -27,8 +27,24 @@ hook.Add("CalcView", "Get_Metrostroi_TrainView", function(ply,pos,ang,fov,znear,
 	Lastply,Lastpos,Lastang,Lastfov,Lastznear,Lastzfar = ply,pos,ang,fov,znear,zfar
 end)
 
+--поиск инициализированных значений
 local ViewPos,ViewAng,ViewFunction
-timer.Create("FindMetrostroiCameras",1,0,function()
+local ply
+local C_ScreenshotMode,hidealltrains,hideothertrains,hidetrains_behind_props,hidetrains_behind_player
+local DefaultShouldRenderClientEntsFunction
+timer.Simple(0,function()
+	--прогружаю ply только тут один раз. Надеюсь, что во время игры эта переменная не изменится
+	ply = LocalPlayer()
+
+	C_ScreenshotMode      = GetConVar("metrostroi_screenshotmode")		-- прогружаю конвары здесь, чтобы случайно не прогрузить Nil
+	hidealltrains = GetConVar("hidealltrains")
+	hideothertrains = GetConVar("hideothertrains")
+	hidetrains_behind_props = GetConVar("hidetrains_behind_props")
+	hidetrains_behind_player = GetConVar("hidetrains_behind_player")
+	
+	local base = scripted_ents.Get("gmod_subway_base")
+	DefaultShouldRenderClientEntsFunction = base.ShouldRenderClientEnts
+
 	local HooksTbl = hook.GetTable()
 	if not HooksTbl.CalcView or not HooksTbl.CalcView.Metrostroi_TrainView then return end
 	print("Found metrostroi view changer hook")
@@ -38,38 +54,27 @@ end)
 
 local PlyInTrain
 local PlyInSeat
-
 timer.Create("PlyInTrainForHideCheck",1,0,function()
-	local ply = LocalPlayer()
 	if not ply.InVehicle then return end
 	if ply:InVehicle() then
 		PlyInSeat = ply:GetVehicle()
 		if not IsValid(PlyInSeat) then PlyInSeat = nil end
 		PlyInTrain = PlyInSeat and PlyInSeat:GetNW2Entity("TrainEntity",nil) or nil
-		if PlyInTrain and not IsValid(PlyInTrain) then PlyInTrain = nil end
+		if not IsValid(PlyInTrain) then PlyInTrain = nil end
 	else
 		PlyInSeat = nil
 		PlyInTrain = nil
 	end
 end)
 
-local tracelinesetup = {mask = MASK_ALL,output = {},filter = function(ent)
-	if ent == LocalPlayer() then return false end
-	
-	--если игрок в составе, то его первый вагон пропускается, чтобы тут же за окном не было некрасиво
-	--[[local PlyInSeatTrain = PlyInSeat and PlyInSeat:GetNW2Entity("TrainEntity",nil)
-	if not IsValid(PlyInSeatTrain) then PlyInSeatTrain = nil end
-	
-	local entTrain = ent:GetNW2Entity("TrainEntity",nil)
-	if not IsValid(entTrain) then entTrain = nil end
-	
-	if PlyInSeat and (PlyInSeat == ent or PlyInSeatTrain and (PlyInSeatTrain == ent or entTrain and entTrain == PlyInSeatTrain)) then
-		return false 
-	end]]
-	if ent == PlyInSeat or ent == PlyInTrain or IsValid(ent) and PlyInTrain and PlyInTrain == ent:GetNW2Entity("TrainEntity") then return false end
-	
-	return true
-end}
+local tracelinesetup = {
+	mask = MASK_VISIBLE_AND_NPCS,--MASK_BLOCKLOS_AND_NPCS
+	output = {},
+	filter = function(ent)
+		if ent == LocalPlayer() or ent == PlyInSeat or ent == PlyInTrain or IsValid(ent) and PlyInTrain and PlyInTrain == ent:GetNW2Entity("TrainEntity") then return false end
+		return true
+	end
+}
 
 --[[local ENTS = Metrostroi.TrainClasses or {}
 table.insert(ENTS,1,"gmod_metrostroi_mirror")
@@ -79,106 +84,94 @@ hook.Add("MetrostroiLoaded","CreateCustomEntsTbl for hidetrains",function()
 	table.insert(ENTS,1,"gmod_metrostroi_mirror")
 end)]]
 
-local C_ScreenshotMode,C_CabFOV,C_FovDesired,C_MinimizedShow,hidealltrains,hideothertrains,hidetrains_behind_props,hidetrains_behind_player
-timer.Simple(0,function() 
-	C_ScreenshotMode      = GetConVar("metrostroi_screenshotmode")		-- прогружаю конвары здесь, чтобы случайно не прогрузить Nil
-	C_CabFOV              = GetConVar("metrostroi_cabfov")
-	C_FovDesired          = GetConVar("fov_desired")
-	C_MinimizedShow       = GetConVar("metrostroi_minimizedshow")
-	hidealltrains = GetConVar("hidealltrains")
-	hideothertrains = GetConVar("hideothertrains")
-	hidetrains_behind_props = GetConVar("hidetrains_behind_props")
-	hidetrains_behind_player = GetConVar("hidetrains_behind_player")
-end)
 
-local function MathAngInSeat()
-	local ang = Angle(0,0,0)
-	local Model = PlyInSeat:GetModel()
-	if Model:find("jeep_seat") or Model:find("airboat_seat") then ang = Angle(0,-90,0) end
-	if Model:find("prisoner_pod_inner") then ang = Angle(-270,0,0) end
-	return LocalPlayer():GetEyeTraceNoCursor().Normal:Angle()+ang
+local function ShouldRenderEnts(self)
+	--Всегда прогружать, если режим съемки
+	if C_ScreenshotMode:GetBool() then return true end
+
+	--если игрок сидит в составе, то всегда прогружать его
+	if PlyInTrain == self then return true end
+	
+	--проверка, находится ли состав за пропом и находится ли игрок рядом с диагоналями
+	--ViewFunction - определение вида игрока
+	if ViewFunction then
+		local ViewTbl = ViewFunction(ply,ply:EyePos(),ply:GetAngles(),Lastfov,Lastznear,Lastzfar)
+		if ViewTbl then
+			ViewPos,ViewAng = ViewTbl.origin,ViewTbl.angles
+		else
+			ViewPos,ViewAng = nil,nil
+		end
+	end
+	tracelinesetup.start = ViewPos or ply:EyePos()
+	local TrainSize = self:OBBMaxs()/1
+	local step = 0.1
+	local hidetrains_behind_props_bool = hidetrains_behind_props:GetBool()
+	local ShouldRender = false
+	--прохожу две диагонали
+	for j = 1,2 do
+		local startvec = j == 1 and TrainSize or TrainSize * Vector(1,-1,-1)
+		local endvec = TrainSize *Vector(-1,-1,-1)
+		startvec = self:LocalToWorld(startvec)
+		endvec = self:LocalToWorld(endvec)
+		for i = 0,1,step do
+			local curvec = LerpVector(i, startvec, endvec)
+			--если игрок рядом с составом, то прогружать
+			if ply:GetPos():DistToSqr(curvec) < 22500--[[22500 ето 150^2]] then return true end
+			
+			--если надо проверять, за пропами ли вагон
+			if not hidetrains_behind_props_bool then continue end
+			tracelinesetup.endpos = curvec
+			local output = util.TraceLine(tracelinesetup)
+			--если состав не за пропом, то однозначно прогрузить
+			if output.Fraction == 1 or output.Entity == self or output.Entity:GetNW2Entity("TrainEntity",nil) == self then ShouldRender = true end
+		end
+	end
+
+	--метростроевские проверки
+	if DefaultShouldRenderClientEntsFunction and not DefaultShouldRenderClientEntsFunction(self) then return false end
+	
+	--не прогружать, когда не вызывается Draw функция
+	if hidetrains_behind_player:GetBool() and self.LastDrawCall and CurTime() - self.LastDrawCall > 1 then return false end--при фризах ето условие будет срабатывать часто. Можно либо детектить фриз, либо увеличить интервал
+
+	--если надо скрыть все составы
+	if hidealltrains:GetBool() then return false end
+
+	--если надо скрыть все чужие составы
+	if hideothertrains:GetBool() then
+		local Owner = CPPI and self:CPPIGetOwner() or nil
+		if Owner ~= ply then return false end
+	end
+	
+	--если надо скрыть за пропами
+	if hidetrains_behind_props_bool then return ShouldRender end
+	
+	return true
 end
 
---TODO в идеале смотреть не по двум диагоналям, а по двум диагоналям каждой плоскости и по всем граням
-local function HideTrain(ent)
-					local ply = LocalPlayer()
-					local asd = !Metrostroi or !Metrostroi.ReloadClientside
-					if not asd then return false elseif os.time() - ent.LastDrawCheckClientEnts > 0 then ent.LastDrawCheckClientEnts = os.time() else return ent.DrawResult or false end
-					if PlyInTrain == ent then ent.DrawResult = true return ent.DrawResult end
-					if C_ScreenshotMode:GetBool() then ent.DrawResult = true return ent.DrawResult end
-					
-					if ViewFunction then
-						local ViewTbl = ViewFunction(ply,ply:EyePos(),ply:GetAngles(),Lastfov,Lastznear,Lastzfar)
-						if ViewTbl then
-							ViewPos,ViewAng = ViewTbl.origin,ViewTbl.angles
-						else
-							ViewPos,ViewAng = nil,nil
-						end
-					end
-					
-					--metrostroi default
-					ent.DrawResult = !ent:IsDormant() and math.abs(ply:EyePos().z-ent:GetPos().z)<500 and (system.HasFocus() or C_MinimizedShow:GetBool()) and LocalPlayer():EyePos():DistToSqr(ent:GetPos())
-					
-					if ent.DrawResult and (hidetrains_behind_props:GetBool() or hidetrains_behind_player:GetBool()) and not C_ScreenshotMode:GetBool() then
-						tracelinesetup.start = ViewPos or ply:EyePos()
-						
-						local TrainSize,Result,TrainSize2 = ent:OBBMins()/1,nil,ent:OBBMaxs()/1
-						local CanSee
-						local step = 0.1
-						for j = 1,2 do
-							local startvec = j == 1 and TrainSize or TrainSize * Vector(1,-1,-1)
-							local endvec = --[[TrainSize *Vector(-1,-1,-1)]]TrainSize2
-							startvec = ent:LocalToWorld(startvec)
-							endvec = ent:LocalToWorld(endvec)
-							for i = 0,1,step do
-								local curvec = LerpVector(i, startvec, endvec)
-								if ply:GetPos():DistToSqr(curvec) < 150*150 then ent.DrawResult = true return ent.DrawResult end--если игрок рядом - гаранированно рпогружать состав
-								tracelinesetup.endpos = curvec
-								output = util.TraceLine(tracelinesetup)
-								if output.Fraction == 1 or output.Entity == ent or IsValid(output.Entity:GetNW2Entity("TrainEntity",nil)) and output.Entity:GetNW2Entity("TrainEntity",nil) == ent then Result = true end
-								
-								FoV = ViewAng and 0.7 * C_CabFOV:GetFloat() or 0.7 * C_FovDesired:GetFloat() -- TODO возможно для вертикали нужно уменьшить коэффициент
-								tracelinesetup.endpos = ent:GetPos()
-								local ang = output.Normal:Angle()
-								local PlyModelAng = ply:GetAngles()
-								local PlyAngle = ViewAng and ViewAng ~= PlyModelAng and ViewAng or IsValid(PlyInSeat) and PlyModelAng+MathAngInSeat() or ply:GetEyeTraceNoCursor().Normal:Angle()--+Angle(0,-90,0) будет работать всегда??
-								ang:Normalize()
-								PlyAngle:Normalize()
-								local ResultAngle = (ang - PlyAngle)
-								ResultAngle:Normalize()
-								if not CanSee and ResultAngle.y < FoV and ResultAngle.y > -FoV and ResultAngle.p < FoV and ResultAngle.p > -FoV then
-									CanSee = true
-								end
-							end
-						end
-						if hidetrains_behind_props:GetBool() then
-							ent.DrawResult = Result or false
-						end
-						
-						if hidetrains_behind_player:GetBool() then
-							--print(CanSee and "CanSee" or "not CanSee")
-							if not CanSee then ent.DrawResult = false end
-						end
-					end
-					
-					if hidealltrains:GetBool() then
-						if not PlyInTrain or PlyInTrain ~= ent then ent.DrawResult = false return ent.DrawResult end
-					else
-						if hideothertrains:GetBool() then
-							local Owner = CPPI and ent:CPPIGetOwner() or nil
-							if not (IsValid(Owner) and Owner == ply or PlyInTrain and PlyInTrain == ent) then ent.DrawResult = false return ent.DrawResult end
-						end
-					end
-					
-					
-					return ent.DrawResult
+local function ChangeDrawFunctions(ent)
+	if not ent.Draw or not ent.ShouldRenderClientEnts then return end
+	local Draw = ent.Draw
+	ent.Draw = function(self)
+		self.LastDrawCall = CurTime()
+		Draw(self)
+	end
+	ent.LaastShouldRenderClientEntsBool = false
+	ent.LaastShouldRenderClientEntsTime = CurTime()
+	ent.ShouldRenderClientEnts = function(self)
+		local CurTime = CurTime()
+		if CurTime - self.LaastShouldRenderClientEntsTime > 0.5 then --добавил микроинтервал, чтобы поднять фпс
+			self.LaastShouldRenderClientEntsTime = CurTime
+			self.LaastShouldRenderClientEntsBool = ShouldRenderEnts(self)
+		end
+		return self.LaastShouldRenderClientEntsBool
+	end
 end
 
 Metrostroi = Metrostroi or {}
-Metrostroi.ShouldHideTrain = HideTrain
+Metrostroi.ShouldHideTrain = ShouldRenderEnts
 
 hook.Add( "OnEntityCreated", "UpdateTrainsDrawFunction", function( ent )
-	timer.Simple(0.5,function()
+	timer.Simple(1,function()
 		if not IsValid(ent) or not string.find(ent:GetClass(),"gmod_subway",1,true) then return end
 		if not C_ScreenshotMode or not hidealltrains then timer.Remove("HideTrainClientEnts") print("HIDETRAINS ERROR") return end
 		if not Metrostroi then return end
@@ -187,4 +180,10 @@ hook.Add( "OnEntityCreated", "UpdateTrainsDrawFunction", function( ent )
 		ent.ShouldRenderClientEnts = HideTrain
 	end)
 end)
+
+hook.Add("OnEntityCreated","UpdateTrainsDrawFunction",function(ent) timer.Simple(2,function()
+	if not IsValid(ent) or ent.Base ~= "gmod_subway_base" or not table.HasValue(Metrostroi.TrainClasses, ent:GetClass()) then return end
+	print("changing drawing ClientEnts function on "..tostring(ent))
+	ChangeDrawFunctions(ent)
+end)end)
 
