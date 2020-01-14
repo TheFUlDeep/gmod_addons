@@ -29,12 +29,9 @@ end)
 
 --поиск инициализированных значений
 local ViewPos,ViewAng,ViewFunction
-local ply
 local C_ScreenshotMode,hidealltrains,hideothertrains,hidetrains_behind_props,hidetrains_behind_player
 local DefaultShouldRenderClientEntsFunction
 timer.Simple(0,function()
-	--прогружаю ply только тут один раз. Надеюсь, что во время игры эта переменная не изменится
-	ply = LocalPlayer()
 
 	C_ScreenshotMode      = GetConVar("metrostroi_screenshotmode")		-- прогружаю конвары здесь, чтобы случайно не прогрузить Nil
 	hidealltrains = GetConVar("hidealltrains")
@@ -54,7 +51,7 @@ end)
 local PlyInTrain
 local PlyInSeat
 timer.Create("PlyInTrainForHideCheck",1,0,function()
-	if not ply.InVehicle then return end
+	local ply = LocalPlayer()
 	if ply:InVehicle() then
 		PlyInSeat = ply:GetVehicle()
 		if not IsValid(PlyInSeat) then PlyInSeat = nil end
@@ -106,6 +103,7 @@ local function ShouldRenderEnts(self)
 	
 	--проверка, находится ли состав за пропом и находится ли игрок рядом с диагоналями
 	--ViewFunction - определение вида игрока
+	local ply = LocalPlayer()
 	if ViewFunction then
 		local ViewTbl = ViewFunction(ply,ply:EyePos(),ply:GetAngles(),Lastfov,Lastznear,Lastzfar)
 		if ViewTbl then
