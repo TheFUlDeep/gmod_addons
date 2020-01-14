@@ -83,6 +83,19 @@ hook.Add("MetrostroiLoaded","CreateCustomEntsTbl for hidetrains",function()
 	table.insert(ENTS,1,"gmod_metrostroi_mirror")
 end)]]
 
+local function SaveOBBMaxs(ent)
+	local val = ent:OBBMaxs()
+	ent.WagonSize = val
+	--print("saving max size")
+	return val
+end
+
+local function SaveOBBMins(ent)
+	local val = ent:OBBMins()
+	ent.WagonSize2 = val
+	--print("saving min size")
+	return val
+end
 
 local function ShouldRenderEnts(self)
 	--Всегда прогружать, если режим съемки
@@ -102,14 +115,15 @@ local function ShouldRenderEnts(self)
 		end
 	end
 	tracelinesetup.start = ViewPos or ply:EyePos()
-	local TrainSize = self:OBBMaxs()/1
+	local TrainSize = self.WagonSize or SaveOBBMaxs(self)
+	local TrainSize2 = self.WagonSize2 or SaveOBBMins(self)
 	local step = 0.1
 	local hidetrains_behind_props_bool = hidetrains_behind_props:GetBool()
 	local ShouldRender = false
-	--прохожу две диагонали
-	for j = 1,2 do
-		local startvec = j == 1 and TrainSize or TrainSize * Vector(1,-1,-1)
-		local endvec = TrainSize *Vector(-1,-1,-1)
+	--прохожу 4 диагонали
+	for j = 1,4 do
+		local startvec = j == 1 and TrainSize or j == 2 and TrainSize * Vector(1,1,-1) or j == 3 and TrainSize * Vector(1,-1,-1) or TrainSize * Vector(-1,-1,-1)
+		local endvec = j == 1 and TrainSize2 or j == 2 and TrainSize2 * Vector(1,1,-1) or j == 3 and TrainSize2 * Vector(1,-1,-1)  or TrainSize2 * Vector(-1,-1,-1)
 		startvec = self:LocalToWorld(startvec)
 		endvec = self:LocalToWorld(endvec)
 		for i = 0,1,step do
