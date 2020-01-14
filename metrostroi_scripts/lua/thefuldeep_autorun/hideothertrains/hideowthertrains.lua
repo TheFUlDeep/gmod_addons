@@ -48,7 +48,6 @@ timer.Simple(0,function()
 	local HooksTbl = hook.GetTable()
 	if not HooksTbl.CalcView or not HooksTbl.CalcView.Metrostroi_TrainView then return end
 	print("Found metrostroi view changer hook")
-	timer.Remove("FindMetrostroiCameras")
 	ViewFunction = HooksTbl.CalcView.Metrostroi_TrainView
 end)
 
@@ -169,17 +168,6 @@ end
 
 Metrostroi = Metrostroi or {}
 Metrostroi.ShouldHideTrain = ShouldRenderEnts
-
-hook.Add( "OnEntityCreated", "UpdateTrainsDrawFunction", function( ent )
-	timer.Simple(1,function()
-		if not IsValid(ent) or not string.find(ent:GetClass(),"gmod_subway",1,true) then return end
-		if not C_ScreenshotMode or not hidealltrains then timer.Remove("HideTrainClientEnts") print("HIDETRAINS ERROR") return end
-		if not Metrostroi then return end
-		ent.LastDrawCheckClientEnts = os.time()
-		print("changing draw function on "..tostring(ent))
-		ent.ShouldRenderClientEnts = HideTrain
-	end)
-end)
 
 hook.Add("OnEntityCreated","UpdateTrainsDrawFunction",function(ent) timer.Simple(2,function()
 	if not IsValid(ent) or ent.Base ~= "gmod_subway_base" or not table.HasValue(Metrostroi.TrainClasses, ent:GetClass()) then return end
