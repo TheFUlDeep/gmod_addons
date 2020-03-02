@@ -17,7 +17,7 @@ local function UpgradeStationsPotitions()				--отцентровка точек
 		table.insert(Platforms[Platform.StationIndex],Platform)
 	end
 	
-	for k,v in pairs(Metrostroi.StationConfigurations) do
+	for k,v in pairs(Metrostroi.StationConfigurations or {}) do
 		if not istable(v) or not tonumber(k) then continue end
 		local StationPos
 		
