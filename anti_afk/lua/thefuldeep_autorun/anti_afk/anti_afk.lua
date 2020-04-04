@@ -53,7 +53,7 @@ timer.Create("AntiAfk",10,0,function()
 		for k,TrainClass in pairs(Metrostroi.TrainClasses) do
 			for n,wag in pairs(ents.FindByClass(TrainClass)) do
 				if not IsValid(wag) then continue end
-				local Owner = wag.CPPIGetOwner and wag:CPPIGetOwner() end
+				local Owner = wag.CPPIGetOwner and wag:CPPIGetOwner()
 				if IsValid(Owner) and Owner:IsSuperAdmin() then continue end
 				if not wag.AntiAfk then wag.AntiAfk = {} end
 				local Pos = wag:GetPos()
