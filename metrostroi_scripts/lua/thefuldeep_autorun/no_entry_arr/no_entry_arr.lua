@@ -1,3 +1,5 @@
+if 1 then return end
+
 if CLIENT then return end
 
 local no_entry_arr = Sound("thefuldeeps_sounds/no_entry_arr.mp3")
