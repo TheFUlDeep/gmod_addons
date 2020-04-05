@@ -5,7 +5,7 @@ local seats = {"DriverSeat","InstructorsSeat","ExtraSeat1","ExtraSeat2","ExtraSe
 timer.Simple(0,function()
 	for _,class in pairs(Metrostroi.TrainClasses) do
 		local ENT = scripted_ents.GetStored(class)
-		if not ENT or not ENT.t or not ENT.t.Initialize then return else ENT = ENT.t end
+		if not ENT or not ENT.t or not ENT.t.Initialize then continue else ENT = ENT.t end
 		local OldInit = ENT.Initialize
 		ENT.Initialize = function(self,...)
 			OldInit(self,...)
