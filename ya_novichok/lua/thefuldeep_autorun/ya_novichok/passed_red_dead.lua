@@ -1,4 +1,4 @@
-
+if 1 then return end
 --взято из скрипта межвагонки ShadowBonnie
 timer.Simple(0,function()
 	for k,v in pairs(Metrostroi.TrainClasses) do

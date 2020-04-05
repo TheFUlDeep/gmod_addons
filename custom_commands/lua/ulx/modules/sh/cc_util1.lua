@@ -664,22 +664,6 @@ if SERVER then
 		--timer.Simple(3, function () lastused = nil end)
 	end)
 
-	--[[ ======================================= УВЕДОМЛЕНИЕ О СРЫВЕ ПЛОМБ ======================================= ]]
-	hook.Add("MetrostroiPlombBroken", "PerzostroiAPIPlomb1", function(train,but,drv)
-	   -- local par1, par2 = string.find(train, "gmod_subway_")
-	   -- if par1 then
-		local sostav = train
-		--RunConsoleCommand("ulx", "asay", drv:Nick().." сорвал пломбу с "..but.." на "..string.sub(train:GetClass(),13))
-		local poezd = string.sub(train:GetClass(),13)
-		ulx.fancyLogAdmin(drv, true, "#A сорвал пломбу с #s на #s", but, train.SubwayTrain.Name)
-		return true
-	end)
-
-	--[[ ======================================= УВЕДОМЛЕНИЕ О ПРОЕЗДЕ ЗАПРЕЩАЮЩЕГО ======================================= ]]
-	hook.Add("MetrostroiPassedRed", "MetrostroiPassedRed1", function(train,ply,mode,arsback)
-		ulx.fancyLogAdmin(ply, true, "#A проехал светофор #s с запрещающим показанием", arsback.Name) return true
-	end)
-
 	--------------------------------О БОЖЕ. ЭТО СВЯЗЬ МАШИНИСТ-ДИСПЕТЧЕР----------------------------------------------------------
 	hook.Add("PlayerCanHearPlayersVoice", "choooooooooooo", function(listener,talker)
 	if Metrostroi.ActiveDispatcher ~= nil then
