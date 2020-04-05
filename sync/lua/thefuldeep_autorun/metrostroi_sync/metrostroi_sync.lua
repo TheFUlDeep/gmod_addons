@@ -755,6 +755,7 @@ local function HookAdd(type,name,func)
 	local hookfuncs = {}
 	for hookname,hookfunc in pairs(hooks) do
 		table.insert(hookfuncs,hookfunc)
+		hooks[hookname] = function() end
 		hook.Remove(type,hookname)
 	end
 	hook.Add(type,name,function(...)
@@ -768,7 +769,9 @@ local function HookAdd(type,name,func)
 end
 
 timer.Simple(0,function()
-HookAdd("MetrostroiPassedRed","MetrostroiPassedRedSync",function(Train,ply,mode,arsback)
+hook.Add("MetrostroiPassedRed","MetrostroiPassedRedSync",function(train,ply,mode,arsback)
+	ulx.fancyLogAdmin(ply, true, "#A проехал светофор #s с запрещающим показанием", arsback.Name)
+	
 	local NickColor = team.GetColor(ply:Team())
 	local text = {
 		Colors = {
@@ -784,8 +787,12 @@ HookAdd("MetrostroiPassedRed","MetrostroiPassedRedSync",function(Train,ply,mode,
 		}
 	}
 	sendText(text)
+	
+	return true
 end)
-HookAdd("MetrostroiPlombBroken","MetrostroiPlombBrokenSync",function(self,but,ply)
+
+hook.Add("MetrostroiPlombBroken", "MetrostroiPlombBrokenSync", function(train,but,ply)
+	ulx.fancyLogAdmin(drv, true, "#A сорвал пломбу с #s на #s", but, train.SubwayTrain.Name)
 	local NickColor = team.GetColor(ply:Team())
 	local text = {
 		Colors = {
@@ -801,6 +808,7 @@ HookAdd("MetrostroiPlombBroken","MetrostroiPlombBrokenSync",function(self,but,pl
 		}
 	}
 	sendText(text)
+	return true
 end)
 end)
 

@@ -1,8 +1,6 @@
-if 1 then return end
-
 if CLIENT then return end
 
-local no_entry_arr = Sound("thefuldeeps_sounds/no_entry_arr.mp3")
+--local no_entry_arr = Sound("thefuldeeps_sounds/no_entry_arr.mp3")
 local function GetLastStation(self)
 	if not Metrostroi.StationConfigurations then
 		return nil
@@ -112,6 +110,7 @@ local function GetLastStation(self)
 end
 
 timer.Create("no_entry_arr",2,0,function()
+	if not tfd_play_url then return end
 	for k,v in pairs(ents.FindByClass("gmod_track_platform")) do
 		if v.CurrentTrain and (not v.LastCurrentTrain or v.CurrentTrain ~= v.LastCurrentTrain) then
 			v.LastCurrentTrain = v.CurrentTrain
@@ -120,16 +119,25 @@ timer.Create("no_entry_arr",2,0,function()
 			local NumIndex = v.StationIndex and tonumber(v.StationIndex)
 			if not NumLast or not NumIndex then continue end
 			if NumLast == NumIndex then 
-				local PlatformLen = v.PlatformStart:DistToSqr(v.PlatformEnd)
+				--[[local PlatformLen = v.PlatformStart:DistToSqr(v.PlatformEnd)
 				
 				--делю платформу на участки по 1000
-				local sections = PlatformLen / 1000*1000 --возвожу в квадрат, так как длину искал в квадрате
+				local sections = PlatformLen / (2000*2000) --возвожу в квадрат, так как длину искал в квадрате
 				--на каждом отрезке проигрываю звук
+				print("ДОЛЖЕН ВОСПРОИЗВЕСТИСЬ ЗВУК")
+				print(sections)
 				for i = 1, sections do
 					local percent = i/sections
 					local vec = LerpVector(percent, v.PlatformStart, v.PlatformEnd)
 					sound.Play(no_entry_arr,vec,120,100,0.4)
-				end
+				end]]
+				tfd_play_url(
+					"https://cdn.discordapp.com/attachments/696426533954519052/696426551566270505/no_entry_arr.mp3",
+					nil,
+					LerpVector(0.5, v.PlatformStart, v.PlatformEnd),
+					nil,
+					(v.PlatformStart:Distance(v.PlatformEnd))/2
+				)
 			end
 		elseif not v.CurrentTrain then
 			v.LastCurrentTrain = nil
