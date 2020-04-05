@@ -792,7 +792,7 @@ hook.Add("MetrostroiPassedRed","MetrostroiPassedRedSync",function(train,ply,mode
 end)
 
 hook.Add("MetrostroiPlombBroken", "MetrostroiPlombBrokenSync", function(train,but,ply)
-	ulx.fancyLogAdmin(drv, true, "#A сорвал пломбу с #s на #s", but, train.SubwayTrain.Name)
+	ulx.fancyLogAdmin(ply, true, "#A сорвал пломбу с #s на #s", but, train.SubwayTrain.Name)
 	local NickColor = team.GetColor(ply:Team())
 	local text = {
 		Colors = {
