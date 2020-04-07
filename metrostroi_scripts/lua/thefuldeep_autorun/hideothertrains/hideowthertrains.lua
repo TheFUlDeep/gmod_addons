@@ -95,6 +95,8 @@ local function SaveOBBMins(ent)
 end
 
 local function ShouldRenderEnts(self)
+	if not IsValid(self) then return false end
+
 	--Всегда прогружать, если режим съемки
 	if C_ScreenshotMode:GetBool() then return true end
 

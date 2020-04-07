@@ -1,3 +1,4 @@
+if 1 then return end
 if CLIENT then return end
 
 local serverstarted = os.time()
