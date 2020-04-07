@@ -95,10 +95,11 @@ local function SaveOBBMins(ent)
 end
 
 local function ShouldRenderEnts(self)
-	if not IsValid(self) then return false end
-
 	--Всегда прогружать, если режим съемки
 	if C_ScreenshotMode:GetBool() then return true end
+	
+	--метростроевские проверки
+	if DefaultShouldRenderClientEntsFunction and not DefaultShouldRenderClientEntsFunction(self) then return false end
 
 	--если игрок сидит в составе, то всегда прогружать его
 	if PlyInTrain == self then return true end
@@ -139,9 +140,6 @@ local function ShouldRenderEnts(self)
 			if output.Fraction == 1 or output.Entity == self or output.Entity:GetNW2Entity("TrainEntity",nil) == self then ShouldRender = true end
 		end
 	end
-
-	--метростроевские проверки
-	if DefaultShouldRenderClientEntsFunction and not DefaultShouldRenderClientEntsFunction(self) then return false end
 	
 	--не прогружать, когда не вызывается Draw функция
 	if hidetrains_behind_player:GetBool() and self.LastDrawCall and CurTime() - self.LastDrawCall > 1 then return false end--при фризах ето условие будет срабатывать часто. Можно либо детектить фриз, либо увеличить интервал
