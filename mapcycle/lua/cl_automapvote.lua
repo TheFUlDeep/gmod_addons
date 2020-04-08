@@ -108,6 +108,7 @@ net.Receive("_updatevotemap",function(len)
 	countvotes = net.ReadTable();
 end)
 
+local VoteStartedSound
 local function StartVote( len )
 
 	sound.PlayURL( 
@@ -115,6 +116,7 @@ local function StartVote( len )
 		"mono",
 		function(audio)	--я не понимаю, зачем эта функция. Оно восрпоизводит, даже если функция пустая
 			if not IsValid(audio) then return end
+			VoteStartedSound = audio
 			--audio:Play()
 		end
 	)
@@ -158,6 +160,7 @@ function CloseVote()
 		"mono",
 		function(audio)	--я не понимаю, зачем эта функция. Оно восрпоизводит, даже если функция пустая
 			if not IsValid(audio) then return end
+			if IsValid(VoteStartedSound) then VoteStartedSound:Stop() end
 			--audio:Play()
 		end
 	)
