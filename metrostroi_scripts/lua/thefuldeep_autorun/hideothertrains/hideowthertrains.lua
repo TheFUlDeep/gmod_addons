@@ -52,7 +52,7 @@ local PlyInTrain
 local PlyInSeat
 timer.Create("PlyInTrainForHideCheck",1,0,function()
 	local ply = LocalPlayer()
-	if ply:InVehicle() then
+	if ply.InVehicle and ply:InVehicle() then
 		PlyInSeat = ply:GetVehicle()
 		if not IsValid(PlyInSeat) then PlyInSeat = nil end
 		PlyInTrain = PlyInSeat and PlyInSeat:GetNW2Entity("TrainEntity",nil) or nil
