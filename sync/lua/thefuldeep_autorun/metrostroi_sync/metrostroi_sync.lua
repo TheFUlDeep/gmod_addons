@@ -1,8 +1,51 @@
+--TODO звуки ТЭДов и дверей
+
 if CLIENT then
 	Metrostroi = Metrostroi or {}
 	Metrostroi.MetrostroiSync = Metrostroi.MetrostroiSync or {}
 	Metrostroi.MetrostroiSync.SyncedWags = Metrostroi.MetrostroiSync.SyncedWags or {}
 	local SyncedWags = Metrostroi.MetrostroiSync.SyncedWags
+	
+	--[[
+	
+	--TODO сохранять возвращяемые значения от функций Animate, ShowHide, ShowHideSmooth
+	
+	timer.Simple(0,function()
+		for _,class in pairs(Metrostroi.TrainClasses)do
+			local ENT = scripted_ents.GetStored(class).t
+			if not ENT then continue end
+			if ENT.Animate then
+				ENT.AnimateStates = {}
+				local OldAnimate = ENT.Animate
+				ENT.Animate = function(sef,prop,...)
+					local res = OldAnimate(self,prop,...)
+					self.AnimateStates[prop] = res
+					return res
+				end
+			end
+			
+			if ENT.ShowHide then
+				ENT.ShowHideStates = {}
+				local OldShowHide = ENT.ShowHide
+				ENT.ShowHide = function(sef,prop,...)
+					local res = OldShowHide(self,prop,...)
+					if res then self.ShowHideStates[prop] = not self.ShowHideStates[prop] end
+					return res
+				end
+			end
+			
+			if ENT.ShowHideSmooth then
+				ENT.ShowHideSmoothStates = {}
+				local OldShowHideSmooth = ENT.ShowHideSmooth
+				ENT.ShowHideSmooth = function(sef,prop,...)
+					local res = OldShowHideSmooth(self,prop,...)
+					self.ShowHideSmoothStates[prop] = res
+					return res
+				end
+			end
+		end
+	end)]]
+	
 	
 	hook.Add("OnEntityCreated","SyncedTrainsSave",function(ent)
 		timer.Simple(1,function()
@@ -51,7 +94,7 @@ if CLIENT then
 	local SetLightPower = function() end
 	local ShouldRenderClientEnts = function() end
 	timer.Simple(0,function()
-		local base = scripted_ents.Get("gmod_subway_base")
+		local base = scripted_ents.GetStored("gmod_subway_base").t
 		if not base then return end
 		UpdateTextures = function(wag)
 			local baseent
@@ -168,7 +211,7 @@ if CLIENT then
 		ClientProps.fc:SetAngles(wag:LocalToWorldAngles(base.fca))
 		ClientProps.fc:SetParent(wag)
 		
-		local ENT = scripted_ents.Get(base.Class)
+		local ENT = scripted_ents.GetStored(base.Class).t
 		if not ENT then return end
 		local d,s,c,m,h = 1,1,1,1,1
 		for name,prop in pairs(ENT.ClientProps or {}) do
