@@ -1,6 +1,17 @@
 --TODO звуки ТЭДов и дверей
 
 if CLIENT then
+	local bogey,setsoundstate,reinitsounds,think,getmotorpower,getspeed
+	timer.Simple(0,function()
+		bogey = scripted_ents.GetStored("gmod_train_bogey").t
+		setsoundstate = bogey.SetSoundState
+		reinitsounds = bogey.ReinitializeSounds
+		think = bogey.Think
+		getmotorpower = bogey.GetMotorPower
+		getspeed = bogey.GetSpeed
+	end)
+	
+	
 	Metrostroi = Metrostroi or {}
 	Metrostroi.MetrostroiSync = Metrostroi.MetrostroiSync or {}
 	Metrostroi.MetrostroiSync.SyncedWags = Metrostroi.MetrostroiSync.SyncedWags or {}
@@ -50,10 +61,31 @@ if CLIENT then
 	hook.Add("OnEntityCreated","SyncedTrainsSave",function(ent)
 		timer.Simple(1,function()
 			if not IsValid(ent) or ent:GetClass() ~= "gmod_subway_base" --[[or not ent:GetNWBool("SyncedWag",false)]] then return end
+			ent.SpawnCSEnt = function() end
 			ent.ShouldDrawClientEnt = function() end
 			ent.UpdateTextures = function() end
 			ent.Think = function() end
 			ent.Draw = function() end
+			ent.StopAllSounds = function(self)
+				for _,snd in pairs(self.Sounds or {}) do
+					snd:Stop()
+				end
+			end
+			ent.OnRemove = function(self)self:StopAllSounds()end
+			ent.CalcAbsolutePosition = function() end
+			
+			ent:GetNW2Entity("TrainEntity",ent)
+			
+			
+			local MotorPower = ent:GetNW2Int("MotorPower",0)
+			ent.MotorPowerSound = 0
+			ent.Sounds = nil
+			ent.ReinitializeSounds = function(self,...) reinitsounds(self,...) end
+			ent.EngineSNDConfig = {}
+			ent.SetSoundState = function(self,snd,...) if not IsValid(self) then setsoundstate(self,snd,0) return end setsoundstate(self,snd,...) end
+			ent.GetMotorPower = function(self,...) return --[[return getmotorpower(self,...)]] MotorPower end
+			ent.GetSpeed = function(self,...) return --[[getspeed(self,...)]] self:GetNW2Float("Speed",0)/5 end
+			ent.Think = function(self,...) if not IsValid(self) then self:StopAllSounds() end think(self,...) end
 		end)
 	end)
 	
@@ -119,6 +151,12 @@ if CLIENT then
 		ShouldRenderClientEnts = function(ent)
 			if IsValid(ent) and LocalPlayer():GetPos():DistToSqr(ent:GetPos()) > 3000*3000 then return false end
 			return OldShouldRenderClientEnts(ent)
+		end
+		
+		local oldShouldDrawClientEnt = base.ShouldDrawClientEnt
+		base.ShouldDrawClientEnt = function(self,v,...)
+			v.pos = v.pos or Vector(0)
+			return oldShouldDrawClientEnt(self,v,...)
 		end
 	end)
 
@@ -322,7 +360,7 @@ if CLIENT then
 			
 			wag.Update = CurTime()
 			SyncedWags[tbl.EntID] = wag
-			MoveSmooth(ent,tbl.WagPos,tbl.WagAng)
+			MoveSmooth(ent,tbl.WagPos,tbl.WagAng)			
 		end
 	end)
 end
@@ -520,6 +558,7 @@ local function SetWagonPos(params)
 		if wag.syncid ~= params.syncid then continue end
 		wag:SetPos(params.pos)
 		wag:SetAngles(params.ang)
+		wag:SetNW2Float("Speed",params.speed)
 		--MoveSmooth(wag,pos,ang)
 		wag.update = time
 		SendNetValues(wag,params)
@@ -536,6 +575,12 @@ local function SetWagonPos(params)
 	wagon.type = "syncedwagon"
 	wagon.update = time
 	wagon:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
+	wagon:SetNW2Int("MotorPower",params.motorpower)
+	--wagon:SetNW2Float("BrakeSqueal",params.brakesqueal)
+	--wagon:SetNW2Float("BrakeSqueal1",params.brakesqueal1)
+	--wagon:SetNW2Int("SquealSound",params.squealsound)
+	--wagon:SetNW2Int("MotorSoundType",params.motorsoundtype)
+	--wagon:SetNW2Int("SquealType",params.squealtype)
 	wagon:Spawn()
 	SendNetValues(wagon,params,true)
 	table.insert(Wagons,wagon)
@@ -728,6 +773,16 @@ hook.Add("Think","SyncTrains",function()
 						texture = v1:GetNW2String("Texture"),
 						passtexture = v1:GetNW2String("PassTexture"),
 						cabtexture = v1:GetNW2String("CabTexture"),
+						
+						speed = v1:GetNW2Float("Speed",0),
+						
+						--brakesqueal = v1:GetNW2Float("BrakeSqueal",0),
+						--brakesqueal1 = v1:GetNW2Float("BrakeSqueal1",0),
+						--squealtype = v1:GetNW2Int("SquealType",0),
+						--squealsound = v1:GetNW2Int("SquealSound",0),
+						--motorsoundtype = v1:GetNWInt("MotorSoundType",1),
+						
+						motorpower = v1.FrontBogey:GetMotorPower(),
 						
 						doorL = v1:GetNW2Bool("DoorL"),
 						doorR = v1:GetNW2Bool("DoorR"),

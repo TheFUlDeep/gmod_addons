@@ -1,63 +1,27 @@
-if SERVER then --TODO запрет закрытия светофора, если игрок обычный юзер
-	local function CustomozeSignals()
-		print("customizing signals")
-		for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
-			if not IsValid(v) then continue end
-			if v.SayHook then
-				local OldSayHook = v.SayHook
-				v.SayHook = function(ply,comm)
-					if  Metrostroi.ActiveDispatcher ~= ply
-						and Metrostroi.ActiveDSCP1 ~= ply
-						and Metrostroi.ActiveDSCP2 ~= ply
-						and Metrostroi.ActiveDSCP3 ~= ply 
-						and Metrostroi.ActiveDSCP4 ~= ply 
-						and Metrostroi.ActiveDSCP5 ~= ply 
-						and Metrostroi.ActiveDispatcher ~= nil 
-						and ply:GetUserGroup() == "user" 
-					then 
-						return
-					end
-					OldSayHook(v,ply,comm) -- ЧАВО? ПОЧЕМУ ОНО РАБОТАЕТ???????????
-				end
-				hook.Add("PlayerSay","metrostroi-signal-say"..v:EntIndex(), function(ply, comm) v.SayHook(ply,comm) end)
-			end
-		end
-	end
-	
+if SERVER then
 	local function CustomozeSignal(ent)
-		if not IsValid(ent) then return end
-		if ent.SayHook then
-			local OldSayHook = ent.SayHook
-			ent.SayHook = function(ply,comm)
-				if  Metrostroi.ActiveDispatcher ~= ply
-					and Metrostroi.ActiveDSCP1 ~= ply
-					and Metrostroi.ActiveDSCP2 ~= ply
-					and Metrostroi.ActiveDSCP3 ~= ply 
-					and Metrostroi.ActiveDSCP4 ~= ply 
-					and Metrostroi.ActiveDSCP5 ~= ply 
-						and Metrostroi.ActiveDispatcher ~= nil 
-					and ply:GetUserGroup() == "user" 
-				then 
-					return
-				end
-				OldSayHook(ent,ply,comm) -- ЧАВО? ПОЧЕМУ ОНО РАБОТАЕТ???????????
+		--не делаю это через sricped_ents.GetStored, потому что не уверен, что успею это сделать до спавна первого светофора
+		local OldSayHook = ent.SayHook
+		ent.SayHook = function(self,ply,comm)
+			if ply:GetUserGroup() == "user" and comm:upper():sub(9) == self.Name then return end
+			if Metrostroi.ActiveDispatcher
+				and Metrostroi.ActiveDispatcher ~= ply
+				and Metrostroi.ActiveDSCP1 ~= ply
+				and Metrostroi.ActiveDSCP2 ~= ply
+				and Metrostroi.ActiveDSCP3 ~= ply 
+				and Metrostroi.ActiveDSCP4 ~= ply 
+				and Metrostroi.ActiveDSCP5 ~= ply 
+				and ply:GetUserGroup() == "user" 
+			then 
+				return
 			end
-			hook.Add("PlayerSay","metrostroi-signal-say"..ent:EntIndex(), function(ply, comm) ent.SayHook(ply,comm) end)
+			OldSayHook(self,ply,comm)
 		end
 	end
 	
-	local SignalsCustomized
-	
-	hook.Add("PlayerInitialSpawn","Custom metrostroi signals",function()
-		hook.Remove("PlayerInitialSpawn","Custom metrostroi signals")
-		CustomozeSignals()
-		SignalsCustomized = true
-	end)
-	
-	--на всякий случай при спавне светофора обновлять его функции
-	hook.Add("OnEntityCreated","Custom metrostroi signal",function(ent)
+	hook.Add("OnEntityCreated","Custom metrostroi signal sayhook",function(ent)
 		timer.Simple(1,function()
-			if not IsValid(ent) or not SignalsCustomized or ent:GetClass() ~= "gmod_track_signal" then return end
+			if not IsValid(ent) or ent:GetClass() ~= "gmod_track_signal" or not ent.SayHook then return end
 			CustomozeSignal(ent)
 		end)
 	end)
@@ -65,9 +29,17 @@ end
 
 if SERVER then return end
 
+local signsls = {} -- сохраняю все сигналы в таблицу, чтобы не делать каждый раз ents.FindByClass("gmod_track_signal")
+hook.Add("OnEntityCreated","save signals to local tbl for autostop sound",function(ent)
+	timer.Simple(1,function()
+		if not IsValid(ent) or ent:GetClass() ~= "gmod_track_signal" then return end
+		signsls[#signsls+1] = ent
+	end)
+end)
+
 local AutoStopSound = Sound("autostop.mp3")
 timer.Create("Metrostroi signal Autostop sound",0.3,0,function()
-	for k,v in pairs(ents.FindByClass("gmod_track_signal")) do
+	for _,v in pairs(signsls) do
 		if not IsValid(v) then continue end
 		if not v.LastAutostopPosLoaded then
 			v.LastAutostopPosLoaded = true
