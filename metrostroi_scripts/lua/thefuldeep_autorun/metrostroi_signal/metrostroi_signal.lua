@@ -3,7 +3,7 @@ if SERVER then
 		--не делаю это через sricped_ents.GetStored, потому что не уверен, что успею это сделать до спавна первого светофора
 		local OldSayHook = ent.SayHook
 		ent.SayHook = function(self,ply,comm)
-			if ply:GetUserGroup() == "user" and comm:upper():sub(9) == self.Name then return end
+			if type(ply) == "Player" and ply:GetUserGroup() == "user" and comm:upper():sub(9) == self.Name then return end
 			if Metrostroi.ActiveDispatcher
 				and Metrostroi.ActiveDispatcher ~= ply
 				and Metrostroi.ActiveDSCP1 ~= ply
