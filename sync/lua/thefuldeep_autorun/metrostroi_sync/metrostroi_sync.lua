@@ -904,7 +904,7 @@ hook.Add("MetrostroiPlombBroken", "MetrostroiPlombBrokenSync", function(train,bu
 		Texts = {
 			'"',
 			ply:Nick(),
-			'" сорвал пломбу с',
+			'" сорвал пломбу с ',
 			but,
 			" на ",
 			train.SubwayTrain.Name,
