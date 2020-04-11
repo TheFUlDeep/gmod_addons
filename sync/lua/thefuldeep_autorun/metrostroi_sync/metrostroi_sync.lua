@@ -363,6 +363,7 @@ if CLIENT then
 			MoveSmooth(ent,tbl.WagPos,tbl.WagAng)			
 		end
 	end)
+	--TODO HUDPaint овнера и номер маршрута
 end
 if CLIENT then return end
 
@@ -508,6 +509,7 @@ local function SendNetValues(wag,params,onspawn)
 	local TblToSend = wag.TblToSend
 	
 	TblToSend.RouteNumber = params.route
+	TblToSend.TrainOwner = params.owner
 	
 	TblToSend.Texture = params.texture
 	TblToSend.PassTexture = params.passtexture
@@ -570,7 +572,6 @@ local function SetWagonPos(params)
 	wagon:SetModelScale(0)
    	wagon:SetPos(params.pos)
    	wagon:SetAngles(params.ang)
-   	wagon.TrainOwner = params.owner
 	wagon.syncid = params.syncid
 	wagon.type = "syncedwagon"
 	wagon.update = time
