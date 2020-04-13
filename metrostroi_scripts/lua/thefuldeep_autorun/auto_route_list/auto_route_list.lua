@@ -462,7 +462,7 @@ if CLIENT then
 	local scale = 0.02
 	timer.Create("Detect if ply in train for auto_route_list",1,0,function()
 		local ply = LocalPlayer()
-		local vehicle = ply:GetVehicle()
+		local vehicle = ply.GetVehicle and ply:GetVehicle()
 		if not IsValid(vehicle) then PlyInTrain = false return end
 		local Train = vehicle:GetNW2Entity("TrainEntity")
 		if not IsValid(Train) then PlyInTrain = false return end
