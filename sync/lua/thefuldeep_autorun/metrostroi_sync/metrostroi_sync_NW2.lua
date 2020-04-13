@@ -705,7 +705,6 @@ local function SetWagonPos(params)
 	wagon.type = "syncedwagon"
 	wagon.update = time
 	wagon:SetCollisionGroup(COLLISION_GROUP_IN_VEHICLE)
-	wagon:SetNW2Int("MotorPower",params.motorpower)
 	--wagon:SetNW2Float("BrakeSqueal",params.brakesqueal)
 	--wagon:SetNW2Float("BrakeSqueal1",params.brakesqueal1)
 	--wagon:SetNW2Int("SquealSound",params.squealsound)
