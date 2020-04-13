@@ -1,7 +1,6 @@
 --TODO узнать, почему на имаджина не генерируется восьмая линия
 --TODO при смене маршрутника не учитывается платформа, и добавляется время интервала (так быть не должно)
 
-
 --[[============================= string.lower ДЛЯ РУССКИХ СИМВОЛОВ ==========================]]
 local BIGRUS = {"А","Б","В","Г","Д","Е","Ё","Ж","З","И","Й","К","Л","М","Н","О","П","Р","С","Т","У","Ф","Х","Ц","Ч","Ш","Щ","Ъ","Ы","Ь","Э","Ю","Я"}
 local smallrus = {"а","б","в","г","д","е","ё","ж","з","и","й","к","л","м","н","о","п","р","с","т","у","ф","х","ц","ч","ш","щ","ъ","ы","ь","э","ю","я"}
@@ -142,12 +141,17 @@ if CLIENT then
 		end
 	end
 
+	local xoffset = 0
+	local yoffset = 0
 	local function MathStringsPositions()
 		--print("Math")
 		if not RouteList then return end
 		surface.SetFont(font)
 		xPos = xpos:GetInt()
 		yPos = ypos:GetInt()
+		
+		xoffset = xPos--НОВОЕ
+		yoffset = yPos--НОВОЕ
 		--[[alph = 255-Alph:GetInt()
 		alph2 = 255-Alph2:GetInt()
 		alph3 = 255-Alph3:GetInt()
@@ -208,6 +212,52 @@ if CLIENT then
 		MathCustomTime()
 		--PrintTable(StringsPositions)
 	end
+	
+	local function Start()
+		-----FOR DEBUG---------------------------------------------
+		RouteList = {}
+		RouteList[1] = {"П № 2","Время хода 08:02"}
+		RouteList[2] = {"M № 1","Инт 02:00"}
+		RouteList[3] = {nil,"Час","Мин","Cек"}
+		RouteList[4] = {"Советская",17,27,04}
+		RouteList[5] = {"Артемид-ая",17,28,55}
+		RouteList[6] = {"Антиколлаб.",17,30,44}
+		RouteList[7] = {"Индустриал.",17,32,34}
+		RouteList[8] = {"Площадь Восстания",17,35,06}
+		RouteList[9] = {"ОТПР."}
+		RouteList[10] = {"П. № 12",17,38,06}
+		-----FOR DEBUG---------------------------------------------
+
+		--PrintTable(RouteList)
+
+		for RowNumber,Col in pairs(RouteList) do
+			for k,v in pairs(Col) do
+				if not Cols[k] then Cols[k] = {} end
+				Cols[k][RowNumber] = v
+			end
+		end
+
+		Cols = {}
+		for RowNumber,Col in pairs(RouteList) do
+			for k,v in pairs(Col) do
+				if not Cols[k] then Cols[k] = {} end
+				Cols[k][RowNumber] = v
+			end
+		end
+
+		MaxCols = {}
+		surface.SetFont(font)
+		for ColNumber,Row in pairs(Cols) do
+			local Max,MaxStr
+			for RowNumber,v in pairs(Row) do
+				if RowNumber < 3 and ColNumber ~= 1 then continue end --отвязал первые две строки от сетки
+				local v = tostring(v)
+				if not Max or Max < surface.GetTextSize(v) then Max = surface.GetTextSize(v) MaxStr = v end
+			end
+			MaxCols[ColNumber] = MaxStr
+		end
+		MathStringsPositions()
+	end
 
 	net.Receive( "Metrostroi Routes From Google Sheets", function() 
 		local IsChatMessage = net.ReadBool()
@@ -220,22 +270,6 @@ if CLIENT then
 			if not RouteList then return end
 			--PrintTable(RouteList)
 		end
-
-		-----FOR DEBUG---------------------------------------------
-		--[[RouteList = {}
-		RouteList[1] = {"П № 2","Время хода 08:02"}
-		RouteList[2] = {"M № 1","Инт 02:00"}
-		RouteList[3] = {nil,"Час","Мин","Cек"}
-		RouteList[4] = {"Советская",17,27,04}
-		RouteList[5] = {"Артемид-ая",17,28,55}
-		RouteList[6] = {"Антиколлаб.",17,30,44}
-		RouteList[7] = {"Индустриал.",17,32,34}
-		RouteList[8] = {"Площадь Восстания",17,35,06}
-		RouteList[9] = {"ОТПР."}
-		RouteList[10] = {"П. № 12",17,38,06}]]
-		-----FOR DEBUG---------------------------------------------
-
-		--PrintTable(RouteList)
 
 		for RowNumber,Col in pairs(RouteList) do
 			for k,v in pairs(Col) do
@@ -295,11 +329,30 @@ if CLIENT then
 	cvars.AddChangeCallback( "metrostroi_routes_b4", function(convar,olval,newval)b4 = newval end)
 	cvars.AddChangeCallback( "metrostroi_routes_secret", function(convar,olval,newval)Secret = newval end)
 
+
+
+	local v1offset = CreateClientConVar("metrostroi_routes_cabin_offset_v1", 0, true)
+	local v2offset = CreateClientConVar("metrostroi_routes_cabin_offset_v2", 0, true)
+	local v3offset = CreateClientConVar("metrostroi_routes_cabin_offset_v3", 0, true)
+	local a1offset = CreateClientConVar("metrostroi_routes_cabin_offset_a1", 0, true)
+	local a2offset = CreateClientConVar("metrostroi_routes_cabin_offset_a2", 0, true)
+	local a3offset = CreateClientConVar("metrostroi_routes_cabin_offset_a3", 0, true)
 	hook.Add( "PopulateToolMenu", "Metrostroi Routes Control Panel", function()
 		spawnmenu.AddToolMenuOption( "Utilities", "Metrostroi", "metrostroi_client_panel_routes", "Маршрутники", "", "", function(panel)
 			panel:ClearControls()
 			panel:NumSlider("Расположение по\nгоризонтали","metrostroi_routes_xpos",0, ScrW(),0)
 			panel:NumSlider("Расположение по\nвертикали","metrostroi_routes_ypos",0, ScrH(),0)
+			
+
+			panel:Help("\nСдвиг маршрутного листа в кабине")
+			panel:NumSlider("Вперед/назад","metrostroi_routes_cabin_offset_v1",-200,200,4)
+			panel:NumSlider("Вправо/влево","metrostroi_routes_cabin_offset_v2",-200,200,4)
+			panel:NumSlider("Вверх/вниз","metrostroi_routes_cabin_offset_v3",-200,200,4)
+			panel:NumSlider("Поворот1","metrostroi_routes_cabin_offset_a1",-200,200,4)
+			panel:NumSlider("Поворот2","metrostroi_routes_cabin_offset_a2",-200,200,4)
+			panel:NumSlider("Поворот3","metrostroi_routes_cabin_offset_a3",-200,200,4)
+			
+			
 			panel:TextEntry("Шрифт","metrostroi_routes_font")
 			panel:Help("Простые шрифты можно найти здесь: https://wiki.garrysmod.com/page/Default_Fonts")
 			panel:TextEntry("Айди таблицы","metrostroi_routes_setid")
@@ -392,6 +445,79 @@ if CLIENT then
 			draw.SimpleTextOutlined( str.val, font, str.xpos, str.ypos, Color( r3, g3, b3, alph3), TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP,1,Color(r4,g4,b4,alph4) )
 		end
 	end)
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	local PlyInTrain,a32
+	local v1,v2,v3,a1,a2,a3 = 0,0,0,0,0,0
+	local scale = 0.02
+	timer.Create("Detect if ply in train for auto_route_list",1,0,function()
+		local ply = LocalPlayer()
+		local vehicle = ply:GetVehicle()
+		if not IsValid(vehicle) then PlyInTrain = false return end
+		local Train = vehicle:GetNW2Entity("TrainEntity")
+		if not IsValid(Train) then PlyInTrain = false return end
+		local class = Train:GetClass()
+		PlyInTrain = Train
+		if class:find("717",1,true) and not class:find("_6",1,true) then v1 = 458 v2 = 33 v3 = 13 a1 = -90 a2 = 0 a3 = 0
+		elseif class:find("502",1,true) then v1 = 464 v2 = -33 v3 = -10 a1 = -90 a2 = -7.5 a3 = 0
+		elseif class:find("703",1,true) then v1 = 455.5 v2 = -33 v3 = -10 a1 = -90 a2 = -7.5 a3 = 0
+		elseif class:find("ezh",1,true) and not class:find("3",1,true) then v1 = 464 v2 = -26 v3 = -8.5 a1 = -90 a2 = -5 a3 = 0
+		elseif class:find("ezh",1,true) then v1 = 466 v2 = -15 v3 = -2.75 a1 = -90 a2 = -5 a3 = 0
+		elseif class:find("717",1,true) and class:find("_6",1,true) then v1 = 470 v2 = 20 v3 = 10 a1 = -90 a2 = 0 a3 = 0
+		elseif class:find("718",1,true) then v1 = 461 v2 = 25 v3 = -8.3 a1 = -90 a2 = 0 a3 = 0
+		elseif class:find("720",1,true) then v1 = 492.5 v2 = 43 v3 = -17.3 a1 = -90 a2 = 7 a3 = 0
+		elseif class:find("722",1,true) then v1 = 478.5 v2 = 25 v3 = -12 a1 = -90+17 a2 = 0 a3 = 0
+		else
+			PlyInTrain = nil
+			return
+		end
+		v1 = v1+v1offset:GetFloat()
+		v2 = v2-v2offset:GetFloat()
+		v3 = v3+v3offset:GetFloat()
+		a1 = a1+a1offset:GetFloat()
+		a2 = a2+a2offset:GetFloat()
+		a32 = a3offset:GetFloat()
+	end)
+
+
+	hook.Add( "PostDrawTranslucentRenderables", "test", function( bDepth, bSkybox )
+		-- If we are drawing in the skybox, bail
+		if not IsValid(PlyInTrain) or not RouteList or bSkybox then return end
+
+		local pos = PlyInTrain:LocalToWorld(Vector(v1,v2,v3+scale*(Maxs[4]or 0)))
+		local ang = PlyInTrain:LocalToWorldAngles(Angle(a1,a2,a3))
+		ang:RotateAroundAxis( ang:Up(), -90+a32)
+		--surface.SetTexture(surface.GetTextureID("models/metrostroi_train/81-717.6/amperm"))
+		--surface.SetMaterial(ourMat) -- If you use Material, cache it!
+		surface.SetDrawColor(Color(70,70,70,255))
+		cam.Start3D2D( pos, ang, scale )
+		
+			surface.DrawRect(0,0, Maxs[3] or 5,Maxs[4] or 5)
+			surface.SetDrawColor(Color(0,0,0,255))
+			--surface.DrawTexturedRect(0,0, Maxs[3] or 5,Maxs[4] or 5)
+			for _,line in pairs(Lines) do
+				surface.DrawLine( line.Start.x-xoffset, line.Start.y-yoffset, line.End.x-xoffset , line.End.y-yoffset )
+			end
+			for k,str in pairs(StringsPositions) do
+				draw.SimpleText( str.val, font, str.xpos-xoffset, str.ypos-yoffset, Color( 0, 0, 0, 255 ), TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP )
+			end
+		cam.End3D2D()
+	end )
+	
+	
+	-----FOR DEBUG--------------------------------------------- 
+	--Start()
+
 end
 
 if CLIENT then return end
