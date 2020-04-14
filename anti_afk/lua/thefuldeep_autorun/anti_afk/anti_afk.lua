@@ -1,4 +1,5 @@
 --TODO CUserCmd, StartCommand
+if 1 then return end
 
 if CLIENT then return end
 
