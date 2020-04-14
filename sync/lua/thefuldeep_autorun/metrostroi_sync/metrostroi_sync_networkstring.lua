@@ -869,18 +869,20 @@ end
 
 timer.Simple(0,function()
 hook.Add("MetrostroiPassedRed","MetrostroiPassedRedSync",function(train,ply,mode,arsback)
-	ulx.fancyLogAdmin(ply, true, '#"A" проехал светофор #s с запрещающим показанием', arsback.Name)
+	ulx.fancyLogAdmin(ply, true, '"#A" проехал светофор #s с запрещающим показанием', arsback.Name)
 	
 	local NickColor = team.GetColor(ply:Team())
 	local text = {
 		Colors = {
+			"",
 			NickColor.r.." "..NickColor.g.." "..NickColor.b.." "..NickColor.a,
 			"",
 			"0 255 0 0"
 		},
 		Texts = {
+			'"',
 			ply:Nick(),
-			" проеxaл светофор ",
+			'" проеxaл светофор ',
 			arsback.Name,
 			" c запрещающим показанием."
 		}
@@ -891,7 +893,7 @@ hook.Add("MetrostroiPassedRed","MetrostroiPassedRedSync",function(train,ply,mode
 end)
 
 hook.Add("MetrostroiPlombBroken", "MetrostroiPlombBrokenSync", function(train,but,ply)
-	ulx.fancyLogAdmin(ply, true, '#"A" сорвал пломбу с #s на #s', but, train.SubwayTrain.Name)
+	ulx.fancyLogAdmin(ply, true, '"#A" сорвал пломбу с #s на #s', but, train.SubwayTrain.Name)
 	local NickColor = team.GetColor(ply:Team())
 	local text = {
 		Colors = {
