@@ -30,7 +30,7 @@ end]]
 
 
 local nino_asnp_snd_len = 1.8
-local nino_asnp_snd_path = "thefuldeeps_sounds/passed_red_dead.mp3"
+local nino_asnp_snd_path = "thefuldeeps_sounds/nino_asnp.mp3"
 local nino_asnp_sound = Sound(nino_asnp_snd_path)
 
 local function UpgradeASNP(ent)
