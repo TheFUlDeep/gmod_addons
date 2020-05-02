@@ -1,5 +1,5 @@
 if CLIENT then return end
-
+--этот скрипт нельзя рестартить в рантайме, так как таблица заполняется хуком onentitycreated
 local TrackIDPath = {}
 
 local function GetAnyValueFromTable2(tbl)
@@ -64,7 +64,7 @@ end
 
 
 
-timer.Simple(0,function()
+--[[timer.Simple(0,function()
 	for _,ent in pairs(ents.FindByClass("gmod_track_platform")) do
 		UpgradePlatformEnt(ent)
 		-----------------------------DEBUG-------------------------------------------
@@ -74,16 +74,15 @@ timer.Simple(0,function()
 		--print("conver cof:",ent.PlatformStart:DistToSqr(ent.PlatformEnd)/math.abs(Track1[1].x - Track2[1].x))
 		-----------------------------------------------------------------------------
 	end
-	UpgradeStationsPotitions()
-	
-	hook.Add("OnEntityCreated","Save platforms for detectstation",function(ent)
-		timer.Simple(2,function()
-			if not IsValid(ent) or ent:GetClass() ~= "gmod_track_platform" then return end
-			UpgradePlatformEnt(ent)
-			UpgradeStationsPotitions()
-		end)
+	UpgradeStationsPotitions()	
+end)]]
+
+hook.Add("OnEntityCreated","Save platforms for detectstation",function(ent)
+	timer.Simple(2,function()
+		if not IsValid(ent) or ent:GetClass() ~= "gmod_track_platform" then return end
+		UpgradePlatformEnt(ent)
+		UpgradeStationsPotitions()
 	end)
-	
 end)
 
 --[[hook.Add("PlayerInitialSpawn","DetectstationInitialize",function()
