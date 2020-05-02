@@ -386,7 +386,7 @@ local function ScoreBoardFunction(ent)
 			if pos2 and strsub1 == "(ближайшая по треку)" then
 				local strsub3 = string.sub(pos,1,-38)
 				if PeregonsTbl[ID][1][1] and PeregonsTbl[ID][2][1] then
-					if PeregonsTbl[ID][1][1] == strsub3 or PeregonsTbl[ID][1][1] == pos2 and PeregonsTbl[ID][2][1] == strsub3 or PeregonsTbl[ID][2][1] == pos2 then
+					if (PeregonsTbl[ID][1][1] == strsub3 or PeregonsTbl[ID][1][1] == pos2) and (PeregonsTbl[ID][2][1] == strsub3 or PeregonsTbl[ID][2][1] == pos2) then
 						result = "перегон "..PeregonsTbl[ID][1][1].." - "..PeregonsTbl[ID][2][1]
 					end
 				else
