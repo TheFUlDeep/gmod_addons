@@ -45,7 +45,7 @@ end
 local PlatformsTbl = {}
 
 local function UpgradePlatformEnt(ent)
-	if ent:GetClass() ~= "gmod_track_platform" or not ent.PlatformStart or not ent.PlatformEnd or not ent.StationIndex or not ent.PlatformIndex then return end
+	if not ent.PlatformStart or not ent.PlatformEnd or not ent.StationIndex or not ent.PlatformIndex then return end
 	--тут определение трека, позиции на треке, установка треку номера пути
 	local PlatformCentre = LerpVector(0.5, ent.PlatformEnd, ent.PlatformStart)
 	
@@ -75,6 +75,15 @@ timer.Simple(0,function()
 		-----------------------------------------------------------------------------
 	end
 	UpgradeStationsPotitions()
+	
+	hook.Add("OnEntityCreated","Save platforms for detectstation",function(ent)
+		timer.Simple(2,function()
+			if not IsValid(ent) or ent:GetClass() ~= "gmod_track_platform" then return end
+			UpgradePlatformEnt(ent)
+			UpgradeStationsPotitions()
+		end)
+	end)
+	
 end)
 
 --[[hook.Add("PlayerInitialSpawn","DetectstationInitialize",function()
@@ -85,14 +94,6 @@ end)
 		UpgradeStationsPotitions()
 	end)
 end)]]
-
-hook.Add("OnEntityCreated","Save platforms for detectstation",function(ent)
-	timer.Simple(2,function()
-		if not IsValid(ent) then return end
-		UpgradePlatformEnt(ent)
-		UpgradeStationsPotitions()
-	end)
-end)
 
 hook.Add("EntityRemoved","Remove platforms from local table for detectstation",function(ent)
 	if not IsValid(ent) then return end
