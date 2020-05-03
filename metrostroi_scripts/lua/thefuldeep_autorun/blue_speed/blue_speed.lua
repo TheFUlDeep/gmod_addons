@@ -1,38 +1,36 @@
---взято из скрипта межвагонки ShadowBonnie
+local nomerogg = "gmod_subway_81-717_mvm"
 timer.Simple(0,function()
-	local ENT = scripted_ents.GetStored("gmod_subway_81-717_mvm_custom")
-	if ENT and ENT.t and ENT.t.Spawner then
-		local cont = false
-		for k,v in pairs(ENT.t.Spawner) do
-			if istable(v) and v[1]=="BlueSpeed" then cont = true break end
-		end
-		if cont then return end
-	
-		table.insert(ENT.t.Spawner,{"BlueSpeed","Синий скоростемер","Boolean"})
+	local ENT = scripted_ents.GetStored(nomerogg.."_custom")
+	if not ENT or not ENT.t then return end
+	for _,v in pairs(ENT.t.Spawner or {}) do
+		if type(v) == "table" and v[1] == "BlueSpeed" then return end
 	end
+	table.insert(ENT.t.Spawner,{"BlueSpeed","Синий скоростемер","Boolean"})
 end)
 
 if SERVER then return end
 
-
-local function ChangeColor(ClientEnt,bool)
-	if not IsValid(ClientEnt) then return end
-	local color = ClientEnt:GetColor() 				--проверку на соответствие цветов добавляю, потому что постоянная установка цвета съест больше фпс, чем проверка цвета
-	if bool then
-		if color.r == 100 and color.g == 100 and color.b == 255 then return end
-		ClientEnt:SetColor(Color(100,100,255))
-	else
-		if color.r == 175 and color.g == 250 and color.b == 20 then return end
-		ClientEnt:SetColor(Color(175,250,20))
+timer.Simple(0,function()
+	local ENT = scripted_ents.GetStored(nomerogg)--замена моделей пропов
+	if not ENT or not ENT.t then return else ENT = ENT.t end
+	
+	for name,cprop in pairs(ENT.ClientProps or {}) do
+		if name == "SSpeed1" or name == "SSpeed2" then 
+			local oldcallback = cprop.callback or function(wag,...) end
+			cprop.callback = function(wag,cent)
+				if wag:GetNW2Bool("BlueSpeed") then cent:SetColor(Color(0,0,255))end
+				oldcallback(wag,cent)
+			end
+		end
 	end
-end
-
-timer.Create("Change Speed Color",1,0,function()							--использую именно таймер, потому что ентити на клиентской части доступно не всегда
-	for k,v in pairs(ents.FindByClass("gmod_subway_81-717_mvm")) do
-		if not IsValid(v) or not v.ClientEnts then continue end
-		--можно добавить еще, но я не уверен, что это что-то оптимизирует if not v.ShouldRenderClientEnts or not v:ShouldRenderClientEnts() then continue end
-		local BlueSpeed = v:GetNW2Bool("BlueSpeed",false)
-		ChangeColor(v.ClientEnts.SSpeed1,BlueSpeed)
-		ChangeColor(v.ClientEnts.SSpeed2,BlueSpeed)
+	
+	if ENT.UpdateWagonNumber then
+		local oldupdate = ENT.UpdateWagonNumber
+		ENT.UpdateWagonNumber = function(wag,...)
+				local CEnts = wag.ClientEnts or {}
+				if CEnts.SSpeed1 then SafeRemoveEntity(CEnts.SSpeed1) end
+				if CEnts.SSpeed2 then SafeRemoveEntity(CEnts.SSpeed2) end
+			oldupdate(wag,...)
+		end
 	end
 end)
