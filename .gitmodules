@@ -1,0 +1,3 @@
+[submodule "nskmask"]
+	path = nskmask
+	url = https://github.com/1shialeto/nskmask
