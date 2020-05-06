@@ -143,8 +143,7 @@ if SERVER then
 			http.Fetch("https://api.steampowered.com/IPlayerService/IsPlayingSharedGame/v0001/".."?key="..api.."&steamid="..steamID64.."&appid_playing=4000",
 			function(body)
 				body = body and util.JSONToTable(body)
-				if not body or not body.response or not body.response.lender_steamid then return end
-				local parentsteamid = body.response.lender_steamid
+				local parentsteamid = body and body.response and body.response.lender_steamid
 				if parentsteamid and parentsteamid ~= 0 then
 					FamilySteamIDs[SteamID] = util.SteamIDFrom64(parentsteamid)
 					print(SteamID.." зашел через семейный доступ. Родитель "..FamilySteamIDs[SteamID])
