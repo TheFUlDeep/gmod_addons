@@ -154,6 +154,7 @@ if SERVER then
 				end
 			end)
 		else
+			if FamilySteamIDs[SteamID] then print(SteamID.." зашел через семейный доступ. Родитель "..FamilySteamIDs[SteamID]) end
 			asd(SteamID)
 		end
 	end)
