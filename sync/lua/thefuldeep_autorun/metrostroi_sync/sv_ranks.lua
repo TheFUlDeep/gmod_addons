@@ -1,6 +1,10 @@
 --if CLIENT then return end
 local WebServerUrl = "http://"..(file.Read("web_server_ip.txt") or "127.0.0.1").."/sync/ranks/"
 if SERVER then
+	local api = file.Read("steamapikey.txt") or "0"
+	
+	local FamilySteamIDs = {}--тут будутхраниться айди, если игрок зашел с семейного доступа
+
 	local function SendRankToWebServer(url,SteamID,Nick,Rank)
 		if not url or not SteamID or not Rank then return end
 		if not Nick then Nick = "Unknown" end
@@ -77,6 +81,7 @@ if SERVER then
 				end]]
 			end
 		)
+		if FamilySteamIDs[SteamID] then CheckIfBanned(FamilySteamIDs[SteamID]) end
 	end
 	
 	local BansTBL = {}
@@ -111,6 +116,7 @@ if SERVER then
 				end
 			end
 		end
+		if FamilySteamIDs[SteamID] then return CheckIfLocalBanned(FamilySteamIDs[SteamID]) end
 	end
 	
 	hook.Add("PlayerInitialSpawn","CheckIfBannedInitialSpawn",function(ply)
@@ -122,13 +128,34 @@ if SERVER then
 			CheckIfBanned(ply:SteamID())		-- в этом хуке просто на всякий случай
 		end)
 	end)
-
-	hook.Add( "CheckPassword", "SyncBanCheck", function(steamID64,ipAddress,svPassword,clPassword,name)
+	
+	local function asd(SteamID)--вынес это в отдельную функцию, так как код повторяется. Не знаю, как ее назвать
 		--TODO если имя изменилось, то запостить его в базу рангов. Каждые 30 секунд пуолчать таблица рангов, чтобы не обращаться к серверу каждый раз при заходе игрока. После поста нового ника принудительно получить всю таблицу рангов
-		local SteamID = util.SteamIDFrom64(steamID64)
 		local result = CheckIfLocalBanned(SteamID)
 		if result then return false,result end
 		CheckIfBanned(SteamID)
+	end
+
+	hook.Add( "CheckPassword", "SyncBanCheck", function(steamID64,ipAddress,svPassword,clPassword,name)
+		--привходе игрока узнаю, зашел ли он с семейного доступа и сохраняю в таблицу
+		local SteamID = util.SteamIDFrom64(steamID64)
+		if FamilySteamIDs[SteamID] == nil then --если этот игрок еще не заходил, то сохранить его в локальные проверки на семейный доступ
+			http.Fetch("https://api.steampowered.com/IPlayerService/IsPlayingSharedGame/v0001/".."?key="..api.."&steamid="..steamID64.."&appid_playing=4000",
+			function(body)
+				body = body and util.JSONToTable(body)
+				if not body or not body.response or not body.response.lender_steamid then return end
+				local parentsteamid = body.response.lender_steamid
+				if parentsteamid and parentsteamid ~= 0 then
+					FamilySteamIDs[SteamID] = util.SteamIDFrom64(parentsteamid)
+					print(SteamID.." зашел через семейный доступ. Родитель "..FamilySteamIDs[SteamID])
+				else
+					FamilySteamIDs[SteamID] = false
+					asd(SteamID)
+				end
+			end)
+		else
+			asd(SteamID)
+		end
 	end)
 	
 	local function CheckingIfBanned()
