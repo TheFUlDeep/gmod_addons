@@ -116,6 +116,7 @@ local function StartVote( len )
 		"mono",
 		function(audio)	--я не понимаю, зачем эта функция. Оно восрпоизводит, даже если функция пустая
 			if not IsValid(audio) then return end
+			audio:SetVolume(0.15)
 			VoteStartedSound = audio
 			--audio:Play()
 		end
@@ -160,6 +161,7 @@ function CloseVote()
 		"mono",
 		function(audio)	--я не понимаю, зачем эта функция. Оно восрпоизводит, даже если функция пустая
 			if not IsValid(audio) then return end
+			audio:SetVolume(0.15)
 			if IsValid(VoteStartedSound) then VoteStartedSound:Stop() end
 			--audio:Play()
 		end

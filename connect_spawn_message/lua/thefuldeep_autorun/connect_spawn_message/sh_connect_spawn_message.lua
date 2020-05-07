@@ -78,6 +78,7 @@ if CLIENT then
 				"mono",
 				function(audio)	--я не понимаю, зачем эта функция. Оно восрпоизводит, даже если функция пустая
 					if not IsValid(audio) then return end
+					audio:SetVolume(0.15)
 					--audio:Play()
 				end
 			)
