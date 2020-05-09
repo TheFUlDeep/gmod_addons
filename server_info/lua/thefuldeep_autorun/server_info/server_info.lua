@@ -343,6 +343,9 @@ end
 end)
 
 local PeregonsTbl = {}
+local PrevPosesEnts = {}--таблица, в которой хранятся предудыщие позиции ентити для определения местоположения
+local PrevPosesEntsChanges = {}
+local DirectionsEnts = {}--таблица направлений
 local function ScoreBoardFunction(ent)
 	for k,v in pairs(PeregonsTbl) do
 		if --[[not IsValid(player.GetBySteamID(k)) and]] not IsValid(ents.GetByIndex(k)) then PeregonsTbl[k] = nil end
@@ -353,7 +356,9 @@ local function ScoreBoardFunction(ent)
 	
 	--for k,v in pairs(player.GetHumans()) do
 		if not PeregonsTbl[ID] then PeregonsTbl[ID] = {} PeregonsTbl[ID][1] = {} PeregonsTbl[ID][2] = {} end
-		local pos,pos2,path,posx,pos2x,poscurx = THEFULDEEP.DETECTSTATION(vector)
+		local pos,pos2,path,posx,pos2x,poscurx,nodecur,node1,node2 = THEFULDEEP.DETECTSTATION(vector)
+		--poscurx = nodecur and nodecur.x
+		DirectionsEnts[ent] = PrevPosesEnts[ent] and poscurx and (PrevPosesEnts[ent] < poscurx and 1 or PrevPosesEnts[ent] > poscurx and -1 or PrevPosesEnts[ent] == poscurx and DirectionsEnts[ent]) or 0
 		--if not pos then return end				-- detectstation всегда возвращает pos, поэтому эта строка не нужна?
 		local result = pos
 		local strsub1 = string.sub(pos,-36) --(ближайшая по треку)
@@ -375,7 +380,7 @@ local function ScoreBoardFunction(ent)
 				result = "тупик "..string.sub(pos,1,-38)
 			end
 		end
-		
+
 		local GetTrainTbl = GetTrain(ent)
 		local Train = GetTrainTbl and GetTrainTbl.Name and GetTrainTbl.RouteNumber and GetTrainTbl.Name.." ("..GetTrainTbl.RouteNumber..")" or "-"
 		local Owner = GetTrainTbl and GetTrainTbl.Owner and GetTrainTbl.Owner.Nick or ""
@@ -384,23 +389,50 @@ local function ScoreBoardFunction(ent)
 		local Dist = ""
 		if string.sub(result,1,15) == "перегон " then							--определяю направление движения по ближайшей стации и сохраняю до тех пор, пока человек в перегоне
 			if pos2 and strsub1 == "(ближайшая по треку)" then
-				local strsub3 = string.sub(pos,1,-38)
-				if PeregonsTbl[ID][1][1] and PeregonsTbl[ID][2][1] then
-					if (PeregonsTbl[ID][1][1] == strsub3 or PeregonsTbl[ID][1][1] == pos2) and (PeregonsTbl[ID][2][1] == strsub3 or PeregonsTbl[ID][2][1] == pos2) then
-						result = "перегон "..PeregonsTbl[ID][1][1].." - "..PeregonsTbl[ID][2][1]
+				local strsub3 = string.sub(pos,1,-38)--имя первой станции
+				if nodecur and poscurx and PrevPosesEnts[ent] and math.abs(PrevPosesEnts[ent] - poscurx) > 0 then
+					--зная предыдущую позицию, определяю направление движения
+					--result, Time, Dist
+					
+					--добавил это обнуление от балды. Не знаю, надо ли это
+					PeregonsTbl[ID][1] = {}
+					PeregonsTbl[ID][2] = {}
+					
+					local MovedAwayFromFirstStation = math.abs(PrevPosesEnts[ent] - posx) < math.abs(poscurx - posx)
+					local frst,last,distto
+					if MovedAwayFromFirstStation then
+						frst = strsub3
+						last = pos2
+						distto = node2
+					else
+						frst = pos2
+						last = strsub3
+						distto = node1
 					end
-				else
-					PeregonsTbl[ID][1][1] = strsub3
-					PeregonsTbl[ID][2][1] = pos2
-					--PeregonsTbl[ID][1][2] = posx			--мне не нужа позиция станции отправления
-					PeregonsTbl[ID][2][2] = pos2x
-				end
-				
-				if PeregonsTbl[ID][2][2] and poscurx then
-					Dist = math.floor(math.abs(PeregonsTbl[ID][2][2] - poscurx))
-					if Speed and Speed > 5 then
-						--Speed = Speed * 1000 / 60 / 60
-						Time = math.floor((math.abs(PeregonsTbl[ID][2][2] - poscurx) / (50 * 1000 / 60 / 60)))
+					local dst
+					result = "перегон "..frst.." - "..last
+					Time, dst = Metrostroi.GetTravelTime(nodecur.node1, distto.node1)
+					Time = math.floor(Time)
+					Dist = dst
+					
+				elseif not PrevPosesEnts[ent] then--оставил эту часть, чтобы при отсутствии предыдущей позиции сразу указался перегон
+					if PeregonsTbl[ID][1][1] and PeregonsTbl[ID][2][1] then
+						if (PeregonsTbl[ID][1][1] == strsub3 or PeregonsTbl[ID][1][1] == pos2) and (PeregonsTbl[ID][2][1] == strsub3 or PeregonsTbl[ID][2][1] == pos2) then
+							result = "перегон "..PeregonsTbl[ID][1][1].." - "..PeregonsTbl[ID][2][1]
+						end
+					else
+						PeregonsTbl[ID][1][1] = strsub3
+						PeregonsTbl[ID][2][1] = pos2
+						--PeregonsTbl[ID][1][2] = posx			--мне не нужа позиция станции отправления
+						PeregonsTbl[ID][2][2] = pos2x
+					end
+					
+					if PeregonsTbl[ID][2][2] and poscurx then
+						Dist = math.floor(math.abs(PeregonsTbl[ID][2][2] - poscurx))
+						if Speed and Speed > 5 then
+							--Speed = Speed * 1000 / 60 / 60
+							Time = math.floor((math.abs(PeregonsTbl[ID][2][2] - poscurx) / (50 * 1000 / 60 / 60)))
+						end
 					end
 				end
 				
@@ -411,6 +443,15 @@ local function ScoreBoardFunction(ent)
 			PeregonsTbl[ID][2] = {}
 		end
 	--end
+		if (not PrevPosesEntsChanges[ent] or os.time() - PrevPosesEntsChanges[ent] > 0.5) and poscurx then
+			if PrevPosesEnts[ent] then
+				if math.abs(PrevPosesEnts[ent] - poscurx) > 4 then PrevPosesEnts[ent] = poscurx end--будет детектиться смещение только на 4+ метра
+			else
+				PrevPosesEnts[ent] = poscurx
+			end
+			PrevPosesEntsChanges[ent] = os.time()
+		end
+	
 		return result,Train,ID,path,Owner,Time,Dist
 end
 
@@ -446,7 +487,12 @@ local function MetrostroiInfo()
 	end
 end
 
-timer.Create("ScoreBoardAdditional", 5, 0, MetrostroiInfo)
+timer.Create("ScoreBoardAdditional", 5, 0, function()
+	MetrostroiInfo()
+	for k,v in pairs(PrevPosesEnts) do if IsEntity(v) and not IsValid(v) then PrevPosesEnts[k] = nil PrevPosesEntsChanges[k] = nil end end --очищаю таблицу от невалидных ентитей
+end)
+
+--Direction для поездов. false - убывает, true - увеличивается
 
 local function PrepareDataToSending()
 	if not THEFULDEEP.SERVERINFOINITIALIZED then return end
@@ -472,8 +518,8 @@ local function PrepareDataToSending()
 			local result,Train,ID,path,Owner,Time,Dist = ScoreBoardFunction(v)
 			if result and result ~= "" then TblToSend.Players[Index].Position = result end
 			if path and path ~= "" then TblToSend.Players[Index].Path = path end
-			if Time and Time ~= "" then TblToSend.Players[Index].ArrTime = Time end
-			if Dist and Dist ~= "" then TblToSend.Players[Index].ArrDist = Dist end
+			--if Time and Time ~= "" then TblToSend.Players[Index].ArrTime = Time end
+			--if Dist and Dist ~= "" then TblToSend.Players[Index].ArrDist = Dist end
 			
 			
 			TblToSend.Players[Index].InTrain = GetTrain(v)
@@ -483,11 +529,13 @@ local function PrepareDataToSending()
 				Speed = Speed > 5 and Speed or 0
 				TblToSend.Players[Index].InTrain.Speed = Speed
 				
-				if Time and Time ~= "" then 
-					TblToSend.Players[Index].InTrain.ArrTime = Time 
-					TblToSend.Players[Index].ArrTime = Time 
-				end
-				if Dist and Dist ~= "" then TblToSend.Players[Index].InTrain.ArrDist = Dist end
+				TblToSend.Players[Index].InTrain.PosVector = TblToSend.Players[Index].InTrain.Entity:GetPos()
+				TblToSend.Players[Index].InTrain.Direction = DirectionsEnts[TblToSend.Players[Index].InTrain.Entity]
+				--if Time and Time ~= "" then 
+				--	TblToSend.Players[Index].InTrain.ArrTime = Time 
+				--	TblToSend.Players[Index].ArrTime = Time 
+				--end
+				--if Dist and Dist ~= "" then TblToSend.Players[Index].InTrain.ArrDist = Dist end
 			end
 				
 			TblToSend.Players[Index].Trains = ulx.GetTrains(nil,v)
@@ -498,8 +546,10 @@ local function PrepareDataToSending()
 						local result,Train,ID,path,Owner,Time,Dist = ScoreBoardFunction(v1.Entity)
 						if result and result ~= "" then v1.Position = result end
 						if path and path ~= "" then v1.Path = path end
-						if Time and Time ~= "" then v1.ArrTime = Time end
-						if Dist and Dist ~= "" then v1.ArrDist = Dist end
+						--if Time and Time ~= "" then v1.ArrTime = Time end
+						--if Dist and Dist ~= "" then v1.ArrDist = Dist end
+						v1.PosVector = v1.Entity:GetPos()
+						v1.Direction = DirectionsEnts[v1.Entity]
 					end
 				end
 			end
@@ -518,8 +568,10 @@ local function PrepareDataToSending()
 				local result,Train,ID,path,Owner,Time,Dist = ScoreBoardFunction(v.Entity)
 				if result and result ~= "-" then v.Position = result end
 				if path and path ~= "" then v.Path = path end
-				if Time and Time ~= "" then v.ArrTime = Time end
-				if Dist and Dist ~= "" then v.ArrDist = Dist end
+				--if Time and Time ~= "" then v.ArrTime = Time end
+				--if Dist and Dist ~= "" then v.ArrDist = Dist end
+				v.PosVector = v.Entity:GetPos()
+				v.Direction = DirectionsEnts[v.Entity]
 			end
 		end
 	end
