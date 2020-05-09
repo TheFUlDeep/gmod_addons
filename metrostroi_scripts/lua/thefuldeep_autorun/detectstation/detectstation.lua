@@ -8,7 +8,7 @@ local function GetAnyValueFromTable2(tbl)
 	end
 end
 
-local function UpgradeStationsPotitions()				--отцентровка точек телепорта для станций
+local function UpgradeStationsPotitions()				--отцентровка точек телепорта для станций относительно ентити платформ
 	local Platforms = {}
 	for _,Platform in pairs(ents.FindByClass("gmod_track_platform")) do
 		--if not IsValid(Platform) then continue end
@@ -42,8 +42,6 @@ local function UpgradeStationsPotitions()				--отцентровка точек
 	
 end
 
-local PlatformsTbl = {}
-
 local function UpgradePlatformEnt(ent)
 	if not ent.PlatformStart or not ent.PlatformEnd or not ent.StationIndex or not ent.PlatformIndex then return end
 	--тут определение трека, позиции на треке, установка треку номера пути
@@ -59,7 +57,6 @@ local function UpgradePlatformEnt(ent)
 	ent.TrackID = Track[1].path.id
 	ent.PlatformLen = ent.PlatformStart:DistToSqr(ent.PlatformEnd)
 	ent.PlatformLenX = math.abs(TrackStart[1].x - TrackEnd[1].x)
-	table.insert(PlatformsTbl,ent)
 end
 
 
@@ -93,18 +90,6 @@ end)
 		UpgradeStationsPotitions()
 	end)
 end)]]
-
-hook.Add("EntityRemoved","Remove platforms from local table for detectstation",function(ent)
-	if not IsValid(ent) then return end
-	local keys = table.KeysFromValue( PlatformsTbl, ent)
-	if keys and #keys > 0 then
-		for _,key in pairs(keys) do
-			table.remove(PlatformsTbl,key)
-		end
-	end
-end)
-
-
 
 local function GetAnyValueFromTable(tbl) --эту функцию можно заменить на получение имени станции на нужном языке
 	for _,v in pairs(tbl) do
@@ -190,7 +175,7 @@ local function detectstation(vec,try)
 
 		--сначала определение по платформам (по треку)
 		local NearestPlatform1,NearestPlatform1Dist,NearestPlatform2,NotOnPlatform
-		for _,Platform in pairs(PlatformsTbl) do
+		for _,Platform in pairs(ents.FindByClass("gmod_track_platform")) do
 			if not IsValid(Platform) or Platform.TrackID ~= TrackID or Path ~= Platform.PlatformIndex then continue end--возможно проверка по TrackID не нужна, так как уже есть проверка по пути, но оставлю на всякий случай
 			
 			local CurDist = math.abs(Posx - Platform.TrackPos)
