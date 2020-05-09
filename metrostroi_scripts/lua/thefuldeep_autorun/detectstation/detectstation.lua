@@ -1,6 +1,6 @@
 if CLIENT then return end
 --этот скрипт нельзя рестартить в рантайме, так как таблица заполняется хуком onentitycreated
-local TrackIDPath = {}
+--local TrackIDPath = {}
 
 local function GetAnyValueFromTable2(tbl)
 	for _,v in pairs(tbl) do
@@ -47,14 +47,14 @@ local function UpgradePlatformEnt(ent)
 	--тут определение трека, позиции на треке, установка треку номера пути
 	local PlatformCentre = LerpVector(0.5, ent.PlatformEnd, ent.PlatformStart)
 	
-	local Track = Metrostroi.GetPositionOnTrack(PlatformCentre)
+	ent.TrackNode = Metrostroi.GetPositionOnTrack(PlatformCentre)[1]
 	local TrackStart = Metrostroi.GetPositionOnTrack(ent.PlatformStart)
 	local TrackEnd = Metrostroi.GetPositionOnTrack(ent.PlatformEnd)
-	if not Track[1] or not TrackStart[1] or not TrackEnd[1] then return end
+	if not ent.TrackNode or not TrackStart[1] or not TrackEnd[1] then return end
 	
-	TrackIDPath[Track[1].path.id] = ent.PlatformIndex
-	ent.TrackPos = Track[1].x
-	ent.TrackID = Track[1].path.id
+	--TrackIDPath[ent.TrackNode.path.id] = ent.PlatformIndex
+	ent.TrackPos = ent.TrackNode.x
+	ent.TrackID = ent.TrackNode.path.id
 	ent.PlatformLen = ent.PlatformStart:DistToSqr(ent.PlatformEnd)
 	ent.PlatformLenX = math.abs(TrackStart[1].x - TrackEnd[1].x)
 end
@@ -124,7 +124,6 @@ local function GetPlatformByIndex(index)
 	if not index or not tonumber(index) then return end
 	index = tonumber(index)
 	for _,Platform in pairs(ents.FindByClass("gmod_track_platform")) do 
-		--if not IsValid(Platform) then continue end
 		if Platform.TrackPos and Platform.StationIndex == index then return Platform end
 	end
 end
@@ -162,21 +161,24 @@ local function GetNearestTrack(track)
 end
 
 local function detectstation(vec,try)
-	local StationPosx,Station2Posx,Station,Station2,Path,Posx
+	local StationPosx,Station2Posx,Station,Station2,Path,Posx,nodecur,node1,node2
 
 	local Track = Metrostroi.GetPositionOnTrack(vec)
 	
 	if Track[1] then
+		nodecur = Track[1]
+	
 		local TrackID = Track[1].path.id
 		
-		Path = TrackIDPath[TrackID]
+		--Path = TrackIDPath[TrackID]
 
 		Posx = Track[1].x
 
 		--сначала определение по платформам (по треку)
 		local NearestPlatform1,NearestPlatform1Dist,NearestPlatform2,NotOnPlatform
 		for _,Platform in pairs(ents.FindByClass("gmod_track_platform")) do
-			if not IsValid(Platform) or Platform.TrackID ~= TrackID or Path ~= Platform.PlatformIndex then continue end--возможно проверка по TrackID не нужна, так как уже есть проверка по пути, но оставлю на всякий случай
+			if not IsValid(Platform) or Platform.TrackID ~= TrackID --[[or Path ~= Platform.PlatformIndex]]then continue end--возможно проверка по TrackID не нужна, так как уже есть проверка по пути, но оставлю на всякий случай
+			Path = Path or Platform.PlatformIndex
 			
 			local CurDist = math.abs(Posx - Platform.TrackPos)
 			if not NearestPlatform1Dist or NearestPlatform1Dist > CurDist then 
@@ -191,13 +193,14 @@ local function detectstation(vec,try)
 		
 		if NearestPlatform1 then
 			StationPosx = NearestPlatform1.TrackPos
+			node1 = NearestPlatform1.TrackNode
 			Station = GetStationNameByPlatform(NearestPlatform1) or NearestPlatform1.StationIndex
 			Station = Station and NotOnPlatform and Station.." (ближайшая по треку)" or Station
 			
 			local NearestPlatform1Dist
 			for _,Platform in pairs(ents.FindByClass("gmod_track_platform")) do	--ищу вторую платформу по дальности от vec с противоположной стороны
 				--if not IsValid(Platform) then continue end
-				if not Platform.TrackPos or Platform == NearestPlatform1 or Platform.TrackID ~= TrackID or Path ~= Platform.PlatformIndex or not Platform.StationIndex or StationPosx > Posx and Platform.TrackPos > Posx or StationPosx < Posx and Platform.TrackPos < Posx then continue end--возможно проверка по TrackID не нужна, так как уже есть проверка по пути, но оставлю на всякий случай   --если вторая станция c той же стороны, что и первая, до очистить вторую станцию
+				if not Platform.TrackPos or Platform == NearestPlatform1 or Platform.TrackID ~= TrackID --[[or Path ~= Platform.PlatformIndex]] or not Platform.StationIndex or StationPosx > Posx and Platform.TrackPos > Posx or StationPosx < Posx and Platform.TrackPos < Posx then continue end--возможно проверка по TrackID не нужна, так как уже есть проверка по пути, но оставлю на всякий случай   --если вторая станция c той же стороны, что и первая, до очистить вторую станцию
 				
 				local CurDist = math.abs(Posx - Platform.TrackPos)
 				if not NearestPlatform1Dist or NearestPlatform1Dist > CurDist then 
@@ -209,10 +212,10 @@ local function detectstation(vec,try)
 			if NearestPlatform2 then
 				Station2 = GetStationNameByPlatform(NearestPlatform2) or NearestPlatform2.StationIndex
 				Station2Posx = NearestPlatform2.TrackPos
+				node2 = NearestPlatform2.TrackNode
 			end
 		end
 	end
-
 
 	if not Station and not try then Station,Station2,Path,StationPosx,Station2Posx,Posx = detectstation(vec+Vector(0,0,200),true) end --если не нашел, то пробую найти чуть выше
 	
@@ -220,7 +223,7 @@ local function detectstation(vec,try)
 	Station = not Station and SecondMethod(vec) or Station
 	
 
-	return Station or "", Station2,Path,StationPosx,Station2Posx,Posx
+	return Station or "", Station2,Path,StationPosx,Station2Posx,Posx,nodecur,node1,node2
 end
 
 THEFULDEEP = THEFULDEEP or {}

@@ -54,20 +54,16 @@ function ENT:Think()
             self.Digits[k]:SetParent(self)
         end
     end
-
-    local GettedInteval = self:GetNW2Int("ArrTime",-1)
-	if GettedInteval > -1 then
-		if self.LastInterval and self.LastInterval == GettedInteval then
-			self.IntervalInc = self.IntervalInc + 1
-		else
-			self.LastInterval = GettedInteval
-			self.IntervalInc = 0
-		end
-	else
+	
+	if self.LastUpdate ~= self:GetNW2Int("ChangeTime",0) then
+		self.LastUpdate = self:GetNW2Int("ChangeTime",0)
+		self.GettedInteval = self:GetNW2Int("ArrTime",-1)
 		self.IntervalInc = 0
+	else
+		self.IntervalInc = self.IntervalInc + 1
 	end
 	
-	local interval = GettedInteval - self.IntervalInc
+	local interval = self.GettedInteval - self.IntervalInc
 
     if (interval <= (9 * 60 + 59)) and (interval >= 0) then
         if IsValid(self.Digits[1]) then self.Digits[1]:SetSkin(math.floor(interval / 60)) end
