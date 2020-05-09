@@ -132,7 +132,7 @@ end
 local function SecondMethod(vector)
 	if not Metrostroi or not Metrostroi.StationConfigurations then return end
 	local NearestStation,MinDist,NotInRadius
-	local wLimit = 300
+	local hLimit = 300
 	local Radius = 1700*1700
 	for k,v in pairs(Metrostroi.StationConfigurations) do						--поиск ближайшей станции в плоскости и в ограниченной высоте
 		if not istable(v) then continue end
@@ -148,7 +148,7 @@ local function SecondMethod(vector)
 		if not StationName then continue end
 		
 		local dist = math.Distance(vector.x,vector.y,StationPos.x,StationPos.y)^2
-		if (not MinDist or dist < MinDist) and math.abs(vector.z - StationPos.z) < wLimit and dist < (GetHalfPlatformLen(GetPlatformByIndex(k)) or Radius) then 
+		if (not MinDist or dist < MinDist) and math.abs(vector.z - StationPos.z) < hLimit and dist < (GetHalfPlatformLen(GetPlatformByIndex(k)) or Radius) then 
 			MinDist = dist 
 			NearestStation = StationName 
 			--NotInRadius = dist > Radius 
