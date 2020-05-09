@@ -144,7 +144,7 @@ if SERVER then
 			function(body)
 				body = body and util.JSONToTable(body)
 				local parentsteamid = body and body.response and body.response.lender_steamid
-				if parentsteamid and parentsteamid ~= 0 then
+				if parentsteamid and parentsteamid ~= 0 and util.SteamIDFrom64(parentsteamid) ~= "STEAM_0:0:0" then
 					FamilySteamIDs[SteamID] = util.SteamIDFrom64(parentsteamid)
 					print(SteamID.." зашел через семейный доступ. Родитель "..FamilySteamIDs[SteamID])
 				else
