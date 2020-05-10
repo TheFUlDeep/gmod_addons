@@ -70,41 +70,41 @@ timer.Create("Update ArriveClocks",5,0,function()
 		if not IsValid(clockent) or not clockent.TrackNode then continue end
 		local ArrTimes = {}
 		for _,v1 in pairs(THEFULDEEP.SERVERINFO or {}) do
-			if type(v1) ~= "table" then continue end
-			if v1.Map and v1.Map == THEFULDEEP.MAP and v1.Trains then
-				for _,train in pairs(v1.Trains) do
-					if not train.Direction or train.Direction == 0 or not train.PosVector --[[or not train.Speed or train.Speed < 5]] then continue end
+			if not istable(v1) or not v1.Map or v1.Map ~= THEFULDEEP.MAP or not v1.Trains then continue end
+			for _,train in pairs(v1.Trains) do
+				if not train.Direction or train.Direction == 0 or not train.PosVector --[[or not train.Speed or train.Speed < 5]] then continue end
 					
-					train.TrackNode = train.TrackNode or Metrostroi.GetPositionOnTrack(train.PosVector)[1]
+				train.TrackNode = train.TrackNode or Metrostroi.GetPositionOnTrack(train.PosVector)[1]
 					
-					if not train.TrackNode or train.TrackNode.path.id ~= clockent.TrackNode.path.id then continue end
+				if not train.TrackNode or train.TrackNode.path.id ~= clockent.TrackNode.path.id then continue end
 					
-					local dir = train.Direction < 0
-					local clockpos = clockent.TrackNode.x
-					local trainposx = train.TrackNode.x
+				local dir = train.Direction < 0
+				local clockpos = clockent.TrackNode.x
+				local trainposx = train.TrackNode.x
+				
+				if math.abs(clockpos-trainposx) < 20 then continue end--TODO возможно это надо будет изменить
 					
-					--если состав движется в сторону часов (в независимости от расстояния, но по тому же треку, на котором стоят часы)
-					if (dir and clockpos < trainposx) or (not dir and clockpos > trainposx) then
-						local arrtime =  Metrostroi.GetTravelTime(train.TrackNode.node1,clockent.TrackNode.node1)
+				--если состав движется в сторону часов (в независимости от расстояния, но по тому же треку, на котором стоят часы)
+				if (dir and clockpos < trainposx) or (not dir and clockpos > trainposx) then
+					local arrtime =  Metrostroi.GetTravelTime(train.TrackNode.node1,clockent.TrackNode.node1)
 						
-						--если на пути от паравоза до часов есть еще станции (часы), то прибавить ко времени 30 сек на каждую станцию
-						if trainposx < clockpos then trainposx,clockpos = clockpos,trainposx end--так trainposx всегда будет >= clockpos. Это для упрощения дальнейшего сравнения
-						local additional_time = 0
-						for _,clock2 in pairs(ents.FindByClass("gmod_metrostroi_clock_arrive")) do
-							if clock2 == clockent or not IsValid(clock2) or not clock2.TrackNode or clock2.TrackNode.path.id ~= clockent.TrackNode.path.id then continue end
-							local posx = clock2.TrackNode.x
-							if posx > clockpos and posx < trainposx then additional_time = additional_time + 30 end
-						end
-						
-						arrtime = math.floor(arrtime) + additional_time
-						table.insert(ArrTimes,arrtime)
+					--если на пути от паравоза до часов есть еще станции (часы), то прибавить ко времени 30 сек на каждую станцию
+					if trainposx < clockpos then trainposx,clockpos = clockpos,trainposx end--так trainposx всегда будет >= clockpos. Это для упрощения дальнейшего сравнения
+					local additional_time = 0
+					for _,clock2 in pairs(ents.FindByClass("gmod_metrostroi_clock_arrive")) do
+						if clock2 == clockent or not IsValid(clock2) or not clock2.TrackNode or clock2.TrackNode.path.id ~= clockent.TrackNode.path.id then continue end
+						local posx = clock2.TrackNode.x
+						if posx > clockpos and posx < trainposx then additional_time = additional_time + 30 end
 					end
-					--local start = string.sub(train.Position,1,15):find("перегон ") and string.find(train.Position," - ",1,true) or nil
-					--if not start then continue end
-					--if string.sub(train.Position,start + 3) == clockent.Station then
-						--table.insert(ArrTimes,1,train.ArrTime)
-					--end
+						
+					arrtime = math.floor(arrtime) + additional_time
+					table.insert(ArrTimes,arrtime)
 				end
+				--local start = string.sub(train.Position,1,15):find("перегон ") and string.find(train.Position," - ",1,true) or nil
+				--if not start then continue end
+				--if string.sub(train.Position,start + 3) == clockent.Station then
+					--table.insert(ArrTimes,1,train.ArrTime)
+				--end
 			end
 		end
 		if #ArrTimes < 1 then
