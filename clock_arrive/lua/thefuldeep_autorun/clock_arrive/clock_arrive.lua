@@ -81,6 +81,8 @@ timer.Create("Update ArriveClocks",5,0,function()
 				local dir = train.Direction < 0
 				local clockpos = clockent.TrackNode.x
 				local trainposx = train.TrackNode.x
+				
+				if math.abs(clockpos-trainposx) < 20 then continue end--TODO возможно это надо будет изменить
 					
 				--если состав движется в сторону часов (в независимости от расстояния, но по тому же треку, на котором стоят часы)
 				if (dir and clockpos < trainposx) or (not dir and clockpos > trainposx) then
