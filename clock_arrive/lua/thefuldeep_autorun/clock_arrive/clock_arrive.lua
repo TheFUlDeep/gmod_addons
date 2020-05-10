@@ -91,16 +91,30 @@ timer.Create("Update ArriveClocks",5,0,function()
 					--время надо считать от минимального ноуда к максимальному, поэтмоу вот так
 					local arrtime = clockpos < trainposx and Metrostroi.GetTravelTime(clockent.TrackNode.node1,train.TrackNode.node1) or Metrostroi.GetTravelTime(train.TrackNode.node1,clockent.TrackNode.node1)
 						
-					--если на пути от паравоза до часов есть еще станции (часы), то прибавить ко времени 30 сек на каждую станцию
+					--если на пути от паравоза до часов есть еще станции , то прибавить ко времени 30 сек на каждую станцию
 					if trainposx < clockpos then trainposx,clockpos = clockpos,trainposx end--так trainposx всегда будет >= clockpos. Это для упрощения дальнейшего сравнения
 					local additional_time = 0
+					--поиск промежуточных станций по часам (legacy)
+					--[[
 					for _,clock2 in pairs(ents.FindByClass("gmod_metrostroi_clock_arrive")) do
 						if clock2 == clockent or not IsValid(clock2) or not clock2.TrackNode or clock2.TrackNode.path.id ~= clockent.TrackNode.path.id then continue end
 						local posx = clock2.TrackNode.x
 						if posx > clockpos and posx < trainposx then additional_time = additional_time + 30 end
 					end
+					]]
+					
+					--поиск промежуточных станций по платформам
+					for _,pltfrm in pairs(ents.FindByClass("gmod_track_platform")) do
+						--если есть TrackID, значит есть и StartTrackNode и EndTrackNode
+						if not IsValid(pltfrm) or pltfrm.TrackID ~= clockent.TrackNode.path.id then continue end
 						
-					arrtime = math.floor(arrtime) + additional_time
+						local startx = pltfrm.StartTrackNode.x
+						local endx = pltfrm.EndTrackNode.x
+						--if math.abs(clockpos - startx) < 10 or math.abs(clockpos - endx) < 10 then continue end --если часы на этой платформе, то эту платформу пропускаем
+						if (startx > clockpos or endx > clockpos) and (startx < trainposx or endx < trainposx) then additional_time = additional_time + 30 end
+					end
+						
+					arrtime = math.floor(arrtime) + additional_time - 30
 					table.insert(ArrTimes,arrtime)
 				end
 				--local start = string.sub(train.Position,1,15):find("перегон ") and string.find(train.Position," - ",1,true) or nil
