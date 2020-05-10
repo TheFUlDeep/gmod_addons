@@ -14,80 +14,49 @@ local function FindNearestStation(vector)
 	return Station
 end
 
-local function GetStationIndexByName(str)
-	if not str or not Metrostroi or not Metrostroi.StationConfigurations then return end
-	
-	for index,v in pairs(Metrostroi.StationConfigurations) do
-		if not tonumber(index) or not v.names or not istable(v.names) or table.Count(v.names) < 1 then continue end
-		local index = tonumber(index)
-		for _,name in pairs(v.names) do
-			if bigrustosmall(name) == str then return index end
-		end
-	end
-end
-
-local function GetPlatformByIndex(index,path)
-	if not index or not tonumber(index) then return end
-	index = tonumber(index)
-	for _,Platform in pairs(ents.FindByClass("gmod_track_platform")) do 
-		if Platform.TrackPos and Platform.StationIndex == index and tonumber(Platform.PlatformIndex) == path then return Platform end
-	end
-end
-
-local function GetPlatformByStationName(str,path)
-	return GetPlatformByIndex(GetStationIndexByName(str),path)
-end
-
-local function GetStationTrackNodeByName(str,path)
-	str = bigrustosmall(str)
-	path = tonumber(path)
-	if not path then return end
-	local stationent = GetPlatformByStationName(str,path)
-	if not stationent then return end
-	return Metrostroi.GetPositionOnTrack(LerpVector(0.5, stationent.PlatformEnd, stationent.PlatformStart))[1]
-end
-
-local function SpawnClocks()
-	print("Spawning_arrive_clocks")
-	if not detectstation then print('detectstation is not avaliable. Cant create arrive clocks') return end
-	for k,v in pairs(ents.FindByClass("gmod_metrostroi_clock_arrive")) do
-		v:Remove()
-	end
-	
-	for k,v in pairs(ents.FindByClass("gmod_track_clock_interval")) do
-		if not IsValid(v) then continue end
-		local ent = ents.Create("gmod_metrostroi_clock_arrive")
-		if not IsValid(ent) then print("CANT SPAWN CLOCKS") continue end
-		ent:SetPos(v:GetPos() - Vector(0,0,v:OBBMaxs().z * 2))
-		ent:SetAngles(v:GetAngles())
-		ent:SetModel(v:GetModel())
-		ent:Spawn()
-		local Station,Station2,Path,Posx,StationPosx,Station2Posx = detectstation(ent:GetPos())
-		if not Path then Path = FindTrackInSquare(v:GetPos(),nil,200,200,50)
-			if Path and Path.trackid then 
-				Path = Path.trackid		
+local function DetectStationForClock(clockent)
+	local nearestplatform,mindist,isplatformstart
+	local clockpos = clockent:GetPos()
+	for _,platform in pairs(ents.FindByClass("gmod_track_platform")) do
+		for i = 1,2 do
+			local point = i == 1 and platform.PlatformStart or platform.PlatformEnd
+			if point.z > clockpos.z then 
+				if point.z - clockpos.z > 100 then continue end --если платформа выше часов больше чем на 100, то мне это не надо
 			else
-				print("cant detect path for arrive clock")
-				ent:Remove()
-				continue
+				if clockpos.z - point.z > 600 then continue end--если платформа ниже часов больше чем на 600, то мне это не надо
+			end
+			local curdist = clockpos:DistToSqr(point)
+			if not mindist or curdist < mindist then
+				mindist = curdist
+				nearestplatform = platform
+				isplatformstart = i == 1
 			end
 		end
-		if not Station or Station == "" then ent:Remove() print("cant detect station for arrive clock") continue end
-		local DontNeed = stringfind(Station, " ( ближайшая ")
-		if DontNeed then Station = Station:sub(1,DontNeed - 1) end
-		ent.Station = Station
-		
-		ent.Path = Path--TODO вообще тут лучше сохранять айди трека
-		
-		ent.TrackNode = GetStationTrackNodeByName(Station,Path)
 	end
+	
+	if not nearestplatform then return end
+	clockent.TrackNode = Metrostroi.GetPositionOnTrack(isplatformstart and nearestplatform.PlatformStart or nearestplatform.PlatformEnd)[1]
 end
 
-hook.Add("PlayerInitialSpawn","Clock_arrive spawn ents",function()
-	for _,ent in pairs(ents.FindByClass("gmod_metrostroi_clock_arrive")) do ent:Remove() end
-
-	hook.Remove("PlayerInitialSpawn","Clock_arrive spawn ents")
-	timer.Simple(5,SpawnClocks)
+hook.Add("OnEntityCreated","Spawn clocks_arrive",function(v)
+	timer.Simple(3,function()
+		if not IsValid(v) then return end
+		local entclass = v:GetClass()
+		if entclass == "gmod_track_clock_interval" then
+			local ent = ents.Create("gmod_metrostroi_clock_arrive")
+			if not IsValid(ent) then print("CANT SPAWN CLOCKS") return end
+			ent:SetPos(v:GetPos() - Vector(0,0,v:OBBMaxs().z * 2))
+			ent:SetAngles(v:GetAngles())
+			ent:SetModel(v:GetModel())
+			ent:Spawn()
+			DetectStationForClock(ent)
+			
+		--добавил это в хук, чтобты при спавне новых платформ часы переопределяли свое местоположение
+		--(а то вдруг какие-то платформы заспавнятся позже)
+		elseif entclass == "gmod_track_platform" then
+			for _,clockent in pairs(ents.FindByClass("gmod_track_clock_interval")) do DetectStationForClock(clockent) end
+		end
+	end)
 end)
 
 --for _,ent in pairs(ents.FindByClass("gmod_metrostroi_clock_arrive")) do ent:Remove() end
@@ -96,12 +65,11 @@ end)
 timer.Create("Update ArriveClocks",5,0,function()
 	if not THEFULDEEP or not THEFULDEEP.GETSERVERINFOGLOBAL then return end
 	THEFULDEEP.GETSERVERINFOGLOBAL()
-	if not THEFULDEEP.SERVERINFO then return end
 	local changetime = os.time()
 	for _,clockent in pairs(ents.FindByClass("gmod_metrostroi_clock_arrive")) do
-		if not IsValid(clockent) or not clockent.Station or not clockent.Path or not clockent.TrackNode then continue end
+		if not IsValid(clockent) or not clockent.TrackNode then continue end
 		local ArrTimes = {}
-		for _,v1 in pairs(THEFULDEEP.SERVERINFO) do
+		for _,v1 in pairs(THEFULDEEP.SERVERINFO or {}) do
 			if type(v1) ~= "table" then continue end
 			if v1.Map and v1.Map == THEFULDEEP.MAP and v1.Trains then
 				for _,train in pairs(v1.Trains) do
@@ -140,6 +108,7 @@ timer.Create("Update ArriveClocks",5,0,function()
 			end
 		end
 		if #ArrTimes < 1 then
+			clockent:SetNW2Int("ChangeTime",changetime)
 			clockent:SetNW2Int("ArrTime",-1) 
 		else
 			local Min
