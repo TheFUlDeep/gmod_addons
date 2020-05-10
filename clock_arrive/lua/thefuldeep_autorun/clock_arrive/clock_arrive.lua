@@ -82,11 +82,14 @@ timer.Create("Update ArriveClocks",5,0,function()
 				local clockpos = clockent.TrackNode.x
 				local trainposx = train.TrackNode.x
 				
-				if math.abs(clockpos-trainposx) < 20 then continue end--TODO возможно это надо будет изменить
+				--эта проверка, чтобы при близком подъезде к часам не появлялись постоянно 2-1 секунды
+				if math.abs(clockpos-trainposx) < 20 then continue end
 					
 				--если состав движется в сторону часов (в независимости от расстояния, но по тому же треку, на котором стоят часы)
 				if (dir and clockpos < trainposx) or (not dir and clockpos > trainposx) then
-					local arrtime =  Metrostroi.GetTravelTime(train.TrackNode.node1,clockent.TrackNode.node1)
+				
+					--время надо считать от минимального ноуда к максимальному, поэтмоу вот так
+					local arrtime = clockpos < trainposx and Metrostroi.GetTravelTime(clockent.TrackNode.node1,train.TrackNode.node1) or Metrostroi.GetTravelTime(train.TrackNode.node1,clockent.TrackNode.node1)
 						
 					--если на пути от паравоза до часов есть еще станции (часы), то прибавить ко времени 30 сек на каждую станцию
 					if trainposx < clockpos then trainposx,clockpos = clockpos,trainposx end--так trainposx всегда будет >= clockpos. Это для упрощения дальнейшего сравнения
