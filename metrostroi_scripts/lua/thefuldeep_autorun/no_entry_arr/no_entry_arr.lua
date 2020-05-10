@@ -70,9 +70,9 @@ local function GetLastStation(self)
 			Station = Line and (not Path and Line[self:GetNW2Int("ASNP:LastStation",0)] or Path and Line[self:GetNW2Int("ASNP:FirstStation",0)]) or nil
 			Station = Station and Station[1]
 			
-			if self:GetClass():find("760",1,true) then--TODO возможно ока берет информатор не из asnp, но оставлю так
-				Station = GetStationIndexByName(self:GetNW2String("BMCISLast"..self:GetNW2Int("BMCISLastStationEntered",-1),nil))
-			end
+			--TODO возможно ока берет информатор не из asnp, но оставлю так
+			Station = self:GetClass():find("760",1,true) and GetStationIndexByName(self:GetNW2String("BMCISLast"..self:GetNW2Int("BMCISLastStationEntered",-1),""))
+			
 			if Station and (not tonumber(Station) or not Line.Loop and (Station == Line[#Line][1] or Station == Line[1][1])) then Station = nil end
 			if not Station then
 				local Line = Selected and Selected[self:GetNW2Int("RRI:Line",0)] or nil
@@ -132,7 +132,6 @@ timer.Create("no_entry_arr",2,0,function()
 		if v.CurrentTrain and (not v.LastCurrentTrain or v.CurrentTrain ~= v.LastCurrentTrain) then
 			v.LastCurrentTrain = v.CurrentTrain
 			local LastStation = GetLastStation(v.CurrentTrain)
-			print(LastStation)
 			local NumLast = LastStation and tonumber(LastStation)
 			local NumIndex = v.StationIndex and tonumber(v.StationIndex)
 			if not NumLast or not NumIndex then continue end
