@@ -45,6 +45,19 @@ local function GetLastStation(self)
 	end
 end
 
+local function GetStationIndexByName(str)
+	if not Metrostroi or not Metrostroi.StationConfigurations or not str or str == "" then return end
+	str = bigrustosmall(str)
+	local StationIndex
+	for curindex,v in pairs(Metrostroi.StationConfigurations) do
+		local CurIndex = tonumber(curindex)
+		if not istable(v) or not CurIndex then continue end
+		for _,name in pairs(v.names or {}) do
+			if bigrustosmall(name) == str then return CurIndex end
+		end
+	end
+end
+
 local function GetLastStation(self)
 	if not Metrostroi.StationConfigurations then
 		return nil
@@ -55,7 +68,11 @@ local function GetLastStation(self)
 			local Line = Selected and Selected[self:GetNW2Int("ASNP:Line",0)] or nil
 			local Path = self:GetNW2Bool("ASNP:Path",false)
 			Station = Line and (not Path and Line[self:GetNW2Int("ASNP:LastStation",0)] or Path and Line[self:GetNW2Int("ASNP:FirstStation",0)]) or nil
-			if Station then Station = Station[1] or nil end
+			Station = Station and Station[1]
+			
+			--TODO возможно ока берет информатор не из asnp, но оставлю так
+			Station = self:GetClass():find("760",1,true) and GetStationIndexByName(self:GetNW2String("BMCISLast"..self:GetNW2Int("BMCISLastStationEntered",-1),"")) or Station
+			
 			if Station and (not tonumber(Station) or not Line.Loop and (Station == Line[#Line][1] or Station == Line[1][1])) then Station = nil end
 			if not Station then
 				local Line = Selected and Selected[self:GetNW2Int("RRI:Line",0)] or nil
