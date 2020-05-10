@@ -71,7 +71,7 @@ local function GetLastStation(self)
 			Station = Station and Station[1]
 			
 			--TODO возможно ока берет информатор не из asnp, но оставлю так
-			Station = self:GetClass():find("760",1,true) and GetStationIndexByName(self:GetNW2String("BMCISLast"..self:GetNW2Int("BMCISLastStationEntered",-1),""))
+			Station = self:GetClass():find("760",1,true) and GetStationIndexByName(self:GetNW2String("BMCISLast"..self:GetNW2Int("BMCISLastStationEntered",-1),"")) or Station
 			
 			if Station and (not tonumber(Station) or not Line.Loop and (Station == Line[#Line][1] or Station == Line[1][1])) then Station = nil end
 			if not Station then
