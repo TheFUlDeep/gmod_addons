@@ -48,15 +48,15 @@ local function UpgradePlatformEnt(ent)
 	local PlatformCentre = LerpVector(0.5, ent.PlatformEnd, ent.PlatformStart)
 	
 	ent.TrackNode = Metrostroi.GetPositionOnTrack(PlatformCentre)[1]
-	local TrackStart = Metrostroi.GetPositionOnTrack(ent.PlatformStart)
-	local TrackEnd = Metrostroi.GetPositionOnTrack(ent.PlatformEnd)
-	if not ent.TrackNode or not TrackStart[1] or not TrackEnd[1] then return end
+	ent.StartTrackNode = Metrostroi.GetPositionOnTrack(ent.PlatformStart)[1]
+	ent.EndTrackNode = Metrostroi.GetPositionOnTrack(ent.PlatformEnd)[1]
+	if not ent.TrackNode or not ent.StartTrackNode or not ent.EndTrackNode then return end
 	
 	--TrackIDPath[ent.TrackNode.path.id] = ent.PlatformIndex
 	ent.TrackPos = ent.TrackNode.x
 	ent.TrackID = ent.TrackNode.path.id
 	ent.PlatformLen = ent.PlatformStart:DistToSqr(ent.PlatformEnd)
-	ent.PlatformLenX = math.abs(TrackStart[1].x - TrackEnd[1].x)
+	ent.PlatformLenX = math.abs(ent.StartTrackNode.x - ent.EndTrackNode.x)
 end
 
 
