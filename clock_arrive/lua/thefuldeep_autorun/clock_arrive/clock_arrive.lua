@@ -36,6 +36,7 @@ local function DetectStationForClock(clockent)
 	
 	if not nearestplatform then return end
 	clockent.TrackNode = Metrostroi.GetPositionOnTrack(isplatformstart and nearestplatform.PlatformStart or nearestplatform.PlatformEnd)[1]
+	clockent.StationIndex = nearestplatform.StationIndex
 end
 
 hook.Add("OnEntityCreated","Spawn clocks_arrive",function(v)
@@ -93,7 +94,7 @@ timer.Create("Update ArriveClocks",5,0,function()
 						
 					--если на пути от паравоза до часов есть еще станции , то прибавить ко времени 30 сек на каждую станцию
 					if trainposx < clockpos then trainposx,clockpos = clockpos,trainposx end--так trainposx всегда будет >= clockpos. Это для упрощения дальнейшего сравнения
-					local additional_time = 0
+					local additional_time = 0--дополнительное время за промежуточные станции
 					--поиск промежуточных станций по часам (legacy)
 					--[[
 					for _,clock2 in pairs(ents.FindByClass("gmod_metrostroi_clock_arrive")) do
@@ -106,15 +107,14 @@ timer.Create("Update ArriveClocks",5,0,function()
 					--поиск промежуточных станций по платформам
 					for _,pltfrm in pairs(ents.FindByClass("gmod_track_platform")) do
 						--если есть TrackID, значит есть и StartTrackNode и EndTrackNode
-						if not IsValid(pltfrm) or pltfrm.TrackID ~= clockent.TrackNode.path.id then continue end
+						if not IsValid(pltfrm) or pltfrm.TrackID ~= clockent.TrackNode.path.id or pltfrm.StationIndex == clockent.StationIndex then continue end
 						
 						local startx = pltfrm.StartTrackNode.x
 						local endx = pltfrm.EndTrackNode.x
-						--if math.abs(clockpos - startx) < 10 or math.abs(clockpos - endx) < 10 then continue end --если часы на этой платформе, то эту платформу пропускаем
 						if (startx > clockpos or endx > clockpos) and (startx < trainposx or endx < trainposx) then additional_time = additional_time + 30 end
 					end
 						
-					arrtime = math.floor(arrtime) + additional_time - 30
+					arrtime = math.floor(arrtime) + additional_time
 					table.insert(ArrTimes,arrtime)
 				end
 				--local start = string.sub(train.Position,1,15):find("перегон ") and string.find(train.Position," - ",1,true) or nil
