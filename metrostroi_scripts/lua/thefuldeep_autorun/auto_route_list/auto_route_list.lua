@@ -26,10 +26,10 @@ if CLIENT then
 	local Alph2 = CreateClientConVar("metrostroi_routes_alph2", 0, true)
 	local Alph3 = CreateClientConVar("metrostroi_routes_alph3", 0, true)
 	local Alph4 = CreateClientConVar("metrostroi_routes_alph4", 0, true)
-	local alph = 255-Alph:GetInt()
-	local alph2 = 255-Alph2:GetInt()
-	local alph3 = 255-Alph3:GetInt()
-	local alph4 = 255-Alph4:GetInt()
+	local alph = Alph:GetInt()
+	local alph2 = Alph2:GetInt()
+	local alph3 = Alph3:GetInt()
+	local alph4 = Alph4:GetInt()
 
 	local r1ConVar = CreateClientConVar("metrostroi_routes_r1", 0, true)
 	local r2ConVar = CreateClientConVar("metrostroi_routes_r2", 255, true)
@@ -144,7 +144,6 @@ if CLIENT then
 	local xoffset = 0
 	local yoffset = 0
 	local function MathStringsPositions()
-		--print("Math")
 		if not RouteList then return end
 		surface.SetFont(font)
 		xPos = xpos:GetInt()
@@ -311,10 +310,10 @@ if CLIENT then
 
 	cvars.AddChangeCallback( "metrostroi_routes_xpos", function(convar,olval,newval)MathStringsPositions()end)
 	cvars.AddChangeCallback( "metrostroi_routes_ypos", function(convar,olval,newval)MathStringsPositions()end)
-	cvars.AddChangeCallback( "metrostroi_routes_alph", function(convar,olval,newval)alph = 255-newval end)
-	cvars.AddChangeCallback( "metrostroi_routes_alph2", function(convar,olval,newval)alph2 = 255-newval end)
-	cvars.AddChangeCallback( "metrostroi_routes_alph3", function(convar,olval,newval)alph3 = 255-newval end)
-	cvars.AddChangeCallback( "metrostroi_routes_alph4", function(convar,olval,newval)alph4 = 255-newval end)
+	cvars.AddChangeCallback( "metrostroi_routes_alph", function(convar,olval,newval)alph = newval end)
+	cvars.AddChangeCallback( "metrostroi_routes_alph2", function(convar,olval,newval)alph2 = newval end)
+	cvars.AddChangeCallback( "metrostroi_routes_alph3", function(convar,olval,newval)alph3 = newval end)
+	cvars.AddChangeCallback( "metrostroi_routes_alph4", function(convar,olval,newval)alph4 = newval end)
 	cvars.AddChangeCallback( "metrostroi_routes_r1", function(convar,olval,newval)r1 = newval end)
 	cvars.AddChangeCallback( "metrostroi_routes_r2", function(convar,olval,newval)r2 = newval end)
 	cvars.AddChangeCallback( "metrostroi_routes_r3", function(convar,olval,newval)r3 = newval end)
@@ -342,7 +341,6 @@ if CLIENT then
 			panel:ClearControls()
 			panel:NumSlider("Расположение по\nгоризонтали","metrostroi_routes_xpos",0, ScrW(),0)
 			panel:NumSlider("Расположение по\nвертикали","metrostroi_routes_ypos",0, ScrH(),0)
-			
 
 			panel:Help("\nСдвиг маршрутного листа в кабине")
 			panel:NumSlider("Вперед/назад","metrostroi_routes_cabin_offset_v1",-200,200,4)
@@ -361,27 +359,31 @@ if CLIENT then
 			panel:TextEntry("Выдать \nмрашрутный лист","metrostroi_routes_setlistnumber")
 			panel:Button("Выдать следующий мрашрутный лист","metrostroi_routes_next")
 			panel:Button("Выдать предыдущий мрашрутный лист","metrostroi_routes_prev")
-			panel:Help("\nЦвета:")
-			panel:Help("Фон таблицы")
+			--panel:Help("\nЦвета:")
+			panel:AddControl( "Color", { Label = "Цвет фона", Red = "metrostroi_routes_r1", Green = "metrostroi_routes_g1", Blue = "metrostroi_routes_b1", Alpha = "metrostroi_routes_alph" } )
+			--[[panel:Help("Фон таблицы")
 			panel:NumSlider("Красный","metrostroi_routes_r1",0, 255,0)
 			panel:NumSlider("Зеленый","metrostroi_routes_g1",0, 255,0)
 			panel:NumSlider("Синий","metrostroi_routes_b1",0, 255,0)
-			panel:NumSlider("Прозрачность","metrostroi_routes_alph",0, 255,0)
-			panel:Help("\nСетка")
+			panel:NumSlider("Прозрачность","metrostroi_routes_alph",0, 255,0)]]
+			panel:AddControl( "Color", { Label = "Цвет сетки", Red = "metrostroi_routes_r2", Green = "metrostroi_routes_g2", Blue = "metrostroi_routes_b2", Alpha = "metrostroi_routes_alph2" } )
+			--[[panel:Help("\nСетка")
 			panel:NumSlider("Красный","metrostroi_routes_r2",0, 255,0)
 			panel:NumSlider("Зеленый","metrostroi_routes_g2",0, 255,0)
 			panel:NumSlider("Синий","metrostroi_routes_b2",0, 255,0)
-			panel:NumSlider("Прозрачность","metrostroi_routes_alph2",0, 255,0)
-			panel:Help("\nТекст")
+			panel:NumSlider("Прозрачность","metrostroi_routes_alph2",0, 255,0)]]
+			panel:AddControl( "Color", { Label = "Цвет текста", Red = "metrostroi_routes_r3", Green = "metrostroi_routes_g3", Blue = "metrostroi_routes_b3", Alpha = "metrostroi_routes_alph3" } )
+			--[[panel:Help("\nТекст")
 			panel:NumSlider("Красный","metrostroi_routes_r3",0, 255,0)
 			panel:NumSlider("Зеленый","metrostroi_routes_g3",0, 255,0)
 			panel:NumSlider("Синий","metrostroi_routes_b3",0, 255,0)
-			panel:NumSlider("Прозрачность","metrostroi_routes_alph3",0, 255,0)
-			panel:Help('\nОбводка текста')
+			panel:NumSlider("Прозрачность","metrostroi_routes_alph3",0, 255,0)]]
+			panel:AddControl( "Color", { Label = "Цвет обводки текста", Red = "metrostroi_routes_r4", Green = "metrostroi_routes_g4", Blue = "metrostroi_routes_b4", Alpha = "metrostroi_routes_alph4" } )
+			--[[panel:Help('\nОбводка текста')
 			panel:NumSlider("Красный","metrostroi_routes_r4",0, 255,0)
 			panel:NumSlider("Зеленый","metrostroi_routes_g4",0, 255,0)
 			panel:NumSlider("Синий","metrostroi_routes_b4",0, 255,0)
-			panel:NumSlider("Прозрачность","metrostroi_routes_alph4",0, 255,0)
+			panel:NumSlider("Прозрачность","metrostroi_routes_alph4",0, 255,0)]]
 			panel:NumSlider("Секрет","metrostroi_routes_secret",0, 5)
 		end)
 	end)
@@ -490,7 +492,7 @@ if CLIENT then
 	end)
 
 
-	hook.Add( "PostDrawTranslucentRenderables", "test", function( bDepth, bSkybox )
+	hook.Add( "PostDrawTranslucentRenderables", "RouteListInCabine", function( bDepth, bSkybox )
 		-- If we are drawing in the skybox, bail
 		if not IsValid(PlyInTrain) or not RouteList or bSkybox then return end
 
