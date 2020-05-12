@@ -1,4 +1,5 @@
 --TODO фикс конфликта с камерами метростроя
+if 1 then return end
 local models = {
 	"models/thefuldeeps_models/mirror_square.mdl",
 	"models/thefuldeeps_models/mirror_rectangle.mdl"
