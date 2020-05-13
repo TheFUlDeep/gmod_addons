@@ -517,24 +517,19 @@ end
 if SERVER then
 	
 	----------------------------------------ПОСАДКА ИГРОКА В СВОБОДНОЕ МЕСТО---------------------------------------------
-				function KekLolArbidol(v2,ply)
-					ply:ExitVehicle()
-					ply:SetMoveType(MOVETYPE_NOCLIP)
-					if not IsValid(v2.DriverSeat:GetDriver()) then 
-						timer.Create("FindSeat",1.5,1,function() ply:EnterVehicle(v2.DriverSeat) end)
-					elseif not IsValid(v2.InstructorsSeat:GetDriver()) then
-						timer.Create("FindSeat",1.5,1,function() ply:EnterVehicle(v2.InstructorsSeat) end)
-					elseif not IsValid(v2.ExtraSeat1:GetDriver()) then
-						timer.Create("FindSeat",1.5,1,function() ply:EnterVehicle(v2.ExtraSeat1) end)
-					elseif not IsValid(v2.ExtraSeat2:GetDriver()) then
-						timer.Create("FindSeat",1.5,1,function() ply:EnterVehicle(v2.ExtraSeat2) end)
-					elseif not IsValid(v2.ExtraSeat3:GetDriver()) then
-						timer.Create("FindSeat",1.5,1,function() ply:EnterVehicle(v2.ExtraSeat3) end)
-					else
-						--ply:ChatPrint("Кабина недоступна")
-						timer.Simple(1, function() ULib.tsayError(ply, "Кабина недоступна") end)
-					end
-				end
+	local seatstbl = {"DriverSeat","InstructorsSeat","ExtraSeat"}
+	for i = 1,3 do
+		table.insert(seatstbl,"InstructorsSeat"..i)
+		table.insert(seatstbl,"ExtraSeat"..i)
+	end
+	function KekLolArbidol(v2,ply)
+		ply:ExitVehicle()
+		ply:SetMoveType(MOVETYPE_NOCLIP)
+		for _,seat in pairs(seatstbl) do
+			if v2[seat] and IsValid(v2[seat]) and not IsValid(v2[seat]:GetDriver()) then timer.Simple(0.5,function()ply:EnterVehicle(v2[seat])end) return end
+		end
+		timer.Simple(1, function() ULib.tsayError(ply, "Кабина недоступна") end)
+	end
 
 
 --[[ ======================================= ТП К СОСТАВУ ======================================= ]]		-- return'ы добавил для псевдооптимизации

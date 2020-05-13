@@ -151,7 +151,8 @@ timer.Simple(0,function()
 end)
 if not THEFULDEEP then THEFULDEEP = {} end
 THEFULDEEP.MirrorDraw = function(self)
-	if MetrostroiDrawCams and not MetrostroiDrawCams:GetBool() then return end
+	self.LastDrawCall = CurTime()
+	if not self.ShouldDraw or MetrostroiDrawCams and not MetrostroiDrawCams:GetBool() then return end
 	--if not self:ShouldRenderClientEnts() then return end
 	if not IsValid(self.RTCam) then self.RTCam = GetGlobalEntity("MirrorRTCam") return end
 
@@ -206,6 +207,18 @@ THEFULDEEP.MirrorDraw = function(self)
 		FOV = C_FovDesired:GetFloat()
 	end]]
 end
+
+
+timer.Simple(0,function()--TODO надо, чтобы оно пропускало ентити паравозаф
+	local IfSee = Metrostroi.ShouldHideTrain
+	if not IfSee then return end
+	timer.Create("check if player can see mirror",1,0,function()
+		for _,ent in pairs(ents.FindByClass("gmod_metrostroi_mirror")) do
+			if not IsValid(ent) then return end
+			ent.ShouldDraw = IfSee(ent)
+		end
+	end)
+end)
 
 local MirrorPreview = CreateClientConVar("mirror_preview", "0", false)
 local MirrorDistance = CreateClientConVar("mirror_distance", "50", false)
