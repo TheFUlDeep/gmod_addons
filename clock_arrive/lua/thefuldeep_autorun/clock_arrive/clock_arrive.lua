@@ -109,10 +109,8 @@ timer.Create("Update ArriveClocks",5,0,function()
 						--если есть TrackID, значит есть и StartTrackNode и EndTrackNode
 						if not IsValid(pltfrm) or pltfrm.TrackID ~= clockent.TrackNode.path.id then continue end
 						
-						--следующая проверка вместо проверки на 87й строке (если состав в перелах станции (+10 метров на всяк случай))
-						if math.abs(trainposx - pltfrm.TrackPos) < ent.PlatformLenX/2 + 10 then additional_time = 100500 break end
-						
-						if pltfrm.StationIndex == clockent.StationIndex then continue end
+						--следующая проверка вместо проверки на 87й строке (если состав в пределах станции (+10 метров на всяк случай))
+						if pltfrm.StationIndex == clockent.StationIndex and math.abs(trainposx - pltfrm.TrackPos) < ent.PlatformLenX/2 + 10 then additional_time = 100500 break else continue end
 						
 						local startx = pltfrm.StartTrackNode.x
 						local endx = pltfrm.EndTrackNode.x
