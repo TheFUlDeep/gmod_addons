@@ -1,4 +1,9 @@
 if CLIENT then return end
+local mathabs = math.abs
+local mathfloor = math.floor
+local tableinsert = table.insert
+local mathDistance = math.Distance
+local tableCount = table.Count
 --этот скрипт нельзя рестартить в рантайме, так как таблица заполняется хуком onentitycreated
 --local TrackIDPath = {}
 
@@ -14,14 +19,14 @@ local function UpgradeStationsPotitions()				--отцентровка точек
 		--if not IsValid(Platform) then continue end
 		if not Platform.StationIndex then continue end
 		Platforms[Platform.StationIndex] = Platforms[Platform.StationIndex] or {}
-		table.insert(Platforms[Platform.StationIndex],Platform)
+		tableinsert(Platforms[Platform.StationIndex],Platform)
 	end
 	
 	for k,v in pairs(Metrostroi.StationConfigurations or {}) do
 		if not istable(v) or not tonumber(k) then continue end
 		local StationPos
 		
-		if v.positions and istable(v.positions) and table.Count(v.positions) > 0 then--поиск точки телепортации
+		if v.positions and istable(v.positions) and tableCount(v.positions) > 0 then--поиск точки телепортации
 			StationPos = GetAnyValueFromTable2(v.positions)
 			StationPos = istable(StationPos) and StationPos[1] and isvector(StationPos[1]) and StationPos[1]
 		end
@@ -56,7 +61,7 @@ local function UpgradePlatformEnt(ent)
 	ent.TrackPos = ent.TrackNode.x
 	ent.TrackID = ent.TrackNode.path.id
 	ent.PlatformLen = ent.PlatformStart:DistToSqr(ent.PlatformEnd)
-	ent.PlatformLenX = math.abs(ent.StartTrackNode.x - ent.EndTrackNode.x)
+	ent.PlatformLenX = mathabs(ent.StartTrackNode.x - ent.EndTrackNode.x)
 end
 
 
@@ -68,7 +73,7 @@ end
 		--print(math.sqrt(ent.PlatformLen))
 		--local Track1 = Metrostroi.GetPositionOnTrack(ent.PlatformStart)
 		--local Track2 = Metrostroi.GetPositionOnTrack(ent.PlatformEnd)
-		--print("conver cof:",ent.PlatformStart:DistToSqr(ent.PlatformEnd)/math.abs(Track1[1].x - Track2[1].x))
+		--print("conver cof:",ent.PlatformStart:DistToSqr(ent.PlatformEnd)/mathabs(Track1[1].x - Track2[1].x))
 		-----------------------------------------------------------------------------
 	end
 	UpgradeStationsPotitions()	
@@ -102,7 +107,7 @@ local function GetStationNameByIndex(index)
 	local StationName
 	for k,v in pairs(Metrostroi.StationConfigurations) do
 		local CurIndex = tonumber(k)
-		if not CurIndex or not istable(v) or not v.names or not istable(v.names) or table.Count(v.names) < 1 then StationName = k else StationName = GetAnyValueFromTable(v.names) end
+		if not CurIndex or not istable(v) or not v.names or not istable(v.names) or tableCount(v.names) < 1 then StationName = k else StationName = GetAnyValueFromTable(v.names) end
 		if CurIndex == index then return StationName end
 	end
 	return
@@ -137,17 +142,17 @@ local function SecondMethod(vector)
 		if not istable(v) then continue end
 		local StationPos,StationName
 		
-		if v.positions and istable(v.positions) and table.Count(v.positions) > 0 then--поиск точки телепортации
+		if v.positions and istable(v.positions) and tableCount(v.positions) > 0 then--поиск точки телепортации
 			StationPos = GetAnyValueFromTable2(v.positions)
 			StationPos = istable(StationPos) and StationPos[1] and isvector(StationPos[1]) and StationPos[1]
 		end
 		if not StationPos then continue end
 		
-		StationName = v.names and istable(v.names) and table.Count(v.names) > 0 and GetAnyValueFromTable(v.names)--поиск имени
+		StationName = v.names and istable(v.names) and tableCount(v.names) > 0 and GetAnyValueFromTable(v.names)--поиск имени
 		if not StationName then continue end
 		
-		local dist = math.Distance(vector.x,vector.y,StationPos.x,StationPos.y)^2
-		if (not MinDist or dist < MinDist) and math.abs(vector.z - StationPos.z) < hLimit and dist < (GetHalfPlatformLen(GetPlatformByIndex(k)) or Radius) then 
+		local dist = mathDistance(vector.x,vector.y,StationPos.x,StationPos.y)^2
+		if (not MinDist or dist < MinDist) and mathabs(vector.z - StationPos.z) < hLimit and dist < (GetHalfPlatformLen(GetPlatformByIndex(k)) or Radius) then 
 			MinDist = dist 
 			NearestStation = StationName 
 			--NotInRadius = dist > Radius 
@@ -180,14 +185,14 @@ local function detectstation(vec,try)
 			if not IsValid(Platform) or Platform.TrackID ~= TrackID --[[or Path ~= Platform.PlatformIndex]]then continue end--возможно проверка по TrackID не нужна, так как уже есть проверка по пути, но оставлю на всякий случай
 			Path = Path or Platform.PlatformIndex
 			
-			local CurDist = math.abs(Posx - Platform.TrackPos)
+			local CurDist = mathabs(Posx - Platform.TrackPos)
 			if not NearestPlatform1Dist or NearestPlatform1Dist > CurDist then 
 				--NearestPlatform2 = NearestPlatform1
 				NearestPlatform1Dist = CurDist 
 				NearestPlatform1 = Platform
 				
 				--определяю, в пределах платформы ли vec
-				NotOnPlatform = math.abs(Platform.TrackPos - Posx) > Platform.PlatformLenX/2 + 10-- +10 метров на всякий случай
+				NotOnPlatform = mathabs(Platform.TrackPos - Posx) > Platform.PlatformLenX/2 + 10-- +10 метров на всякий случай
 			end
 		end
 		
@@ -202,7 +207,7 @@ local function detectstation(vec,try)
 				--if not IsValid(Platform) then continue end
 				if not Platform.TrackPos or Platform == NearestPlatform1 or Platform.TrackID ~= TrackID --[[or Path ~= Platform.PlatformIndex]] or not Platform.StationIndex or StationPosx > Posx and Platform.TrackPos > Posx or StationPosx < Posx and Platform.TrackPos < Posx then continue end--возможно проверка по TrackID не нужна, так как уже есть проверка по пути, но оставлю на всякий случай   --если вторая станция c той же стороны, что и первая, до очистить вторую станцию
 				
-				local CurDist = math.abs(Posx - Platform.TrackPos)
+				local CurDist = mathabs(Posx - Platform.TrackPos)
 				if not NearestPlatform1Dist or NearestPlatform1Dist > CurDist then 
 					NearestPlatform2 = Platform
 					NearestPlatform1Dist = CurDist 

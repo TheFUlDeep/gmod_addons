@@ -1,4 +1,7 @@
 if CLIENT then return end
+local mathabs = math.abs
+local mathfloor = math.floor
+local tableinsert = table.insert
 --include("detectstation.lua")
 
 local function FindNearestStation(vector)
@@ -6,7 +9,7 @@ local function FindNearestStation(vector)
 	local MinDist,CurDist,Station
 	for k,v in pairs(Metrostroi.StationConfigurations) do
 		if v.positions and v.positions[1] and v.positions[1][1] then
-			if math.abs(v.positions[1][1].y - vector.y) > 500 then continue end
+			if mathabs(v.positions[1][1].y - vector.y) > 500 then continue end
 			CurDist = vector:DistToSqr(v.positions[1][1])
 			if not MinDist or CurDist < MinDist then MinDist = CurDist Station = v.names and v.names[1] or k end
 		end
@@ -84,7 +87,7 @@ timer.Create("Update ArriveClocks",5,0,function()
 				local trainposx = train.TrackNode.x
 				
 				--эта проверка, чтобы при близком подъезде к часам не появлялись постоянно 2-1 секунды
-				--if math.abs(clockpos-trainposx) < 20 then continue end
+				--if mathabs(clockpos-trainposx) < 20 then continue end
 					
 				--если состав движется в сторону часов (в независимости от расстояния, но по тому же треку, на котором стоят часы)
 				if (dir and clockpos < trainposx) or (not dir and clockpos > trainposx) then
@@ -111,20 +114,20 @@ timer.Create("Update ArriveClocks",5,0,function()
 						if not IsValid(pltfrm) or pltfrm.TrackID ~= clockent.TrackNode.path.id then continue end
 						
 						--следующая проверка вместо проверки на 90й строке (если состав в пределах станции (+10 метров на всяк случай))
-						if pltfrm.StationIndex == clockent.StationIndex and math.abs(realtrainposx - pltfrm.TrackPos) < pltfrm.PlatformLenX/2 + 10 then additional_time = 100500 break else continue end
+						if pltfrm.StationIndex == clockent.StationIndex and mathabs(realtrainposx - pltfrm.TrackPos) < pltfrm.PlatformLenX/2 + 10 then additional_time = 100500 break else continue end
 						
 						local startx = pltfrm.StartTrackNode.x
 						local endx = pltfrm.EndTrackNode.x
 						if (startx > clockpos or endx > clockpos) and (startx < trainposx or endx < trainposx) then additional_time = additional_time + 30 end
 					end
 						
-					local arrtime = math.floor(arrtime) + additional_time
-					table.insert(ArrTimes,arrtime)
+					local arrtime = mathfloor(arrtime) + additional_time
+					tableinsert(ArrTimes,arrtime)
 				end
 				--local start = string.sub(train.Position,1,15):find("перегон ") and string.find(train.Position," - ",1,true) or nil
 				--if not start then continue end
 				--if string.sub(train.Position,start + 3) == clockent.Station then
-					--table.insert(ArrTimes,1,train.ArrTime)
+					--tableinsert(ArrTimes,1,train.ArrTime)
 				--end
 			end
 		end
