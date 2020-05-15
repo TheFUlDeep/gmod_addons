@@ -63,13 +63,16 @@ end)
 --for _,ent in pairs(ents.FindByClass("gmod_metrostroi_clock_arrive")) do ent:Remove() end
 --SpawnClocks()
 
+--рофлан объявление переменных. Ну а вдруг это быстрее, чем объявлять локальные переменные внутри таймера
+local trainposx,realtrainposx,dir,clockpos,ArrTimes,arrtime,additional_time,startx,endx,Min,changetime
+
 timer.Create("Update ArriveClocks",5,0,function()
 	if not THEFULDEEP or not THEFULDEEP.GETSERVERINFOGLOBAL then return end
 	THEFULDEEP.GETSERVERINFOGLOBAL()
-	local changetime = os.time()
+	changetime = os.time()
 	for _,clockent in pairs(ents.FindByClass("gmod_metrostroi_clock_arrive")) do
 		if not IsValid(clockent) or not clockent.TrackNode then continue end
-		local ArrTimes = {}
+		ArrTimes = {}
 		for _,v1 in pairs(THEFULDEEP.SERVERINFO or {}) do
 			if not istable(v1) or not v1.Map or v1.Map ~= THEFULDEEP.MAP or not v1.Trains then continue end
 			for _,train in pairs(v1.Trains) do
@@ -79,9 +82,9 @@ timer.Create("Update ArriveClocks",5,0,function()
 					
 				if not train.TrackNode or train.TrackNode.path.id ~= clockent.TrackNode.path.id then continue end
 					
-				local dir = train.Direction < 0
-				local clockpos = clockent.TrackNode.x
-				local trainposx = train.TrackNode.x
+				dir = train.Direction < 0
+				clockpos = clockent.TrackNode.x
+				trainposx = train.TrackNode.x
 				
 				--эта проверка, чтобы при близком подъезде к часам не появлялись постоянно 2-1 секунды
 				--if math.abs(clockpos-trainposx) < 20 then continue end
@@ -90,11 +93,12 @@ timer.Create("Update ArriveClocks",5,0,function()
 				if (dir and clockpos < trainposx) or (not dir and clockpos > trainposx) then
 				
 					--время надо считать от минимального ноуда к максимальному, поэтмоу вот так
-					local arrtime = clockpos < trainposx and Metrostroi.GetTravelTime(clockent.TrackNode.node1,train.TrackNode.node1) or Metrostroi.GetTravelTime(train.TrackNode.node1,clockent.TrackNode.node1)
+					arrtime = clockpos < trainposx and Metrostroi.GetTravelTime(clockent.TrackNode.node1,train.TrackNode.node1) or Metrostroi.GetTravelTime(train.TrackNode.node1,clockent.TrackNode.node1)
 						
 					--если на пути от паравоза до часов есть еще станции , то прибавить ко времени 30 сек на каждую станцию
+					realtrainposx = trainposx
 					if trainposx < clockpos then trainposx,clockpos = clockpos,trainposx end--так trainposx всегда будет >= clockpos. Это для упрощения дальнейшего сравнения
-					local additional_time = 0--дополнительное время за промежуточные станции
+					additional_time = 0--дополнительное время за промежуточные станции
 					--поиск промежуточных станций по часам (legacy)
 					--[[
 					for _,clock2 in pairs(ents.FindByClass("gmod_metrostroi_clock_arrive")) do
@@ -109,11 +113,11 @@ timer.Create("Update ArriveClocks",5,0,function()
 						--если есть TrackID, значит есть и StartTrackNode и EndTrackNode
 						if not IsValid(pltfrm) or pltfrm.TrackID ~= clockent.TrackNode.path.id then continue end
 						
-						--следующая проверка вместо проверки на 87й строке (если состав в пределах станции (+10 метров на всяк случай))
-						if pltfrm.StationIndex == clockent.StationIndex and math.abs(trainposx - pltfrm.TrackPos) < pltfrm.PlatformLenX/2 + 10 then additional_time = 100500 break else continue end
+						--следующая проверка вместо проверки на 90й строке (если состав в пределах станции (+10 метров на всяк случай))
+						if pltfrm.StationIndex == clockent.StationIndex and math.abs(realtrainposx - pltfrm.TrackPos) < pltfrm.PlatformLenX/2 + 10 then additional_time = 100500 break else continue end
 						
-						local startx = pltfrm.StartTrackNode.x
-						local endx = pltfrm.EndTrackNode.x
+						startx = pltfrm.StartTrackNode.x
+						endx = pltfrm.EndTrackNode.x
 						if (startx > clockpos or endx > clockpos) and (startx < trainposx or endx < trainposx) then additional_time = additional_time + 30 end
 					end
 						
@@ -131,7 +135,7 @@ timer.Create("Update ArriveClocks",5,0,function()
 			clockent:SetNW2Int("ChangeTime",changetime)
 			clockent:SetNW2Int("ArrTime",-1) 
 		else
-			local Min
+			Min = nil
 			for k1,v1 in pairs(ArrTimes) do
 				if not Min or v1 < Min then Min = v1 end
 			end
