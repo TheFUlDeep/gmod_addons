@@ -526,7 +526,7 @@ if SERVER then
 		ply:ExitVehicle()
 		ply:SetMoveType(MOVETYPE_NOCLIP)
 		for _,seat in pairs(seatstbl) do
-			if v2[seat] and IsValid(v2[seat]) and not IsValid(v2[seat]:GetDriver()) then timer.Simple(0.5,function()ply:EnterVehicle(v2[seat])end) return end
+			if IsValid(v2[seat]) and not IsValid(v2[seat]:GetDriver()) then timer.Simple(1,function()ply:EnterVehicle(v2[seat])end) return end
 		end
 		timer.Simple(1, function() ULib.tsayError(ply, "Кабина недоступна") end)
 	end
@@ -1519,10 +1519,7 @@ if SERVER then
 		local WagonListN = #WagonList
 		if WagonListN == 1 then ULib.tsayError(ply, "У тебя только 1 вагон.", true) return end
 		local EntClass = ent:GetClass()
-		for k,v in pairs(WagonList) do
-			if k ~= WagonListN then continue end
-			if v ~= ent and v:GetClass() == EntClass then KekLolArbidol(v,ply) return end
-		end
+		KekLolArbidol(WagonList[WagonListN],ply)
 	end
 end
 local changecabin = ulx.command("Metrostroi", "ulx ch", ulx.changecabin, "!ch",true)
