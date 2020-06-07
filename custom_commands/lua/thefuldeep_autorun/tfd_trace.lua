@@ -43,8 +43,7 @@ local function IsSectionPartInEntity(ent,Start,End)
 	for i = 1,2 do
 		local planepos = i == 1 and ent:LocalToWorld(ent:OBBMins()) or ent:LocalToWorld(ent:OBBMaxs())
 		for k = 1,3 do
-			local planenormal = (entang + AnglesForPlanes[k]):Forward()
-			local Intersect = util.IntersectRayWithPlane(Start, dir, planepos, planenormal)
+			local Intersect = util.IntersectRayWithPlane(Start, dir, planepos, (entang + AnglesForPlanes[k]):Forward())
 			if Intersect and IsPointOnSection(Intersect,Start,End,true) then return true end
 		end
 	end
