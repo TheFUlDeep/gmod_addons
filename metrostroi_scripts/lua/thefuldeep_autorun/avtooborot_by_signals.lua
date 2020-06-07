@@ -105,13 +105,22 @@ concommand.Add(
 )
 
 
-
+local NamesSignals = {}
+hook.Add("OnEntityCreated","Update NamesSignals table for avtooborot",function(ent)
+	timer.Simple(0,function()
+		if not IsValid(ent) or ent:GetClass() ~= "gmod_track_signal" then return end
+		timer.Create("Update NamesSignals table for avtooborot",2,1,function()
+			for _,sig in pairs(ents.FindByClass("gmod_track_signal")) do
+				if IsValid(sig) and sig.Name then NamesSignals[sig.Name] = sig end
+			end
+		end)
+	end)
+end)
 
 local function CheckOccupationTbl(tbl,needoccuped)--во время перевода стрелок occupied становится true. Это проблема
 	for _,name in pairs(tbl) do
-		for _,sig in pairs(ents.FindByClass("gmod_track_signal")) do--вообще можно сохранить сигналы в локальную таблицу и проверять по ней, но так оно будет лучше работать при смене сигналов
-			if sig.Name == name and ((needoccuped and not sig.Occupied) or (not needoccuped and sig.Occupied)) then return end
-		end
+		local sig = NamesSignals[name]--вообще можно сохранить сигналы в локальную таблицу и проверять по ней, но так оно будет лучше работать при смене сигналов
+		if IsValid(sig) and ((needoccuped and not sig.Occupied) or (not needoccuped and sig.Occupied)) then return end
 	end
 	return true
 end
@@ -140,8 +149,8 @@ local function AvtooborotThink()
 			tbl[5] = true
 			local comms = tbl[1]
 			for _,comm in pairs(comms) do
-				for _,sig in pairs(ents.FindByClass("gmod_track_signal")) do
-					sig:SayHook(nil,comm)
+				for _,sig in pairs(NamesSignals) do
+					if sig.SayHook then sig:SayHook(nil,comm) end
 				end
 				ChatPrintAll(comm)
 			end
