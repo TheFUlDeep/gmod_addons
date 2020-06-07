@@ -119,7 +119,7 @@ end)
 
 local function CheckOccupationTbl(tbl,needoccuped)--во время перевода стрелок occupied становится true. Это проблема
 	for _,name in pairs(tbl) do
-		local sig = NamesSignals[name]--вообще можно сохранить сигналы в локальную таблицу и проверять по ней, но так оно будет лучше работать при смене сигналов
+		local sig = NamesSignals[name]
 		if IsValid(sig) and ((needoccuped and not sig.Occupied) or (not needoccuped and sig.Occupied)) then return end
 	end
 	return true
