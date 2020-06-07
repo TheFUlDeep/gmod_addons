@@ -17,7 +17,6 @@ end
 
 
 local function IsPointInEntity(ent,vec)
-	if not vec then return end
 	local vec = ent:WorldToLocal(vec)
 	local x,y,z = vec[1],vec[2],vec[3]
 	
@@ -33,7 +32,6 @@ end
 
 local AnglesForPlanes = {Angle(0,0,0),Angle(90,0,0),Angle(0,90,0)}
 local function IsSectionPartInEntity(ent,Start,End)
-	if not Start or not End then return end
 	if IsPointInEntity(ent,Start) or IsPointInEntity(ent,End) then return true end
 	
 	local dir = (End-Start)--:GetNormalized()
@@ -47,7 +45,16 @@ local function IsSectionPartInEntity(ent,Start,End)
 		for k = 1,3 do
 			local planenormal = (entang + AnglesForPlanes[k]):Forward()
 			local Intersect = util.IntersectRayWithPlane(Start, dir, planepos, planenormal)
-			if IsPointOnSection(Intersect,Start,End,true) then return true end
+			if Intersect and IsPointOnSection(Intersect,Start,End,true) then return true end
 		end
 	end
+end
+
+
+local function FindEntsOnSection(Start,End)
+	local res = {}
+	for _,ent in pairs(ents.GetAll()) do
+		if IsValid(ent) and IsSectionPartInEntity(ent,Start,End) then table.insert(res,ent) end
+	end
+	return res
 end
