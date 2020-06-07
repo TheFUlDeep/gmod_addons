@@ -1,3 +1,5 @@
+if 1 then return end
+
 timer.Simple(0,function()
 	if not ulx or not ulx.command then return end
 	
