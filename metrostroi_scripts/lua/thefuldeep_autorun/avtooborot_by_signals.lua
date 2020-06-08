@@ -1,5 +1,3 @@
-if 1 then return end
-
 timer.Simple(0,function()
 	if not ulx or not ulx.command then return end
 	
@@ -39,7 +37,7 @@ local function ChatPrint(ply,msg)
 end
 
 local function ChatPrintAll(msg,ply2)
-	msg = "("..(ply2 and ply2:Nick() or "Console")..") "..msg
+	msg = "("..(IsValid(ply2) and ply2:Nick() or "Console")..") "..msg
 	--[[if ulx.fancyLogAdmin then
 		ulx.fancyLog(true,""..msg)
 	else]]
@@ -79,6 +77,7 @@ TheFulDeepsAvtooborot.Add = function(Name,Commands,Occupied,NotOccuped)--в ка
 	ConditionsTbls[Name] = {Commands,Occupied,NotOccuped,false,false,0}
 	print("added avtooborot "..Name)
 end
+local Add = TheFulDeepsAvtooborot.Add
 
 TheFulDeepsAvtooborot.Remove = function(Name)
 	if not ConditionsTbls[Name] then print("автооборота с таким именем не существует") return end
@@ -86,11 +85,13 @@ TheFulDeepsAvtooborot.Remove = function(Name)
 	concommand.Remove("thefuldeeps_avtooborot_toggle_"..Name)
 	print("Автооборот "..Name.." удален.")
 end
+local Remove = TheFulDeepsAvtooborot.Remove
 
 TheFulDeepsAvtooborot.Toggle = function(Name)
 	if not ConditionsTbls[Name] then print("автооборота с таким именем не существует") return end
 	RunConsoleCommand("thefuldeeps_avtooborot_toggle_"..Name)
 end
+local Toggle = TheFulDeepsAvtooborot.Toggle
 
 concommand.Add(
 	"thefuldeeps_avtooborot_info",
@@ -164,5 +165,42 @@ end
 timer.Create("Avtooborot Think",5,0,AvtooborotThink)
 
 
+--эти две строчки, чтобы я могу перезапускать скрипт
+for name,tbl in pairs(ConditionsTbls)do Remove(name)end
+for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do if IsValid(sig)and sig.Name then NamesSignals[sig.Name]=sig end end
 
-TheFulDeepsAvtooborot.Add("asd",{"!sopen le3-1"},{"LE131B"},{"LE3","LE113"})
+
+
+
+local map = game.GetMap()
+if map == "gm_mus_crimson_line_tox_v9_21" then
+	
+elseif map == "gm_metro_crossline_r199h" then
+	--МОЛОДЕЖНАЯ
+	--заезд
+	Add("ml1-4","!sopen ml1-4",{"ML515"},{"ML517","ML3S","ML4S","ML4","ML3"})
+	Add("ml1-3","!sopen ml1-3",{"ML515","ML4S",},{"ML517","ML3S","ML3","ML4"})
+	
+	--выезд
+	Add("mle","!sopen mle",{"ML1S"},{"ML517","MLE","ML3","ML4","ML511"})
+	--Add("mlg","!sopen mlg",{"MLDR1"},{"ML3","ML4","MLG"})--тут в конце тупика нет рельсовой цепи, поэтому не могу детектить занятость
+	Add("ml4-2","!sopen ml4-2",{"ML4S"},{"ML3S","ML3","ML4",--[["MLDR1",]]"MLG"})
+	Add("ml3-2","!sopen ml3-2",{"ML3S"},{"ML4S","ML3","ML4",--[["MLDR1",]]"MLG"})
+	
+	
+	--полоитех
+	Add("pt2-1","!sopen pt2-1",{"RC188"},{" DM","PT179MG","PT181","RC173"})
+	Toggle("pt2-1")
+	
+	
+	--международная
+	--заезд
+	Add("md2-3","!sopen md2-3",{"RC144A"},{"MD138G","MD1","MD2","MD5SA","MD6SA"})
+	Add("md2-4","!sopen md2-4",{"RC144A","MD5SA"},{"MD138G","MD1","MD2","MD6SA"})
+	
+	--выезд
+	Add("md6-2","!sopen md6-2",{"MD2SF"},{"MD138G","MD1","MD2","E","MD140","RC144A"})
+	--Add("md1-1","!sopen md1-1",{"asd"},{"zxc"})--тут чота сложна
+	Add("md3-1","!sopen md3-1",{"MD5SA"},{"MD1","MD2","MD6SA","G"})
+	Add("md4-1","!sopen md4-1",{"MD6SA"},{"MD1","MD2","MD5SA","G"})
+end
