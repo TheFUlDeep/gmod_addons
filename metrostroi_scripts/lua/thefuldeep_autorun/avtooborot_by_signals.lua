@@ -142,12 +142,24 @@ local function SignalCommand(signals,commands)
 	end
 end]]
 
+local function CompareTables(tbl1,tbl2)
+	for _,val1 in pairs(tbl1) do
+		if not table.HasValue(tbl2,val1) then return end
+	end
+	return true
+end
+
 local function AvtooborotThink()
 	for _,tbl in pairs(ConditionsTbls) do
 		if not tbl[4] and CheckOccupationTbl(tbl[2],true) and CheckOccupationTbl(tbl[3]) then
 			tbl[6] = 0
 			if tbl[5] then continue end--tbl[5] означает, что этот автооборот уже сработал
-			tbl[5] = true
+			
+			--если есть несколько условий для открытия одного маршрута, то всем условиям сообщяю, что маршрут открыт
+			for _,t in pairs(ConditionsTbls) do
+				if CompareTables(t[1], tbl[1]) then t[5] = true end
+			end
+			
 			local comms = tbl[1]
 			for _,comm in pairs(comms) do
 				for _,sig in pairs(NamesSignals) do
@@ -203,4 +215,26 @@ elseif map == "gm_metro_crossline_r199h" then
 	--Add("md1-1","!sopen md1-1",{"asd"},{"zxc"})--тут чота сложна
 	Add("md3-1","!sopen md3-1",{"MD5SA"},{"MD1","MD2","MD6SA","G"})
 	Add("md4-1","!sopen md4-1",{"MD6SA"},{"MD1","MD2","MD5SA","G"})
+	
+	
+elseif map == "gm_metro_mosldl_v1" then
+	--105(люблино)
+	Add("lb1-3","!sopen lb1-3",{"197A"},{"RCLB51M","LB51M","LB3","LB3A"})
+	Add("lbe-1","!sopen lbe-1",{"LB1A"},{"LBE","LB3","LB3A","LB65","197","197A","RCLB51M","LB51M"})
+	Add("lbg-2","!sopen lbg-2",{"LBGA"},{"LB3","LB3A","LBG"})
+	Add("lb3-2","!sopen lb3-2",{"LB3A"},{"RCLB51M","LB51M","LB3","LBG","LBGA"})
+	
+	--106(волжская)
+	Add("vkdm-2","!sopen vkdm-2",{"175"},{"VK75","28","72M","VK74M"})
+	Toggle("vkdm-2")
+	
+	--107(печатники)
+	Add("px4-2","!sopen px4-2",{"PX4A"},{"PX2","PXOP1","PX82MG","50","48","46","44"})
+	Add("px3-1","!sopen px3-1",{"PX3A"},{"PX1","PX1RC","PX85","143","141","139","137"})
+	
+	--109(дубровка)
+	Add("db2-3","!sopen db2-3",{"110"},{"S102","DB102","DB4A","DB4","DB3A","DB3"})
+	Add("db2-4","!sopen db2-4",{"110","DB3A"},{"S102","DB102","DB4A","DB4","DB3"})
+	Add("db3-1","!sopen db3-1",{"DB3A"},{"S102","DB102","DB4A","DB4","DB3"})
+	Add("db4-1","!sopen db4-1",{"DB4A"},{"S102","DB102","DB3A","DB4","DB3"})
 end
