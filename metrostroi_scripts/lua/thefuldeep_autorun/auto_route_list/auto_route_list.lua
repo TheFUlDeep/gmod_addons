@@ -706,6 +706,7 @@ function Metrostroi.GenerateSchedule(routeID,starts,ends,path,AlreadyOnStation)
 	end
 
 	-- Fill out start and end
+	if #schedule == 0 then print("oops unexpected error (я не знаю чо эта)") return end
 	schedule.StartStation = schedule[1][1]
 	schedule.EndStation = schedule[#schedule][1]
 	schedule.StartTime = schedule[1][2]
