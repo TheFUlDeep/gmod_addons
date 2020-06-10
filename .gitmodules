@@ -1,3 +1,6 @@
 [submodule "nskmask"]
 	path = nskmask
 	url = https://github.com/1shialeto/nskmask
+[submodule "gm_metrostroi_717_nsk_routenumbers"]
+	path = gm_metrostroi_717_nsk_routenumbers
+	url = https://github.com/TheFUlDeep/gm_metrostroi_717_nsk_routenumbers
