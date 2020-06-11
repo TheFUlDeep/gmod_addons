@@ -1,5 +1,9 @@
 --https://steamcommunity.com/sharedfiles/filedetails/?id=1799298441
 --mask_11_no_logo_2.mdl" с черным лого
+if SERVER then
+	resource.AddWorkshop("1799298441")
+end
+
 local maskmodels = {"models/dev4you/fedot/mask_pds_mvm.mdl","models/dev4you/fedot/mask_pds_lvz.mdl","models/dev4you/fedot/mask_pds222_mvm.mdl","models/dev4you/fedot/mask_pds222_lvz.mdl"}
 local hlmodel22_1 = "models/dev4you/fedot/headlights_pds_group1.mdl"
 local hlmodel22_2 = "models/dev4you/fedot/headlights_pds_group2.mdl"
@@ -10,19 +14,6 @@ local maatspath = "materials/models/dev4you/fedot/"
 local nomerogg = "gmod_subway_81-717_mvm"
 local inserted_indexes = {-1,-1,-1,-1}
 local paramnames = {"2-2 Подстекольник МВМ","2-2 Подстекльник ЛВЗ","2-2-2 Подстекольник МВМ","2-2-2 Подстекольник ЛВЗ"}
-
-if SERVER then
-	for _,model in pairs(maskmodels) do
-		resource.AddFile(model)
-	end
-	resource.AddFile(hlmodel22_1)
-	resource.AddFile(hlmodel22_2)
-	resource.AddFile(hlmodel222_1)
-	resource.AddFile(hlmodel222_2)
-	resource.AddFile(maatspath.."mask_pds.vmt")
-	resource.AddSingleFile(maatspath.."glass.vmt")
-	resource.AddSingleFile(maatspath.."mask_pds_n.vtf")
-end
 
 
 timer.Simple(0,function()

@@ -1,5 +1,9 @@
 --https://steamcommunity.com/sharedfiles/filedetails/?id=2035749253
 --mask_11_no_logo_2.mdl" с черным лого
+if SERVER then
+	resource.AddWorkshop("2035749253")
+end
+
 local maskmodel = "models/yaz/mask3-3/maska_33.mdl"
 local hlmodel1 = "models/yaz/mask3-3/headlights_33_g1.mdl"
 local hlmodel2 = "models/yaz/mask3-3/headlights_33.mdl"
@@ -7,12 +11,6 @@ local hlmodel2 = "models/yaz/mask3-3/headlights_33.mdl"
 local nomerogg = "gmod_subway_81-717_mvm"
 local inserted_index = -1
 local paramname = "3-3"
-
-if SERVER then
-	resource.AddFile(maskmodel)
-	resource.AddFile(hlmodel1)
-	resource.AddFile(hlmodel2)
-end
 
 
 timer.Simple(0,function()
