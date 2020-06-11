@@ -47,13 +47,17 @@ local function ChatPrintAll(msg,ply2)
 	--end
 end
 
-TheFulDeepsAvtooborot.Add = function(Name,Commands,Occupied,NotOccuped)--в качестве аргументов подаются таблицы имен сигналов
+TheFulDeepsAvtooborot.Add = function(Name,Commands,Occupied,NotOccuped,NeedOpened,NeedNotOpened)--в качестве аргументов подаются таблицы имен сигналов
 	Commands = Commands or {}
 	Occupied = Occupied or {}
 	NotOccuped = NotOccuped or {}
+	NeedOpened = NeedOpened or {}
+	NeedNotOpened = NeedNotOpened or {}
 	if not istable(Commands) then Commands = {tostring(Commands)} end
 	if not istable(Occupied) then Occupied = {tostring(Occupied)} end
 	if not istable(NotOccuped) then NotOccuped = {tostring(NotOccuped)} end
+	if not istable(NeedOpened) then NeedOpened = {tostring(NeedOpened)} end
+	if not istable(NeedNotOpened) then NeedNotOpened = {tostring(NeedNotOpened)} end
 	if not Name or not isstring(Name) or Name == "" then ChatPrint(nil,"wrong Avtooborot Add arguments") return end
 	Name = Name:gsub(' ', '_')
 	
@@ -61,11 +65,11 @@ TheFulDeepsAvtooborot.Add = function(Name,Commands,Occupied,NotOccuped)--в ка
 		"thefuldeeps_avtooborot_toggle_"..Name,
 		function(ply)
 			if IsValid(ply) and not ply:IsAdmin() then ChatPrint(ply,"Только админ может переключать автооборот") return end
-			if ConditionsTbls[Name][4] then
-				ConditionsTbls[Name][4] = nil
+			if ConditionsTbls[Name][6] then
+				ConditionsTbls[Name][6] = nil
 				ChatPrintAll("Автооборот "..Name.." включен.",ply)
 			else
-				ConditionsTbls[Name][4] = true
+				ConditionsTbls[Name][6] = true
 				ChatPrintAll("Автооборот "..Name.." выключен.",ply)
 			end
 		end,
@@ -73,8 +77,8 @@ TheFulDeepsAvtooborot.Add = function(Name,Commands,Occupied,NotOccuped)--в ка
 		"enabling/disabling avtooborot by name",
 		128
 	)
-	--имя = команды, занятые, не занятые, выключен ли, открыт ли, количество проверок (защита от ложных срабатываний)
-	ConditionsTbls[Name] = {Commands,Occupied,NotOccuped,false,false,0}
+	--имя = команды, занятые, не занятые, должен быть открыт, должен быть не открыт, выключен ли, открыт ли, количество проверок (защита от ложных срабатываний)
+	ConditionsTbls[Name] = {Commands,Occupied,NotOccuped,NeedOpened,NeedNotOpened,false,false,0}
 	print("added avtooborot "..Name)
 end
 local Add = TheFulDeepsAvtooborot.Add
@@ -98,7 +102,7 @@ concommand.Add(
 	function(ply)
 		if table.Count(ConditionsTbls) == 0 then ChatPrint(ply,"Автооборотов нет.") return end
 		for name,tbl in pairs(ConditionsTbls) do
-			ChatPrint(ply,name.." "..(tbl[4] and "off" or "on"))
+			ChatPrint(ply,name.." "..(tbl[6] and "off" or "on"))
 		end
 	end,
 	nil,
@@ -122,6 +126,23 @@ local function CheckOccupationTbl(tbl,needoccuped)--во время перево
 	for _,name in pairs(tbl) do
 		local sig = NamesSignals[name]
 		if IsValid(sig) and ((needoccuped and not sig.Occupied) or (not needoccuped and sig.Occupied)) then return end
+	end
+	return true
+end
+
+--проверка на то, что указанный автооборот открыт или не открыт
+--если автооборот выключен, то он пропускается
+local function CheckForOpened(tbl,needopened)
+	if needopened then
+		for _,name in pairs(tbl) do
+			local tbl = ConditionsTbls[name]
+			if tbl and not tbl[6] and not tbl[7] then return end
+		end
+	else
+		for _,name in pairs(tbl) do
+			local tbl = ConditionsTbls[name]
+			if tbl and not tbl[6] and tbl[7] then return end
+		end
 	end
 	return true
 end
@@ -151,9 +172,9 @@ end
 
 local function AvtooborotThink()
 	for _,tbl in pairs(ConditionsTbls) do
-		if not tbl[4] and CheckOccupationTbl(tbl[2],true) and CheckOccupationTbl(tbl[3]) then
-			tbl[6] = 0
-			if tbl[5] then continue end--tbl[5] означает, что этот автооборот уже сработал
+		if not tbl[6] and CheckOccupationTbl(tbl[2],true) and CheckOccupationTbl(tbl[3]) and CheckForOpened(tbl[4],true) and CheckForOpened(tbl[5]) then
+			tbl[8] = 0
+			if tbl[7] then continue end--tbl[7] означает, что этот автооборот уже сработал
 			
 			--если есть несколько условий для открытия одного маршрута, то всем условиям сообщяю, что маршрут открыт
 			for _,t in pairs(ConditionsTbls) do
@@ -168,8 +189,8 @@ local function AvtooborotThink()
 				ChatPrintAll(comm)
 			end
 		else
-			tbl[6] = tbl[6] + 1--возможно из-за этого будут приколы (баги)
-			if tbl[6] == 2 then tbl[5] = false tbl[6] = 0 end
+			tbl[8] = tbl[8] + 1--возможно из-за этого будут приколы (баги)
+			if tbl[8] == 2 then tbl[7] = false tbl[8] = 0 end
 		end
 	end
 end
