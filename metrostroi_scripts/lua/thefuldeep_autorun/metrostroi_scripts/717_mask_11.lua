@@ -1,5 +1,9 @@
 --https://steamcommunity.com/sharedfiles/filedetails/?id=2018223170
 --mask_11_no_logo_2.mdl" с черным лого
+if SERVER then
+	resource.AddWorkshop("2018223170")
+end
+
 local maskmodels = {"models/metrostroi_train/81-717_2/mask_11.mdl","models/metrostroi_train/81-717_2/mask_11_no_logo.mdl","models/metrostroi_train/81-717_2/mask_11_no_logo_2.mdl"}
 local hlmodel1 = "models/metrostroi_train/81-717_2/mask_11_group1.mdl"
 local hlmodel2 = "models/metrostroi_train/81-717_2/mask_11_group2.mdl"
@@ -8,18 +12,6 @@ local maatspath = "materials/models/metrostroi_train/81-717/"
 local nomerogg = "gmod_subway_81-717_mvm"
 local inserted_indexes = {-1,-1,-1}
 local paramnames = {"1-1","1-1 no logo", "1-1 no logo (logo)"}
-
-if SERVER then
-	for _,model in pairs(maskmodels) do
-		resource.AddFile(model)
-	end
-	resource.AddFile(hlmodel1)
-	resource.AddFile(hlmodel2)
-	resource.AddFile(maatspath.."mask_11.vmt")
-	resource.AddFile(maatspath.."mask_11_no_logo.vmt")
-	resource.AddFile(maatspath.."mask_11_no_logo_2.vmt")
-	resource.AddSingleFile(maatspath.."mask_11n.vtf")
-end
 
 
 timer.Simple(0,function()

@@ -1,5 +1,9 @@
 --https://steamcommunity.com/sharedfiles/filedetails/?id=1939746885
 --mask_11_no_logo_2.mdl" с черным лого
+if SERVER then
+	resource.AddWorkshop("1939746885")
+end
+
 local maskmodel = "models/metrostroi_train/81-717/mask_540_9.mdl"
 local hlmodel1 = "models/metrostroi_train/81-717/lamps/headlights_540_group1.mdl"
 local hlmodel2 = "models/metrostroi_train/81-717/lamps/headlights_540_group2.mdl"
@@ -8,13 +12,6 @@ local maatspath = "materials/models/metrostroi_train/81-717/"
 local nomerogg = "gmod_subway_81-717_mvm"
 local inserted_index = -1
 local paramname = "1-3-1 540.9"
-
-if SERVER then
-	resource.AddFile(maskmodel)
-	resource.AddFile(hlmodel1)
-	resource.AddFile(hlmodel2)
-	resource.AddFile(maatspath.."mask_540_9.vmt")
-end
 
 
 timer.Simple(0,function()
