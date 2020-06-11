@@ -74,6 +74,13 @@ timer.Simple(0,function()
 				mask,
 				function(wag)
 					return wag:GetNW2Int("MaskType",0) == inserted_indexes[i] and maskmodels[i] or nil
+				end,
+				function(wag)
+					if wag:GetNW2Int("MaskType",0) ~= inserted_indexes[i] then return end
+					local ent = wag.ClientEnts and wag.ClientEnts[mask]
+					if IsValid(ent) then
+						ent:SetAngles(wag:LocalToWorldAngles(Angle(0,-90,0)))
+					end
 				end
 			)
 		end
@@ -84,6 +91,13 @@ timer.Simple(0,function()
 				light,
 				function(wag)
 					return wag:GetNW2Int("MaskType",0) == inserted_indexes[i] and ((i == 1 or i == 2) and hlmodel22_1 or hlmodel222_1) or nil
+				end,
+				function(wag)
+					if wag:GetNW2Int("MaskType",0) ~= inserted_indexes[i] then return end
+					local ent = wag.ClientEnts and wag.ClientEnts[light]
+					if IsValid(ent) then
+						ent:SetAngles(wag:LocalToWorldAngles(Angle(0,-90,0)))
+					end
 				end
 			)
 		end
@@ -94,6 +108,13 @@ timer.Simple(0,function()
 				light,
 				function(wag)
 					return wag:GetNW2Int("MaskType",0) == inserted_indexes[i] and ((i == 1 or i == 2) and hlmodel22_2 or hlmodel222_2) or nil
+				end,
+				function(wag)
+					if wag:GetNW2Int("MaskType",0) ~= inserted_indexes[i] then return end
+					local ent = wag.ClientEnts and wag.ClientEnts[light]
+					if IsValid(ent) then
+						ent:SetAngles(wag:LocalToWorldAngles(Angle(0,-90,0)))
+					end
 				end
 			)
 		end
