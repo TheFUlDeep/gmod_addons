@@ -178,7 +178,7 @@ local function AvtooborotThink()
 			
 			--если есть несколько условий для открытия одного маршрута, то всем условиям сообщяю, что маршрут открыт
 			for _,t in pairs(ConditionsTbls) do
-				if CompareTables(t[1], tbl[1]) then t[5] = true end
+				if CompareTables(t[1], tbl[1]) then t[7] = true end
 			end
 			
 			local comms = tbl[1]
