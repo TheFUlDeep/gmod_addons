@@ -141,7 +141,7 @@ end
 local function GetTrainDrivers(wag)
 	local Drivers = {}
 	for k,v in pairs(wag.WagonList) do
-		if not IsValid(v) or not v.DriverSeat then continue end
+		if not IsValid(v) or not IsValid(v.DriverSeat) then continue end
 		local Driver = v.DriverSeat:GetDriver()
 		if IsValid(Driver) then table.insert(Drivers,1,Driver) end
 	end
