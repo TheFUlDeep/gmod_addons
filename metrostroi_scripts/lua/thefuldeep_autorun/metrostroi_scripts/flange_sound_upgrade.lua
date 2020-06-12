@@ -33,7 +33,7 @@ local function newfunc(self,sound,volume,pitch,name,level,...)
 			volume = 0
 			if CurTime > self.EndEmit then
 				self.StartEmit = CurTime + mathRand(0,2)
-				self.EndEmit = self.StartEmit + mathRand(0.1,2)
+				self.EndEmit = self.StartEmit + mathRand(0.1,3)
 				self.EmitDist = self.EndEmit - self.StartEmit
 				--print("silent for",self.StartEmit - CurTime)
 				--print("eimt for",self.EmitDist)
@@ -56,8 +56,8 @@ local function newfunc(self,sound,volume,pitch,name,level,...)
 				--print("len",self.EmitDist)
 				--print("out percent",self.FadeOutPercent)
 				--print("out len",(self.EmitDist/100)*self.FadeInPercentR)
-				if (self.EmitDist/100)*self.FadeInPercentR < 0.4 then
-					self.FadeInPercentR = (0.4/self.EmitDist)*100
+				if (self.EmitDist/100)*self.FadeInPercentR < 0.5 then
+					self.FadeInPercentR = (0.5/self.EmitDist)*100
 					self.FadeOutPercent = 100-self.FadeInPercentR
 				end
 				--print("fade in",self.FadeInPercent)
