@@ -33,7 +33,7 @@ local function UpdateModelCallBack(ENT,cprop,modelcallback,callback)
 	if modelcallback then
 		local oldmodelcallback = ENT.ClientProps[cprop].modelcallback or function() end
 		ENT.ClientProps[cprop].modelcallback = function(wag,...)
-			return modelcallback(wag) or oldmodelcallback(wag,...)
+			return modelcallback(wag,...) or oldmodelcallback(wag,...)
 		end
 	end
 	
