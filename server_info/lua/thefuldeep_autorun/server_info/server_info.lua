@@ -390,7 +390,7 @@ local function ScoreBoardFunction(ent)
 		if string.sub(result,1,15) == "перегон " then							--определяю направление движения по ближайшей стации и сохраняю до тех пор, пока человек в перегоне
 			if pos2 and strsub1 == "(ближайшая по треку)" then
 				local strsub3 = string.sub(pos,1,-38)--имя первой станции
-				if nodecur and poscurx and PrevPosesEnts[ent] and math.abs(PrevPosesEnts[ent] - poscurx) > 0 then
+				if nodecur and poscurx and node1 and node2 and PrevPosesEnts[ent] and math.abs(PrevPosesEnts[ent] - poscurx) > 0 then
 					--зная предыдущую позицию, определяю направление движения
 					--result, Time, Dist
 					
