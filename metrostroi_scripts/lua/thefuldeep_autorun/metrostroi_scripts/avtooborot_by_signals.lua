@@ -258,4 +258,10 @@ elseif map == "gm_metro_mosldl_v1" then
 	Add("db2-4","!sopen db2-4",{"110","DB3A"},{"S102","DB102","DB4A","DB4","DB3"})
 	Add("db3-1","!sopen db3-1",{"DB3A"},{"S102","DB102","DB4A","DB4","DB3"})
 	Add("db4-1","!sopen db4-1",{"DB4A"},{"S102","DB102","DB3A","DB4","DB3"})
+elseif map == "gm_mus_orange_metro_h" then
+	Add("mt2-1","!sopen mt2-1","MT236",{"MT238","MT222","MT111"},nil,{"mt2-1_2","mt1-1"})
+	Add("mt2-2","!sopen mt2-2",{"MT236","MT111"},{"MT238","MT222"},nil,"mt2-1")
+	
+	Add("mt1-1","!sopen mt1-1","MT111","MT1",nil,"mt2-1_2")
+	Add("mt12-1_2","!sopen mt2-1","MT222","MT1",nil,{"mt1-1","mt2-1","mt2-2"})
 end
