@@ -87,7 +87,7 @@ timer.Simple(0,function()
 		"disconnect_udochka", 
 		function(ply)disconnect(ply)end, 
 		nil, 
-		"connects udochka to train"
+		"disconnects udochka to train"
 	)
 end)
 
