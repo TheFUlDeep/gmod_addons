@@ -76,6 +76,7 @@ timer.Simple(0,function()
 		comm:help("Подключить удочку")
 	end
 	
+	if CLIENT then return end
 	 concommand.Add(
 		"connect_udochka", 
 		function(ply)connect(ply)end, 
