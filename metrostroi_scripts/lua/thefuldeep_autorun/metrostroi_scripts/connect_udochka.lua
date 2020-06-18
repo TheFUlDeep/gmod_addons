@@ -14,7 +14,6 @@ timer.Simple(0,function()
 	--указать луч, куда найденную удочку можно цеплять
 	local findbeams = {}
 	local connectbeams = {}
-	if not ulx or not ulx.command then return end
 	
 	local function connect(ply)
 		if CLIENT then return end
@@ -36,9 +35,12 @@ timer.Simple(0,function()
 		--проверка на то, что удочка ни к чему не подключена
 		--и сохранение в каждый вагон ентити удочки
 	end
-	local comm = ulx.command("Metrostroi", "ulx connect_udochka", connect, "!connect_udochka", true, false, true)
-	comm:defaultAccess(ULib.ACCESS_ALL)
-	comm:help("Подключить удочку")
+	
+	if ulx and ulx.command then
+		local comm = ulx.command("Metrostroi", "ulx connect_udochka", connect, "!connect_udochka", true, false, true)
+		comm:defaultAccess(ULib.ACCESS_ALL)
+		comm:help("Подключить удочку")
+	end
 	
 	local function disconnect(ply)
 		if CLIENT then return end
@@ -46,19 +48,33 @@ timer.Simple(0,function()
 		if not IsValid(seat) then ply:ChatPrint("Ты не в сидушке") return end
 		local wag = seat:GetNW2Entity("TrainEntity")
 		if not IsValid(wag) then ply:ChatPrint("Ты не в составе") return end
+
+		--поиск подключенных удочек к тележкам
+		local disconnected
+		local bogeys = {}
 		for _,wag1 in pairs(wag.WagonList or {wag}) do
-			local u = wag1.ConnectedUdochka
-			if not IsValid(u) then continue end
-			u:Use(u,u,0,0)
-			if uposes[u] then u:SetPos(uposes[u])end--возвращаю удочку на стартовую позицию
-			for _,wag2 in pairs(wag.WagonList or {wag}) do wag2.ConnectedUdochka = nil end
-			return
+			if IsValid(wag1.FrontBogey) then bogeys[wag1.FrontBogey] = true end
+			if IsValid(wag1.RearBogey) then bogeys[wag1.RearBogey] = true end
 		end
-		ply:ChatPrint("К составу не подключена удочка")
+		for _,ent in pairs(ents.FindByClass("gmod_track_udochka"))do
+			if IsValid(ent)and IsValid(ent.Coupled)and bogeys[ent.Coupled] then
+				ent:Use(ent,ent,0,0)
+				disconnected = true
+				if uposes[ent] then ent:SetPos(uposes[ent])end--возвращаю удочку на стартовую позицию
+			end
+		end
+		if disconnected then 
+			ply:ChatPrint("Удочка отсоединена")
+		else
+			ply:ChatPrint("К составу не подключена удочка")
+		end
 	end
-	local comm = ulx.command("Metrostroi", "ulx connect_udochka", connect, "!connect_udochka", true, false, true)
-	comm:defaultAccess(ULib.ACCESS_ALL)
-	comm:help("Подключить удочку")
+	
+	if ulx and ulx.command then
+		local comm = ulx.command("Metrostroi", "ulx connect_udochka", connect, "!connect_udochka", true, false, true)
+		comm:defaultAccess(ULib.ACCESS_ALL)
+		comm:help("Подключить удочку")
+	end
 	
 	 concommand.Add(
 		"connect_udochka", 
