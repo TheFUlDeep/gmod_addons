@@ -258,10 +258,26 @@ elseif map == "gm_metro_mosldl_v1" then
 	Add("db2-4","!sopen db2-4",{"110","DB3A"},{"S102","DB102","DB4A","DB4","DB3"})
 	Add("db3-1","!sopen db3-1",{"DB3A"},{"S102","DB102","DB4A","DB4","DB3"})
 	Add("db4-1","!sopen db4-1",{"DB4A"},{"S102","DB102","DB3A","DB4","DB3"})
+	
+	
 elseif map == "gm_mus_orange_metro_h" then
 	Add("mt2-1","!sopen mt2-1","MT236",{"MT238","MT222","MT111"},nil,{"mt2-1_2","mt1-1"})
 	Add("mt2-2","!sopen mt2-2",{"MT236","MT111"},{"MT238","MT222"},nil,"mt2-1")
 	
 	Add("mt1-1","!sopen mt1-1","MT111","MT1",nil,"mt2-1_2")
 	Add("mt12-1_2","!sopen mt2-1","MT222","MT1",nil,{"mt1-1","mt2-1","mt2-2"})
+	
+	
+elseif map == "gm_metro_crossline_n3" then
+	--международная
+	Add("md2-3","!sopen md2-3","MD222A",{"MD218","MDE","MD2","MD1","MDA4","MDA3"},nil,{"md4-1","md3-1"})
+	Add("md2-4","!sopen md2-4",{"MD222A","MDA3"},{"MD218","MDE","MD2","MD1","MDA4"},nil,"md4-1")
+	
+	Add("md3-1","!sopen md3-1","MDA3",{"MDG","MD2","MD1"},nil,{"md4-1","md1-1"})
+	Add("md4-1","!sopen md4-1","MDA4",{"MDG","MD2","MD1"},nil,"md3-1","md1-1")
+	--Add("md1-1","!sopen md1-1","MDA4",{"MDG","MD2","MD1"},nil,"md3-1","md1-1")--meh
+	
+	--пролетарская
+	Add("pr1-2","!sopen pr1-2","401B",{"PR387","PRE","PR376","PRA1"},nil,"pr2-2")
+	Add("pr2-2","!sopen pr2-2","PRA1",{"PR387","PR376"},nil,"pr1-2")
 end
