@@ -18,9 +18,9 @@ timer.Simple(0,function()
 	
 	local function IsSideCoupled(wag,isrear)
 		if isrear then
-			return IsValid(wag.RearCouple)and IsValid(wag.RearCouple.CoupledEnt)and IsValid(wag.RearCouple.CoupledEnt:GetNW2Entity("TrainEntity"))or nil
+			return IsValid(wag.RearCouple)and IsValid(wag.RearCouple.CoupledEnt)and IsValid(wag.RearCouple.CoupledEnt:GetNW2Entity("TrainEntity"))
 		else
-			return IsValid(wag.FrontCouple)and IsValid(wag.FrontCouple.CoupledEnt)and IsValid(wag.FrontCouple.CoupledEnt:GetNW2Entity("TrainEntity"))or nil
+			return IsValid(wag.FrontCouple)and IsValid(wag.FrontCouple.CoupledEnt)and IsValid(wag.FrontCouple.CoupledEnt:GetNW2Entity("TrainEntity"))
 		end
 	end
 	--проверка на головной вагон - он должен быть сцеплен с другим только с одной стороны
@@ -111,7 +111,7 @@ end)
 --[[local seats={"DriverSeat","InstructorsSeat","ExtraSeat"}
 local function IsSeatFromWagon(wag,myseat)
 	for i=0,4 do
-		local str=i > 0 and tostring(i)or ""
+		local str=i > 0 and tostring(i)or""
 		for _,seat1 in pairs(seats)do
 			local seat=seat1..str
 			if wag[seat]==myseat then return true end
