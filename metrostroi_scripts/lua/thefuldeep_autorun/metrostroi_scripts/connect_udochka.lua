@@ -5,7 +5,7 @@ timer.Simple(0,function()
 	local uposes={}
 	if SERVER then
 		hook.Add("OnEntityCreated","Save Udocka's poses for connect_udockka.lua",function(ent)
-			timer.Simple(0,function()if IsValid(ent)then uposes[ent]=ent:GetPos()end end)
+			timer.Simple(0,function()if IsValid(ent)and ent:GetClass()=="gmod_track_udochka"then uposes[ent]=ent:GetPos()end end)
 		end)
 	end
 	
