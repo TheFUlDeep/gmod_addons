@@ -28,6 +28,7 @@ local function SetUPos(u,pos)
 	if u:IsPlayerHolding()or IsValid(u.Coupled)then return end
 	--u:SetMoveType(MOVETYPE_FLY)
 	--u:SetMoveType(MOVETYPE_NONE)
+	--u:SetSolid(SOLID_NONE)
 	u:SetMoveType(MOVETYPE_NOCLIP)
 	--[[local upos=u:GetPos()
 	local delta1=mathabs(upos[1]-pos[1])
@@ -39,10 +40,12 @@ local function SetUPos(u,pos)
 	elseif delta3 > delta1 and delta3 > delta2 then k=3
 	end]]
 	
-
 	u:SetPos(pos)
+	--u:SetSolid(SOLID_VPHYSICS)
 	timer.Simple(2,function()
-		if IsValid(u) then u:SetMoveType(MOVETYPE_VPHYSICS)end
+		if IsValid(u) then 
+			u:SetMoveType(MOVETYPE_VPHYSICS)
+		end
 	end)
 	--[[local skip={[1]=true,[2]=true}
 	for j,v in pairs(uposes[u])do
@@ -178,11 +181,12 @@ local function connect(ply)
 	if IsValid(nearestudochka.Coupled) then ply:ChatPrint("Удочка уже куда-то подключена")return end
 			
 	local function ChooseNearestSide(bogey,pos)
+		--TODO для тележек Дшки, Оки
 		local fs,ss
 		local bogeymodel = bogey:GetModel()
 		--if bogeymodel=="models/metrostroi_train/bogey/metro_bogey_717.mdl"then
-			fs = bogey:LocalToWorld(Vector(0,bogey:OBBMins()[2]+10,-15))
-			ss = bogey:LocalToWorld(Vector(0,bogey:OBBMaxs()[2]-10,-15))
+			fs = bogey:LocalToWorld(Vector(0,bogey:OBBMins()[2]+18,-10))
+			ss = bogey:LocalToWorld(Vector(0,bogey:OBBMaxs()[2]-18,-10))
 		--end
 		if fs:DistToSqr(pos) < ss:DistToSqr(pos) then
 			return fs
@@ -191,30 +195,45 @@ local function connect(ply)
 		end
 	end
 	
+	local function ConnectU(ent,pos,ang)
+		for i = 0.5,4,0.5 do
+			timer.Simple(i,function()
+				if not IsValid(ent) then return end
+				if pos then SetUPos(ent,pos)end
+				ent:SetAngles(ang)
+			end)
+		end
+	end
+	
 	if not fc and not rc then
 		if IsValid(wag.RearBogey) then
-			local pos=ChooseNearestSide(wag.RearBogey,nearestudochka:GetPos())
-			if pos then SetUPos(nearestudochka,pos)end
+			ConnectU(nearestudochka,ChooseNearestSide(wag.RearBogey,nearestudochka:GetPos()),wag.RearBogey:GetAngles())
 			ply:ChatPrint("Удочка подключена")
 			return
 		elseif IsValid(wag.FrontBogey) then
-			local pos=ChooseNearestSide(wag.FrontBogey,nearestudochka:GetPos())
-			if pos then SetUPos(nearestudochka,pos)end
+			ConnectU(nearestudochka,ChooseNearestSide(wag.RearBogey,nearestudochka:GetPos()),wag.FrontBogey:GetAngles())
 			ply:ChatPrint("Удочка подключена")
 			return
 		end
 	else
-		if IsValid(wag.WagonList[2].FrontBogey) then
-			local pos=ChooseNearestSide(wag.WagonList[2].FrontBogey,wag:LocalToWorld(Vector(0,-300,0)))
-			if pos then SetUPos(nearestudochka,pos)end
-			ply:ChatPrint("Удочка подключена")
-			return
-		elseif IsValid(wag.WagonList[2].RearBogey) then
-			local pos=ChooseNearestSide(wag.WagonList[2].RearBogey,wag:LocalToWorld(Vector(0,-300,0)))
-			if pos then SetUPos(nearestudochka,pos)end
-			ply:ChatPrint("Удочка подключена")
-			return
+		local upos = uposes[nearestudochka][2]
+		local mindist,nearestbogey
+		for k,wag1 in pairs(wag.WagonList)do
+			if k == 1 or not IsValid(wag1) then continue end
+			for i = 1,2 do
+				local b = i == 1 and wag1.RearBogey or wag1.FrontBogey
+				if not IsValid(b) then continue end
+				local curdist = b:GetPos():DistToSqr(upos)
+				if not mindist or curdist < mindist then
+					mindist = curdist
+					nearestbogey = b
+					--print("asd")
+				end
+			end
 		end
+		ConnectU(nearestudochka,ChooseNearestSide(nearestbogey,wag:LocalToWorld(Vector(0,-300,0))),nearestbogey:GetAngles())
+		ply:ChatPrint("Удочка подключена")
+		return
 	end
 	
 	--пихать удочку в ближайшую найденную тележку с ближайшей стороны, но не в вагон, в котором сидит игрок (если естть прицеп)
