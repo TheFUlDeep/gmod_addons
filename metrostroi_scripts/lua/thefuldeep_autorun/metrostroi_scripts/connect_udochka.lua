@@ -204,13 +204,13 @@ local function connect(ply)
 			return
 		end
 	else
-		if IsValid(wag.WagonList[2].RearBogey) then
-			local pos=ChooseNearestSide(wag.WagonList[2].RearBogey,wag:LocalToWorld(Vector(0,-300,0)))
+		if IsValid(wag.WagonList[2].FrontBogey) then
+			local pos=ChooseNearestSide(wag.WagonList[2].FrontBogey,wag:LocalToWorld(Vector(0,-300,0)))
 			if pos then SetUPos(nearestudochka,pos)end
 			ply:ChatPrint("Удочка подключена")
 			return
-		elseif IsValid(wag.WagonList[2].WagonList[2].FrontBogey) then
-			local pos=ChooseNearestSide(wag.WagonList[2].FrontBogey,wag:LocalToWorld(Vector(0,-300,0)))
+		elseif IsValid(wag.WagonList[2].RearBogey) then
+			local pos=ChooseNearestSide(wag.WagonList[2].RearBogey,wag:LocalToWorld(Vector(0,-300,0)))
 			if pos then SetUPos(nearestudochka,pos)end
 			ply:ChatPrint("Удочка подключена")
 			return
