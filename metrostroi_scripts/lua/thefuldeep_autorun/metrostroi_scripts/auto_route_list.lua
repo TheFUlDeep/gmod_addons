@@ -1029,7 +1029,7 @@ local function CheckAlreadyOnStation(track,fisrstationindex)
 	end
 end
 
-timer.Create("Update/Set Route list",1,0,function()
+timer.Create("Update/Set Route list",5,0,function()
 	--расписание присваивается поезду. Если игрок в составе, то дать ему это расписание, иначе отнять
 	if not Metrostroi or not Metrostroi.TrainClasses then return end
 	for _,trainclass in pairs(Metrostroi.TrainClasses) do
