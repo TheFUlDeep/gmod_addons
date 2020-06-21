@@ -582,7 +582,7 @@ function Metrostroi.GenerateSchedule(routeID,starts,ends,path,AlreadyOnStation)
 	if not fen then print("Metrostroi: Warning! Station "..ends.." not found") en = #Metrostroi.ScheduleRoutes[routeID] end
 
 	-- Time padding (extra time before schedule starts, wait time between trains)
-	local paddingTime = AlreadyOnStation==true and 0 or isnumber(AlreadyOnStation) and AlreadyOnStation or 60
+	local paddingTime = isnumber(AlreadyOnStation) and AlreadyOnStation or 60
 	paddingTime = paddingTime + 30
 	-- Current server time
 	local serverTime = Metrostroi.ServerTime()/60
@@ -1000,7 +1000,7 @@ local function CheckAlreadyOnStation(track,fisrstationindex)
 		if platformparams[1].path.id ~= track.path.id then continue end
 		--если расстояние от паравоза до центра станции меньше половины длины, значит паравоз на станции
 		if mathabs(track.x - platformparams[1].x) < (mathabs(platformparams[2].x - platformparams[3].x) + 10)/2 then
-			return true
+			return 0
 		else
 			--считаю время прибытия на станцию
 			if track.x < platformparams[1].x then
