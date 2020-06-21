@@ -717,7 +717,6 @@ end
 
 local trackids={}
 local platformstracks={}
-local platformsindexes={}
 local function GenerateRoutes()
 	if not Metrostroi or not Metrostroi.StationConfigurations then return end
 	
@@ -972,6 +971,7 @@ end
 
 local mathabs = math.abs
 local platforms={}
+local platformsindexes={}
 local function init()
 	for _,ent in pairs(ents.FindByClass("gmod_track_platform")) do			
 		if not IsValid(ent) or ent:GetClass() ~= "gmod_track_platform" or not ent.PlatformEnd or not ent.PlatformStart or not ent.PlatformIndex then continue end
@@ -986,12 +986,13 @@ local function init()
 		local halflen = (mathabs(StartTrackNode.x - EndTrackNode.x) + 10)/2
 		platforms[ent]={CentreTrackNode,StartTrackNode,EndTrackNode,ent,halflen}
 		local index = tonumber(ent.StationIndex or "")
-		if not index then continue end
-		platformsindexes[index] = platformsindexes[index] or {}
-		table.insert(platformsindexes[index],platforms[ent])
+		if index then
+			platformsindexes[index] = platformsindexes[index] or {}
+			table.insert(platformsindexes[index],platforms[ent])
+		end
 			
 		platformstracks[CentreTrackNode.path.id] = platformstracks[CentreTrackNode.path.id] or {}
-		local i = table.insert(platformstracks[CentreTrackNode.path.id],platforms[ent])
+		table.insert(platformstracks[CentreTrackNode.path.id],platforms[ent])
 	end
 		
 	GenerateRoutes()
