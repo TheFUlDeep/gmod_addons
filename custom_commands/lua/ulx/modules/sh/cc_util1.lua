@@ -1403,7 +1403,7 @@ if SERVER then
 		if table.Count(udochkitbl) < 1 then return end
 		for k,v in pairs(udochkitbl) do
 			for k1,v1 in pairs(ents.FindByClass(v[1]:GetClass())) do
-				if v1 == v[1] then v1:SetPos(v[2]) v1:SetAngles(v[3]) end
+				if IsValid(v1)and v1 == v[1] and not v1:IsPlayerHolding() and not IsValid(v1.Coupled) then v1:SetPos(v[2]) v1:SetAngles(v[3]) end
 			end
 		end
 	end
