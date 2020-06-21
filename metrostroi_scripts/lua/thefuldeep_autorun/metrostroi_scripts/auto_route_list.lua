@@ -1,4 +1,3 @@
---TODO узнать, почему на имаджина не генерируется восьмая линия
 --TODO при смене маршрутника не учитывается платформа, и добавляется время интервала (так быть не должно)
 --TODO если между составом и его начальной станцией есть еще станции, то надо учитывать, что на эти станции может быть выдано расписание другим поездам
 --и если оно выдано, то надо его прибавлять тому паравозу, который проезжает эти станции
@@ -672,7 +671,7 @@ local function RouteIDByStatsionAndPath(starts,ends,path)
 		local StartNum,EndNum
 		for num,station in pairs(v) do--station[1] - index, station[2] - path
 			if not istable(station) then continue end
-			if station[2] ~= path then continue end
+			if station[3] ~= path then continue end
 			if station[1] == starts then StartNum = num end
 			if station[1] == ends then EndNum = num end
 		end
@@ -716,6 +715,9 @@ local function GetPlatformByIndex(index)
 	end
 end
 
+local trackids={}
+local platformstracks={}
+local platformsindexes={}
 local function GenerateRoutes()
 	if not Metrostroi or not Metrostroi.StationConfigurations then return end
 	
@@ -753,25 +755,59 @@ local function GenerateRoutes()
 	
 	for index,stationindex in pairs(SortedNames) do
 		for forw = 1,2 do
-			for i = 1,2 do
+			for track,platforms in pairs(platformstracks or {}) do
+			for _,platformparams in pairs(platforms or {}) do
+				if tonumber(platformparams[4].StationIndex) ~= tonumber(stationindex) then continue end
 				local Line = tostring(stationindex):sub(1,1)
-				Routes[Line.."-"..i.."-"..forw] = Routes[Line.."-"..i.."-"..forw] or  {}-- line-path-forw
-				Routes[Line.."-"..i.."-"..forw][index] = {stationindex,i}
+				Routes[Line.."-"..track.."-"..forw] = Routes[Line.."-"..track.."-"..forw] or  {}-- line-path-forw
+				Routes[Line.."-"..track.."-"..forw][index] = {stationindex,platformparams[4].PlatformIndex,track}
+			end
 			end
 		end
 	end
 	
-	for RouteName,v in pairs(Routes) do
-		if RouteName:sub(-1,-1) == "2" then Routes[RouteName] = table.Reverse(v) end
-	end
-	
+	--[[local sortedindexes={}
+	for routeid,tbl in pairs(Routes) do
+		sortedindexes[routeid]={}
+		for i,params in pairs(tbl)do
+			sortedindexes[routeid][i]=i
+		end
+		table.sort(sortedindexes[routeid],function(a,b) return a < b end)
+	end]]
 	--PrintTable(Routes)
+	
+	for routeid,tbl in pairs(Routes) do
+		local counter = 1
+		local mini,maxi
+		for i,params in pairs(tbl)do
+			if not mini or i < mini then mini = i end
+			if not maxi or i > maxi then maxi = i end
+		end
+		
+		for i,params in pairs(tbl)do
+			local counter = 1
+			for i = mini,maxi do
+				if not tbl[i] then continue end
+				--print(counter,i)
+				if i > counter then 
+					tbl[counter]=tbl[i]
+					tbl[i]=nil
+					--print("moved",i,"to",counter)
+				end
+				counter = counter + 1
+			end
+		end
+		
+		if routeid:sub(-1,-1) == "2" then Routes[routeid] = table.Reverse(tbl) end
+	end
 	
 
 	local data = {}
 	data.Configuration = {{0,0,0,"1:00"}} -- интервал в одну минуту
 	
 	data.Routes = Routes
+	
+	--PrintTable(Routes)
 	
 	Metrostroi.LoadSchedulesData(data)
 	
@@ -934,36 +970,38 @@ local function GetLastStation(self)
 	end
 end
 
-local TrackIDPaths = {}
-
-timer.Simple(0,function()
-	for _,Platform in pairs(ents.FindByClass("gmod_track_platform")) do
-		if not IsValid(Platform) or not Platform.PlatformEnd or not Platform.PlatformStart or not Platform.PlatformIndex then continue end
+local mathabs = math.abs
+local platforms={}
+local function init()
+	for _,ent in pairs(ents.FindByClass("gmod_track_platform")) do			
+		if not IsValid(ent) or ent:GetClass() ~= "gmod_track_platform" or not ent.PlatformEnd or not ent.PlatformStart or not ent.PlatformIndex then continue end
+		local PlatformCentre = LerpVector(0.5, ent.PlatformEnd, ent.PlatformStart)
+		local CentreTrackNode = Metrostroi.GetPositionOnTrack(PlatformCentre)[1]
+		local StartTrackNode = Metrostroi.GetPositionOnTrack(ent.PlatformStart)[1]
+		local EndTrackNode = Metrostroi.GetPositionOnTrack(ent.PlatformEnd)[1]		
+		if not CentreTrackNode or not StartTrackNode or not EndTrackNode then print("no") return end
+			
+		trackids[CentreTrackNode.path.id]=true
 		
-		local track = Metrostroi.GetPositionOnTrack(LerpVector(0.5, Platform.PlatformEnd, Platform.PlatformStart))
-		if not track[1] or not track[1].path or not track[1].path.id then continue end
-		
-		TrackIDPaths[track[1].path.id] = Platform.PlatformIndex
+		local halflen = (mathabs(StartTrackNode.x - EndTrackNode.x) + 10)/2
+		platforms[ent]={CentreTrackNode,StartTrackNode,EndTrackNode,ent,halflen}
+		local index = tonumber(ent.StationIndex or "")
+		if not index then return end
+		platformsindexes[index] = platformsindexes[index] or {}
+		table.insert(platformsindexes[index],platforms[ent])
+			
+		platformstracks[CentreTrackNode.path.id] = platformstracks[CentreTrackNode.path.id] or {}
+		local i = table.insert(platformstracks[CentreTrackNode.path.id],platforms[ent])
 	end
-	
+		
 	GenerateRoutes()
-end)
+end
+
+timer.Simple(0,init)
 
 hook.Add("PlayerInitialSpawn","metrostroi_schedules_generate for metrostroi_auto_route_lists",function()
 	hook.Remove("PlayerInitialSpawn","metrostroi_schedules_generate for metrostroi_auto_route_lists")
-	timer.Simple(5,function()
-	
-		for _,Platform in pairs(ents.FindByClass("gmod_track_platform")) do
-			if not IsValid(Platform) or not Platform.PlatformEnd or not Platform.PlatformStart or not Platform.PlatformIndex then continue end
-			
-			local track = Metrostroi.GetPositionOnTrack(LerpVector(0.5, Platform.PlatformEnd, Platform.PlatformStart))
-			if not track[1] or not track[1].path or not track[1].path.id then continue end
-			
-			TrackIDPaths[track[1].path.id] = Platform.PlatformIndex
-		end
-	
-		GenerateRoutes()
-	end)
+	timer.Simple(5,init)
 end)
 
 --[[
@@ -971,35 +1009,13 @@ end)
 	При continue отправлять водителям пустой стринг
 ]]
 
-
-local platforms={}
-local platformsindexes={}
-hook.Add("PlayerInitialSpawn","Save platforms for auto_route_list",function()
-	hook.Remove("PlayerInitialSpawn","Save platforms for auto_route_list")
-	for _,ent in pairs(ents.FindByClass("gmod_track_platform")) do
-		if not IsValid(ent) or ent:GetClass() ~= "gmod_track_platform" then return end
-		local PlatformCentre = LerpVector(0.5, ent.PlatformEnd, ent.PlatformStart)
-		local CentreTrackNode = Metrostroi.GetPositionOnTrack(PlatformCentre)[1]
-		local StartTrackNode = Metrostroi.GetPositionOnTrack(ent.PlatformStart)[1]
-		local EndTrackNode = Metrostroi.GetPositionOnTrack(ent.PlatformEnd)[1]		
-		if not CentreTrackNode or not StartTrackNode or not EndTrackNode then return end
-		
-		platforms[ent]={CentreTrackNode,StartTrackNode,EndTrackNode}
-		local index = tonumber(ent.StationIndex or "")
-		if not index then return end
-		platformsindexes[index] = platformsindexes[index] or {}
-		table.insert(platformsindexes[index],platforms[ent])
-	end
-end)
-
-local mathabs = math.abs
 local function CheckAlreadyOnStation(track,fisrstationindex)
 	if not track then return end
 	for _,platformparams in pairs(platformsindexes[fisrstationindex] or {})do
 		--платформа должна быть на том же треке
 		if platformparams[1].path.id ~= track.path.id then continue end
 		--если расстояние от паравоза до центра станции меньше половины длины, значит паравоз на станции
-		if mathabs(track.x - platformparams[1].x) < (mathabs(platformparams[2].x - platformparams[3].x) + 10)/2 then
+		if mathabs(track.x - platformparams[1].x) < platformparams[5] then
 			return 0
 		else
 			--считаю время прибытия на станцию
@@ -1012,7 +1028,7 @@ local function CheckAlreadyOnStation(track,fisrstationindex)
 	end
 end
 
-timer.Create("Update/Set Route list",10,0,function()
+timer.Create("Update/Set Route list",1,0,function()
 	--расписание присваивается поезду. Если игрок в составе, то дать ему это расписание, иначе отнять
 	if not Metrostroi or not Metrostroi.TrainClasses then return end
 	for _,trainclass in pairs(Metrostroi.TrainClasses) do
@@ -1030,8 +1046,7 @@ timer.Create("Update/Set Route list",10,0,function()
 			
 			local track = Metrostroi.GetPositionOnTrack(wag:GetPos())[1]
 			local TrackID = track and track.path.id
-			if not TrackID or not TrackIDPaths[TrackID] then --[[metrostroi_route_list.list = nil]] --[[print("continue3",TrackID)]] continue end
-			TrackID = TrackIDPaths[TrackID]
+			if not TrackID then --[[metrostroi_route_list.list = nil]] --[[print("continue3",TrackID)]] continue end
 			
 			if not metrostroi_route_list.list -- если маршрутника никогда не было, то он выдастся при настройке информатора. Если же он уже есть, то поменяется только при движении и при ненулевом реверсе
 			or (TrackID ~= metrostroi_route_list.Track 
