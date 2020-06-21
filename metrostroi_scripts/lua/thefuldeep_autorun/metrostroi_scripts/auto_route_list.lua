@@ -979,7 +979,7 @@ local function init()
 		local CentreTrackNode = Metrostroi.GetPositionOnTrack(PlatformCentre)[1]
 		local StartTrackNode = Metrostroi.GetPositionOnTrack(ent.PlatformStart)[1]
 		local EndTrackNode = Metrostroi.GetPositionOnTrack(ent.PlatformEnd)[1]		
-		if not CentreTrackNode or not StartTrackNode or not EndTrackNode then print("no") continue end
+		if not CentreTrackNode or not StartTrackNode or not EndTrackNode then continue end
 			
 		trackids[CentreTrackNode.path.id]=true
 		
