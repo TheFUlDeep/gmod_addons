@@ -979,14 +979,14 @@ local function init()
 		local CentreTrackNode = Metrostroi.GetPositionOnTrack(PlatformCentre)[1]
 		local StartTrackNode = Metrostroi.GetPositionOnTrack(ent.PlatformStart)[1]
 		local EndTrackNode = Metrostroi.GetPositionOnTrack(ent.PlatformEnd)[1]		
-		if not CentreTrackNode or not StartTrackNode or not EndTrackNode then print("no") return end
+		if not CentreTrackNode or not StartTrackNode or not EndTrackNode then print("no") continue end
 			
 		trackids[CentreTrackNode.path.id]=true
 		
 		local halflen = (mathabs(StartTrackNode.x - EndTrackNode.x) + 10)/2
 		platforms[ent]={CentreTrackNode,StartTrackNode,EndTrackNode,ent,halflen}
 		local index = tonumber(ent.StationIndex or "")
-		if not index then return end
+		if not index then continue end
 		platformsindexes[index] = platformsindexes[index] or {}
 		table.insert(platformsindexes[index],platforms[ent])
 			
