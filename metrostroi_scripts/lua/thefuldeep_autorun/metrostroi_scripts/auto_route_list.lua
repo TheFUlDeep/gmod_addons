@@ -1,18 +1,7 @@
-if 1 then return end
---пока что отключил, потому что иногда может очень сильно нагрузать из-за просчета травелтайма
 --TODO узнать, почему на имаджина не генерируется восьмая линия
 --TODO при смене маршрутника не учитывается платформа, и добавляется время интервала (так быть не должно)
-
---[[============================= string.lower ДЛЯ РУССКИХ СИМВОЛОВ ==========================]]
-local BIGRUS = {"А","Б","В","Г","Д","Е","Ё","Ж","З","И","Й","К","Л","М","Н","О","П","Р","С","Т","У","Ф","Х","Ц","Ч","Ш","Щ","Ъ","Ы","Ь","Э","Ю","Я"}
-local smallrus = {"а","б","в","г","д","е","ё","ж","з","и","й","к","л","м","н","о","п","р","с","т","у","ф","х","ц","ч","ш","щ","ъ","ы","ь","э","ю","я"}
-
-local function bigrustosmall(str)
-	for i,letter in pairs(BIGRUS) do
-		str = str:gsub(BIGRUS[i],smallrus[i])
-	end
-	return string.lower(str)
-end
+--TODO если между составом и его начальной станцией есть еще станции, то надо учитывать, что на эти станции может быть выдано расписание другим поездам
+--и если оно выдано, то надо его прибавлять тому паравозу, который проезжает эти станции
 
 --КЛИЕНТ - отрисовка маршрутников из гитхаба https://github.com/TheFUlDeep/gmod_metrostroi_routes_from_google_sheets
 if CLIENT then	
@@ -537,58 +526,7 @@ local function timeToSec(str)
 	return min*60+sec,min,sec
 end
 
-local function prepareRouteData(routeData,name,ply)
-	-- Prepare general route information
-	routeData.Duration = 0
-	routeData.Name = name
-	-- Fix up every station
-	for i,stationID in pairs(routeData) do
-		if not tonumber(i) then continue end --мое
-		routeData[i].ID = i
-		routeData[i].TimeOffset = routeData.Duration
-		if routeData[i+1] then
-			if not Metrostroi.Stations[routeData[i][1]]						then print(Format("No station %d",routeData[i][1])) return end
-			if not Metrostroi.Stations[routeData[i][1]][routeData[i][2]]	then print(Format("No platform %d for station %d",routeData[i][2],routeData[i][1])) return end
-			if not Metrostroi.Stations[routeData[i+1][1]]					then print(Format("No station %d",routeData[i+1][1])) return end
-			if not Metrostroi.Stations[routeData[i+1][1]][routeData[i][2]]	then print(Format("No platform %d for station %d",routeData[i+1][2],routeData[i+1][1])) return end
-
-			-- Get nodes
-			local start_node =	Metrostroi.Stations[routeData[i  ][1]][routeData[i  ][2]].node_end
-			local end_node =	Metrostroi.Stations[routeData[i+1][1]][routeData[i+1][2]].node_end
-			if false and start_node.path ~= end_node.path then	--тут проверка на трэк, возможно ее стоит будет врубить
-				print(Format("Platform %d for station %d: path %d; Platform %d for station %d: path %d",
-					routeData[i  ][2],routeData[i  ][1],start_node.path.id,
-					routeData[i+1][2],routeData[i+1][1],end_node.path.id))
-				return
-			end
-
-			-- Calculate travel time between two nodes
-			local travelTime,travelDistance = Metrostroi.GetTravelTime(start_node,end_node)
-			-- Add time for startup and slowdown
-			travelTime = travelTime + 25
-
-			-- Remember stats
-			routeData.Duration = routeData.Duration + travelTime
-			routeData[i].TravelTime = travelTime
-			routeData[i].TravelDistance = travelDistance
-
-			-- Print debug information
-			print(Format("\t\t[%03d-%d]->[%03d-%d]  %02d:%02d min  %4.0f m  %4.1f km/h",
-				routeData[i][1],routeData[i][2],
-				routeData[i+1][1],routeData[i+1][2],
-				math.floor(travelTime/60),math.floor(travelTime)%60,travelDistance,(travelDistance/travelTime)*3.6))
-		else
-			routeData.LastID = i
-			routeData.LastStation = routeData[i][1]
-		end
-	end
-
-	-- Add a quick lookup
-	routeData.Lookup = {}
-	for i,_ in ipairs(routeData) do
-		routeData.Lookup[routeData[i][1]] = routeData[i]
-	end
-end
+--тут была функция prepareRouteData
 
 local function SendChatMessageOrTbl(ply,IsChatMessage,str)
 	net.Start("Metrostroi Routes From Google Sheets")
@@ -644,7 +582,8 @@ function Metrostroi.GenerateSchedule(routeID,starts,ends,path,AlreadyOnStation)
 	if not fen then print("Metrostroi: Warning! Station "..ends.." not found") en = #Metrostroi.ScheduleRoutes[routeID] end
 
 	-- Time padding (extra time before schedule starts, wait time between trains)
-	local paddingTime = AlreadyOnStation and 30 or 90
+	local paddingTime = isnumber(AlreadyOnStation) and AlreadyOnStation or 60
+	paddingTime = paddingTime + 30
 	-- Current server time
 	local serverTime = Metrostroi.ServerTime()/60
 
@@ -835,6 +774,10 @@ local function GenerateRoutes()
 	data.Routes = Routes
 	
 	Metrostroi.LoadSchedulesData(data)
+	
+	--номер линии, номер пути, направление (1 или 2) = {индекс станции, номер пути}
+	--data.Routes.5-1-1.1 - индекс станции на пятой линии, первом пути, первом направлении
+	--data.Routes.5-1-1.2 - индекс пути на пятой линии, первом пути, первом направлении
 end
 
 concommand.Add("metrostroi_schedules_generate",GenerateRoutes)
@@ -882,6 +825,8 @@ local function GetLastStation(self)
 			Station = Line and (not Path and Line[self:GetNW2Int("ASNP:LastStation",0)] or Path and Line[self:GetNW2Int("ASNP:FirstStation",0)]) or nil
 			if Station then Station = Station[1] or nil end
 			--if Station and (not tonumber(Station) or not Line.Loop and (Station == Line[#Line][1] or Station == Line[1][1])) then Station = nil end
+			Station = self:GetClass():find("760",1,true) and GetStationIndexByName(self:GetNW2String("BMCISLast"..self:GetNW2Int("BMCISLastStationEntered",-1),"")) or Station
+			
 			if not Station then
 				local Line = Selected and Selected[self:GetNW2Int("RRI:Line",0)] or nil
 				Station = Line and Line[self:GetNW2Int("RRI:LastStation",0)] or nil
@@ -1021,17 +966,52 @@ hook.Add("PlayerInitialSpawn","metrostroi_schedules_generate for metrostroi_auto
 	end)
 end)
 
-local function GetPath(vec)
-	local Track = Metrostroi.GetPositionOnTrack(vec)
-	if not Track[1] or not Track[1].path or not Track[1].path.id then return end
-	
-	return Track[1].path.id
-end
-
 --[[
 Что можно сделать
 	При continue отправлять водителям пустой стринг
 ]]
+
+
+local platforms={}
+local platformsindexes={}
+hook.Add("PlayerInitialSpawn","Save platforms for auto_route_list",function()
+	hook.Remove("PlayerInitialSpawn","Save platforms for auto_route_list")
+	for _,ent in pairs(ents.FindByClass("gmod_track_platform")) do
+		if not IsValid(ent) or ent:GetClass() ~= "gmod_track_platform" then return end
+		local PlatformCentre = LerpVector(0.5, ent.PlatformEnd, ent.PlatformStart)
+		local CentreTrackNode = Metrostroi.GetPositionOnTrack(PlatformCentre)[1]
+		local StartTrackNode = Metrostroi.GetPositionOnTrack(ent.PlatformStart)[1]
+		local EndTrackNode = Metrostroi.GetPositionOnTrack(ent.PlatformEnd)[1]		
+		if not CentreTrackNode or not StartTrackNode or not EndTrackNode then return end
+		
+		platforms[ent]={CentreTrackNode,StartTrackNode,EndTrackNode}
+		local index = tonumber(ent.StationIndex or "")
+		if not index then return end
+		platformsindexes[index] = platformsindexes[index] or {}
+		table.insert(platformsindexes[index],platforms[ent])
+	end
+end)
+
+local mathabs = math.abs
+local function CheckAlreadyOnStation(track,fisrstationindex)
+	if not track then return end
+	for _,platformparams in pairs(platformsindexes[fisrstationindex] or {})do
+		--платформа должна быть на том же треке
+		if platformparams[1].path.id ~= track.path.id then continue end
+		--если расстояние от паравоза до центра станции меньше половины длины, значит паравоз на станции
+		if mathabs(track.x - platformparams[1].x) < (mathabs(platformparams[2].x - platformparams[3].x) + 10)/2 then
+			return 0
+		else
+			--считаю время прибытия на станцию
+			if track.x < platformparams[1].x then
+				return Metrostroi.GetTravelTime(track.node1,platformparams[1].node1)--возможно стоит немного увеличить это число
+			else
+				return Metrostroi.GetTravelTime(platformparams[1].node1,track.node1)--возможно стоит немного увеличить это число
+			end
+		end
+	end
+end
+
 timer.Create("Update/Set Route list",10,0,function()
 	--расписание присваивается поезду. Если игрок в составе, то дать ему это расписание, иначе отнять
 	if not Metrostroi or not Metrostroi.TrainClasses then return end
@@ -1048,7 +1028,8 @@ timer.Create("Update/Set Route list",10,0,function()
 			LastStation = tonumber(LastStation)
 			if not FirstStation or not LastStation then --[[metrostroi_route_list.list = nil]] --[[print("continue2",FirstStation,LastStation)]] continue end
 			
-			local TrackID = GetPath(wag:GetPos())
+			local track = Metrostroi.GetPositionOnTrack(wag:GetPos())[1]
+			local TrackID = track and track.path.id
 			if not TrackID or not TrackIDPaths[TrackID] then --[[metrostroi_route_list.list = nil]] --[[print("continue3",TrackID)]] continue end
 			TrackID = TrackIDPaths[TrackID]
 			
@@ -1066,7 +1047,7 @@ timer.Create("Update/Set Route list",10,0,function()
 				metrostroi_route_list.FirstStation = FirstStation
 				metrostroi_route_list.LastStation = LastStation
 				
-				metrostroi_route_list.list = GenerateSchedule1(FirstStation,LastStation,TrackID, not metrostroi_route_list.list)
+				metrostroi_route_list.list = GenerateSchedule1(FirstStation,LastStation,TrackID, CheckAlreadyOnStation(track,FirstStation))
 				
 			end
 			
