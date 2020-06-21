@@ -342,6 +342,14 @@ timer.Create("Disconnect udochka if train has voltage by third rail",2,0,functio
 		end
 	end
 end)
+
+timer.Create("Reset udochki's poses if noone holding them",10,0,function()
+	for _,params in pairs(uposes)do
+		local ent = params[1]
+		if IsValid(ent) and (ent:IsPlayerHolding() or IsValid(ent.Coupled)) then return end
+	end
+	game.ConsoleCommand("ulx resetudochki\n")
+end)
 	
 	
  concommand.Add(
