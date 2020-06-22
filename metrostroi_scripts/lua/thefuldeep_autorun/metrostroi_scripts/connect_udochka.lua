@@ -107,18 +107,18 @@ local function connect(ply)
 	--прохожусь по всем удочкам и ищу ту, которая справа от вагона и самая ближняя
 	local mindist,nearestudochka
 	
-	
+	local additional_len = 500
 	local curwagang = wag:GetAngles()
 	local lastwag = wag.WagonList and wag.WagonList[#wag.WagonList] or wag
 	local lastwagang = lastwag:GetAngles()
 	local sameang=mathabs(lastwagang[1]-curwagang[1]) < 5 and mathabs(lastwagang[2]-curwagang[2]) < 5 and mathabs(lastwagang[3]-curwagang[3]) < 5
-	local lastwagminlocal = lastwag:OBBMins()
+	local lastwagminlocal = lastwag:OBBMins()+Vector(-additional_len,0,0)
 	local lastwagmin = lastwag:LocalToWorld(lastwagminlocal)
-	local lastwagmaxlocal = lastwag:OBBMaxs()
+	local lastwagmaxlocal = lastwag:OBBMaxs()+Vector(additional_len,0,0)
 	local lastwagmax = lastwag:LocalToWorld(lastwagmaxlocal)
-	local curwagminlocal = wag:OBBMins()
+	local curwagminlocal = wag:OBBMins()+Vector(-additional_len,0,0)
 	local curwagmin = wag:LocalToWorld(curwagminlocal)
-	local curwagmaxlocal = wag:OBBMaxs()
+	local curwagmaxlocal = wag:OBBMaxs()+Vector(additional_len,0,0)
 	local curwagmax= wag:LocalToWorld(curwagmaxlocal)
 	local obbmin,obbmax
 	local obbang = wag:GetAngles()
@@ -141,7 +141,6 @@ local function connect(ply)
 			obbmax=curwagmin
 		end
 	end
-	
 
 	--if 1 then return end
 	--перпендикуляр к составу, проходящий через удочку (+Vector(0,0,100)) должен пересекать плоскость вагона и расстояние от удочки до точки пересечения должно быть меньше 1000
