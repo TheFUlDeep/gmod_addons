@@ -1,4 +1,6 @@
-//Increase this if the menu shows on map change.
+if 1 then return end
+
+--Increase this if the menu shows on map change.
 local DelayTime = 5
 hook.Add("ShutDown","DelayChangeCrash", function() 
 	DelayTime = 60
@@ -8,19 +10,19 @@ end)
 local secondip
 if GetHostName():find("1") then 
 	secondip = ""..(file.Read("web_server_ip.txt") or "127.0.0.1")..":27017"
-elseif GetHostName():find("2")
+elseif GetHostName():find("2") then
 	secondip = ""..(file.Read("web_server_ip.txt") or "127.0.0.1")..":27018"
 else
 	secondip = ""..(file.Read("web_server_ip.txt") or "127.0.0.1")..":27016"
 end
 
-//What's the title?
+--What's the title?
 local Title = GetHostName()
 
-//What is the estimated time in seconds it takes for the server to restart after a crash?
+--What is the estimated time in seconds it takes for the server to restart after a crash?
 local ServerRestartTime = 60 + DelayTime
 
-//What message do you want to display when the server has crashed?
+--What message do you want to display when the server has crashed?
 local Message = "Возможно это краш, рестарт или проблема с вашим подключением к сети.\nПодождите "..ServerRestartTime.. " секунд перед переподключением.\nИли выйти в главное меню."
 
 local BackgroundColor = Color(200,200,200)
@@ -32,22 +34,22 @@ local TitleTextColor = Color(236, 240, 241)
 local MessageTextColor = Color(236, 240, 241)
 local ButtonTextColor = Color(64,64,64)
 
-//Insert the YouTube URL if you want music. Make sure you put it in quotes.
-//Leave it at nil if you don't want any music.
+--Insert the YouTube URL if you want music. Make sure you put it in quotes.
+--Leave it at nil if you don't want any music.
 local YouTubeURL = nil
 
-//Server buttons(Limit 3).
+--Server buttons(Limit 3).
 local ServerNameButtons = {
 	"Зайти на другой сервер"
 }
 
-//Make sure it corresponds to the server names above!
-//You can also do websites. Have it start with http://
+--Make sure it corresponds to the server names above!
+--You can also do websites. Have it start with http:--
 local ServerIPButtons = {
 	secondip
 }
 
-//Delete the code inside the brackets of both the ServerNameButtons and ServerIPButtons if you don't need server buttons.
+--Delete the code inside the brackets of both the ServerNameButtons and ServerIPButtons if you don't need server buttons.
 
 local CM = {}
 
@@ -55,7 +57,7 @@ if SERVER then
 	util.AddNetworkString("CM.Pong")
 
 	function CM.Ping(ply, cmd, args)
-		if !ply.LastPing or ply.LastPing + 5 < CurTime() then
+		if not ply.LastPing or ply.LastPing + 5 < CurTime() then
 			ply.LastPing = CurTime()
 			
 			net.Start("CM.Pong")
@@ -83,11 +85,11 @@ CM.CanSpawn = false
 CM.SpawnTime = 0
 
 function CM.CrashDetect()
-	if !IsValid(LocalPlayer()) or !CM.CanSpawn or CM.Crashed or CM.SpawnTime > CurTime() or CM.LastMoveTime > CurTime() then 
+	if not IsValid(LocalPlayer()) or not CM.CanSpawn or CM.Crashed or CM.SpawnTime > CurTime() or CM.LastMoveTime > CurTime() then 
 		return 
 	end
 
-	if !LocalPlayer():IsFrozen() and !LocalPlayer():InVehicle() then
+	if not LocalPlayer():IsFrozen() and not LocalPlayer():InVehicle() then
 		return true
 	end
 end
@@ -207,7 +209,7 @@ function CM.CrashMenu()
 	CMT:SetTextColor(MessageTextColor)
 	
 	if CMM:GetAlpha() == 255 then
-		if YouTubeURL != nil then
+		if YouTubeURL ~= nil then
 			Song = vgui.Create("HTML")
 			Song:SetPos(0,0)
 			Song:SetSize(0, 0)
@@ -217,7 +219,7 @@ function CM.CrashMenu()
 	
 	local bNum
 	
-	if ServerNameButtons != nil then
+	if ServerNameButtons ~= nil then
 		bNum = #ServerNameButtons
 	else
 		bNum = 0
@@ -290,7 +292,7 @@ function CM.CrashMenu()
 	
 	hook.Add("Think", "CrashRecover", function()
 		for k, v in ipairs(player.GetAll()) do
-			if v.CrashedPing != v:Ping() then
+			if v.CrashedPing ~= v:Ping() then
 				hook.Remove("Think", "CrashRecover")
 				
 				CM.Crashed = false
@@ -336,7 +338,7 @@ function CM.CrashMenu()
 end
 
 function CM.Think()
-	if !CM.Crashed and CM.CrashDetect() then
+	if not CM.Crashed and CM.CrashDetect() then
 		RunConsoleCommand("checkping")
 		
 		if CM.LastMoveTime < CurTime() then

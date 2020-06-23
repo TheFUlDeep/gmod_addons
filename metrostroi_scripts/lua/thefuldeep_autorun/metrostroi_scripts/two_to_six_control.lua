@@ -1,7 +1,7 @@
 if SERVER or CLIENT then return end
 --наверное этот скрипт не нужен
-
-timer.Create("CheckForTwoToSix",2,0,function()
+--TODO
+--[[timer.Create("CheckForTwoToSix",2,0,function()
 	local ply = LocalPlayer()
 	if not CPPI or not ply:InVehicle() then return end
 	
@@ -25,4 +25,4 @@ timer.Create("CheckForTwoToSix",2,0,function()
 		chat.AddText(Color(200,135,0), "На твоем составе нельзя здесь кататься.")
 		--и тут функция удаления состава (я пока хз, как это сделать. Можно отправить нетворкстринг на сервер, и ентити удалится с серверной части)
 	end
-end
+end]]
