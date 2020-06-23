@@ -170,17 +170,17 @@ local function CompareTables(tbl1,tbl2)
 	return true
 end
 
-local function AvtooborotThink()
-	for _,tbl in pairs(ConditionsTbls) do
-		if not tbl[6] and CheckOccupationTbl(tbl[2],true) and CheckOccupationTbl(tbl[3]) and CheckForOpened(tbl[4],true) and CheckForOpened(tbl[5]) then
-			tbl[8] = 0
-			if tbl[7] then continue end--tbl[7] означает, что этот автооборот уже сработал
-			
+local function CheckCondition(tbl,dothings)
+	if not tbl[6] and CheckOccupationTbl(tbl[2],true) and CheckOccupationTbl(tbl[3]) and CheckForOpened(tbl[4],true) and CheckForOpened(tbl[5]) then
+		tbl[8] = 0
+		if tbl[7] then return end--tbl[7] означает, что этот автооборот уже сработал
+		
+		if dothings then
 			--если есть несколько условий для открытия одного маршрута, то всем условиям сообщяю, что маршрут открыт
 			for _,t in pairs(ConditionsTbls) do
 				if CompareTables(t[1], tbl[1]) then t[7] = true end
 			end
-			
+				
 			local comms = tbl[1]
 			for _,comm in pairs(comms) do
 				for _,sig in pairs(NamesSignals) do
@@ -189,13 +189,24 @@ local function AvtooborotThink()
 				ChatPrintAll(comm)
 			end
 		else
-			tbl[8] = tbl[8] + 1--возможно из-за этого будут приколы (баги)
-			if tbl[8] == 2 then tbl[7] = false tbl[8] = 0 end
+			return true
 		end
+	else
+		tbl[8] = tbl[8] + 1--возможно из-за этого будут приколы (баги)
+		if tbl[8] == 2 then tbl[7] = false tbl[8] = 0 end
 	end
 end
 
-timer.Create("Avtooborot Think",5,0,AvtooborotThink)
+local timerdelay = 5
+local opendelay = timerdelay - 0.5
+
+local function AvtooborotThink()
+	for _,tbl in pairs(ConditionsTbls) do
+		if CheckCondition(tbl)then timer.Simple(opendelay,function()CheckCondition(tbl,true)end)end
+	end
+end
+
+timer.Create("Avtooborot Think",timerdelay,0,AvtooborotThink)
 
 
 --эти две строчки, чтобы я могу перезапускать скрипт
