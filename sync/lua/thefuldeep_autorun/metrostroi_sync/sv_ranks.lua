@@ -61,7 +61,8 @@ if SERVER then
 		GetRankFromWebServer(WebServerUrl,Player(data.userid):SteamID())
 	end)
 
-	local function CheckIfBanned(SteamID)
+
+	local function CheckIfBanned(SteamID,parent)
 		http.Fetch(
 			WebServerUrl.."bans/?SteamID="..SteamID,
 			function(body)
@@ -81,7 +82,7 @@ if SERVER then
 				end]]
 			end
 		)
-		if FamilySteamIDs[SteamID] then CheckIfBanned(FamilySteamIDs[SteamID]) end
+		if not parent and FamilySteamIDs[SteamID] then CheckIfBanned(FamilySteamIDs[SteamID],true) end
 	end
 	
 	local BansTBL = {}
@@ -99,8 +100,8 @@ if SERVER then
 	GetBansFromWebServer()
 	timer.Create("UpdateBansTBL",30,0,GetBansFromWebServer)
 	
-	
-	local function CheckIfLocalBanned(SteamID)
+
+	local function CheckIfLocalBanned(SteamID,parent)
 		if table.Count(BansTBL) < 1 then return end
 		for _k,_v in pairs(BansTBL) do
 			for k,v in pairs(_v) do
@@ -116,7 +117,7 @@ if SERVER then
 				end
 			end
 		end
-		if FamilySteamIDs[SteamID] then return CheckIfLocalBanned(FamilySteamIDs[SteamID]) end
+		if not parent and FamilySteamIDs[SteamID] then return CheckIfLocalBanned(FamilySteamIDs[SteamID],true) end
 	end
 	
 	hook.Add("PlayerInitialSpawn","CheckIfBannedInitialSpawn",function(ply)
@@ -144,16 +145,15 @@ if SERVER then
 			function(body)
 				body = body and util.JSONToTable(body)
 				local parentsteamid = body and body.response and body.response.lender_steamid
-				if parentsteamid and parentsteamid ~= 0 and util.SteamIDFrom64(parentsteamid) ~= "STEAM_0:0:0" then
+				if parentsteamid and parentsteamid ~= 0 and parentsteamid ~= "0" and util.SteamIDFrom64(parentsteamid) ~= "STEAM_0:0:0" then
 					FamilySteamIDs[SteamID] = util.SteamIDFrom64(parentsteamid)
 					print(SteamID.." зашел через семейный доступ. Родитель "..FamilySteamIDs[SteamID])
 				else
 					FamilySteamIDs[SteamID] = false
-					asd(SteamID)
 				end
+				asd(SteamID)
 			end)
 		else
-			if FamilySteamIDs[SteamID] then print(SteamID.." зашел через семейный доступ. Родитель "..FamilySteamIDs[SteamID]) end
 			asd(SteamID)
 		end
 	end)
