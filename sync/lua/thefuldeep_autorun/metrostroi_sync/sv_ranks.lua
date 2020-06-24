@@ -120,22 +120,21 @@ if SERVER then
 		if not parent and FamilySteamIDs[SteamID] then return CheckIfLocalBanned(FamilySteamIDs[SteamID],true) end
 	end
 	
+	local function asd2(SteamID)--вынес это в отдельную функцию, так как код повторяется. Не знаю, как ее назвать
+		--TODO если имя изменилось, то запостить его в базу рангов. Каждые 30 секунд пуолчать таблица рангов, чтобы не обращаться к серверу каждый раз при заходе игрока. После поста нового ника принудительно получить всю таблицу рангов
+		local Banned = CheckIfLocalBanned(SteamID)
+		if Banned then game.KickID(SteamID,Banned) return end
+		CheckIfBanned(SteamID)
+	end
+	
 	hook.Add("PlayerInitialSpawn","CheckIfBannedInitialSpawn",function(ply)
 		timer.Simple(1,function()
 			if not IsValid(ply) then return end
 			CheckUserRank(ply)
-			local Banned = CheckIfLocalBanned(ply:SteamID())		-- в этом хуке просто на всякий случай
-			if Banned then game.KickID(ply:SteamID(),Banned) return end
-			CheckIfBanned(ply:SteamID())		-- в этом хуке просто на всякий случай
+			asd2(ply:SteamID())		-- в этом хуке просто на всякий случай
 		end)
 	end)
-	
-	local function asd(SteamID)--вынес это в отдельную функцию, так как код повторяется. Не знаю, как ее назвать
-		--TODO если имя изменилось, то запостить его в базу рангов. Каждые 30 секунд пуолчать таблица рангов, чтобы не обращаться к серверу каждый раз при заходе игрока. После поста нового ника принудительно получить всю таблицу рангов
-		local result = CheckIfLocalBanned(SteamID)
-		if result then return false,result end
-		CheckIfBanned(SteamID)
-	end
+
 
 	hook.Add( "CheckPassword", "SyncBanCheck", function(steamID64,ipAddress,svPassword,clPassword,name)
 		--привходе игрока узнаю, зашел ли он с семейного доступа и сохраняю в таблицу
@@ -151,11 +150,11 @@ if SERVER then
 				else
 					FamilySteamIDs[SteamID] = false
 				end
-				asd(SteamID)
+				asd2(SteamID)
 			end)
 		else
 			if FamilySteamIDs[SteamID] then print(SteamID.." зашел через семейный доступ. Родитель "..FamilySteamIDs[SteamID]) end
-			asd(SteamID)
+			asd2(SteamID)
 		end
 	end)
 	
