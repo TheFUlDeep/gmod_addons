@@ -1,7 +1,5 @@
 if CLIENT then return end
 
---TODO ent:Spawn
-
 local DIST_TO_ENABLE_COLLISION = 200^2
 
 
