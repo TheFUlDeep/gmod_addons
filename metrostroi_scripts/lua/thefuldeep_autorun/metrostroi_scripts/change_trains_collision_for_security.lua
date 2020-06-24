@@ -1,6 +1,6 @@
 if CLIENT then return end
 
-
+--TODO ent:Spawn
 
 local DIST_TO_ENABLE_COLLISION = 200^2
 
@@ -73,7 +73,7 @@ timer.Create("Change couples collision for security",3,0,TimerFunc)
 local classes = {"gmod_subway_","gmod_train_bogey","gmod_train_wheels","gmod_train_couple"}
 
 hook.Add("OnEntityCreated","ChangeTrainsCollisionForSecurity",function(ent)
-    timer.Simple(0,function()
+    --timer.Simple(0,function()
         if IsValid(ent) then 
           local c = ent:GetClass()
           for _,class in pairs(classes) do
@@ -82,12 +82,16 @@ hook.Add("OnEntityCreated","ChangeTrainsCollisionForSecurity",function(ent)
               return
             end
           end
-		  timer.Create("ChangeCouplesCollisionOnSpawn",0.001,1,TimerFunc)--чтобы при спавне целого состава вызвалась только одна функция, а не для каждой новой сцепки
+		  if c == classes[4] then
+			timer.Create("ChangeCouplesCollisionOnSpawn",0.001,1,TimerFunc)--чтобы при спавне целого состава вызвалась только одна функция, а не для каждой новой сцепки
+		  end
         end
-    end)
+    --end)
 end)
 
 timer.Simple(0,function()
+
+
 	local ENT = scripted_ents.GetStored("gmod_train_couple")
 	local ENT = ENT and ENT.t
 	if not ENT then return end
