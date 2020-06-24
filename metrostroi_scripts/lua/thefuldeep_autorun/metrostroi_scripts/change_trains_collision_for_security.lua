@@ -77,7 +77,6 @@ hook.Add("OnEntityCreated","ChangeTrainsCollisionForSecurity",function(ent)
           for _,class in pairs(classes) do
             if c:find(class,1,true) then
               ent:SetCollisionGroup(COLLISION_GROUP_INTERACTIVE_DEBRIS)
-              return
             end
           end
 		  if c == classes[4] then
