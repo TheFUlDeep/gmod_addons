@@ -145,16 +145,14 @@ timer.Simple(0,function()
 		local class = ent:GetClass()
 		
 		local couple1,couple2
-		if class == "gmod_train_couple" then
-			couple1 = ent
-		elseif class == "gmod_train_wheels" then
-			local bogey = ent:GetNW2Entity("TrainBogey")
-			if not IsValid(bogey)then return end
+		if class == "gmod_train_couple" or class == "gmod_train_bogey" then
 			local wag = ent:GetNW2Entity("TrainEntity")
 			if not IsValid(wag) then return end
 			couple1 = wag.FronCouple
 			couple2 = wag.RearCouple
-		elseif class == "gmod_train_bogey" then
+		elseif class == "gmod_train_wheels" then
+			local bogey = ent:GetNW2Entity("TrainBogey")
+			if not IsValid(bogey)then return end
 			local wag = ent:GetNW2Entity("TrainEntity")
 			if not IsValid(wag) then return end
 			couple1 = wag.FronCouple
