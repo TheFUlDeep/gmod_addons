@@ -168,4 +168,7 @@ timer.Simple(0,function()
 		end
 		
 	end)
+	
+	
+	for name,func in pairs(funcs)do hook.Add(EventName,name,func)end
 end)
