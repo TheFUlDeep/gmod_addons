@@ -73,7 +73,7 @@ local classes = {"gmod_subway_","gmod_train_bogey","gmod_train_wheels","gmod_tra
 hook.Add("OnEntityCreated","ChangeTrainsCollisionForSecurity",function(ent)
     --timer.Simple(0,function()
         if IsValid(ent) then 
-		  ent.SpawnTime = os.clock()
+		  --ent.SpawnTime = os.clock()
           local c = ent:GetClass()
           for _,class in pairs(classes) do
             if c:find(class,1,true) then
