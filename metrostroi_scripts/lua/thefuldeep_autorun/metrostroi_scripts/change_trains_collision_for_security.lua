@@ -73,6 +73,7 @@ local classes = {"gmod_subway_","gmod_train_bogey","gmod_train_wheels","gmod_tra
 hook.Add("OnEntityCreated","ChangeTrainsCollisionForSecurity",function(ent)
     --timer.Simple(0,function()
         if IsValid(ent) then 
+		  --ent.SpawnTime = os.clock()
           local c = ent:GetClass()
           for _,class in pairs(classes) do
             if c:find(class,1,true) then
@@ -82,6 +83,11 @@ hook.Add("OnEntityCreated","ChangeTrainsCollisionForSecurity",function(ent)
 		  if c == classes[4] then
 			timer.Create("ChangeCouplesCollisionOnSpawn",0.001,1,TimerFunc)--чтобы при спавне целого состава вызвалась только одна функция, а не для каждой новой сцепки
 		  end
+		  
+		  --TODO если могу определить трек, на котором находится ентити, то найти другие ентити на этом же треке
+		  --и если на этом же треке есть другое ентити со скоростью больше 5, то не спавнить
+		  --(возможно это можно сделать чеез метростроевский хук спавнера)
+		  
         end
     --end)
 end)
@@ -111,5 +117,59 @@ timer.Simple(0,function()
 		--при сцепе тут же отключаю коллизию
 		ChangeCollision(self,COLLISION_GROUP_INTERACTIVE_DEBRIS)		
 		ChangeCollision(ent,COLLISION_GROUP_INTERACTIVE_DEBRIS)	
+	end
+	
+	
+	
+	local EventName = "PhysgunPickup"
+	local hookstbl = hook.GetTable()[EventName] or {}
+	
+	local funcs = {}
+	for name,func in pairs(hookstbl or {})do
+		funcs[name] = func
+		--hook.Add(EventName,name,function()end)
+		hook.Remove(EventName,name)
+	end
+	
+	local tableHasValue = table.HasValue
+	local mclasses = Metrostroi.TrainClasses
+	
+	--задержка в 5 секунд, чтобы сразу же после спавна нельзя было таскать паравоз (так как у сцепок может включитсья коллизия)
+	--[[local delay = 5
+	hook.Add(EventName,"Delay for trains for security",function(ply,ent)
+		if IsValid(ent) and (tableHasValue(classes,ent:GetClass()) or tableHasValue(mclasses,ent:GetClass())) and os.clock() - (ent.SpawnTime or 0) < delay then return false end
+	end)]]
+	
+	hook.Add(EventName,"Block physgun on trains with normal collision",function(ply,ent)
+		if not IsValid(ent) then return end
+		local class = ent:GetClass()
+		
+		local couple1,couple2
+		if class == "gmod_train_couple" or class == "gmod_train_bogey" then
+			local wag = ent:GetNW2Entity("TrainEntity")
+			if not IsValid(wag) then return end
+			couple1 = wag.FronCouple
+			couple2 = wag.RearCouple
+		elseif class == "gmod_train_wheels" then
+			local bogey = ent:GetNW2Entity("TrainBogey")
+			if not IsValid(bogey)then return end
+			local wag = ent:GetNW2Entity("TrainEntity")
+			if not IsValid(wag) then return end
+			couple1 = wag.FronCouple
+			couple2 = wag.RearCouple
+		elseif tableHasValue(mclasses,class)then
+			couple1 = ent.FronCouple
+			couple2 = ent.RearCouple
+		end
+		
+		if IsValid(couple1) and couple1:GetCollisionGroup() == COLLISION_GROUP_NONE 
+			or IsValid(couple2) and couple2:GetCollisionGroup() == COLLISION_GROUP_NONE then 
+				return false 
+		end
+		
+	end)
+	
+	local function IsCoupleHasNormalCollision(couple)
+		return couple:GetCollisionGroup() == COLLISION_GROUP_NONE
 	end
 end)
