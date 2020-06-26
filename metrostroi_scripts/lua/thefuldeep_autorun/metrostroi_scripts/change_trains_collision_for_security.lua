@@ -168,8 +168,4 @@ timer.Simple(0,function()
 		end
 		
 	end)
-	
-	local function IsCoupleHasNormalCollision(couple)
-		return couple:GetCollisionGroup() == COLLISION_GROUP_NONE
-	end
 end)
