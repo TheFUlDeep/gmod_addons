@@ -153,7 +153,7 @@ timer.Simple(0,function()
 		elseif class == "gmod_train_wheels" then
 			local bogey = ent:GetNW2Entity("TrainBogey")
 			if not IsValid(bogey)then return end
-			local wag = ent:GetNW2Entity("TrainEntity")
+			local wag = bogey:GetNW2Entity("TrainEntity")
 			if not IsValid(wag) then return end
 			couple1 = wag.FronCouple
 			couple2 = wag.RearCouple
