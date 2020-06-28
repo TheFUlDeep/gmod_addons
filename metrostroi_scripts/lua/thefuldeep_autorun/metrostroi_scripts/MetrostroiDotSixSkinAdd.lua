@@ -1,2 +1,0 @@
-function MetrostroiDotSixSkinAdd()
-end
