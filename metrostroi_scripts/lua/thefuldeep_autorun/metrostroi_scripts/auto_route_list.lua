@@ -775,13 +775,24 @@ local function GenerateRoutes()
 	end]]
 	--PrintTable(Routes)
 	
+	local tableinsert = table.insert
+	local function TableReverse(tbl)
+		local res = {}
+		for _,v in pairs(tbl or {})do
+			tableinsert(res,1,v)
+		end
+		return res
+	end
+	
 	for routeid,tbl in pairs(Routes) do
-		local counter = 1
+		--[[local counter = 1
 		local mini,maxi
 		for i,params in pairs(tbl)do
 			if not mini or i < mini then mini = i end
 			if not maxi or i > maxi then maxi = i end
 		end
+		
+		
 		
 		for i,params in pairs(tbl)do
 			local counter = 1
@@ -797,7 +808,10 @@ local function GenerateRoutes()
 			end
 		end
 		
-		if routeid:sub(-1,-1) == "2" then Routes[routeid] = table.Reverse(tbl) end
+		--на редуксе идут станции со 110 по 120, но 119 нет. Эта штука превратит индексы в 110-119, и в итоге 120я станция не будет правильно определятся
+		if routeid:sub(-1,-1) == "2" then Routes[routeid] = table.Reverse(tbl) end]]
+		
+		if routeid:sub(-1,-1) == "2" then Routes[routeid] = TableReverse(tbl) end
 	end
 	
 
