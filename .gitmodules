@@ -7,3 +7,6 @@
 [submodule "gm_metrostroi_717_black_route_numbers"]
 	path = gm_metrostroi_717_black_route_numbers
 	url = https://github.com/TheFUlDeep/gm_metrostroi_717_black_route_numbers
+[submodule "gm_metrostroi_717_clear_white_route_numbers"]
+	path = gm_metrostroi_717_clear_white_route_numbers
+	url = https://github.com/TheFUlDeep/gm_metrostroi_717_clear_white_route_numbers
