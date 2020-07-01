@@ -291,4 +291,41 @@ elseif map == "gm_metro_crossline_n3" then
 	--пролетарская
 	Add("pr1-2","!sopen pr1-2","401B",{"PR387","PRE","PR376","PRA1"},nil,"pr2-2")
 	Add("pr2-2","!sopen pr2-2","PRA1",{"PR387","PR376"},nil,"pr1-2")
+	
+elseif map == "gm_jar_pll_remastered_v9" then
+	--Новомосковская
+	Add("nm5-1","!sopen nm5-1","NM7A",{"NM5","NM17","NM1","NM1O","NM3"},nil,{"nm1-2","nm1-3"})
+	Add("nm1-2","!sopen nm1-2","NM1O",{"NM5","NM17","NMD","NM1","NM3","NM3O","NM31","NM33"},nil,{"nm5-1","nm3-2","nm3-3","nm1-3"})
+	Add("nm1-3","!sopen nm1-3","NM1O",{"NM5","NM17","NMD","NM1","NM3","NM3O","NM31","NM33"},nil,{"nm5-1","nm3-2","nm3-3","nm1-2"})
+	Toggle("nm1-3")
+	
+	Add("nm3-2","!sopen nm3-2","NM3O",{"NM5","NM17","NMD","NM1","NM3","NM31","NM33"},nil,{"nm1-2","nm3-3","nm1-3"})
+	Add("nm3-3","!sopen nm3-3","NM3O",{"NM5","NM17","NMD","NM1","NM3","NM31","NM33"},nil,{"nm1-2","nm3-2","nm1-3"})
+	Toggle("nm3-3")
+	
+	Add("nm19-2","!sopen nm19-2","NM15",{"NM19","NM2","NM4","NM6","NM9"},nil,"nm9-3")
+	Add("nm9-3","!sopen nm9-3","NM7",{"NM9","NM19","NM15"},nil,"nm19-2")
+	Toggle("nm9-3")
+	
+	Add("nm2-2","!sopen nm2-2",nil,{"NM4","NM6","NM19","NM15"})
+	
+	--Динамо
+	Add("dn1-1","!sopen dn1-1","DNA3",{"DN3","DN5","DN7"})
+	Add("dn2-1","!sopen dn2-1",nil,{"DN2172","DN3","DNA3","DN7","DNT4"},nil,"dn1-1")
+	
+	--Октябрьская
+	Add("ok1-3","!sopen ok1-3","OK1129A",{"OK1133","OKE","OK3","OKA3"},nil,"ok3-2")
+	Add("oke-1","!sopen oke-1","OKAA1",{"OKE","OK1133","OK1129A","OK1129","1127","1125"})
+	
+	Add("ok3-2","!sopen ok3-2","OKA3",{"OK3","OK1133","OKG"},nil,"okg-2")
+	--Add("okg-2","!sopen okg-2","OKA2",{"OKG","OK3"},nil,"ok3-2")--OKA2 почему-то всегда занят, так что не могу тут сделать АД
+	
+	--Лесопарковая
+	--[[гавно сложна TODO
+	Add("lp3-1","{!sopen lp3-1",!sopen lp2-4},"LP1",{"LP153","LP151","LP2","LP4","LP5O","LP3","LP5","LP172","LP170"},nil,"lp4-1")
+	Add("lp4-1","!sopen lp4-1","LP174",{"LP153","LP151","LP2","LP4","LP5O","LP3","LP5","LP172","LP170"},nil,"lp3-1")
+	]]
+	--TODO если у лесопарковой все свободно, то !sopen lp2-3
+	--TODO если у лесопарковой занят третий и свободен четвертый то, то !sopen lp2-4
+	
 end
