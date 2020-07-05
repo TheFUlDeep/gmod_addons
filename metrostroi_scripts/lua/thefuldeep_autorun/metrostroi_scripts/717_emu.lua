@@ -60,9 +60,17 @@ timer.Simple(0,function()
 	ENT.ButtonMap["EMU"] = {
 		pos = Vector(461,-28,54),
 		ang = Angle(0,90,90),
-		width = 100,
-		height = 100,
+		width = 1,
+		height = 1,
 		scale = 0.1,
+	}
+	
+	ENT.ButtonMap["EMU1"] = {
+		pos = Vector(461,-28,54),
+		ang = Angle(0,90,90),
+		width = 1,
+		height = 1,
+		scale = 0.15,
 	}
 	
 	local function GetLastStation(self)
@@ -112,12 +120,12 @@ timer.Simple(0,function()
 		end
 		if self.ASNPState < 1 then return end
 		
-		self:DrawOnPanel("EMU",function()
+		self:DrawOnPanel("EMU1",function()
 			local rn = Format("%02d",self:GetNW2Int("ASNP:RouteNumber",0))
 			draw.Text({
 				text = rn,
-				font = "Metrostroi_ILGAo",
-				pos = { 44, 135 },
+				font = "Metrostroi_Tickers",
+				pos = { 44, 90 },
 				xalign = TEXT_ALIGN_CENTER,
 				yalign = TEXT_ALIGN_CENTER,
 				color = Color(0,255,0,255)})
@@ -125,7 +133,7 @@ timer.Simple(0,function()
 		self:DrawOnPanel("EMU",function()
 			draw.Text({
 				text = self.GettedLastStationForEmu,
-				font = "Metrostroi_ILGAo",
+				font = "Metrostroi_Tickers",
 				pos = { 315	, 135 },
 				xalign = TEXT_ALIGN_CENTER,
 				yalign = TEXT_ALIGN_CENTER,
