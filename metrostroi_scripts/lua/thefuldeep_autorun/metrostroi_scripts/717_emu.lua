@@ -55,7 +55,7 @@ timer.Simple(0,function()
 	
 	local ENT = scripted_ents.GetStored(nomerogg).t
 	
-	table.insert(ENT.Cameras,{Vector(407.5+75,0.3,44.5),Angle(20,180,0),"EMU"})
+	table.insert(ENT.Cameras,{Vector(407.5+75,0.3,44.5),Angle(20,180,0),"Train.Common.LastStation"})
 	
 	ENT.LastGettedLastStationForEmu = 0
 	
