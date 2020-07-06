@@ -47,7 +47,7 @@ timer.Simple(0,function()
 		local oldupdate = ENT.UpdateWagonNumber or function() end
 		ENT.UpdateWagonNumber = function(wag,...)
 			timer.Simple(0.5,function()
-				RemoveEnt(wag.ClientEnts[cprop])
+				RemoveEnt(IsValid(wag) and wag.ClientEnts and wag.ClientEnts[cprop])
 			end)
 			oldupdate(wag,...)
 		end
