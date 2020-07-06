@@ -46,6 +46,7 @@ timer.Simple(0,function()
 	local oldUpdateWagonNumber = ENT.UpdateWagonNumber
 	ENT.UpdateWagonNumber = function(self,...)
 		oldUpdateWagonNumber(self,...)
+		if not self.WagonNumber then return end
 		local ClientEnts = self.ClientEnts
 		if not ClientEnts then return end
 		local count = math.max(4,math.ceil(math.log10(self.WagonNumber+1)))
