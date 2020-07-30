@@ -16,12 +16,11 @@ timer.Simple(0,function()
 		local oldinitsounds = ENT.ReinitializeSounds
 		ENT.ReinitializeSounds = function(self,...)
 			oldinitsounds(self,...)
-			for name,v in pairs(flangsounds)do
-				self.Sounds[name]:Stop()
-				self.SoundNames[name] = newsound
-				util.PrecacheSound(newsound)
-				self.Sounds[name] = CreateSound(self, Sound(newsound))
-			end
+			local name = "flange2"
+			self.Sounds[name]:Stop()
+			self.SoundNames[name] = newsound
+			util.PrecacheSound(newsound)
+			self.Sounds[name] = CreateSound(self, Sound(newsound))
 		end
 	end
 	end
@@ -33,7 +32,9 @@ timer.Simple(0,function()
 	local oldsetsoundstate = ENT.SetSoundState
 	
 	ENT.SetSoundState = function(self,sound,volume,pitch,name,level,...)
-		if (flangsounds[sound]) and volume > 0 then
+		--[[if flangsounds[sound] then volume = 0
+		elseif sound == "flange2" and volume > 0 then]]
+		if flangsounds[sound] and volume > 0 then
 			--print(volume,pitch)
 			local CurTime = CurTime()
 			if CurTime < self.EndEmit and CurTime > self.StartEmit then
@@ -56,7 +57,7 @@ timer.Simple(0,function()
 				--тут нет звука
 				volume = 0
 				if CurTime >= self.EndEmit then
-					self.StartEmit = CurTime + mathRand(0.5,2)
+					self.StartEmit = CurTime + mathRand(0,2)
 					self.EndEmit = self.StartEmit + mathRand(0.5,3)
 					self.EmitDist = self.EndEmit - self.StartEmit
 					--print("silent for",self.StartEmit - CurTime)
