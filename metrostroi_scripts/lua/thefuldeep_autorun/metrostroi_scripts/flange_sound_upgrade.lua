@@ -1,3 +1,4 @@
+if SERVER then resource.AddWorkshop("1563745153") end
 if SERVER then return end
 timer.Simple(0,function()
 	local ENT = scripted_ents.GetStored("gmod_train_bogey")
