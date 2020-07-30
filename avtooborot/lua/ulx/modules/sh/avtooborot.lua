@@ -1,9 +1,9 @@
 if SERVER then
-	function ulx.avtooborot(ply,comm)
+	function ulx.autooborot(ply,comm)
 		AvtooborotControl(ply,comm)
 	end
 end
-local avtooborot = ulx.command("Metrostroi", "ulx avtooborot", ulx.avtooborot, "!avtooborot",true)
-avtooborot:addParam{ type=ULib.cmds.StringArg, hint="команда для автооборота"}
-avtooborot:defaultAccess(ULib.ACCESS_OPERATOR)
-avtooborot:help("Управление автооборотом.")
+local autooborot = ulx.command("Metrostroi", "ulx autooborot", ulx.autooborot, "!autooborot",true)
+autooborot:addParam{ type=ULib.cmds.StringArg, hint="команда для автооборота"}
+autooborot:defaultAccess(ULib.ACCESS_OPERATOR)
+autooborot:help("Управление автооборотом.")
