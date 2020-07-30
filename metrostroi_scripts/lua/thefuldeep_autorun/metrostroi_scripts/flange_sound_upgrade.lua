@@ -10,6 +10,7 @@ timer.Simple(0,function()
 		flange2 = true
 	}
 	
+	if false then
 	local newsound = "subway_trains/bogey/skrip_yaz_v2.wav"
 	if file.Exists("sound/"..newsound, "GAME") then
 		local oldinitsounds = ENT.ReinitializeSounds
@@ -22,6 +23,7 @@ timer.Simple(0,function()
 				self.Sounds[name] = CreateSound(self, Sound(newsound))
 			end
 		end
+	end
 	end
 	
 	
