@@ -54,7 +54,7 @@ timer.Simple(0,function()
 				--тут нет звука
 				volume = 0
 				if CurTime >= self.EndEmit then
-					self.StartEmit = CurTime + mathRand(0.3,2)
+					self.StartEmit = CurTime + mathRand(0.5,2)
 					self.EndEmit = self.StartEmit + mathRand(0.5,3)
 					self.EmitDist = self.EndEmit - self.StartEmit
 					--print("silent for",self.StartEmit - CurTime)
