@@ -7,38 +7,45 @@ timer.Simple(0,function()
 		flangea = true,
 		flangeb = true,
 		flange1 = true,
-		flange2 = true
+		--flange2 = true
 	}
 	
-	if false then
+	local snd_with_volume = "flange2"
 	local newsound = "subway_trains/bogey/skrip_yaz_v2.wav"
 	if file.Exists("sound/"..newsound, "GAME") then
 		local oldinitsounds = ENT.ReinitializeSounds
 		ENT.ReinitializeSounds = function(self,...)
 			oldinitsounds(self,...)
-			for name,v in pairs(flangsounds)do
-				self.Sounds[name]:Stop()
-				self.SoundNames[name] = newsound
-				util.PrecacheSound(newsound)
-				self.Sounds[name] = CreateSound(self, Sound(newsound))
-			end
+			self.Sounds[snd_with_volume]:Stop()
+			self.SoundNames[snd_with_volume] = newsound
+			util.PrecacheSound(newsound)
+			self.Sounds[snd_with_volume] = CreateSound(self, Sound(newsound))
 		end
-	end
 	end
 	
 	
 	local mathRand = math.Rand
 	local mathrandom = math.random
 	
-	local oldsetsoundstate = ENT.SetSoundState
+	local minpause = 0
+	local maxpause = minpause + 2
 	
+	local minfadein = 0.1
+	local minfadeout = 0.4
+	
+	local minlen = minfadein + minfadeout
+	local maxlen = minlen + 5
+	
+	local oldsetsoundstate = ENT.SetSoundState
 	ENT.SetSoundState = function(self,sound,volume,pitch,name,level,...)
-		if (flangsounds[sound]) and volume > 0 then
+		if flangsounds[sound] then volume = 0
+		elseif sound == snd_with_volume and volume > 0 then
 			--print(volume,pitch)
+			pitch = pitch - 0.2
 			local CurTime = CurTime()
 			if CurTime < self.EndEmit and CurTime > self.StartEmit then
 				--тут есть звук
-				volume = volume*1.5--делаю чуток погромче
+				volume = volume*5--делаю чуток погромче
 				local percentDone = ((CurTime-self.StartEmit)/self.EmitDist)*100
 				--print("done",percentDone,"fadeinpercent",self.FadeInPercent,"fadeoutpercent",self.FadeOutPercent)
 				if percentDone <= self.FadeInPercent then
@@ -56,15 +63,15 @@ timer.Simple(0,function()
 				--тут нет звука
 				volume = 0
 				if CurTime >= self.EndEmit then
-					self.StartEmit = CurTime + mathRand(0.5,2)
-					self.EndEmit = self.StartEmit + mathRand(0.5,3)
+					self.StartEmit = CurTime + mathRand(minpause,maxpause)
+					self.EndEmit = self.StartEmit + mathRand(minlen,maxlen)
 					self.EmitDist = self.EndEmit - self.StartEmit
 					--print("silent for",self.StartEmit - CurTime)
 					--print("eimt for",self.EmitDist)
 					
 					--даю минимум 0.1 секунды на возрастание и 0.4 на затухание	
-					local minstart = (0.1/self.EmitDist)*100
-					local maxend = 100-(0.4/self.EmitDist)*100
+					local minstart = (minfadein/self.EmitDist)*100
+					local maxend = 100-(minfadeout/self.EmitDist)*100
 					
 					self.FadeInPercent = mathrandom(minstart,maxend)
 					self.FadeOutPercent = mathrandom(self.FadeInPercent,maxend)
