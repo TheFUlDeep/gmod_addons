@@ -8,7 +8,7 @@ timer.Simple(1,function()
 	
 	local entsFindByClass = ents.FindByClass
 	
-	local paramname1,paramname2 = "Стандартный рандомный","by YAZ"
+	local paramname1,paramname2 = "Стандартный рандомный","by YaZ"
 	local inserted_index1,inserted_index2 = -1,-1
 	
 	local tablename = "WheelsSkripType"
