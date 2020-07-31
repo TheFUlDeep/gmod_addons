@@ -41,10 +41,10 @@ timer.Simple(0,function()
 		if flangsounds[sound] then volume = 0
 		elseif sound == snd_with_volume and volume > 0 then
 			--print(volume,pitch)
-			pitch = pitch - 0.2
 			local CurTime = CurTime()
-			if CurTime < self.EndEmit and CurTime > self.StartEmit then
+			if CurTime <= self.EndEmit and CurTime >= self.StartEmit then
 				--тут есть звук
+				pitch = pitch - 0.2
 				volume = volume*5--делаю чуток погромче
 				local percentDone = ((CurTime-self.StartEmit)/self.EmitDist)*100
 				--print("done",percentDone,"fadeinpercent",self.FadeInPercent,"fadeoutpercent",self.FadeOutPercent)
