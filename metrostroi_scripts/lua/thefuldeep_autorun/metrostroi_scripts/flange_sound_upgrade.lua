@@ -1,7 +1,7 @@
 if SERVER then resource.AddWorkshop("1563745153") end
 timer.Simple(1,function()
 	--файл, множитель громкости, pitch offset
-	local AllSounds = {{"subway_trains/bogey/flange_10.wav",4,0}}
+	local AllSounds = {{"subway_trains/bogey/flange_10.wav",3,0}}
 
 	local YazSoundFile = "subway_trains/bogey/skrip_yaz_v2.wav"
 	local IsYazSoundFileExists = file.Exists("sound/"..YazSoundFile, "GAME")
