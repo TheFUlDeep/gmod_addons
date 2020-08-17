@@ -10,6 +10,8 @@ CreateClientConVar("hidetrains_behind_props","1",true,false,"")
 
 CreateClientConVar("hidetrains_behind_player","1",true,false,"")
 
+CreateClientConVar("draw_signal_routes","1",true,false,"")
+
 hook.Add( "PopulateToolMenu", "MetrostroiCustomPanel", function()
 	spawnmenu.AddToolMenuOption( "Utilities", "Metrostroi", "metrostroi_client_panel2", "Клиент2", "", "", function(panel)
 		panel:ClearControls()
@@ -19,6 +21,7 @@ hook.Add( "PopulateToolMenu", "MetrostroiCustomPanel", function()
 		panel:CheckBox("Не прогружать чужие составы","hideothertrains")
 		panel:CheckBox("Не прогружать составы за спиной","hidetrains_behind_player")
 		panel:CheckBox("Не прогружать составы за пропами","hidetrains_behind_props")
+		panel:CheckBox("Отображать команды светофоров","draw_signal_routes")
 		panel:NumSlider("Часовой пояс","metrostroi_custom_time",-12, 12,0)
 	end)
 end)
