@@ -1,13 +1,16 @@
-if true then return end
+if 1 then return end
+if SERVER then resource.AddWorkshop("2189954527") end
+
 local nomerogg = "gmod_subway_81-717_mvm"
 local inserted_index = -1
-local paramname = "Кастомный"
+local inserted_index2 = -1
+local paramname = "какое-то имя"
 
 local model1 = "models/metrostroi_train/81-717/kv_black.mdl"
 local model2 = "models/metrostroi_train/81-717/kv_white.mdl"
 local model3 = "models/metrostroi_train/81-717/kv_wood.mdl"
 local model4 = "models/metrostroi_train/81-717/kv_yellow.mdl"
-local model_custom = "путь к новой модели"
+local model_new = "путь к новой модели"
 
 local tablename = "KVTypeCustom"
 local readtablename = "Тип КВ"
@@ -22,7 +25,7 @@ timer.Simple(1,function()
 	end
 	
 	if not foundtable then
-		table.insert(ENT.Spawner,6,{tablename,readtablename,"List",{"Тип 1","Тип 2","Тип 3","Тип 4",paramname}})
+		table.insert(ENT.Spawner,6,{tablename,readtablename,"List",{"Черный","Белый","Деревянный","Желтый",paramname}})
 		inserted_index = 5
 	else
 		inserted_index = table.insert(ENT.Spawner[foundtable][4],paramname)
@@ -53,7 +56,7 @@ timer.Simple(1,function()
 		--удаление пропа при апдейте спавнером для принудительного обновленяи модели
 		local oldupdate = ENT.UpdateWagonNumber or function() end
 		ENT.UpdateWagonNumber = function(wag,...)
-			RemoveEnt(wag.ClientEnts and wag.ClientEnts[cprop])
+				RemoveEnt(wag.ClientEnts and wag.ClientEnts[cprop])
 			oldupdate(wag,...)
 		end
 	end
@@ -65,7 +68,7 @@ timer.Simple(1,function()
 		ENT,
 		propname,
 		function(wag)
-			if wag:GetNW2Int(tablename,0) == inserted_index then return model_custom
+			if wag:GetNW2Int(tablename,0) == inserted_index then return model_new
 			elseif wag:GetNW2Int(tablename,0) == 1 then return model1
 			elseif wag:GetNW2Int(tablename,0) == 2 then return model2
 			elseif wag:GetNW2Int(tablename,0) == 3 then return model3
