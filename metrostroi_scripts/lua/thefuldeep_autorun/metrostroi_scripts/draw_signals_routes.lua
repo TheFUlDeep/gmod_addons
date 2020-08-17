@@ -17,7 +17,15 @@ if SERVER then
 				local routes_with_commands = 0
 				for _,route in pairs(signal.Routes or {}) do
 					local routeName = route.RouteName
-					if not routeName or routeName == "" then continue end
+					if not routeName or routeName == "" then
+						if route.Manual then
+							routeName = signal.Name or ""
+						else
+							continue
+						end
+					end
+					routeName = '"'..routeName..'"'
+					if route.Emer then routeName = "Emergency "..routeName end
 					routes_with_commands = routes_with_commands + 1
 					SetNW2(signal.SetNW2String,signal,"RouteCommand"..routes_with_commands,routeName)
 				end
