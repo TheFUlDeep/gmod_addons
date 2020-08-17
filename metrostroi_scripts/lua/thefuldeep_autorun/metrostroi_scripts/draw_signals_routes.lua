@@ -42,7 +42,7 @@ timer.Simple(0,function()
 end)
 
 timer.Create("Get signals routes for drawing",2,0,function()
-	local ply = LocLocalPlayer and LocalPlayer()
+	local ply = LocalPlayer and LocalPlayer()
 	if not IsValid(ply) then return end
 	local plypos = ply:GetPos()
 	
