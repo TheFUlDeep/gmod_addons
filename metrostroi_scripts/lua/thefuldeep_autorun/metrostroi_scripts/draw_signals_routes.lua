@@ -8,7 +8,6 @@ if SERVER then
 
 	--прокачиваю метростревскую функцию сигналки, чтобы в ней ставить сетевые значения
 	timer.Simple(0,function()
-		FuncUpgraded = true
 		local oldpostinit = Metrostroi.PostSignalInitialize
 		Metrostroi.PostSignalInitialize = function(...)
 			oldpostinit(...)
