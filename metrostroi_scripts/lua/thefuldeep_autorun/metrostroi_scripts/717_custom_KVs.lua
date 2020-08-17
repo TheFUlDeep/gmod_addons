@@ -1,5 +1,4 @@
 if 1 then return end
-if SERVER then resource.AddWorkshop("2189954527") end
 
 local nomerogg = "gmod_subway_81-717_mvm"
 local inserted_index = -1
