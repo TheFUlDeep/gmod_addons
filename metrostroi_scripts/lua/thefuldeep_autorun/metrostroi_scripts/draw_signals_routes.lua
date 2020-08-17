@@ -25,9 +25,6 @@ if SERVER then
 			end
 		end
 	end)
-	timer.Create("Set networrk values to signals for routes drawing",5,0,function()
-		
-	end)
 end
 
 if SERVER then return end
