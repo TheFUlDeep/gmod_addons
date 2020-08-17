@@ -25,6 +25,13 @@ if SERVER then
 			end
 		end
 	end)
+	
+	timer.Create("Update Close NW2 value for signals",2,0,function()
+		for _,v in pairs(entsFindByClass(signals_class)) do
+			if not IsValid(v) then continue end
+			v:SetNW2Bool("Close",v.Close)
+		end
+	end)
 end
 
 if SERVER then return end
@@ -38,6 +45,7 @@ timer.Simple(0,function()
 	convar = GetConVar("draw_signal_routes")
 end)
 
+local tableinsert = table.insert
 timer.Create("Get signals routes for drawing",2,0,function()
 	local ply = LocalPlayer and LocalPlayer()
 	if not IsValid(ply) then return end
@@ -48,15 +56,22 @@ timer.Create("Get signals routes for drawing",2,0,function()
 	for _,signal in pairs(entsFindByClass(signals_class)) do
 		if not IsValid(signal) or signal:GetPos():DistToSqr(plypos) > maxdist then continue end
 		--тут получение роутов
-		local routesCount = signal:GetNW2Int("RoutesCountWithCommands",0)
-		if routesCount < 1 then continue end
 		
-		texts[#texts+1] = {signal,signal:GetPos()+Vector(0,0,100),signal:GetAngles()+Angle(0,180,90),{}}
+		local IsClosedManually = signal:GetNW2Bool("Close")
+		
+		local routesCount = signal:GetNW2Int("RoutesCountWithCommands",0)
+		
+		if routesCount < 1 and not IsClosedManually then continue end
+		
+		texts[#texts+1] = {signal,signal:GetPos()+Vector(0,0,80),signal:GetAngles()+Angle(0,180,90),{}}
 		
 		local commands = texts[#texts][4]
-		for i = 1,routesCount do
-			commands[i] = signal:GetNW2String("RouteCommand"..i,"")
+		if routesCount > 0 then
+			for i = 1,routesCount do
+			tableinsert(commands,1,signal:GetNW2String("RouteCommand"..i,""))
+			end
 		end
+		if IsClosedManually then commands[#commands+1] = "закрыт вручную" end
 	end
 end)
 
@@ -74,7 +89,7 @@ hook.Add("PostDrawOpaqueRenderables","Draw Signals Routes",function()
 			local hlast = 0
 			for _,text in pairs(params[4]) do
 				local w,h = drawSimpleTextOutlined(text, font, 0, hlast, color, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, color2)
-				hlast = hlast + h
+				hlast = hlast - h
 			end
 		cam.End3D2D()
 	end
