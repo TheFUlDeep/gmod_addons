@@ -56,8 +56,9 @@ timer.Create("Get signals routes for drawing",2,0,function()
 		
 		texts[#texts+1] = {signal,signal:GetPos()+Vector(0,0,100),signal:GetAngles()+Angle(0,180,90),{}}
 		
+		local commands = texts[#texts][4]
 		for i = 1,routesCount do
-			texts[#texts][4][i] = signal:GetNW2String("RouteCommand"..i,"")
+			commands[i] = signal:GetNW2String("RouteCommand"..i,"")
 		end
 	end
 end)
