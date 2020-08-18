@@ -55,7 +55,7 @@ timer.Simple(0,function()
 		if not self.WagonNumber then return end
 		local ClientEnts = self.ClientEnts
 		if not ClientEnts then return end
-		local count = mathmax(4,mathceil(math.log10(self.WagonNumber+1)))
+		local count = mathmax(4,mathceil(mathlog10(self.WagonNumber+1)))
 		if count == 5 then startpos = 6 else startpos = 4.6 end
 		
 		local firstcouple,secondcouple = FindCouplesForWagon(self)
