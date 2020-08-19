@@ -103,7 +103,7 @@ local r,g,b = 255,255,255
 local color = Color(r,g,b,255)
 local color2 = Color(255-r,255-g,255-b,255)
 hook.Add("PostDrawOpaqueRenderables","Draw Signals Routes",function()
-	--if not convar or not convar:GetBool() then return end
+	if not convar or not convar:GetBool() then return end
 	for _,params in pairs(texts) do
 		cam.Start3D2D( params[2],params[3],1)
 			local hlast = 0
