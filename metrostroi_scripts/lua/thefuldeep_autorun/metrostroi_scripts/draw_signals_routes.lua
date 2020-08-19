@@ -76,6 +76,7 @@ timer.Simple(0,function()
 end)
 
 local entsGetByIndex = ents.GetByIndex
+local tableCopy = table.Copy
 timer.Create("Get signals routes for drawing",2,0,function()
 	local ply = LocalPlayer and LocalPlayer()
 	if not IsValid(ply) then return end
@@ -87,11 +88,16 @@ timer.Create("Get signals routes for drawing",2,0,function()
 		if not IsValid(signal) or signal:GetPos():DistToSqr(plypos) > maxdist then continue end
 		
 		local commands = signalsCommands[signal:EntIndex()] or {}
-		if signal:GetNW2Bool("Close") then commands[#commands+1] = "закрыт вручную" end
 		
-		if #commands < 1 then continue end
+		local commandsCopy = tableCopy(commands)
 		
-		texts[#texts+1] = {signal,signal:GetPos()+Vector(0,0,80),signal:GetAngles()+Angle(0,180,90),commands}
+		if signal:GetNW2Bool("Close") then
+			commandsCopy[#commandsCopy+1] = "закрыт вручную"
+		end
+		
+		if #commandsCopy < 1 then continue end
+		
+		texts[#texts+1] = {signal,signal:GetPos()+Vector(0,0,80),signal:GetAngles()+Angle(0,180,90),commandsCopy}
 	end
 end)
 
