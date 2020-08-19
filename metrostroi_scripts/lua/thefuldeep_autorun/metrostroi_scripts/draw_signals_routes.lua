@@ -1,5 +1,6 @@
 local entsFindByClass = ents.FindByClass
 local signals_class = "gmod_track_signal"
+local tableinsert = table.insert
 
 if SERVER then
 	util.AddNetworkString("SignalsRoutesForDrawing")
@@ -22,7 +23,7 @@ if SERVER then
 					end
 					routeName = '"'..routeName..'"'
 					if route.Emer then routeName = "Emergency "..routeName end
-					commands[#commands+1] = routeName
+					tableinsert(commands,1,routeName)
 				end
 				if #commands < 1 then continue end
 				
@@ -75,7 +76,6 @@ timer.Simple(0,function()
 end)
 
 local entsGetByIndex = ents.GetByIndex
-local tableinsert = table.insert
 timer.Create("Get signals routes for drawing",2,0,function()
 	local ply = LocalPlayer and LocalPlayer()
 	if not IsValid(ply) then return end
