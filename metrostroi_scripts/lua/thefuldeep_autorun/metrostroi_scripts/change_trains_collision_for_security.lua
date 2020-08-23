@@ -140,31 +140,41 @@ timer.Simple(0,function()
 		if IsValid(ent) and (tableHasValue(classes,ent:GetClass()) or tableHasValue(mclasses,ent:GetClass())) and os.clock() - (ent.SpawnTime or 0) < delay then return false end
 	end)]]
 	
+	local function GetTrainCouples(wag)
+		local res = {}
+		local waglist = wag.WagonList
+		if not waglist or #waglist == 0 then 
+			res = {wag.FrontCouple,wag.RearCouple}
+		else
+			for _,ent in pairs(waglist)do
+				res[#res+1] = ent.FrontCouple
+				res[#res+1] = ent.RearCouple
+			end
+		end
+		return res
+	end
+	
 	hook.Add(EventName,"Block physgun on trains with normal collision",function(ply,ent)
 		if not IsValid(ent) then return end
 		local class = ent:GetClass()
 		
-		local couple1,couple2
+		local couples = {}
 		if class == "gmod_train_couple" or class == "gmod_train_bogey" then
 			local wag = ent:GetNW2Entity("TrainEntity")
 			if not IsValid(wag) then return end
-			couple1 = wag.FrontCouple
-			couple2 = wag.RearCouple
+			couples = GetTrainCouples(wag)
 		elseif class == "gmod_train_wheels" then
 			local bogey = ent:GetNW2Entity("TrainBogey")
 			if not IsValid(bogey)then return end
 			local wag = bogey:GetNW2Entity("TrainEntity")
 			if not IsValid(wag) then return end
-			couple1 = wag.FrontCouple
-			couple2 = wag.RearCouple
+			couples = GetTrainCouples(wag)
 		elseif tableHasValue(mclasses,class)then
-			couple1 = ent.FrontCouple
-			couple2 = ent.RearCouple
+			couples = GetTrainCouples(ent)
 		end
 		
-		if IsValid(couple1) and couple1:GetCollisionGroup() == COLLISION_GROUP_NONE 
-			or IsValid(couple2) and couple2:GetCollisionGroup() == COLLISION_GROUP_NONE then 
-				return false 
+		for _,couple in pairs(couples)do
+			if IsValid(couple) and couple:GetCollisionGroup() == COLLISION_GROUP_NONE then return false end
 		end
 		
 	end)
