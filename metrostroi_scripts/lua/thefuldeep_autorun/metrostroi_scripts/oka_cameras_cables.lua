@@ -8,8 +8,8 @@ timer.Simple(1,function()
 	local ENT = scripted_ents.GetStored("gmod_train_couple")
 	if not ENT then return else ENT = ENT.t end
 	
-		local oldcouple = ENT.Couple
-		ENT.Couple = function(self,ent,...)
+	local oldcouple = ENT.Couple
+	ENT.Couple = function(self,ent,...)
 			oldcouple(self,ent,...)
 		
 		if IsValid(self.CameraCable1) then return end
