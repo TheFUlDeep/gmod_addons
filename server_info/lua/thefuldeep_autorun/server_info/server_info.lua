@@ -2,6 +2,13 @@ if CLIENT then return end
 --TODO пост на веб-сервер о перезапуске сервера при его выключении
 if not THEFULDEEP then THEFULDEEP = {} end
 
+local stringsub = string.sub
+local mathabs = math.abs
+local mathfloor = math.floor
+local ostime = os.time
+local tableinsert = table.insert
+local tableCount = table.Count
+
 local WebServerUrl = "http://"..(file.Read("web_server_ip.txt") or "127.0.0.1").."/serverinfo/"
 local function SendToWebServer(tbl)
 	--PrintTable(tbl)
@@ -37,7 +44,7 @@ timer.Create("Ovewriting ulx.wagons",5,0,function()
 					if type(v) ~= "table" or not v.Map or v.Map ~= THEFULDEEP.MAP or not v.Trains then continue end
 					for k1,v1 in ipairs(v.Trains) do
 						if v1.WagonCount then Wagons = Wagons + v1.WagonCount end
-						table.insert(ResultTable.Trains,1,v1)
+						tableinsert(ResultTable.Trains,1,v1)
 					end
 				end
 				ulx.fancyLogAdmin(ply,"#A вызвал !trains")
@@ -97,17 +104,17 @@ local function GetRouteNumber(ent)
 	end
 	
 	if tonumber(RouteNumber) ~= 0 then
-		table.insert(tbl,1,RouteNumber)
+		tableinsert(tbl,1,RouteNumber)
 	end
 	
 	local RouteNumber1 = ent:GetNW2Int("ASNP:RouteNumber",0)
 	if tonumber(RouteNumber1) ~= 0 then 
 		if tonumber(RouteNumber) ~= 0 and RouteNumber ~= RouteNumber1 then
 			RouteNumber = RouteNumber.."/"..RouteNumber1
-			table.insert(tbl,1,RouteNumber1)
+			tableinsert(tbl,1,RouteNumber1)
 		else
 			RouteNumber = RouteNumber1
-			table.insert(tbl,1,RouteNumber1)
+			tableinsert(tbl,1,RouteNumber1)
 		end
 	end
 	
@@ -121,7 +128,7 @@ local function GetTrainRouteNumber(wagon)
 		local RouteNumberString,RouteNumberTbl = GetRouteNumber(v1)
 		if RouteNumberTbl then
 			for k,v in ipairs(RouteNumberTbl) do
-				if tonumber(v) ~= 0 then table.insert(RouteNumbers,1,v) end
+				if tonumber(v) ~= 0 then tableinsert(RouteNumbers,1,v) end
 			end
 		end
 	end
@@ -143,7 +150,7 @@ local function GetTrainDrivers(wag)
 	for k,v in pairs(wag.WagonList) do
 		if not IsValid(v) or not IsValid(v.DriverSeat) then continue end
 		local Driver = v.DriverSeat:GetDriver()
-		if IsValid(Driver) then table.insert(Drivers,1,Driver) end
+		if IsValid(Driver) then tableinsert(Drivers,1,Driver) end
 	end
 	
 	return Drivers
@@ -179,10 +186,10 @@ local function CompareRouteNumbers(wag1,wag2)	--false если разные, tru
 			for k,v in pairs(Drivers1) do
 				if v == Owner1 then Drivers1[k] = nil end
 			end
-			table.insert(Users,1,Owner1)
+			tableinsert(Users,1,Owner1)
 		end
 		for k,v in pairs(Drivers1) do
-			table.insert(Users,1,v)
+			tableinsert(Users,1,v)
 		end
 		
 		local Drivers2 = GetTrainDrivers(wag2)
@@ -191,10 +198,10 @@ local function CompareRouteNumbers(wag1,wag2)	--false если разные, tru
 			for k,v in pairs(Drivers2) do
 				if v == Owner2 then Drivers1[k] = nil end
 			end
-			table.insert(Users,1,Owner2)
+			tableinsert(Users,1,Owner2)
 		end
 		for k,v in pairs(Drivers2) do
-			table.insert(Users,1,v)
+			tableinsert(Users,1,v)
 		end
 		
 		local string = ""
@@ -236,11 +243,11 @@ local function GetTrain(ent)
 	if #Drivers > 0 then
 		ResultTbl.Drivers = {}
 		for k,v in pairs(Drivers) do
-			table.insert(ResultTbl.Drivers,1,{SteamID = v:SteamID(),Nick = v:Nick()})
+			tableinsert(ResultTbl.Drivers,1,{SteamID = v:SteamID(),Nick = v:Nick()})
 		end
 	end
 	
-	ResultTbl.Speed = wagon.Speed < 5 and 0 or math.floor(wagon.Speed)
+	ResultTbl.Speed = wagon.Speed < 5 and 0 or mathfloor(wagon.Speed)
 	
 	
 	return ResultTbl
@@ -292,20 +299,20 @@ ulx.GetTrains = function(calling_ply,target_ply,notif,detectroutes)
 			end
 		end
 		v["RouteNumber"] = GetTrainRouteNumber(v["Entity"])
-		v["Speed"] = v["Entity"].Speed < 5 and 0 or math.floor(v["Entity"].Speed)
+		v["Speed"] = v["Entity"].Speed < 5 and 0 or mathfloor(v["Entity"].Speed)
 		
 		local Drivers = GetTrainDrivers(v["Entity"])
 		if #Drivers > 0 then
 			v["Drivers"] = {}
 			for k1,v1 in pairs(Drivers) do
-				table.insert(v["Drivers"],1,{SteamID = v1:SteamID(), Nick = v1:Nick()})
+				tableinsert(v["Drivers"],1,{SteamID = v1:SteamID(), Nick = v1:Nick()})
 			end
 		end
 	end
 	
 	local tbl2 = {}
 	for k,v in pairs(tbl) do
-		table.insert(tbl2,1,v)
+		tableinsert(tbl2,1,v)
 	end
 	
 	tbl = tbl2
@@ -318,7 +325,7 @@ ulx.GetTrains = function(calling_ply,target_ply,notif,detectroutes)
 			if not v.Owner or not v.RouteNumber or not v.WagonCount then continue end
 			ulx.fancyLogAdmin(player.GetBySteamID(v.Owner.SteamID),false,"Владелец #A, состав #s, маршрут #s, вагонов #s",v.Name, tostring(v.RouteNumber),tostring(v.WagonCount))
 			if v.Drivers then
-				local DriversCount = table.Count(v.Drivers)
+				local DriversCount = tableCount(v.Drivers)
 				if DriversCount > 1 then
 					local DriversString = ""
 					for k1,v1 in pairs(v.Drivers) do
@@ -361,8 +368,10 @@ local function ScoreBoardFunction(ent)
 		DirectionsEnts[ent] = PrevPosesEnts[ent] and poscurx and (PrevPosesEnts[ent] < poscurx and 1 or PrevPosesEnts[ent] > poscurx and -1 or PrevPosesEnts[ent] == poscurx and DirectionsEnts[ent]) or 0
 		--if not pos then return end				-- detectstation всегда возвращает pos, поэтому эта строка не нужна?
 		local result = pos
-		local strsub1 = string.sub(pos,-36) --(ближайшая по треку)
-		local strsub2 = string.sub(pos,-42)	--(ближайшая в плоскости)
+		local strsub1 = stringsub(pos,-37) -- (ближайшая по треку)
+		
+		--это вроде как больше не нужно, так как у меня нет "ближайшая в плоскости"
+		--[[local strsub2 = stringsub(pos,-42)	--(ближайшая в плоскости)
 		if strsub2 == "(ближайшая в плоскости)" then
 			if path then
 				result = "перегон"
@@ -371,13 +380,14 @@ local function ScoreBoardFunction(ent)
 			else
 				result = "-"
 			end
-		end
+		end]]
 		
-		if strsub1 == "(ближайшая по треку)" then
+		if strsub1 == " (ближайшая по треку)" then
+			local stationName = stringsub(pos,1,-38)
 			if pos2 then
-				result = "перегон "..string.sub(pos,1,-38).." - "..pos2
+				result = "перегон "..stationName.." - "..pos2
 			else
-				result = "тупик "..string.sub(pos,1,-38)
+				result = "тупик "..stationName
 			end
 		end
 
@@ -387,10 +397,10 @@ local function ScoreBoardFunction(ent)
 		local Speed = GetTrainTbl and GetTrainTbl.Speed
 		local Time = ""
 		local Dist = ""
-		if string.sub(result,1,15) == "перегон " then							--определяю направление движения по ближайшей стации и сохраняю до тех пор, пока человек в перегоне
-			if pos2 and strsub1 == "(ближайшая по треку)" then
-				local strsub3 = string.sub(pos,1,-38)--имя первой станции
-				if nodecur and poscurx and node1 and node2 and PrevPosesEnts[ent] and math.abs(PrevPosesEnts[ent] - poscurx) > 0 then
+		if stringsub(result,1,15) == "перегон " then							--определяю направление движения по ближайшей стации и сохраняю до тех пор, пока человек в перегоне
+			if pos2 and strsub1 == " (ближайшая по треку)" then
+				local strsub3 = stringsub(pos,1,-38)--имя первой станции
+				if nodecur and poscurx and node1 and node2 and PrevPosesEnts[ent] and mathabs(PrevPosesEnts[ent] - poscurx) > 0 then
 					--зная предыдущую позицию, определяю направление движения
 					--result, Time, Dist
 					
@@ -398,7 +408,7 @@ local function ScoreBoardFunction(ent)
 					PeregonsTbl[ID][1] = {}
 					PeregonsTbl[ID][2] = {}
 					
-					local MovedAwayFromFirstStation = math.abs(PrevPosesEnts[ent] - posx) < math.abs(poscurx - posx)
+					local MovedAwayFromFirstStation = mathabs(PrevPosesEnts[ent] - posx) < mathabs(poscurx - posx)
 					local frst,last,distto
 					if MovedAwayFromFirstStation then
 						frst = strsub3
@@ -412,7 +422,7 @@ local function ScoreBoardFunction(ent)
 					local dst
 					result = "перегон "..frst.." - "..last
 					Time, dst = Metrostroi.GetTravelTime(nodecur.node1, distto.node1)
-					Time = math.floor(Time)
+					Time = mathfloor(Time)
 					Dist = dst
 					
 				elseif not PrevPosesEnts[ent] then--оставил эту часть, чтобы при отсутствии предыдущей позиции сразу указался перегон
@@ -428,10 +438,10 @@ local function ScoreBoardFunction(ent)
 					end
 					
 					if PeregonsTbl[ID][2][2] and poscurx then
-						Dist = math.floor(math.abs(PeregonsTbl[ID][2][2] - poscurx))
+						Dist = mathfloor(mathabs(PeregonsTbl[ID][2][2] - poscurx))
 						if Speed and Speed > 5 then
 							--Speed = Speed * 1000 / 60 / 60
-							Time = math.floor((math.abs(PeregonsTbl[ID][2][2] - poscurx) / (50 * 1000 / 60 / 60)))
+							Time = mathfloor((mathabs(PeregonsTbl[ID][2][2] - poscurx) / (50 * 1000 / 60 / 60)))
 						end
 					end
 				end
@@ -442,15 +452,17 @@ local function ScoreBoardFunction(ent)
 		else
 			PeregonsTbl[ID][2] = {}
 		end
-	--end
-		if (not PrevPosesEntsChanges[ent] or os.time() - PrevPosesEntsChanges[ent] > 0.5) and poscurx then
+		
+		if (not PrevPosesEntsChanges[ent] or ostime() - PrevPosesEntsChanges[ent] > 0.5) and poscurx then
 			if PrevPosesEnts[ent] then
-				if math.abs(PrevPosesEnts[ent] - poscurx) > 4 then PrevPosesEnts[ent] = poscurx end--будет детектиться смещение только на 4+ метра
+				if mathabs(PrevPosesEnts[ent] - poscurx) > 4 then PrevPosesEnts[ent] = poscurx end--будет детектиться смещение только на 4+ метра
 			else
 				PrevPosesEnts[ent] = poscurx
 			end
-			PrevPosesEntsChanges[ent] = os.time()
+			PrevPosesEntsChanges[ent] = ostime()
 		end
+		
+	--end
 	
 		return result,Train,ID,path,Owner,Time,Dist
 end
@@ -502,18 +514,18 @@ local function PrepareDataToSending()
 	TblToSend.ServerName = THEFULDEEP.SERVERNAME
 	local Humans = player.GetHumans()
 	local i = 0
-	if table.Count(Humans) > 0 then
+	if tableCount(Humans) > 0 then
 		TblToSend.Players = {}
 		for k,v in pairs(player.GetHumans()) do
 			if v.AntiAfk and v.AntiAfk.AfkBlock then continue end
-			local Index = table.Count(TblToSend.Players) + 1
+			local Index = tableCount(TblToSend.Players) + 1
 			i = i + 1
 			
 			TblToSend.Players[Index] = {}
 			TblToSend.Players[Index].SteamID = v:SteamID()
 			TblToSend.Players[Index].Nick = v:Nick()
 			TblToSend.Players[Index].Rank = v:GetUserGroup()
-			TblToSend.Players[Index].Time = math.floor(v:TimeConnected())
+			TblToSend.Players[Index].Time = mathfloor(v:TimeConnected())
 			
 			local result,Train,ID,path,Owner,Time,Dist = ScoreBoardFunction(v)
 			if result and result ~= "" then TblToSend.Players[Index].Position = result end
@@ -525,7 +537,7 @@ local function PrepareDataToSending()
 			TblToSend.Players[Index].InTrain = GetTrain(v)
 			if TblToSend.Players[Index].InTrain then
 				local result,Train,ID,path,Owner,Time,Dist = ScoreBoardFunction(TblToSend.Players[Index].InTrain.Entity)
-				local Speed = math.floor(TblToSend.Players[Index].InTrain.Entity.Speed)
+				local Speed = mathfloor(TblToSend.Players[Index].InTrain.Entity.Speed)
 				Speed = Speed > 5 and Speed or 0
 				TblToSend.Players[Index].InTrain.Speed = Speed
 				
@@ -561,7 +573,7 @@ local function PrepareDataToSending()
 	TblToSend.Trains = ulx.GetTrains and ulx.GetTrains() or {}
 	TblToSend.MaxWagons = GetGlobalInt("metrostroi_maxwagons")
 	TblToSend.Wagons = GetGlobalInt("metrostroi_train_count")
-	if table.Count(TblToSend.Trains) < 1 then TblToSend.Trains = nil end
+	if tableCount(TblToSend.Trains) < 1 then TblToSend.Trains = nil end
 	if TblToSend.Trains then
 		for k,v in pairs(TblToSend.Trains) do
 			if v.Entity then
