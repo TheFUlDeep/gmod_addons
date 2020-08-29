@@ -23,6 +23,8 @@ function ENT:Initialize()
 	self.Stick:SetAngles(Angle(0,0,0))
 	self.Stick:SetModelScale(size)
 	self.Stick:Spawn()
+	
+	self.Draw = THEFULDEEP.MirrorDraw or function() end
 end
 
 --[[function ENT:ShouldRenderClientEnts()
@@ -36,7 +38,7 @@ end]]
 
 
 function ENT:Draw()
-	THEFULDEEP.MirrorDraw(self)
+
 end
 
 function ENT:OnRemove()

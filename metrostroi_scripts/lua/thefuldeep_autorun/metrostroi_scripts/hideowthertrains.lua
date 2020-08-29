@@ -1,23 +1,29 @@
 if SERVER then return end
 
 local FPSLimit = 20
-local TimeLimit = 10 * FPSLimit
-local i = 0
+local TimeLimit = 15
+local LagsStarted
 hook.Add("Think","RecomendHideTrains",function()
 	if not system.HasFocus() then return end
 	local fps = 1 / RealFrameTime()
-	if fps < FPSLimit then i = i + 1 else i = 0 end
-	if i > TimeLimit then
-		hook.Remove("Think","RecomendHideTrains")
-		chat.AddText(
-			Color(255,0,0),"Обнаружена низкая производительность. Для повышения fps попробуйте консольные команды ", 
-			Color(255,255,0), "hideothertrains 1", 
-			Color(255,0,0), " или ", 
-			Color(255,255,0), "hidealltrains 1", 
-			Color(255,0,0), ". А также убедитесь, что режим съемки выключен (", 
-			Color(255,255,0), "metrostroi_screenshotmode 0", 
-			Color(255,0,0), ")!"
-		)
+	if fps < FPSLimit then
+		local CurTime = CurTime()
+		if not LagsStarted then LagsStarted = CurTime end
+		
+		if CurTime - LagsStarted > TimeLimit then
+			hook.Remove("Think","RecomendHideTrains")
+			chat.AddText(
+				Color(255,0,0),"Обнаружена низкая производительность. Для повышения fps попробуйте консольные команды ", 
+				Color(255,255,0), "hideothertrains 1", 
+				Color(255,0,0), " или ", 
+				Color(255,255,0), "hidealltrains 1", 
+				Color(255,0,0), ". А также убедитесь, что режим съемки выключен (", 
+				Color(255,255,0), "metrostroi_screenshotmode 0", 
+				Color(255,0,0), ")!"
+			)
+		end
+	else
+		LagsStarted = nil
 	end
 end)
 
@@ -94,6 +100,48 @@ local function SaveOBBMins(ent)
 	return val
 end
 
+--вершины
+local angles = {
+	Vector(1,1,1),
+	Vector(1,-1,1),
+	Vector(1,-1,-1),
+	Vector(1,1,-1),
+	
+	Vector(-1,1,1),
+	Vector(-1,-1,1),
+	Vector(-1,-1,-1),
+	Vector(-1,1,-1),
+	
+	Vector(0,0,0)
+}
+
+--чуток уменьшаю
+--[[for k,vector in pairs(angles)do
+	for i = 1,3 do
+		angles[k][i] = vector[i]*0.9
+	end
+end]]
+
+--ребра
+local lines = {
+	{angles[1],angles[2]},
+	{angles[2],angles[3]},
+	{angles[3],angles[4]},
+	{angles[4],angles[1]},
+	
+	{angles[5],angles[6]},
+	{angles[6],angles[7]},
+	{angles[7],angles[8]},
+	{angles[8],angles[5]},
+	
+	{angles[1],angles[5]},
+	{angles[2],angles[6]},
+	{angles[3],angles[7]},
+	{angles[4],angles[8]},
+}
+
+local mindist = (256+16)^2
+local utilTraceLine = util.TraceLine
 local function ShouldRenderEnts(self)
 	--Всегда прогружать, если режим съемки
 	if C_ScreenshotMode:GetBool() then return true end
@@ -115,31 +163,65 @@ local function ShouldRenderEnts(self)
 			ViewPos,ViewAng = nil,nil
 		end
 	end
-	tracelinesetup.start = ViewPos or ply:EyePos()
+	
+	local StartPos = ViewPos or ply:EyePos()
+	tracelinesetup.start = StartPos
 	local TrainSize = self.WagonSize or SaveOBBMaxs(self)
-	local TrainSize2 = self.WagonSize2 or SaveOBBMins(self)
-	local step = 0.1
+	--local TrainSize2 = self.WagonSize2 or SaveOBBMins(self)
+	--local step = 0.1
 	local hidetrains_behind_props_bool = hidetrains_behind_props:GetBool()
 	local ShouldRender = false
-	--прохожу 4 диагонали
-	for j = 1,4 do
-		local startvec = j == 1 and TrainSize or j == 2 and TrainSize * Vector(1,1,-1) or j == 3 and TrainSize * Vector(1,-1,-1) or TrainSize * Vector(-1,-1,-1)
-		local endvec = j == 1 and TrainSize2 or j == 2 and TrainSize2 * Vector(1,1,-1) or j == 3 and TrainSize2 * Vector(1,-1,-1)  or TrainSize2 * Vector(-1,-1,-1)
-		startvec = self:LocalToWorld(startvec)
-		endvec = self:LocalToWorld(endvec)
+	
+
+	--прохожу по 10 точек на 12ти гранях
+	--это более точный, но более ресурсоемкий алгоритм
+	--[[for k,points in pairs(lines) do
+		local startvec = self:LocalToWorld(points[1]*TrainSize)
+		local endvec = self:LocalToWorld(points[2]*TrainSize)
 		for i = 0,1,step do
 			local curvec = LerpVector(i, startvec, endvec)
 			--если игрок рядом с составом, то прогружать
-			if ply:GetPos():DistToSqr(curvec) < 22500--[[22500 ето 150^2]] then return true end
+			if ply:GetPos():DistToSqr(curvec) < 22500 then return true end ----22500 ето 150^2
 			
 			--если надо проверять, за пропами ли вагон
-			if not hidetrains_behind_props_bool then continue end
-			tracelinesetup.endpos = curvec
-			local output = util.TraceLine(tracelinesetup)
-			--если состав не за пропом, то однозначно прогрузить
-			if output.Fraction == 1 or output.Entity == self or output.Entity:GetNW2Entity("TrainEntity",nil) == self then ShouldRender = true end
+			if hidetrains_behind_props_bool then
+				tracelinesetup.endpos = curvec
+				local output = utilTraceLine(tracelinesetup)
+				--если состав не за пропом, то однозначно прогрузить
+				local resEnt = output.Entity
+				if output.Fraction == 1 or  resEnt == self or IsValid(resEnt) and resEnt:GetNW2Entity("TrainEntity",nil) == self then 
+					ShouldRender = true
+					--использовал goto, потому что не захотел добавлять внешнюю переменную-флаг
+					goto CONTINUE
+				end
+			end
 		end
 	end
+	
+	
+	::CONTINUE::
+	
+	]]
+	
+	
+	--прохожу 8 вершин и центр
+	for _,point in pairs(angles)do
+		local curvec = self:LocalToWorld(point*TrainSize)
+		if StartPos:DistToSqr(curvec) < mindist then return true end
+		
+		--если надо проверять, за пропами ли вагон
+		if hidetrains_behind_props_bool then
+			tracelinesetup.endpos = curvec
+			local output = utilTraceLine(tracelinesetup)
+			--если состав не за пропом, то однозначно прогрузить
+			local resEnt = output.Entity
+			if output.Fraction == 1 or  resEnt == self or IsValid(resEnt) and resEnt:GetNW2Entity("TrainEntity",nil) == self then 
+				ShouldRender = true
+				break
+			end
+		end
+	end
+	
 	
 	--не прогружать, когда не вызывается Draw функция
 	if hidetrains_behind_player:GetBool() and self.LastDrawCall and CurTime() - self.LastDrawCall > 1 then return false end--при фризах ето условие будет срабатывать часто. Можно либо детектить фриз, либо увеличить интервал
