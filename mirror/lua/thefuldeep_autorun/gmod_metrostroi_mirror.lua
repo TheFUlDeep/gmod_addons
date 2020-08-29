@@ -1,5 +1,5 @@
 --TODO фикс конфликта с камерами метростроя
-if 1 then return end
+--if 1 then return end
 local models = {
 	"models/thefuldeeps_models/mirror_square.mdl",
 	"models/thefuldeeps_models/mirror_rectangle.mdl"
@@ -150,9 +150,11 @@ timer.Simple(0,function()
 	--C_FovDesired          = GetConVar("fov_desired")
 end)
 if not THEFULDEEP then THEFULDEEP = {} end
+local lastdraw = CurTime()
+local preview
 THEFULDEEP.MirrorDraw = function(self)
-	self.LastDrawCall = CurTime()
-	if not self.ShouldDraw or MetrostroiDrawCams and not MetrostroiDrawCams:GetBool() then return end
+	if not preview and (not self.ShouldDraw or MetrostroiDrawCams and not MetrostroiDrawCams:GetBool()) then return end
+	lastdraw = CurTime()
 	--if not self:ShouldRenderClientEnts() then return end
 	if not IsValid(self.RTCam) then self.RTCam = GetGlobalEntity("MirrorRTCam") return end
 
@@ -173,8 +175,9 @@ THEFULDEEP.MirrorDraw = function(self)
 	end]]
 	
 	local MirrorPos = self:LocalToWorld(self:OBBCenter())
-	if self.RTCam:GetPos() ~= self:GetPos() then
-		self.RTCam:SetPos(self:GetPos())
+	local NeededPos = self:LocalToWorld(Vector(0,36,0))
+	if self.RTCam:GetPos() ~= NeededPos then
+		self.RTCam:SetPos(NeededPos)
 	end
 	--if self.RTCam:GetPos():DistToSqr(MirrorPos) > 300*300 then return end
 	local ply = LocalPlayer()
@@ -207,70 +210,113 @@ THEFULDEEP.MirrorDraw = function(self)
 		FOV = C_FovDesired:GetFloat()
 	end]]
 end
+local DrawFunc = THEFULDEEP.MirrorDraw
 
+local classesToSkip = {"prop_vehicle_prisoner_pod"}
 
-
-local function IsPointOnSection(point,Start,End,skipLineChecking)
-	if not skipLineChecking then
-		--проверка, что точка на той же линии
-		if (End-Start):GetNormalized() ~= (point-Start):GetNormalized() then return end
+timer.Simple(0,function()
+	for _,class in pairs(Metrostroi.TrainClasses or {})do
+		classesToSkip[class] = true
 	end
-	
-	local x,y,z = point[1],point[2],point[3]
-	local sx,sy,sz = Start[1],Start[2],Start[3]
-	local ex,ey,ez = End[1],End[2],End[3]
-	--проверка, что точка в пределах отрезка
-	if (x >= sx and x <= ex or x >= ex and x <= sx) and (y >= sy and y <= ey or y >= ey and y <= sy) and (z >= sz and z <= ez or z >= ez and z <= sz) then return true end
-end
-
-local function IsPointInEntity(ent,vec)
-	local vec = ent:WorldToLocal(vec)
-	local x,y,z = vec[1],vec[2],vec[3]
-	
-	local mins = ent:OBBMins()+Vector(-100,-100,-100)
-	local xmin,ymin,zmin = mins[1],mins[2],mins[3]
-	
-	local maxs = ent:OBBMaxs()+Vector(100,100,100)
-	local xmax,ymax,zmax = maxs[1],maxs[2],maxs[3]
-	
-	return x <= xmax and x >= xmins and y <= ymax and y >= ymins and z <= zmax and z >= zmins
-end
+end)
 
 
-local AnglesForPlanes = {Angle(0,0,0),Angle(90,0,0),Angle(0,90,0)}
-local function IsSectionPartInEntity(ent,Start,End)
-	if IsPointInEntity(ent,Start) or IsPointInEntity(ent,End) then return true end
-	
-	print("asd")
-	
-	local dir = (End-Start)--:GetNormalized()
-	
-	local entang = ent:GetAngles()
-	
-	--первое число - вверх - -90, вниз - 90
-	--второе число - вправо - -90, влево - 90
-	for i = 1,2 do
-		local planepos = i == 1 and ent:LocalToWorld(ent:OBBMins()+Vector(-100,-100,-100)) or ent:LocalToWorld(ent:OBBMaxs()+Vector(100,100,100))
-		for k = 1,3 do
-			local Intersect = util.IntersectRayWithPlane(Start, dir, planepos, (entang + AnglesForPlanes[k]):Forward())
-			if Intersect and IsPointInEntity(ent,Intersect) then return true end
-		end
+local tracelinesetup = {
+	mask = MASK_VISIBLE_AND_NPCS,--MASK_BLOCKLOS_AND_NPCS
+	output = {},
+	filter = function(ent)
+		if ent == LocalPlayer() or IsValid(ent) and classesToSkip[ent:GetClass()] then return false end
+		return true
 	end
-end
+}
 
-timer.Simple(0,function()--TODO надо, чтобы оно пропускало ентити паравозаф
+--вершины
+local angles = {
+	Vector(1,1,1),
+	Vector(1,-1,1),
+	Vector(1,-1,-1),
+	Vector(1,1,-1),
+	
+	Vector(-1,1,1),
+	Vector(-1,-1,1),
+	Vector(-1,-1,-1),
+	Vector(-1,1,-1)
+}
+
+--чуток уменьшаю
+--[[for k,vector in pairs(angles)do
+	for i = 1,3 do
+		angles[k][i] = vector[i]*0.9
+	end
+end]]
+
+--ребра
+local lines = {
+	{angles[1],angles[2]},
+	{angles[2],angles[3]},
+	{angles[3],angles[4]},
+	{angles[4],angles[1]},
+	
+	{angles[5],angles[6]},
+	{angles[6],angles[7]},
+	{angles[7],angles[8]},
+	{angles[8],angles[5]},
+	
+	{angles[1],angles[5]},
+	{angles[2],angles[6]},
+	{angles[3],angles[7]},
+	{angles[4],angles[8]}
+}
+
+
+local drawtimelimit = 1.5
+timer.Simple(0,function()
+	local utilTraceLine = util.TraceLine
+	local entsFindByClass = ents.FindByClass
+	local mathabs = math.abs
 	timer.Create("check if player can see mirror",1,0,function()
 		local ply = LocalPlayer and LocalPlayer()
 		if not IsValid(ply) then return end
-		for _,ent in pairs(ents.FindByClass("gmod_metrostroi_mirror")) do
-			if not IsValid(ent) then return end
-			local trace = ply:GetEyeTraceNoCursor()
-			ent.ShouldDraw = IsSectionPartInEntity(ent,trace.StartPos,trace.HitPos)
+		local StartPos = ViewPos or ply:EyePos()
+		tracelinesetup.start = StartPos
+		local plyang = ply:EyeAngles()
+		local CurTime = CurTime()
+		for _,ent in pairs(entsFindByClass("gmod_metrostroi_mirror")) do
+			if not IsValid(ent) then continue end
+			
+			--[[local AngToMirror = (ent:GetPos()-StartPos):Angle()
+			local deltaang = AngToMirror - plyang
+			deltaang:Normalize()
+			if mathabs(deltaang[2]) > 70 or mathabs(deltaang[1]) > 70 then 
+				ent.ShouldDraw = false
+				continue
+			end]]
+			
+			local mins = ent:OBBMins()+Vector(0,0,-150*ent:GetModelScale())--дополнитльная высота для палки
+			for k,points in pairs(lines) do
+				local startvec = ent:LocalToWorld(points[1]*mins)
+				local endvec = ent:LocalToWorld(points[2]*mins)
+				for i = 0,1,0.2 do					
+					tracelinesetup.endpos = LerpVector(i, startvec, endvec)
+					local output = utilTraceLine(tracelinesetup)
+					local resEnt = output.Entity
+					--print(resEnt,output.Fraction)
+					if output.Fraction == 1 or resEnt == ent or resEnt == ent.Frame or resEnt == ent.Stick then
+						ent.ShouldDraw = true
+						goto CONTINUE
+					end
+				end
+			end
+			
+			ent.ShouldDraw = false
+			::CONTINUE::
+		end
+		
+		if CurTime - lastdraw > drawtimelimit and IsValid(GetGlobalEntity("MirrorRTCam")) then
+			GetGlobalEntity("MirrorRTCam"):SetPos(Vector(0,0,-99999))
 		end
 	end)
 end)
-
-print("asd0")
 
 local MirrorPreview = CreateClientConVar("mirror_preview", "0", false)
 local MirrorDistance = CreateClientConVar("mirror_distance", "50", false)
@@ -281,8 +327,6 @@ local MirrorScale = CreateClientConVar("mirror_scale", "1", false)
 local MirrorModel = CreateClientConVar("mirror_model_type", "1", false)
 local MirrorPreviewHotkey = CreateClientConVar("mirror_preview_hotkey", "", true)
 local MirrorSrickDown = CreateClientConVar("mirror_stick_down", "0", false)
-
-print("asd1")
 
 if not game.SinglePlayer() then
 	hook.Add("PlayerButtonDown","Mirror_preview_toggle",function(ply, button )
@@ -300,9 +344,11 @@ hook.Add("Think","MirrorPreview",function()
 		if IsValid(MirrorEnt) then 
 			MirrorEnt:Remove() 
 		end
+		preview = false
 		return 
 	end
 	
+	preview = true
 	
 	if not IsValid(GetGlobalEntity("MirrorRTCam")) then return end
 	
@@ -320,6 +366,6 @@ hook.Add("Think","MirrorPreview",function()
 	local plyang = ply:GetEyeTraceNoCursor().Normal:Angle()
 	MirrorEnt:SetAngles(Angle(plyang.r+MirrorAngleP:GetFloat(),plyang.y+90+MirrorAngleY:GetFloat(),plyang.p+MirrorAngleR:GetFloat()))
 	
-	THEFULDEEP.MirrorDraw(MirrorEnt)
+	DrawFunc(MirrorEnt)
 end)
 

@@ -2,12 +2,6 @@ AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 include("shared.lua")
 
-local function GetPly()
-	for k,v in pairs(player.GetAll()) do
-		return v
-	end
-end
-
 function ENT:Initialize()
 
 	self:SetModel(self.Model or "models/thefuldeeps_models/mirror_square.mdl")
@@ -24,10 +18,13 @@ function ENT:Initialize()
 	if not IsValid(RTCam) then
 		RTCam = ents.Create( "point_camera" )
 		RTCam:SetKeyValue( "GlobalOverride", 1 )
+		RTCam:SetKeyValue( "FOV", 90 )
 		--RTCam:Activate()
 		--RTCam:Spawn()
 		SetGlobalEntity("MirrorRTCam",RTCam)
 	end
+	
+	RTCam:SetKeyValue( "FOV", 90 )
 	
 end
 
