@@ -156,8 +156,9 @@ THEFULDEEP.MirrorDraw = function(self)
 	if not preview and (not self.ShouldDraw or MetrostroiDrawCams and not MetrostroiDrawCams:GetBool()) then return end
 	lastdraw = CurTime()
 	--if not self:ShouldRenderClientEnts() then return end
-	if not IsValid(self.RTCam) then self.RTCam = GetGlobalEntity("MirrorRTCam") return end
-
+	local RTCam = GetGlobalEntity("MirrorRTCam")
+	if not IsValid(RTCam) then return end
+	
 	self:DrawModel()
 	--[[if #Metrostroi.CamQueue > 0 then
 		if self.RTCam.GlobalOverride1 then
@@ -175,9 +176,9 @@ THEFULDEEP.MirrorDraw = function(self)
 	end]]
 	
 	local MirrorPos = self:LocalToWorld(self:OBBCenter())
-	local NeededPos = self:LocalToWorld(Vector(0,36,0))
-	if self.RTCam:GetPos() ~= NeededPos then
-		self.RTCam:SetPos(NeededPos)
+	local NeededPos = self:GetPos()
+	if RTCam:GetPos() ~= NeededPos then
+		RTCam:SetPos(NeededPos)
 	end
 	--if self.RTCam:GetPos():DistToSqr(MirrorPos) > 300*300 then return end
 	local ply = LocalPlayer()
@@ -196,7 +197,7 @@ THEFULDEEP.MirrorDraw = function(self)
 	local mirrorang = self:GetAngles()
 	local worldmirrorang = self:LocalToWorldAngles(mirrorang)
 	ang = -ang + Angle(-mirrorang.r*2,worldmirrorang.y+180,-mirrorang.p*2)
-	self.RTCam:SetAngles(ang)
+	RTCam:SetAngles(ang)
 	
 	--[[local FOV
 	local Dist = plypos:DistToSqr(MirrorPos)
@@ -269,7 +270,6 @@ local lines = {
 }
 
 
-local drawtimelimit = 1.5
 timer.Simple(0,function()
 	local utilTraceLine = util.TraceLine
 	local entsFindByClass = ents.FindByClass
@@ -277,6 +277,14 @@ timer.Simple(0,function()
 	timer.Create("check if player can see mirror",1,0,function()
 		local ply = LocalPlayer and LocalPlayer()
 		if not IsValid(ply) then return end
+		if ViewFunction then
+			local ViewTbl = ViewFunction(ply,ply:EyePos(),Lastang,Lastfov,Lastznear,Lastzfar)
+			if ViewTbl then
+				ViewPos,ViewAng = ViewTbl.origin,ViewTbl.angles
+			else
+				ViewPos,ViewAng = nil,nil
+			end
+		end
 		local StartPos = ViewPos or ply:EyePos()
 		tracelinesetup.start = StartPos
 		local plyang = ply:EyeAngles()
@@ -293,6 +301,7 @@ timer.Simple(0,function()
 			end]]
 			
 			local mins = ent:OBBMins()+Vector(0,0,-150*ent:GetModelScale())--дополнитльная высота для палки
+			ent.ShouldDraw = false
 			for k,points in pairs(lines) do
 				local startvec = ent:LocalToWorld(points[1]*mins)
 				local endvec = ent:LocalToWorld(points[2]*mins)
@@ -307,12 +316,10 @@ timer.Simple(0,function()
 					end
 				end
 			end
-			
-			ent.ShouldDraw = false
 			::CONTINUE::
 		end
 		
-		if CurTime - lastdraw > drawtimelimit and IsValid(GetGlobalEntity("MirrorRTCam")) then
+		if CurTime - lastdraw > 0.5 and IsValid(GetGlobalEntity("MirrorRTCam")) then
 			GetGlobalEntity("MirrorRTCam"):SetPos(Vector(0,0,-99999))
 		end
 	end)

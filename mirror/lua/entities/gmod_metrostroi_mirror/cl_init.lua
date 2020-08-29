@@ -1,7 +1,5 @@
 include("shared.lua")
 function ENT:Initialize()
-	self.RTCam = GetGlobalEntity("MirrorRTCam")
-	--self.RTCam:SetKeyValue("FOV",10)
 	local IsSquare = self:GetModel():find("square") and true or false
 	
 	--self.Frame = ents.CreateClientProp()
