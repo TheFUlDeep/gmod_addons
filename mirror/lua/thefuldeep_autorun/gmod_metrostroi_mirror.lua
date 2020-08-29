@@ -321,7 +321,6 @@ timer.Simple(0,function()
 		
 		if CurTime - lastdraw > 0.5 and IsValid(GetGlobalEntity("MirrorRTCam")) then
 			GetGlobalEntity("MirrorRTCam"):SetPos(Vector(0,0,-99999))
-			print("setted to deep")
 		end
 	end)
 end)
