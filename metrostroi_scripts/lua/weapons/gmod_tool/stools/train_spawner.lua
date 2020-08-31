@@ -631,7 +631,7 @@ end
 
 function TOOL:RightClick(trace)
     if IsValid(trace.Entity) then
-		if 1 then return end
+		--if 1 then return end
         if SERVER then
             if trace.Entity.ClassName == (self.Train.Spawner.head or self.Train.ClassName) or trace.Entity.ClassName == self.Train.Spawner.interim then
                 local LastEnt
