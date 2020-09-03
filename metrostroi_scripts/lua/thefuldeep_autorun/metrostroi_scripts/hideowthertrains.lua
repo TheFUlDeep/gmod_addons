@@ -1,5 +1,8 @@
 if SERVER then return end
 
+THEFULDEEP = THEFULDEEP or {}
+local THEFULDEEP = THEFULDEEP
+
 local FPSLimit = 20
 local TimeLimit = 15
 local LagsStarted
@@ -27,17 +30,11 @@ hook.Add("Think","RecomendHideTrains",function()
 	end
 end)
 
-local Lastply,Lastpos,Lastang,Lastfov,Lastznear,Lastzfar
-
-hook.Add("CalcView", "Get_Metrostroi_TrainView", function(ply,pos,ang,fov,znear,zfar)
-	Lastply,Lastpos,Lastang,Lastfov,Lastznear,Lastzfar = ply,pos,ang,fov,znear,zfar
-end)
 
 --поиск инициализированных значений
-local ViewPos,ViewAng,ViewFunction
 local C_ScreenshotMode,hidealltrains,hideothertrains,hidetrains_behind_props,hidetrains_behind_player
 local DefaultShouldRenderClientEntsFunction
-timer.Simple(0,function()
+timer.Simple(1,function()
 
 	C_ScreenshotMode      = GetConVar("metrostroi_screenshotmode")		-- прогружаю конвары здесь, чтобы случайно не прогрузить Nil
 	hidealltrains = GetConVar("hidealltrains")
@@ -47,11 +44,6 @@ timer.Simple(0,function()
 	
 	local base = scripted_ents.Get("gmod_subway_base")
 	DefaultShouldRenderClientEntsFunction = base.ShouldRenderClientEnts
-
-	local HooksTbl = hook.GetTable()
-	if not HooksTbl.CalcView or not HooksTbl.CalcView.Metrostroi_TrainView then return end
-	print("Found metrostroi view changer hook")
-	ViewFunction = HooksTbl.CalcView.Metrostroi_TrainView
 end)
 
 local PlyInTrain
@@ -144,32 +136,23 @@ local mindist = (256+16)^2
 local utilTraceLine = util.TraceLine
 local function ShouldRenderEnts(self)
 	--Всегда прогружать, если режим съемки
-	if C_ScreenshotMode:GetBool() then return true end
+	if C_ScreenshotMode and C_ScreenshotMode:GetBool() then self.ShouldRenderClientEntsRes = true return end
 	
 	--метростроевские проверки
-	if DefaultShouldRenderClientEntsFunction and not DefaultShouldRenderClientEntsFunction(self) then return false end
+	if DefaultShouldRenderClientEntsFunction and not DefaultShouldRenderClientEntsFunction(self) then self.ShouldRenderClientEntsRes = false return end
 
 	--если игрок сидит в составе, то всегда прогружать его
-	if PlyInTrain == self then return true end
+	if PlyInTrain == self then self.ShouldRenderClientEntsRes = true return end
 	
 	--проверка, находится ли состав за пропом и находится ли игрок рядом с диагоналями
-	--ViewFunction - определение вида игрока
-	local ply = LocalPlayer()
-	if ViewFunction then
-		local ViewTbl = ViewFunction(ply,ply:EyePos(),ply:GetAngles(),Lastfov,Lastznear,Lastzfar)
-		if ViewTbl then
-			ViewPos,ViewAng = ViewTbl.origin,ViewTbl.angles
-		else
-			ViewPos,ViewAng = nil,nil
-		end
-	end
+	--local ply = LocalPlayer()
 	
-	local StartPos = ViewPos or ply:EyePos()
+	local StartPos = THEFULDEEP.RealViewPos--эта переменная задается в файле draw_signals_routes.lua
 	tracelinesetup.start = StartPos
 	local TrainSize = self.WagonSize or SaveOBBMaxs(self)
 	--local TrainSize2 = self.WagonSize2 or SaveOBBMins(self)
 	--local step = 0.1
-	local hidetrains_behind_props_bool = hidetrains_behind_props:GetBool()
+	local hidetrains_behind_props_bool = hidetrains_behind_props and hidetrains_behind_props:GetBool()
 	local ShouldRender = false
 	
 
@@ -207,7 +190,7 @@ local function ShouldRenderEnts(self)
 	--прохожу 8 вершин и центр
 	for _,point in pairs(angles)do
 		local curvec = self:LocalToWorld(point*TrainSize)
-		if StartPos:DistToSqr(curvec) < mindist then return true end
+		if StartPos:DistToSqr(curvec) < mindist then self.ShouldRenderClientEntsRes = true return end
 		
 		--если надо проверять, за пропами ли вагон
 		if hidetrains_behind_props_bool then
@@ -224,47 +207,47 @@ local function ShouldRenderEnts(self)
 	
 	
 	--не прогружать, когда не вызывается Draw функция
-	if hidetrains_behind_player:GetBool() and self.LastDrawCall and CurTime() - self.LastDrawCall > 1 then return false end--при фризах ето условие будет срабатывать часто. Можно либо детектить фриз, либо увеличить интервал
+	if hidetrains_behind_player and hidetrains_behind_player:GetBool() and self.LastDrawCall and CurTime() - self.LastDrawCall > 1 then self.ShouldRenderClientEntsRes = false return end--при фризах ето условие будет срабатывать часто. Можно либо детектить фриз, либо увеличить интервал
 
 	--если надо скрыть все составы
-	if hidealltrains:GetBool() then return false end
+	if hidealltrains and hidealltrains:GetBool() then self.ShouldRenderClientEntsRes = false return end
 
 	--если надо скрыть все чужие составы
-	if hideothertrains:GetBool() then
+	if hideothertrains and hideothertrains:GetBool() then
 		local Owner = CPPI and self:CPPIGetOwner() or nil
-		if Owner ~= ply then return false end
+		if Owner ~= LocalPlayer() then self.ShouldRenderClientEntsRes = false return end
 	end
 	
 	--если надо скрыть за пропами
-	if hidetrains_behind_props_bool then return ShouldRender end
+	if hidetrains_behind_props_bool then self.ShouldRenderClientEntsRes = ShouldRender return end
 	
-	return true
+	self.ShouldRenderClientEntsRes = true
 end
 
 local function ChangeDrawFunctions(ent)
-	if not ent.Draw or not ent.ShouldRenderClientEnts then return end
 	local Draw = ent.Draw
-	ent.Draw = function(self)
+	ent.Draw = function(self,...)
 		self.LastDrawCall = CurTime()
-		Draw(self)
+		Draw(self,...)
 	end
-	ent.LaastShouldRenderClientEntsBool = false
-	ent.LaastShouldRenderClientEntsTime = CurTime()
+	ent.ShouldRenderClientEntsRes = false
 	ent.ShouldRenderClientEnts = function(self)
-		local CurTime = CurTime()
-		if CurTime - self.LaastShouldRenderClientEntsTime > 0.5 then --добавил микроинтервал, чтобы поднять фпс
-			self.LaastShouldRenderClientEntsTime = CurTime
-			self.LaastShouldRenderClientEntsBool = ShouldRenderEnts(self)
-		end
-		return self.LaastShouldRenderClientEntsBool
+		return self.ShouldRenderClientEntsRes
 	end
 end
+
+local entsFindByClass = ents.FindByClass
+timer.Create("Update ShouldRenderClientEntsRes variable",0.5,0,function()
+	for _,ent in pairs(entsFindByClass("gmod_subway_*"))do
+		if IsValid(ent) then ShouldRenderEnts(ent) end
+	end
+end)
 
 Metrostroi = Metrostroi or {}
 Metrostroi.ShouldHideTrain = ShouldRenderEnts
 
 hook.Add("OnEntityCreated","UpdateTrainsDrawFunction",function(ent) timer.Simple(2,function()
-	if not IsValid(ent) or ent.Base ~= "gmod_subway_base" or not table.HasValue(Metrostroi.TrainClasses, ent:GetClass()) then return end
+	if not IsValid(ent) or ent.Base ~= "gmod_subway_base" or not table.HasValue(Metrostroi.TrainClasses, ent:GetClass()) or not ent.Draw or not ent.ShouldRenderClientEnts then return end
 	print("changing drawing ClientEnts function on "..tostring(ent))
 	ChangeDrawFunctions(ent)
 end)end)

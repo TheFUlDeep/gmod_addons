@@ -1,5 +1,8 @@
 --TODO фикс конфликта с камерами метростроя
 --if 1 then return end
+THEFULDEEP = THEFULDEEP or {}
+local THEFULDEEP = THEFULDEEP
+
 local models = {
 	"models/thefuldeeps_models/mirror_square.mdl",
 	"models/thefuldeeps_models/mirror_rectangle.mdl"
@@ -44,7 +47,6 @@ if SERVER then
 		undo.Finish()
 	end)
 	
-	if not THEFULDEEP then THEFULDEEP = {} end
 	THEFULDEEP.SpawnMirror = SpawnMirror
 	
 	--[[hook.Add("Think","DisableMirrors",function()
@@ -130,26 +132,12 @@ if SERVER then
 end
 if SERVER then return end
 
-local Lastply,Lastpos,Lastang,Lastfov,Lastznear,Lastzfar
-hook.Add("CalcView", "Get_Metrostroi_TrainView1", function(ply,pos,ang,fov,znear,zfar)
-	Lastply,Lastpos,Lastang,Lastfov,Lastznear,Lastzfar = ply,pos,ang,fov,znear,zfar
-end)
-local ViewPos,ViewAng,ViewFunction
-timer.Create("FindMetrostroiCameras1",1,0,function()
-	local HooksTbl = hook.GetTable()
-	if not HooksTbl.CalcView or not HooksTbl.CalcView.Metrostroi_TrainView then return end
-	print("Found metrostroi view changer hook")
-	timer.Remove("FindMetrostroiCameras1")
-	ViewFunction = HooksTbl.CalcView.Metrostroi_TrainView
-end)
-
 local MetrostroiDrawCams--,C_CabFOV,C_FovDesired
 timer.Simple(0,function()
 	MetrostroiDrawCams = GetConVar("metrostroi_drawcams")
 	--C_CabFOV              = GetConVar("metrostroi_cabfov")
 	--C_FovDesired          = GetConVar("fov_desired")
 end)
-if not THEFULDEEP then THEFULDEEP = {} end
 local lastdraw = CurTime()
 local preview
 THEFULDEEP.MirrorDraw = function(self)
@@ -181,18 +169,9 @@ THEFULDEEP.MirrorDraw = function(self)
 		RTCam:SetPos(NeededPos)
 	end
 	--if self.RTCam:GetPos():DistToSqr(MirrorPos) > 300*300 then return end
-	local ply = LocalPlayer()
+	--local ply = LocalPlayer()
 	
-	if ViewFunction then
-		local ViewTbl = ViewFunction(ply,ply:EyePos(),Lastang,Lastfov,Lastznear,Lastzfar)
-		if ViewTbl then
-			ViewPos,ViewAng = ViewTbl.origin,ViewTbl.angles
-		else
-			ViewPos,ViewAng = nil,nil
-		end
-	end
-	
-	local plypos = ViewPos or ply:EyePos()
+	local plypos = THEFULDEEP.RealViewPos--эта переменная задается в файле draw_signals_routes.lua
 	local ang = (plypos - MirrorPos):Angle()
 	local mirrorang = self:GetAngles()
 	local worldmirrorang = self:LocalToWorldAngles(mirrorang)
@@ -275,20 +254,10 @@ timer.Simple(0,function()
 	local entsFindByClass = ents.FindByClass
 	local mathabs = math.abs
 	timer.Create("check if player can see mirror",1,0,function()
-		local ply = LocalPlayer and LocalPlayer()
-		if not IsValid(ply) then return end
-		if ViewFunction then
-			local ViewTbl = ViewFunction(ply,ply:EyePos(),Lastang,Lastfov,Lastznear,Lastzfar)
-			if ViewTbl then
-				ViewPos,ViewAng = ViewTbl.origin,ViewTbl.angles
-			else
-				ViewPos,ViewAng = nil,nil
-			end
-		end
-		local StartPos = ViewPos or ply:EyePos()
-		tracelinesetup.start = StartPos
-		local plyang = ply:EyeAngles()
-		local CurTime = CurTime()
+		--local ply = LocalPlayer()
+		--local StartPos = ViewPos or ply:EyePos()
+		tracelinesetup.start = THEFULDEEP.RealViewPos
+		--local plyang = ply:EyeAngles()
 		for _,ent in pairs(entsFindByClass("gmod_metrostroi_mirror")) do
 			if not IsValid(ent) then continue end
 			
@@ -319,7 +288,7 @@ timer.Simple(0,function()
 			::CONTINUE::
 		end
 		
-		if CurTime - lastdraw > 0.5 and IsValid(GetGlobalEntity("MirrorRTCam")) then
+		if CurTime() - lastdraw > 0.5 and IsValid(GetGlobalEntity("MirrorRTCam")) then
 			GetGlobalEntity("MirrorRTCam"):SetPos(Vector(0,0,-99999))
 		end
 	end)
@@ -347,7 +316,8 @@ end
 local MirrorEnt
 
 hook.Add("Think","MirrorPreview",function()
-	if not MirrorPreview:GetBool() or not IsValid(LocalPlayer():GetActiveWeapon()) or LocalPlayer():GetActiveWeapon():GetClass() ~= "gmod_tool" then
+	local ply = LocalPlayer()
+	if not MirrorPreview:GetBool() or not IsValid(ply:GetActiveWeapon()) or ply:GetActiveWeapon():GetClass() ~= "gmod_tool" then
 		if IsValid(MirrorEnt) then 
 			MirrorEnt:Remove() 
 		end
@@ -366,7 +336,6 @@ hook.Add("Think","MirrorPreview",function()
 	
 	if MirrorEnt:GetModel() ~= GetModelByType(MirrorModel:GetInt()) then MirrorEnt:SetModel(GetModelByType(MirrorModel:GetInt())) end
 	
-	local ply = LocalPlayer()
 	MirrorEnt:SetModelScale(MirrorScale:GetFloat())
 	MirrorEnt:SetPos(ply:LocalToWorld(Vector(MirrorDistance:GetFloat()))+Vector(0,0,60))
 	

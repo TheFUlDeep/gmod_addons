@@ -514,6 +514,12 @@ end
 
 if CLIENT then return end
 
+local tableinsert = table.insert
+local mathfloor = math.floor
+local mathmax = math.max
+local tableCount = table.Count
+local mathabs = math.abs
+
 util.AddNetworkString("Metrostroi Routes From Google Sheets")
 
 local function timeToSec(str)
@@ -550,7 +556,7 @@ local function GetStationByIndex(index)
 	index = tonumber(index)
 	if not index then return end
 	for index1,v in pairs(Metrostroi.StationConfigurations) do
-		if not tonumber(index1) or not v.names or not istable(v.names) or table.Count(v.names) < 1 then continue end
+		if not tonumber(index1) or not v.names or not istable(v.names) or tableCount(v.names) < 1 then continue end
 		if tonumber(index1) == index then
 			return GetAnyValueFromTable(v.names)
 		end
@@ -606,7 +612,7 @@ function Metrostroi.GenerateSchedule(routeID,starts,ends,path,AlreadyOnStation)
 		Metrostroi.DepartureTime[routeID] = serverTime + paddingTime/60
 	else
 		-- If schedules started, depart with interval
-		Metrostroi.DepartureTime[routeID] = math.max(Metrostroi.DepartureTime[routeID] + interval/60,serverTime + paddingTime/60)
+		Metrostroi.DepartureTime[routeID] = mathmax(Metrostroi.DepartureTime[routeID] + interval/60,serverTime + paddingTime/60)
 	end
 
 	-- Create new schedule
@@ -635,9 +641,9 @@ function Metrostroi.GenerateSchedule(routeID,starts,ends,path,AlreadyOnStation)
 
 		schedule[#schedule].arrivalTimeStr =
 			Format("%02d:%02d:%02d",
-				math.floor(schedule[#schedule][3]/60),
-				math.floor(schedule[#schedule][3])%60,
-				math.floor(schedule[#schedule][3]*60)%60)
+				mathfloor(schedule[#schedule][3]/60),
+				mathfloor(schedule[#schedule][3])%60,
+				mathfloor(schedule[#schedule][3]*60)%60)
 
 		-- Add travel time
 		if stationData.TravelTime then
@@ -702,7 +708,7 @@ local function GetValuesFromTable(tbl,startindex,endindex)
 	if not tbl[endindex] then return end
 	local tabl = {}
 	for k,v in ipairs(tbl) do
-		if k >= startindex or k <= endindex then table.insert(tabl,v) end
+		if k >= startindex or k <= endindex then tableinsert(tabl,v) end
 	end
 	
 	return tabl
@@ -715,7 +721,7 @@ local function GetPlatformByIndex(index)
 	end
 end
 
-local trackids={}
+--local trackids={}
 local platformstracks={}
 local function GenerateRoutes()
 	if not Metrostroi or not Metrostroi.StationConfigurations then return end
@@ -725,11 +731,11 @@ local function GenerateRoutes()
 	local IndexesToSort = {}
 	
 	--[[for index,v in pairs(Metrostroi.StationConfigurations) do --поиск индексов по луа файлу станций
-		if not tonumber(index) or not v.names or not istable(v.names) or table.Count(v.names) < 1 then continue end
+		if not tonumber(index) or not v.names or not istable(v.names) or tableCount(v.names) < 1 then continue end
 		local index = tonumber(index)
 		if not GetPlatformByIndex(index) then continue end
 		--Metrostroi.StationNames[index] = GetAnyValueFromTable(v.names)
-		table.insert(IndexesToSort,index)
+		tableinsert(IndexesToSort,index)
 	end]]
 	
 	--поиск индексов по платформам
@@ -741,7 +747,7 @@ local function GenerateRoutes()
 		if IndexesWas[index] then continue end
 		IndexesWas[index] = true
 		Metrostroi.StationNames[index] = GetStationByIndex(index) or "ERROR"--"ERROR" потому что "" не будет создавать маршрут
-		table.insert(IndexesToSort,index)
+		tableinsert(IndexesToSort,index)
 	end
 	
 	table.sort(IndexesToSort,function(a,b) return a < b end)
@@ -775,7 +781,6 @@ local function GenerateRoutes()
 	end]]
 	--PrintTable(Routes)
 	
-	local tableinsert = table.insert
 	local function TableReverse(tbl)
 		local res = {}
 		for _,v in pairs(tbl or {})do
@@ -841,7 +846,7 @@ local function GetStationIndexByName(str)
 	if not str or not Metrostroi or not Metrostroi.StationConfigurations then return end
 	
 	for index,v in pairs(Metrostroi.StationConfigurations) do
-		if not tonumber(index) or not v.names or not istable(v.names) or table.Count(v.names) < 1 then continue end
+		if not tonumber(index) or not v.names or not istable(v.names) or tableCount(v.names) < 1 then continue end
 		local index = tonumber(index)
 		for _,name in pairs(v.names) do
 			if bigrustosmall(name) == str then return index end
@@ -983,7 +988,6 @@ local function GetLastStation(self)
 	end
 end
 
-local mathabs = math.abs
 local platforms={}
 local platformsindexes={}
 local function init()
@@ -995,18 +999,18 @@ local function init()
 		local EndTrackNode = Metrostroi.GetPositionOnTrack(ent.PlatformEnd)[1]		
 		if not CentreTrackNode or not StartTrackNode or not EndTrackNode then continue end
 			
-		trackids[CentreTrackNode.path.id]=true
+		--trackids[CentreTrackNode.path.id]=true
 		
 		local halflen = (mathabs(StartTrackNode.x - EndTrackNode.x) + 10)/2
 		platforms[ent]={CentreTrackNode,StartTrackNode,EndTrackNode,ent,halflen}
 		local index = tonumber(ent.StationIndex or "")
 		if index then
 			platformsindexes[index] = platformsindexes[index] or {}
-			table.insert(platformsindexes[index],platforms[ent])
+			tableinsert(platformsindexes[index],platforms[ent])
 		end
 			
 		platformstracks[CentreTrackNode.path.id] = platformstracks[CentreTrackNode.path.id] or {}
-		table.insert(platformstracks[CentreTrackNode.path.id],platforms[ent])
+		tableinsert(platformstracks[CentreTrackNode.path.id],platforms[ent])
 	end
 		
 	GenerateRoutes()
@@ -1043,11 +1047,16 @@ local function CheckAlreadyOnStation(track,fisrstationindex)
 	end
 end
 
+local seatstbl = {"DriverSeat","InstructorsSeat","ExtraSeat"}
+for i = 1,4 do
+	tableinsert(seatstbl,"InstructorsSeat"..i)
+	tableinsert(seatstbl,"ExtraSeat"..i)
+end
+
+local entsFindByClass = ents.FindByClass
 timer.Create("Update/Set Route list",5,0,function()
 	--расписание присваивается поезду. Если игрок в составе, то дать ему это расписание, иначе отнять
-	if not Metrostroi or not Metrostroi.TrainClasses then return end
-	for _,trainclass in pairs(Metrostroi.TrainClasses) do
-		for _,wag in pairs(ents.FindByClass(trainclass)) do
+		for _,wag in pairs(entsFindByClass("gmod_subway_*")) do
 			if not IsValid(wag) or not wag.DriverSeat or not IsValid(wag.DriverSeat:GetDriver()) --[[or not wag.SubwayTrain or wag.SubwayTrain.WagType ~= 1]] then --[[print("continue1")]] continue end-- нужен машинист в кабине
 			
 			wag.metrostroi_route_list = wag.metrostroi_route_list or {}
@@ -1083,25 +1092,24 @@ timer.Create("Update/Set Route list",5,0,function()
 			
 			if not metrostroi_route_list.list then --[[print("continue4",metrostroi_route_list.list)]] continue end
 			
+			local TblToSend = {}
+			for i,d in ipairs(metrostroi_route_list.list) do
+				TblToSend[i] = TblToSend[i] or {}
+				TblToSend[i][1] = GetStationByIndex(d[1]) or "ERROR"
+				TblToSend[i][2] = d.arrivalTimeStr
+			end
 			
-			for i = 1,5 do
-				local seat = i == 1 and "DriverSeat" or i == 2 and "InstructorsSeat" or i == 3 and "ExtraSeat1" or i == 4 and "ExtraSeat2" or i == 5 and "ExtraSeat3"
-				if not wag[seat] then continue end
-				local Driver = wag[seat]:GetDriver()
+			for i,seatname in pairs(seatstbl) do
+				local seat = wag.seatname
+				local Driver = IsValid(seat) and seat:GetDriver()
 				if not IsValid(Driver) then --[[print("continue5",Driver)]] continue end
 				
-				local TblToSend = {}
-				for i,d in ipairs(metrostroi_route_list.list) do
-					TblToSend[i] = TblToSend[i] or {}
-					TblToSend[i][1] = GetStationByIndex(d[1]) or "ERROR"
-					TblToSend[i][2] = d.arrivalTimeStr
-				end
+
 				
 				SendChatMessageOrTbl(Driver,false,util.TableToJSON(TblToSend))
 			end
 			
 		end
-	end
 	
 	for _,ply in pairs(player.GetHumans()) do
 		if not ply:InVehicle() then SendChatMessageOrTbl(ply,false,"") end

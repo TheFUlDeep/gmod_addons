@@ -1,6 +1,10 @@
 if CLIENT then return end
 
-local seats = {"DriverSeat","InstructorsSeat","ExtraSeat"}
+local seatstbl = {"DriverSeat","InstructorsSeat","ExtraSeat"}
+for i = 1,4 do
+	table.insert(seatstbl,"InstructorsSeat"..i)
+	table.insert(seatstbl,"ExtraSeat"..i)
+end
 
 timer.Simple(0,function()
 	for _,class in pairs(Metrostroi.TrainClasses) do
@@ -9,14 +13,10 @@ timer.Simple(0,function()
 		local OldInit = ENT.Initialize
 		ENT.Initialize = function(self,...)
 			OldInit(self,...)
-			for i = 0,4 do
-				local str = i > 0 and tostring(i) or ""
-				for _,seat1 in pairs(seats) do
-					local seat = seat1..str
-					if IsValid(self[seat]) then 
-						self[seat]:SetRenderMode(RENDERMODE_NONE) 
-						self[seat]:DrawShadow(false)
-					end
+			for _,seat in pairs(seatstbl) do
+				if IsValid(self[seat]) then 
+					self[seat]:SetRenderMode(RENDERMODE_NONE) 
+					self[seat]:DrawShadow(false)
 				end
 			end
 		end
