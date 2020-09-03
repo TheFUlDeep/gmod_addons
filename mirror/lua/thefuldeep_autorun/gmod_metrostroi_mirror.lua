@@ -163,20 +163,16 @@ THEFULDEEP.MirrorDraw = function(self)
 		self.RTCam.GlobalOverride1 = true
 	end]]
 	
-	local MirrorPos = self:LocalToWorld(self:OBBCenter())
-	local NeededPos = self:GetPos()
-	if RTCam:GetPos() ~= NeededPos then
-		RTCam:SetPos(NeededPos)
+	local MirrorPos = self:GetPos()
+	if RTCam:GetPos() ~= MirrorPos then
+		RTCam:SetPos(MirrorPos)
 	end
 	--if self.RTCam:GetPos():DistToSqr(MirrorPos) > 300*300 then return end
 	--local ply = LocalPlayer()
 	
-	local plypos = THEFULDEEP.RealViewPos--эта переменная задается в файле draw_signals_routes.lua
-	local ang = (plypos - MirrorPos):Angle()
+	--local plypos = THEFULDEEP.RealViewPos--эта переменная задается в файле draw_signals_routes.lua
 	local mirrorang = self:GetAngles()
-	local worldmirrorang = self:LocalToWorldAngles(mirrorang)
-	ang = -ang + Angle(-mirrorang.r*2,worldmirrorang.y+180,-mirrorang.p*2)
-	RTCam:SetAngles(ang)
+	RTCam:SetAngles(-((THEFULDEEP.RealViewPos - MirrorPos):Angle()) + Angle(-mirrorang.r*2,self:LocalToWorldAngles(mirrorang).y+180,-mirrorang.p*2))
 	
 	--[[local FOV
 	local Dist = plypos:DistToSqr(MirrorPos)
