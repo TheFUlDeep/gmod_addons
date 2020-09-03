@@ -317,7 +317,7 @@ local MirrorEnt
 
 hook.Add("Think","MirrorPreview",function()
 	local ply = LocalPlayer()
-	if not MirrorPreview:GetBool() or not IsValid(ply:GetActiveWeapon()) or LocalPlayer():GetActiveWeapon():GetClass() ~= "gmod_tool" then
+	if not MirrorPreview:GetBool() or not IsValid(ply:GetActiveWeapon()) or ply:GetActiveWeapon():GetClass() ~= "gmod_tool" then
 		if IsValid(MirrorEnt) then 
 			MirrorEnt:Remove() 
 		end
