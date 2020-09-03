@@ -23,7 +23,7 @@ if SERVER then
 					end
 					routeName = '"'..routeName..'"'
 					if route.Emer then routeName = "Emergency "..routeName end
-					tableinsert(commands,1,routeName)
+					tableinsert(commands,1,routeName)--мне тут надо в обратном порядке, потому что я рисую текста снизу вверх
 				end
 				if #commands < 1 then continue end
 				
@@ -61,43 +61,48 @@ end
 
 if SERVER then return end
 
-local texts = {}--ентити, позиция, угол, таблица маршрутов
+local texts = {}--ентити, позиция, угол, таблица маршрутов, закрыт ли вручную
 
 local signalsCommands = {}
 net.Receive("SignalsRoutesForDrawing", function()
 	signalsCommands = net.ReadTable()
 end)
 
-local maxdist = 1000*1000
 
-local convar
+local C_Enabled
+local C_Distance
 timer.Simple(0,function()
-	convar = GetConVar("draw_signal_routes")
+	C_Enabled = GetConVar("draw_signal_routes")
+	if not C_Enabled then C_Enabled = CreateClientConVar("draw_signal_routes","1",true,false,"") end
+	
+	C_Distance = GetConVar("draw_signal_routes_distance")
+	if not C_Distance then C_Distance = CreateClientConVar("draw_signal_routes_distance","2000",true,false,"") end
 end)
 
-local entsGetByIndex = ents.GetByIndex
-local tableCopy = table.Copy
-timer.Create("Get signals routes for drawing",2,0,function()
-	local ply = LocalPlayer and LocalPlayer()
-	if not IsValid(ply) then return end
-	local plypos = ply:GetPos()
-	
+
+local maxdistDef = 2000*2000
+--методом os.clock было вычислено, что постоянный потсоянный по таблице из 200 элементов медленнее, чем потсоянный проход по таблице из 10ти элементов при постоянной ее очистке и обращении к таблице из 200 по ключу раз в секунду
+--разница в производительности примерно в 10 раз
+--короче чем больше таблица, тем медленнее работает. Поэтому в таймере я делаю маленькую таблицу, из которой уже ресуются текста
+THEFULDEEP = THEFULDEEP or {}
+local THEFULDEEP = THEFULDEEP
+THEFULDEEP.RealViewPos = Vector(0)
+timer.Create("Get signals routes for drawing",1,0,function()
 	texts = {}
-	
-	for _,signal in pairs(entsFindByClass(signals_class)) do
-		if not IsValid(signal) or signal:GetPos():DistToSqr(plypos) > maxdist then continue end
+	if C_Enabled and C_Enabled:GetBool() then		
+		local maxdist = C_Distance and C_Distance:GetInt()^2 or maxdistDef
 		
-		local commands = signalsCommands[signal:EntIndex()] or {}
-		
-		local commandsCopy = tableCopy(commands)
-		
-		if signal:GetNW2Bool("Close") then
-			commandsCopy[#commandsCopy+1] = "закрыт вручную"
+		for _,signal in pairs(entsFindByClass(signals_class)) do
+			if not IsValid(signal) or signal:GetPos():DistToSqr(THEFULDEEP.RealViewPos) > maxdist then continue end
+			
+			local commands = signalsCommands[signal:EntIndex()] or {}
+			
+			local IsClosedManually = signal:GetNW2Bool("Close")
+			
+			if #commands < 1 and not IsClosedManually then continue end
+			
+			texts[#texts+1] = {signal,signal:GetPos()+Vector(0,0,80),signal:GetAngles()+Angle(0,180,90),commands,IsClosedManually}
 		end
-		
-		if #commandsCopy < 1 then continue end
-		
-		texts[#texts+1] = {signal,signal:GetPos()+Vector(0,0,80),signal:GetAngles()+Angle(0,180,90),commandsCopy}
 	end
 end)
 
@@ -108,15 +113,19 @@ local drawSimpleTextOutlined = draw.SimpleTextOutlined
 local r,g,b = 255,255,255
 local color = Color(r,g,b,255)
 local color2 = Color(255-r,255-g,255-b,255)
+local EyePos = EyePos
 hook.Add("PostDrawOpaqueRenderables","Draw Signals Routes",function()
-	if not convar or not convar:GetBool() then return end
+	THEFULDEEP.RealViewPos = EyePos()
+	
 	for _,params in pairs(texts) do
-		cam.Start3D2D( params[2],params[3],1)
+		cam.Start3D2D(params[2],params[3],1)
 			local hlast = 0
 			for _,text in pairs(params[4]) do
 				local w,h = drawSimpleTextOutlined(text, font, 0, hlast, color, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, color2)
 				hlast = hlast - h
 			end
+			if params[5] then drawSimpleTextOutlined("закрыт вручную", font, 0, hlast, color, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, color2) end
 		cam.End3D2D()
 	end
 end)
+
