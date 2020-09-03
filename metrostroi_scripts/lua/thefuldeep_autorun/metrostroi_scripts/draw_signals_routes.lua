@@ -91,9 +91,10 @@ timer.Create("Get signals routes for drawing",1,0,function()
 	texts = {}
 	if C_Enabled and C_Enabled:GetBool() then		
 		local maxdist = C_Distance and C_Distance:GetInt()^2 or maxdistDef
+		local viewpos = THEFULDEEP.RealViewPos
 		
 		for _,signal in pairs(entsFindByClass(signals_class)) do
-			if not IsValid(signal) or signal:GetPos():DistToSqr(THEFULDEEP.RealViewPos) > maxdist then continue end
+			if not IsValid(signal) or signal:GetPos():DistToSqr(viewpos) > maxdist then continue end
 			
 			local commands = signalsCommands[signal:EntIndex()] or {}
 			

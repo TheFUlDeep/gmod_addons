@@ -169,7 +169,7 @@ THEFULDEEP.MirrorDraw = function(self)
 		RTCam:SetPos(NeededPos)
 	end
 	--if self.RTCam:GetPos():DistToSqr(MirrorPos) > 300*300 then return end
-	local ply = LocalPlayer()
+	--local ply = LocalPlayer()
 	
 	local plypos = THEFULDEEP.RealViewPos--эта переменная задается в файле draw_signals_routes.lua
 	local ang = (plypos - MirrorPos):Angle()
@@ -254,11 +254,10 @@ timer.Simple(0,function()
 	local entsFindByClass = ents.FindByClass
 	local mathabs = math.abs
 	timer.Create("check if player can see mirror",1,0,function()
-		local ply = LocalPlayer()
+		--local ply = LocalPlayer()
 		--local StartPos = ViewPos or ply:EyePos()
 		tracelinesetup.start = THEFULDEEP.RealViewPos
 		--local plyang = ply:EyeAngles()
-		local CurTime = CurTime()
 		for _,ent in pairs(entsFindByClass("gmod_metrostroi_mirror")) do
 			if not IsValid(ent) then continue end
 			
@@ -289,7 +288,7 @@ timer.Simple(0,function()
 			::CONTINUE::
 		end
 		
-		if CurTime - lastdraw > 0.5 and IsValid(GetGlobalEntity("MirrorRTCam")) then
+		if CurTime() - lastdraw > 0.5 and IsValid(GetGlobalEntity("MirrorRTCam")) then
 			GetGlobalEntity("MirrorRTCam"):SetPos(Vector(0,0,-99999))
 		end
 	end)
@@ -317,7 +316,8 @@ end
 local MirrorEnt
 
 hook.Add("Think","MirrorPreview",function()
-	if not MirrorPreview:GetBool() or not IsValid(LocalPlayer():GetActiveWeapon()) or LocalPlayer():GetActiveWeapon():GetClass() ~= "gmod_tool" then
+	local ply = LocalPlayer()
+	if not MirrorPreview:GetBool() or not IsValid(ply:GetActiveWeapon()) or LocalPlayer():GetActiveWeapon():GetClass() ~= "gmod_tool" then
 		if IsValid(MirrorEnt) then 
 			MirrorEnt:Remove() 
 		end
@@ -336,7 +336,6 @@ hook.Add("Think","MirrorPreview",function()
 	
 	if MirrorEnt:GetModel() ~= GetModelByType(MirrorModel:GetInt()) then MirrorEnt:SetModel(GetModelByType(MirrorModel:GetInt())) end
 	
-	local ply = LocalPlayer()
 	MirrorEnt:SetModelScale(MirrorScale:GetFloat())
 	MirrorEnt:SetPos(ply:LocalToWorld(Vector(MirrorDistance:GetFloat()))+Vector(0,0,60))
 	

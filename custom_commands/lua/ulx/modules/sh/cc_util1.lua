@@ -518,7 +518,7 @@ if SERVER then
 	
 	----------------------------------------ПОСАДКА ИГРОКА В СВОБОДНОЕ МЕСТО---------------------------------------------
 	local seatstbl = {"DriverSeat","InstructorsSeat","ExtraSeat"}
-	for i = 1,3 do
+	for i = 1,4 do
 		table.insert(seatstbl,"InstructorsSeat"..i)
 		table.insert(seatstbl,"ExtraSeat"..i)
 	end

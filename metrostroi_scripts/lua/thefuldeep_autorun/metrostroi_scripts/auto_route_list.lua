@@ -715,7 +715,7 @@ local function GetPlatformByIndex(index)
 	end
 end
 
-local trackids={}
+--local trackids={}
 local platformstracks={}
 local function GenerateRoutes()
 	if not Metrostroi or not Metrostroi.StationConfigurations then return end
@@ -995,7 +995,7 @@ local function init()
 		local EndTrackNode = Metrostroi.GetPositionOnTrack(ent.PlatformEnd)[1]		
 		if not CentreTrackNode or not StartTrackNode or not EndTrackNode then continue end
 			
-		trackids[CentreTrackNode.path.id]=true
+		--trackids[CentreTrackNode.path.id]=true
 		
 		local halflen = (mathabs(StartTrackNode.x - EndTrackNode.x) + 10)/2
 		platforms[ent]={CentreTrackNode,StartTrackNode,EndTrackNode,ent,halflen}
@@ -1043,6 +1043,12 @@ local function CheckAlreadyOnStation(track,fisrstationindex)
 	end
 end
 
+local seatstbl = {"DriverSeat","InstructorsSeat","ExtraSeat"}
+for i = 1,4 do
+	table.insert(seatstbl,"InstructorsSeat"..i)
+	table.insert(seatstbl,"ExtraSeat"..i)
+end
+
 timer.Create("Update/Set Route list",5,0,function()
 	--расписание присваивается поезду. Если игрок в составе, то дать ему это расписание, иначе отнять
 	if not Metrostroi or not Metrostroi.TrainClasses then return end
@@ -1084,10 +1090,9 @@ timer.Create("Update/Set Route list",5,0,function()
 			if not metrostroi_route_list.list then --[[print("continue4",metrostroi_route_list.list)]] continue end
 			
 			
-			for i = 1,5 do
-				local seat = i == 1 and "DriverSeat" or i == 2 and "InstructorsSeat" or i == 3 and "ExtraSeat1" or i == 4 and "ExtraSeat2" or i == 5 and "ExtraSeat3"
-				if not wag[seat] then continue end
-				local Driver = wag[seat]:GetDriver()
+			for i,seatname in pairs(seatstbl) do
+				local seat = wag.seatname
+				local Driver = IsValid(seat) and seat:GetDriver()
 				if not IsValid(Driver) then --[[print("continue5",Driver)]] continue end
 				
 				local TblToSend = {}

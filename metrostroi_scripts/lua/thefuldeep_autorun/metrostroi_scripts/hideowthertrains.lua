@@ -145,7 +145,7 @@ local function ShouldRenderEnts(self)
 	if PlyInTrain == self then self.ShouldRenderClientEntsRes = true return end
 	
 	--проверка, находится ли состав за пропом и находится ли игрок рядом с диагоналями
-	local ply = LocalPlayer()
+	--local ply = LocalPlayer()
 	
 	local StartPos = THEFULDEEP.RealViewPos--эта переменная задается в файле draw_signals_routes.lua
 	tracelinesetup.start = StartPos
@@ -215,7 +215,7 @@ local function ShouldRenderEnts(self)
 	--если надо скрыть все чужие составы
 	if hideothertrains and hideothertrains:GetBool() then
 		local Owner = CPPI and self:CPPIGetOwner() or nil
-		if Owner ~= ply then self.ShouldRenderClientEntsRes = false return end
+		if Owner ~= LocalPlayer() then self.ShouldRenderClientEntsRes = false return end
 	end
 	
 	--если надо скрыть за пропами
