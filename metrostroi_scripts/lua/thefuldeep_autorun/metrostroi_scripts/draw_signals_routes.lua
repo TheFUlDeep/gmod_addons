@@ -115,7 +115,7 @@ local r,g,b = 255,255,255
 local color = Color(r,g,b,255)
 local color2 = Color(255-r,255-g,255-b,255)
 local EyePos = EyePos
-hook.Add("PostDrawOpaqueRenderables","Draw Signals Routes",function()
+hook.Add("PreDrawEffects","Draw Signals Routes",function()
 	THEFULDEEP.RealViewPos = EyePos()
 	
 	for _,params in pairs(texts) do
@@ -129,4 +129,5 @@ hook.Add("PostDrawOpaqueRenderables","Draw Signals Routes",function()
 		cam.End3D2D()
 	end
 end)
+--PostDrawEffects
 
