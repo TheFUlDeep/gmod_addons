@@ -1100,7 +1100,7 @@ timer.Create("Update/Set Route list",5,0,function()
 			end
 			
 			for i,seatname in pairs(seatstbl) do
-				local seat = wag.seatname
+				local seat = wag[seatname]
 				local Driver = IsValid(seat) and seat:GetDriver()
 				if not IsValid(Driver) then --[[print("continue5",Driver)]] continue end
 				
