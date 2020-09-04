@@ -53,8 +53,7 @@ if SERVER then
 	
 	timer.Create("Update Close NW2 value for signals",2,0,function()
 		for _,v in pairs(entsFindByClass(signals_class)) do
-			if not IsValid(v) then continue end
-			v:SetNW2Bool("Close",v.Close)
+			if IsValid(v) then v:SetNW2Bool("Close",v.Close) end
 		end
 	end)
 end
@@ -125,7 +124,7 @@ hook.Add("PreDrawEffects","Draw Signals Routes",function()
 				local w,h = drawSimpleTextOutlined(text, font, 0, hlast, color, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, color2)
 				hlast = hlast - h
 			end
-			if params[5] then drawSimpleTextOutlined("закрыт вручную", font, 0, hlast, color, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, color2) end
+			if params[5] then drawSimpleTextOutlined("Closed", font, 0, hlast, color, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, color2) end
 		cam.End3D2D()
 	end
 end)
