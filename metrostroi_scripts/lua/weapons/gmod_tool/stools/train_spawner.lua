@@ -31,7 +31,7 @@ local function MaximumWagons(ply,self)
 	end
 	if Rank == "superadmin" then maximum = 6 end
 	if maximum < 4 and (Rank == "operator" or Rank == "admin" or Rank == "SuperVIP") then maximum = 4 end
-	maximum = not ply:GetNW2Bool("ignoremapwaglimit") and GetGlobalInt("MaxWagonsByPlatformLen",0) or maximum
+	maximum = not ply:GetNW2Bool("ignoremapwaglimit") and maximum > GetGlobalInt("MaxWagonsByPlatformLen",0) and GetGlobalInt("MaxWagonsByPlatformLen",0) or maximum
 	if SERVER and self then
 		if maximum < 6 and self.Train.ClassName == "gmod_subway_81-722" then self.Settings.WagNum = 3 end
 	end
