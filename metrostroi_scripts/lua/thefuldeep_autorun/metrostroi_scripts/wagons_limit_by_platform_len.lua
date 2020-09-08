@@ -12,7 +12,7 @@ local function hookfunc(ent)
 			if not minlen or curlen < minlen then 
 				minlen = curlen
 				local wags = math.floor(curlen/18.5+0.5)--делю и округляю
-				SetGlobalInt("MaxWagonsByPlatformLen",wags < 6 and wags or 6)
+				SetGlobalInt("MaxWagonsByPlatformLen",wags)
 			end
 		end
 	end)
