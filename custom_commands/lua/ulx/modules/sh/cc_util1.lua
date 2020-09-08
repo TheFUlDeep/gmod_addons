@@ -1598,7 +1598,7 @@ if SERVER then
 	end)
 end
 
-local function MaximumWagons(ply,self)
+function MaximumWagons(ply,self)
 	local Map = game.GetMap()
 	if not ply.GetUserGroup then return 0 end
 	local Rank = ply:GetUserGroup()
