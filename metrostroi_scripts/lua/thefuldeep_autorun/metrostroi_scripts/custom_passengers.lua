@@ -23,6 +23,9 @@ local female_sequences = {2,5,6,7,11,17}
 local male_sequences = {2,3,4,6,10}
 
 timer.Simple(1,function()
+	local metrostroi_custom_passengers = GetConVar("metrostroi_custom_passengers")
+	if not metrostroi_custom_passengers then return end
+
 	local function SetNewModel(v)
 		if IsValid(v) and not v.ChangedModel then
 			v.ChangedModel = true
@@ -32,8 +35,6 @@ timer.Simple(1,function()
 			v:ResetSequence(tableRandom(model:find("female",1,true) and female_sequences or male_sequences))
 		end
 	end
-	
-	local metrostroi_custom_passengers = GetConVar("metrostroi_custom_passengers")
 
 	local PLATFORM = scripted_ents.GetStored("gmod_track_platform")
 	if PLATFORM then
@@ -41,7 +42,7 @@ timer.Simple(1,function()
 		local oldthink = PLATFORM.Think
 		PLATFORM.Think = function(self,...)
 			local res = oldthink(self,...)
-			if metrostroi_custom_passengers and metrostroi_custom_passengers:GetBool() then
+			if metrostroi_custom_passengers:GetBool() then
 				for _,v in pairs(self.ClientModels)do SetNewModel(v)end
 				for _,v in pairs(self.CleanupModels) do
 					local ent = v.ent
@@ -59,7 +60,7 @@ timer.Simple(1,function()
 		local oldthink = BASE.Think
 		BASE.Think = function(self,...)
 			local res = oldthink(self,...)
-			if metrostroi_custom_passengers and metrostroi_custom_passengers:GetBool() then
+			if metrostroi_custom_passengers:GetBool() then
 			--if self.PassengerEnts then
 				for _,v in pairs(self.PassengerEnts)do SetNewModel(v)end
 			--end
