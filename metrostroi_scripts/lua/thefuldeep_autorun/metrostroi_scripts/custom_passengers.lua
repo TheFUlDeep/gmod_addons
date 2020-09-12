@@ -169,7 +169,7 @@ timer.Simple(1,function()
 		metrostroi_custom_passengers_bool = metrostroi_custom_passengers:GetBool()
 		if not metrostroi_custom_passengers_bool then return end
 		for _,platform in pairs(entsFindByClass(platform_class))do
-			if IsValid(platform) and #platform.CleanupModels == 0 then
+			if IsValid(platform) and platform.CleanupModels and #platform.CleanupModels == 0 then
 				for k,pass in pairs(platform.ClientModels)do
 					if IsValid(pass) and pass:GetPos() ~= platform.Pool[k].pos then 
 						pass:SetPos(platform.Pool[k].pos)
