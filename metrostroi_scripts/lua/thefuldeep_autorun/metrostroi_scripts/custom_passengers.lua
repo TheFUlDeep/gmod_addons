@@ -67,7 +67,7 @@ local function StartCycleSequence(ent,seqName,speed)
 		if speed ~= tbl.speed then
 			local len = ent:SequenceDuration(tbl.id)
 			local needparts = mathfloor(speed/len+0.5)
-			tbl.curpart = mathfloor(needparts * ((tbl.curpart or 0) / tbl.parts)+0.5)
+			tbl.curpart = needparts * ((tbl.curpart or 0) / tbl.parts)
 			tbl.parts = needparts
 			tbl.playbackrate = tbl.seqParts*(1/needparts)
 			tbl.onepartlen = len/tbl.seqParts
@@ -184,7 +184,7 @@ timer.Simple(1,function()
 				for k,pass in pairs(wag.PassengerEnts)do
 					if IsValid(pass) and pass:GetPos() ~= wag:LocalToWorld(wag.PassengerPositions[k]) then 
 						pass:SetPos(wag:LocalToWorld(wag.PassengerPositions[k]))
-						pass:SetAngles(Angle(0,math.random(0,360),0))
+						pass:SetAngles(Angle(0,mathrandom(0,360),0))
 					end
 				end
 			end
