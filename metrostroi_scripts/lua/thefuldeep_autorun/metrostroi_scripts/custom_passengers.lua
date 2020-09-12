@@ -67,7 +67,7 @@ local function StartCycleSequence(ent,seqName,speed)
 		if speed ~= tbl.speed then
 			local len = ent:SequenceDuration(tbl.id)
 			local needparts = mathfloor(speed/len+0.5)
-			tbl.curpart = needparts * ((tbl.curpart or 0) / tbl.parts)
+			tbl.curpart = mathfloor(needparts * ((tbl.curpart or 0) / tbl.parts)+0.5)
 			tbl.parts = needparts
 			tbl.playbackrate = tbl.seqParts*(1/needparts)
 			tbl.onepartlen = len/tbl.seqParts
