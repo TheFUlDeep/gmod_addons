@@ -540,6 +540,48 @@ end
 function ENT:Draw()
     -- Draw model
     self:DrawModel()
+	
+	
+	self.Red = false
+	if not self.LensesTBL then return end
+	local LensesStatus = self:GetNW2String("Signal","000000000")--1 - горит, 2 - мигает
+	local lenseindex = 1
+	local lastWhite
+	for k,v in pairs(self.LensesTBL)do
+		if v ~= "M" then
+			for i = 1, #v do
+				if v[i] == "R" and LensesStatus[lenseindex] == "1" then--если горит хотя бы один красный, то это красный
+					self.Red = true
+				elseif v[i] == "W" then
+					lastWhite = lenseindex--ищу самый последний белый сигнал, так как именно он является пригласительным
+				end
+				lenseindex = lenseindex + 1
+			end
+		end
+	end
+	
+	if lastWhite then
+		if LensesStatus[lastWhite] == "2" then
+			self.Invation = true
+		else
+			self.Invation = false
+		end
+	end
+	
+	if self.Red and not self.Invation then--если карсный и нет пригласительного, то потушить маршрутные указатели
+		if IsValid(self.Models[1][self.RouteNumber])then
+			self.Models[1][self.RouteNumber]:SetSkin(0)
+		end
+		
+		for k,v in pairs(self.RouteNumbers) do
+			if IsValid(self.Models[3]["rou1"..k]) then
+				self:Animate("rou1"..k,0,   0.005,1, 256)
+			end
+			if IsValid(self.Models[3]["rou2"..k]) then
+				self:Animate("rou2"..k,0,   0.005,1, 256)
+			end
+		end
+	end
 end
 local debug = GetConVar("metrostroi_drawsignaldebug")
 
