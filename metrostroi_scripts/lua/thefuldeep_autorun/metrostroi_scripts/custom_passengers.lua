@@ -180,7 +180,7 @@ timer.Simple(1,function()
 		end
 		
 		for _,wag in pairs(entsFindByClass("gmod_subway_*"))do
-			if IsValid(wag) then
+			if IsValid(wag) and wag.PassengerEnts then
 				for k,pass in pairs(wag.PassengerEnts)do
 					if IsValid(pass) and pass:GetPos() ~= wag:LocalToWorld(wag.PassengerPositions[k]) then 
 						pass:SetPos(wag:LocalToWorld(wag.PassengerPositions[k]))
