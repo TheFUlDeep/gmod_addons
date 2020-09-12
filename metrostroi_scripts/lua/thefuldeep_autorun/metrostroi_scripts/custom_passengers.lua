@@ -63,16 +63,16 @@ local function StartCycleSequence(ent,seqName,speed)
 	end]]
 	
 	if CycleAnims[ent] then
-		if speed ~= CycleAnims[ent].speed then
-			local len = ent:SequenceDuration(CycleAnims[ent].id)
-			local partpercent = (CycleAnims[ent].curpart or 0) / CycleAnims[ent].parts
+		local tbl = CycleAnims[ent]
+		if speed ~= tbl.speed then
+			local len = ent:SequenceDuration(tbl.id)
 			local needparts = mathfloor(speed/len+0.5)
-			CycleAnims[ent].curpart = needparts * partpercent
-			CycleAnims[ent].parts = needparts
-			CycleAnims[ent].playbackrate = CycleAnims[ent].seqParts*(1/needparts)
-			CycleAnims[ent].onepartlen = len/CycleAnims[ent].seqParts
+			tbl.curpart = needparts * ((tbl.curpart or 0) / tbl.parts)
+			tbl.parts = needparts
+			tbl.playbackrate = tbl.seqParts*(1/needparts)
+			tbl.onepartlen = len/tbl.seqParts
 		end
-		if CycleAnims[ent].seqName == seqName then return end
+		if tbl.seqName == seqName then return end
 	end
 	
 	local id,len = ent:LookupSequence(seqName)
