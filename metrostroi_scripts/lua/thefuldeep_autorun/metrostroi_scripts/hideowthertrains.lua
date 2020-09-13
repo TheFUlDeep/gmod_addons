@@ -45,6 +45,11 @@ timer.Simple(1,function()
 
 	C_ScreenshotMode      = GetConVar("metrostroi_screenshotmode")		-- прогружаю конвары здесь, чтобы случайно не прогрузить Nil
 	
+	if not THEFULDEEP.RealViewPos then
+		hook.Add("PreDrawEffects","GetRealEyePos",function()THEFULDEEP.RealViewPos = EyePos()end)
+		--PostDrawEffects
+	end
+	
 	local base = scripted_ents.Get("gmod_subway_base")
 	DefaultShouldRenderClientEntsFunction = base.ShouldRenderClientEnts
 end)
@@ -150,7 +155,7 @@ local function ShouldRenderEnts(self)
 	--проверка, находится ли состав за пропом и находится ли игрок рядом с диагоналями
 	--local ply = LocalPlayer()
 	
-	local StartPos = THEFULDEEP.RealViewPos--эта переменная задается в файле draw_signals_routes.lua
+	local StartPos = THEFULDEEP.RealViewPos or Vector(0)
 	tracelinesetup.start = StartPos
 	local TrainSize = self.WagonSize or SaveOBBMaxs(self)
 	--local TrainSize2 = self.WagonSize2 or SaveOBBMins(self)
