@@ -17,6 +17,8 @@ hook.Add("Think","RecomendHideTrains",function()
 			hook.Remove("Think","RecomendHideTrains")
 			chat.AddText(
 				Color(255,0,0),"Обнаружена низкая производительность. Для повышения fps попробуйте консольные команды ", 
+				Color(255,255,0), "multi_thread_rendering", 
+				Color(255,0,0), ", ", 
 				Color(255,255,0), "hideothertrains 1", 
 				Color(255,0,0), " или ", 
 				Color(255,255,0), "hidealltrains 1", 
