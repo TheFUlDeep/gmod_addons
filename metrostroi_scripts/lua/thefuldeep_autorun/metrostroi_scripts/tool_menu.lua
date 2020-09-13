@@ -44,19 +44,38 @@ concommand.Add("multi_thread_rendering_disable", function()
 	end)end)end)end)end)end)end)end)end)
 end)
 
+if not GetConVar("metrostroi_custom_time") then
 CreateClientConVar("metrostroi_custom_time", "3", true, false, "" )
+end
 
+if not GetConVar("hideothertrains") then
 CreateClientConVar("hideothertrains", "0", true, false, "" )
+end
 
+
+if not GetConVar("hidealltrains") then
 CreateClientConVar("hidealltrains","0",true,false,"")
+end
 
+
+if not GetConVar("hidetrains_behind_props") then
 CreateClientConVar("hidetrains_behind_props","1",true,false,"")
+end
 
+
+if not GetConVar("hidetrains_behind_player") then
 CreateClientConVar("hidetrains_behind_player","1",true,false,"")
+end
 
+
+if not GetConVar("draw_signal_routes") then
 CreateClientConVar("draw_signal_routes","1",true,false,"")
+end
 
+
+if not GetConVar("metrostroi_custom_passengers") then
 CreateClientConVar("metrostroi_custom_passengers","0",true,false,"")
+end
 
 hook.Add( "PopulateToolMenu", "MetrostroiCustomPanel", function()
 	spawnmenu.AddToolMenuOption( "Utilities", "Metrostroi", "metrostroi_client_panel2", "Клиент2", "", "", function(panel)

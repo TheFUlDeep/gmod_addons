@@ -34,15 +34,16 @@ end)
 
 
 --поиск инициализированных значений
-local C_ScreenshotMode,hidealltrains,hideothertrains,hidetrains_behind_props,hidetrains_behind_player
+local C_ScreenshotMode
 local DefaultShouldRenderClientEntsFunction
+
+local hidealltrains = GetConVar("hidealltrains") or CreateClientConVar("hidealltrains","0",true,false,"")
+local hideothertrains = GetConVar("hideothertrains") or CreateClientConVar("hideothertrains","0",true,false,"")
+local hidetrains_behind_props = GetConVar("hidetrains_behind_props") or CreateClientConVar("hidetrains_behind_props","1",true,false,"")
+local hidetrains_behind_player = GetConVar("hidetrains_behind_player") or CreateClientConVar("hidetrains_behind_player","1",true,false,"")
 timer.Simple(1,function()
 
 	C_ScreenshotMode      = GetConVar("metrostroi_screenshotmode")		-- прогружаю конвары здесь, чтобы случайно не прогрузить Nil
-	hidealltrains = GetConVar("hidealltrains")
-	hideothertrains = GetConVar("hideothertrains")
-	hidetrains_behind_props = GetConVar("hidetrains_behind_props")
-	hidetrains_behind_player = GetConVar("hidetrains_behind_player")
 	
 	local base = scripted_ents.Get("gmod_subway_base")
 	DefaultShouldRenderClientEntsFunction = base.ShouldRenderClientEnts
@@ -154,7 +155,7 @@ local function ShouldRenderEnts(self)
 	local TrainSize = self.WagonSize or SaveOBBMaxs(self)
 	--local TrainSize2 = self.WagonSize2 or SaveOBBMins(self)
 	--local step = 0.1
-	local hidetrains_behind_props_bool = hidetrains_behind_props and hidetrains_behind_props:GetBool()
+	local hidetrains_behind_props_bool = hidetrains_behind_props:GetBool()
 	local ShouldRender = false
 	
 
@@ -209,13 +210,13 @@ local function ShouldRenderEnts(self)
 	
 	
 	--не прогружать, когда не вызывается Draw функция
-	if hidetrains_behind_player and hidetrains_behind_player:GetBool() and self.LastDrawCall and CurTime() - self.LastDrawCall > 1 then self.ShouldRenderClientEntsRes = false return end--при фризах ето условие будет срабатывать часто. Можно либо детектить фриз, либо увеличить интервал
+	if hidetrains_behind_player:GetBool() and self.LastDrawCall and CurTime() - self.LastDrawCall > 1 then self.ShouldRenderClientEntsRes = false return end--при фризах ето условие будет срабатывать часто. Можно либо детектить фриз, либо увеличить интервал
 
 	--если надо скрыть все составы
-	if hidealltrains and hidealltrains:GetBool() then self.ShouldRenderClientEntsRes = false return end
+	if hidealltrains:GetBool() then self.ShouldRenderClientEntsRes = false return end
 
 	--если надо скрыть все чужие составы
-	if hideothertrains and hideothertrains:GetBool() then
+	if hideothertrains:GetBool() then
 		local Owner = CPPI and self:CPPIGetOwner() or nil
 		if Owner ~= LocalPlayer() then self.ShouldRenderClientEntsRes = false return end
 	end
