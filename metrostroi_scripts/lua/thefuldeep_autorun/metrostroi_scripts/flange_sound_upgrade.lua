@@ -134,8 +134,12 @@ timer.Simple(1,function()
 	
 	local tableRandom = table.Random
 	
+	local Sounds = {}
+	
 	local oldsetsoundstate = ENT.SetSoundState
 	ENT.SetSoundState = function(self,sound,volume,pitch,name,level,...)
+		Sounds[self] = Sounds[self] or {}
+		Sounds[self][sound] = self.Sounds[sound]
 		if bogeysSkripType[self] == inserted_index2 then
 			if flangsoundsForYaz[sound] then volume = 0
 			elseif sound == yaz_sound_name and volume > 0 then
@@ -305,4 +309,19 @@ timer.Simple(1,function()
 		bogeysWagons[self] = self:GetNW2Entity("TrainEntity")
 		oldinit(self,...)
 	end
+	
+	timer.Create("Metrostroi check for bogeys sounds to clear",10,0,function()
+		for ent,sounds in pairs(Sounds)do
+			if not IsValid(ent) or ent:IsDormant()then
+				for _,snd in pairs(sounds or {})do
+			       if snd:IsPlaying() then
+						print("stopping unlegit sound")
+						snd:ChangeVolume(0.0,0)
+						snd:Stop()
+					end
+				end
+				Sounds[ent] = nil
+			end
+		end
+	end)
 end)
