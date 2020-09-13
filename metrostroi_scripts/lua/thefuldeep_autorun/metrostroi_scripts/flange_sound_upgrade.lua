@@ -315,7 +315,6 @@ timer.Simple(1,function()
 			if not IsValid(ent) or ent:IsDormant()then
 				for _,snd in pairs(sounds or {})do
 					if snd:IsPlaying() then
-						print("stopping unlegit sound")
 						snd:ChangeVolume(0.0,0)
 						snd:Stop()
 					end
