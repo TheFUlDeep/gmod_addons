@@ -31,6 +31,7 @@ timer.Simple(1,function()
 			for but,val in pairs(BrokenPlombs[self] or {})do
 				RestoreBlomb(self,but,val)
 			end
+			BrokenPlombs[self] = {}
 		end
 	end
 end)
