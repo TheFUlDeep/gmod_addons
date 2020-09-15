@@ -31,6 +31,8 @@ timer.Simple(1,function()
 				RestoreBlomb(self,but,val)
 			end
 			BrokenPlombs[self] = {}
+			self:TriggerInput("FailSimReset")
+			self.TrainWireOutside = {}
 		end
 	end
 end)
