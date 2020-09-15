@@ -17,7 +17,6 @@ timer.Simple(1,function()
 	local oldbroke = BASE.BrokePlomb
 	BASE.BrokePlomb = function(self,but,...)
 		oldbroke(self,but,...)
-		BrokenPlombs[self] = BrokenPlombs[self] or {}
 		BrokenPlombs[self][but] = self[but].Value
 	end
 	
@@ -31,6 +30,7 @@ timer.Simple(1,function()
 			for but,val in pairs(BrokenPlombs[self] or {})do
 				RestoreBlomb(self,but,val)
 			end
+			BrokenPlombs[self] = {}
 		end
 	end
 end)
