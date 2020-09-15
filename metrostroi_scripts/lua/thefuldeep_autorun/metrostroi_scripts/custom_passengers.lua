@@ -53,7 +53,17 @@ hook.Add("Think","Metrostroi custom passengers anims",function()
 	end
 end)
 
-local function StartCycleSequence(ent,seqName,speed)
+
+timer.Create("Clean unlegit metrostroi passengers",5,0,function()
+	for k,v in pairs(CycleAnims)do
+		if not IsValid(v.ent) or not IsValid(v.platform) or not v.platform.CleanupModels or #v.platform.CleanupModels == 0 then
+			SafeRemoveEntity(v.ent)
+			CycleAnims[k] = nil
+		end
+	end
+end)
+
+local function StartCycleSequence(ent,seqName,speed,platform)
 	speed = speed or 1
 	speed = 1/speed
 	
@@ -79,7 +89,7 @@ local function StartCycleSequence(ent,seqName,speed)
 	local parts = GetAnimPartsCount(ent,seqName)
 	local needparts = mathfloor(speed/len+0.5)
 	
-	CycleAnims[ent] = {["end"] = 0, id = id, seqName = seqName, speed = speed, ent = ent, seqParts = parts, playbackrate = parts*(1/needparts), onepartlen = len/parts, parts = needparts}
+	CycleAnims[ent] = {platform = platform,["end"] = 0, id = id, seqName = seqName, speed = speed, ent = ent, seqParts = parts, playbackrate = parts*(1/needparts), onepartlen = len/parts, parts = needparts}
 end
 
 
@@ -140,7 +150,7 @@ timer.Simple(1,function()
 						ent:SetAngles(ent:GetAngles() + Angle(0,180,0))
 						local curpos = ent:GetPos()
 						local speed = ent.PrevPos and (mathDistance(curpos[1],curpos[2],ent.PrevPos[1],ent.PrevPos[2])/RealFrameTime())/(640)
-						StartCycleSequence(ent,"run_all",speed)
+						StartCycleSequence(ent,"run_all",speed,self)
 						ent.PrevPos = curpos
 					end
 				end
