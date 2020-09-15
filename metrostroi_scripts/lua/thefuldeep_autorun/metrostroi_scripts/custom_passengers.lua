@@ -13,7 +13,9 @@ local function GetAnimPartsCount(ent,seqName)--нахожу кольцо ани�
 	local id = ent:LookupSequence(seqName)
 	local start = 0
 	
-	local info = ent:GetSequenceInfo(id).anims or {}
+	local info = ent:GetSequenceInfo(id)
+	if not info then return end
+	info = info.anims
 	
 	for _,v in pairs(info) do start = v break end
 	
@@ -53,7 +55,7 @@ hook.Add("Think","Metrostroi custom passengers anims",function()
 	end
 end)
 
-local function StartCycleSequence(ent,seqName,speed)
+local function StartCycleSequence(ent,seqName,speed,platform)
 	speed = speed or 1
 	speed = 1/speed
 	
@@ -75,11 +77,12 @@ local function StartCycleSequence(ent,seqName,speed)
 		if tbl.seqName == seqName then return end
 	end
 	
-	local id,len = ent:LookupSequence(seqName)
 	local parts = GetAnimPartsCount(ent,seqName)
+	if not parts then return end
+	local id,len = ent:LookupSequence(seqName)
 	local needparts = mathfloor(speed/len+0.5)
 	
-	CycleAnims[ent] = {["end"] = 0, id = id, seqName = seqName, speed = speed, ent = ent, seqParts = parts, playbackrate = parts*(1/needparts), onepartlen = len/parts, parts = needparts}
+	CycleAnims[ent] = {platform = platform,["end"] = 0, id = id, seqName = seqName, speed = speed, ent = ent, seqParts = parts, playbackrate = parts*(1/needparts), onepartlen = len/parts, parts = needparts}
 end
 
 
@@ -140,7 +143,7 @@ timer.Simple(1,function()
 						ent:SetAngles(ent:GetAngles() + Angle(0,180,0))
 						local curpos = ent:GetPos()
 						local speed = ent.PrevPos and (mathDistance(curpos[1],curpos[2],ent.PrevPos[1],ent.PrevPos[2])/RealFrameTime())/(640)
-						StartCycleSequence(ent,"run_all",speed)
+						StartCycleSequence(ent,"run_all",speed,self)
 						ent.PrevPos = curpos
 					end
 				end
@@ -167,6 +170,14 @@ timer.Simple(1,function()
 	
 	timer.Create("Metrostroi Custom Passengers positions check",1,0,function()
 		metrostroi_custom_passengers_bool = metrostroi_custom_passengers:GetBool()
+		
+		for k,v in pairs(CycleAnims)do
+			if not IsValid(v.ent) or not IsValid(v.platform) or not v.platform.CleanupModels or #v.platform.CleanupModels == 0 then
+				SafeRemoveEntity(v.ent)
+				CycleAnims[k] = nil
+			end
+		end
+		
 		if not metrostroi_custom_passengers_bool then return end
 		for _,platform in pairs(entsFindByClass(platform_class))do
 			if IsValid(platform) and platform.CleanupModels and #platform.CleanupModels == 0 then
