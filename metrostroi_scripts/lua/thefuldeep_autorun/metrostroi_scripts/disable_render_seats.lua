@@ -6,7 +6,7 @@ for i = 1,4 do
 	table.insert(seatstbl,"ExtraSeat"..i)
 end
 
-timer.Simple(0,function()
+hook.Add("InitPostEntity","Metrostroi disable render seats",function()
 	for _,class in pairs(Metrostroi.TrainClasses) do
 		local ENT = scripted_ents.GetStored(class)
 		if not ENT or not ENT.t or not ENT.t.Initialize then continue else ENT = ENT.t end

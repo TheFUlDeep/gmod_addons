@@ -9,7 +9,7 @@ local paramname = "Round"
 
 local tablename = "VaAType"
 local readtablename = "Тип вольтметра и амперметра"
-timer.Simple(0,function()
+hook.Add("InitPostEntity","Metrostroi 717_mvm round voltm and amperm",function()
     local ENT = scripted_ents.GetStored(nomerogg.."_custom")
     if ENT then ENT = ENT.t else return end
 	if not ENT.Spawner then return end

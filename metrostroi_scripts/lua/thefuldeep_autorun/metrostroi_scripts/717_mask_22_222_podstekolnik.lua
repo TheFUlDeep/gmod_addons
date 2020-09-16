@@ -16,7 +16,7 @@ local inserted_indexes = {-1,-1,-1,-1}
 local paramnames = {"2-2 Подстекольник МВМ","2-2 Подстекльник ЛВЗ","2-2-2 Подстекольник МВМ","2-2-2 Подстекольник ЛВЗ"}
 
 
-timer.Simple(0,function()
+hook.Add("InitPostEntity","Metrostroi 717_mvm podsteklo",function()
     local ENT = scripted_ents.GetStored(nomerogg.."_custom")
     if not ENT or not ENT.t then return end
 	for _,v in pairs(ENT.t.Spawner or {}) do
@@ -64,7 +64,7 @@ local masks = {"mask22_mvm","mask222_mvm","mask222_lvz","mask141_mvm"}
 local lights1 = {"Headlights222_1","Headlights141_1","Headlights22_1"}
 local lights2 = {"Headlights222_2","Headlights141_2","Headlights22_2"}
 
-timer.Simple(0,function()
+hook.Add("InitPostEntity","Metrostroi 717_mvm podsteklo2",function()
 	local ENT = scripted_ents.GetStored(nomerogg)
 	if not ENT or not ENT.t then return else ENT = ENT.t end
 	for i = 1,4 do

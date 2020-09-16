@@ -13,7 +13,7 @@ local model_new = "путь к новой модели"
 
 local tablename = "KVTypeCustom"
 local readtablename = "Тип КВ"
-timer.Simple(1,function()
+hook.Add("InitPostEntity","Metrostroi 717_mvm custom KVs",function()
     local ENT = scripted_ents.GetStored(nomerogg.."_custom")
     if ENT then ENT = ENT.t else return end
 	if not ENT.Spawner then return end

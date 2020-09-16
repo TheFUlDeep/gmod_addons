@@ -14,7 +14,7 @@ local inserted_index = -1
 local paramname = "1-3-1 540.9"
 
 
-timer.Simple(0,function()
+hook.Add("InitPostEntity","Metrostroi 717_mvm 540.9 mask",function()
     local ENT = scripted_ents.GetStored(nomerogg.."_custom")
     if not ENT or not ENT.t then return end
 	for _,v in pairs(ENT.t.Spawner or {}) do
@@ -60,7 +60,7 @@ local masks = {"mask22_mvm","mask222_mvm","mask222_lvz","mask141_mvm"}
 local lights1 = {"Headlights222_1","Headlights141_1","Headlights22_1"}
 local lights2 = {"Headlights222_2","Headlights141_2","Headlights22_2"}
 
-timer.Simple(0,function()
+hook.Add("InitPostEntity","Metrostroi 717_mvm 540.9 mask2",function()
 	local ENT = scripted_ents.GetStored(nomerogg)
 	if not ENT or not ENT.t then return else ENT = ENT.t end
 	for _,mask in pairs(masks) do

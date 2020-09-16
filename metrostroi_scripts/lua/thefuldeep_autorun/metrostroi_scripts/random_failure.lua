@@ -1,5 +1,5 @@
 --взято из скрипта межвагонки ShadowBonnie
-timer.Simple(0,function()
+hook.Add("InitPostEntity","Metrostroi random failure",function()
 	for k,v in pairs(Metrostroi.TrainClasses) do
 		local ENT = scripted_ents.GetStored(v)
 		if ENT and ENT.t and ENT.t.Spawner then

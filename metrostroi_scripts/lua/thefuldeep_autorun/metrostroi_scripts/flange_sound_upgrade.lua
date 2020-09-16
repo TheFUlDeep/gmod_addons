@@ -1,5 +1,5 @@
 if SERVER then resource.AddWorkshop("1563745153") end
-timer.Simple(1,function()
+hook.Add("InitPostEntity","Metrostroi flange sound bogeys upgrade",function()
 	--файл, множитель громкости, pitch offset
 	local AllSounds = {{"subway_trains/bogey/flange_10.wav",3,0}}
 
