@@ -1,6 +1,6 @@
 if CLIENT then return end
 
-timer.Simple(1,function()
+hook.Add("InitPostEntity","Metrostroi oka cameras cables",function()
 	local ochkaG = "gmod_subway_81-760"
 	local ochkaP = "gmod_subway_81-761"
 	local ochka = {[ochkaG]={rear = {Vector(-464.115234, 33.789383, -34),Vector(-464.115265, -36.757870, -34)}},[ochkaP]={rear = {Vector(-464.115295, 34.050331, -34),Vector(-464.115295, -35.828068, -34)}, front = {Vector(464.115356, -35.108238, -34),Vector(464.115326, 35.117596, -34)}}}

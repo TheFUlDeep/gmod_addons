@@ -92,7 +92,7 @@ hook.Add("OnEntityCreated","ChangeTrainsCollisionForSecurity",function(ent)
     --end)
 end)
 
-timer.Simple(0,function()
+hook.Add("InitPostEntity","Metrostroi upgrade couples collision for security",function()
 
 
 	local ENT = scripted_ents.GetStored("gmod_train_couple")

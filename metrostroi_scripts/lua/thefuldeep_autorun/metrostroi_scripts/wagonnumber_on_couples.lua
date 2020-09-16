@@ -1,6 +1,6 @@
 if SERVER then return end
 
-timer.Simple(0,function()
+hook.Add("InitPostEntity","Metrostroi 717_mvm wagonnumber on couples",function()
 	local ENT = scripted_ents.GetStored("gmod_subway_81-717_mvm")
 	if not ENT then return else ENT = ENT.t end
 	

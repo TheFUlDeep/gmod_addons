@@ -41,7 +41,7 @@ local hidealltrains = GetConVar("hidealltrains") or CreateClientConVar("hideallt
 local hideothertrains = GetConVar("hideothertrains") or CreateClientConVar("hideothertrains","0",true,false,"")
 local hidetrains_behind_props = GetConVar("hidetrains_behind_props") or CreateClientConVar("hidetrains_behind_props","1",true,false,"")
 local hidetrains_behind_player = GetConVar("hidetrains_behind_player") or CreateClientConVar("hidetrains_behind_player","1",true,false,"")
-timer.Simple(1,function()
+hook.Add("InitPostEntity","Metrostroi hideothertrains",function()
 
 	C_ScreenshotMode      = GetConVar("metrostroi_screenshotmode")		-- прогружаю конвары здесь, чтобы случайно не прогрузить Nil
 	

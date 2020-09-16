@@ -109,7 +109,7 @@ local humansmodels = {
 local female_sequences = {2,5,6,7,11,17}
 local male_sequences = {2,3,4,6,10}
 
-timer.Simple(1,function()
+hook.Add("InitPostEntity","Metrostroi custom passengers",function()
 	local metrostroi_custom_passengers = GetConVar("metrostroi_custom_passengers")
 	if not metrostroi_custom_passengers then 
 		metrostroi_custom_passengers = CreateClientConVar("metrostroi_custom_passengers","0",true,false,"")

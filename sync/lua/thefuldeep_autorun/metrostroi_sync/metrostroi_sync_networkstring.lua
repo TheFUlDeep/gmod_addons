@@ -2,7 +2,7 @@
 if 1 then return end
 if CLIENT then
 	local bogey,setsoundstate,reinitsounds,think,getmotorpower,getspeed
-	timer.Simple(0,function()
+	hook.Add("InitPostEntity","Metrostroi sync networkstring",function()
 		bogey = scripted_ents.GetStored("gmod_train_bogey").t
 		setsoundstate = bogey.SetSoundState
 		reinitsounds = bogey.ReinitializeSounds
@@ -125,7 +125,7 @@ if CLIENT then
 	local UpdateTextures = function() end
 	local SetLightPower = function() end
 	local ShouldRenderClientEnts = function() end
-	timer.Simple(0,function()
+	hook.Add("InitPostEntity","Metrostroi sync networkstring2",function()
 		local base = scripted_ents.GetStored("gmod_subway_base").t
 		if not base then return end
 		UpdateTextures = function(wag)

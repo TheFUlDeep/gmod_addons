@@ -3,7 +3,7 @@ local inserted_index1 = -1
 local inserted_index2 = -1
 local tablename = "ASNPPreSoundType"
 
-timer.Simple(1,function()
+hook.Add("InitPostEntity","Metrostroi 717_mvm asnp changing",function()
 
 	local readtablename = "Изменение ASNP"
 	local paramname1 = "Нижний Новгород"
