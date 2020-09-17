@@ -168,6 +168,14 @@ hook.Add("InitPostEntity","Metrostroi custom passengers",function()
 		end
 	end
 	
+	local function RoundVector(vec)
+		res = Vector(0)
+		for i = 1,3 do
+			res[i] = mathfloor(vec[i]+0.5)
+		end
+		return res
+	end
+	
 	timer.Create("Metrostroi Custom Passengers positions check",1,0,function()
 		metrostroi_custom_passengers_bool = metrostroi_custom_passengers:GetBool()
 		
@@ -193,7 +201,7 @@ hook.Add("InitPostEntity","Metrostroi custom passengers",function()
 		for _,wag in pairs(entsFindByClass("gmod_subway_*"))do
 			if IsValid(wag) and wag.PassengerEnts then
 				for k,pass in pairs(wag.PassengerEnts)do
-					if IsValid(pass) and pass:GetPos() ~= wag:LocalToWorld(wag.PassengerPositions[k]) then 
+					if IsValid(pass) and RoundVector(pass:GetPos()) ~= RoundVector(wag:LocalToWorld(wag.PassengerPositions[k])) then--делаю через RoundVector, так как значения могут отличаться на сотые, и пассажиры будут крутиться
 						pass:SetPos(wag:LocalToWorld(wag.PassengerPositions[k]))
 						pass:SetAngles(Angle(0,mathrandom(0,360),0))
 					end
