@@ -1,6 +1,6 @@
 if CLIENT then return end
 
-hook.Add("InitPostEntity","Metrostroi restoring train by spawner",function()
+timer.Simple(0,function()
 	local function RestoreBlomb(self,but,val)
 		self[but]:TriggerInput("Set",val)
 		self[but]:TriggerInput("Block",true)
