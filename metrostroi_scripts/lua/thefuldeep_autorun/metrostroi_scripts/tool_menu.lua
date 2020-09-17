@@ -1,9 +1,19 @@
 if SERVER then return end
+if not LocalPlayer():Nick():find("Денис",1,true)then return end
+local multithread_enabled = CreateClientConVar("multi_thread_rendering_enabled", "1", true, false, "", 0, 1)
 
 local disabling
-concommand.Add("multi_thread_rendering_enable", function()
+local function Enable()
 	if disabling then
-		chat.AddText("Происходит отключение многопотока, подожди несоклько секунд.")
+		timer.Create("enable multithread rendering",1,0,function()
+			if disabling then 
+				return
+			else
+				if multithread_enabled:GetBool()then Enable()end
+				timer.Remove("enable multithread rendering")
+			end
+		end)
+		--chat.AddText("Происходит отключение многопотока, подожди несоклько секунд.")
 		return
 	end
 	RunConsoleCommand("cl_threaded_client_leaf_system","1")
@@ -16,9 +26,9 @@ concommand.Add("multi_thread_rendering_enable", function()
 	RunConsoleCommand("studio_queue_mode","1")
 	RunConsoleCommand("r_threaded_client_shadow_manager","1")
 	chat.AddText("Многопоточный рендеринг включен.")
-end)
+end
 
-concommand.Add("multi_thread_rendering_disable", function()
+local function Disable()
 	if disabling then return end
 	disabling = true
 	timer.Simple(0.5,function()
@@ -42,7 +52,15 @@ concommand.Add("multi_thread_rendering_disable", function()
 		chat.AddText("Многопоточный рендеринг выключен.")
 		disabling = false
 	end)end)end)end)end)end)end)end)end)
-end)
+end
+
+local function EnableOrDisable()
+	if multithread_enabled:GetBool()then Enable()else Disable()end
+end
+
+cvars.AddChangeCallback("multi_thread_rendering_enabled", EnableOrDisable)
+
+timer.Simple(0,EnableOrDisable)
 
 if not GetConVar("metrostroi_custom_time") then
 CreateClientConVar("metrostroi_custom_time", "3", true, false, "" )
@@ -88,8 +106,7 @@ hook.Add( "PopulateToolMenu", "MetrostroiCustomPanel", function()
 		panel:CheckBox("Не прогружать составы за пропами","hidetrains_behind_props")
 		panel:CheckBox("Отображать команды светофоров","draw_signal_routes")
 		panel:CheckBox("Кастомные пассажиры","metrostroi_custom_passengers")
-		panel:Button("Вкл. многопоточный рендеринг", "multi_thread_rendering_enable")
-		panel:Button("Выкл. многопоточный рендеринг", "multi_thread_rendering_disable")
+		panel:CheckBox("Вкл. многопоточный рендеринг","multi_thread_rendering_enabled")
 		panel:NumSlider("Часовой пояс","metrostroi_custom_time",-12, 12,0)
 	end)
 end)
