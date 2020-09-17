@@ -1419,25 +1419,23 @@ timer.Simple(5, function()
 			if not Metrostroi or not Metrostroi.StationConfigurations then ULib.tsayError(ply,"На карте не настроены станции.") return end
 			comm = bigrustosmall(comm)
 			local stationstbl = {}
-			local i = 1
 			local comm = bigrustosmall(comm)
 			for k,v in pairs(Metrostroi.StationConfigurations) do
 				if not v["names"] then continue end
 				if not v["names"][1] then v["names"][1] = "ERROR"
 				elseif not v["names"][2] then v["names"][2] = "ERROR"
 				end
-				if bigrustosmall(tostring(k)):find(comm) or bigrustosmall(v["names"][1]):find(comm) or bigrustosmall(v["names"][2]):find(comm) then
-					stationstbl[i] = {k,v["names"][1],v["names"][2],v["positions"][1][1]}
-					i = i + 1
+				if bigrustosmall(tostring(k)):find(comm,1,true) or bigrustosmall(v["names"][1]):find(comm,1,true) or bigrustosmall(v["names"][2]):find(comm,1,true) then
+					stationstbl[#stationstbl+1] = {k,v["names"][1],v["names"][2],v["positions"][1][1]}
 				end
 			end
 			--PrintTable(stationstbl)
-			if table.Count(stationstbl) > 1 then 
+			if #stationstbl > 1 then 
 				ULib.tsayError(ply,"По запросу найдено несколько станций",true)
 				for k,v in pairs(stationstbl) do
 					ULib.tsayError(ply,""..tostring(stationstbl[k][1]).." = "..stationstbl[k][2].." or "..stationstbl[k][3],true)
 				end
-			elseif table.Count(stationstbl) == 1 then
+			elseif #stationstbl == 1 then
 				ply:ExitVehicle()
 				ply.ulx_prevpos = ply:GetPos()
 				ply.ulx_prevang = ply:EyeAngles()
