@@ -47,17 +47,19 @@ local function ChatPrintAll(msg,ply2)
 	--end
 end
 
-TheFulDeepsAvtooborot.Add = function(Name,Commands,Occupied,NotOccuped,NeedOpened,NeedNotOpened)--в качестве аргументов подаются таблицы имен сигналов
+TheFulDeepsAvtooborot.Add = function(Name,Commands,Occupied,NotOccuped,NeedOpened,NeedNotOpened,Switches)--в качестве аргументов подаются таблицы имен сигналов
 	Commands = Commands or {}
 	Occupied = Occupied or {}
 	NotOccuped = NotOccuped or {}
 	NeedOpened = NeedOpened or {}
 	NeedNotOpened = NeedNotOpened or {}
+	Switches = Switches or {}
 	if not istable(Commands) then Commands = {tostring(Commands)} end
 	if not istable(Occupied) then Occupied = {tostring(Occupied)} end
 	if not istable(NotOccuped) then NotOccuped = {tostring(NotOccuped)} end
 	if not istable(NeedOpened) then NeedOpened = {tostring(NeedOpened)} end
 	if not istable(NeedNotOpened) then NeedNotOpened = {tostring(NeedNotOpened)} end
+	if not istable(Switches) then Switches = {tostring(Switches)} end
 	if not Name or not isstring(Name) or Name == "" then ChatPrint(nil,"wrong Avtooborot Add arguments") return end
 	Name = Name:gsub(' ', '_')
 	
@@ -78,7 +80,7 @@ TheFulDeepsAvtooborot.Add = function(Name,Commands,Occupied,NotOccuped,NeedOpene
 		128
 	)
 	--имя = команды, занятые, не занятые, должен быть открыт, должен быть не открыт, выключен ли, открыт ли, количество проверок (защита от ложных срабатываний)
-	ConditionsTbls[Name] = {Commands,Occupied,NotOccuped,NeedOpened,NeedNotOpened,false,false,0}
+	ConditionsTbls[Name] = {Commands,Occupied,NotOccuped,NeedOpened,NeedNotOpened,false,false,0,Switches}
 	print("added avtooborot "..Name)
 end
 local Add = TheFulDeepsAvtooborot.Add
@@ -187,6 +189,18 @@ local function CheckCondition(tbl,dothings)
 					if sig.SayHook then sig:SayHook(nil,comm) end
 				end
 				ChatPrintAll(comm)
+			end
+			
+
+			for _,swh in pairs(tbl[9])do
+				local pos = swh:sub(-1,-1)
+				if pos == "+" or pos == "-" then
+					for _,ent in pairs(ents.FindByName(swh:sub(1,-2)))do
+						if IsValid(ent) and ent:GetClass() == "prop_door_rotating" then
+							ent:Fire(pos == "+" and "Close" or "Open","","0")
+						end
+					end
+				end
 			end
 		else
 			return true
@@ -327,5 +341,12 @@ elseif map == "gm_jar_pll_remastered_v9" then
 	]]
 	--TODO если у лесопарковой все свободно, то !sopen lp2-3
 	--TODO если у лесопарковой занят третий и свободен четвертый то, то !sopen lp2-4
+elseif map == "gm_metro_nsk_line_2_v4" then
+	--площадь гарина михайловского
+	Add("gm2-1","!sopen gm2-1","GM143A","GM112M",nil,"gm2-2","trackswitch_pg1-")
+	Add("gm2-2","!sopen gm2-2",nil,{"GM112M","GM143","GM143A"},nil,"gm2-1","trackswitch_pg1+")
 	
+	--золотая нива
+	Add("zn1-1","!sopen zn1-1","ZN194B",{"ZN311","ZN194A","ZN321","ZN194"},nil,"zn1-2","zn_switch1+")
+	Add("zn1-2","!sopen zn1-2",nil,{"ZN311","ZN194A","ZN321","ZN194","ZN194B"},nil,"zn1-1","zn_switch1-")
 end
