@@ -1,5 +1,5 @@
 if SERVER then return end
-if not LocalPlayer():Nick():find("Денис",1,true)then return end
+
 local multithread_enabled = CreateClientConVar("multi_thread_rendering_enabled", "1", true, false, "", 0, 1)
 
 local disabling
