@@ -1,6 +1,6 @@
 if CLIENT then return end
 
-hook.Add("InitPostEntity","Metrostroi restoring train by spawner",function()
+timer.Simple(0,function()
 	local function RestoreBlomb(self,but,val)
 		self[but]:TriggerInput("Set",val)
 		self[but]:TriggerInput("Block",true)
@@ -17,7 +17,6 @@ hook.Add("InitPostEntity","Metrostroi restoring train by spawner",function()
 	local oldbroke = BASE.BrokePlomb
 	BASE.BrokePlomb = function(self,but,...)
 		oldbroke(self,but,...)
-		BrokenPlombs[self] = BrokenPlombs[self] or {}
 		BrokenPlombs[self][but] = self[but].Value
 	end
 	
