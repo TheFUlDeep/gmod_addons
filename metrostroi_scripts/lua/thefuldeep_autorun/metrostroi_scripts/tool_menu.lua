@@ -1,6 +1,6 @@
 if SERVER then return end
 
-local multithread_enabled = CreateClientConVar("multi_thread_rendering_enabled", "1", true, false, "", 0, 1)
+local multithread_enabled = CreateClientConVar("multi_thread_rendering_enabled", "2", true, false, "0 - disable, 1 - enable, 2 - do nothing", 0, 2)
 
 local disabling
 local function Enable()
@@ -55,6 +55,7 @@ local function Disable()
 end
 
 local function EnableOrDisable()
+	if multithread_enabled:GetInt() == 2 then return end
 	if multithread_enabled:GetBool()then Enable()else Disable()end
 end
 
