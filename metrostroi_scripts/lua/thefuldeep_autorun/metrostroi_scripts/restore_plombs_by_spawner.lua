@@ -17,6 +17,7 @@ hook.Add("InitPostEntity","Metrostroi restoring train by spawner",function()
 	local oldbroke = BASE.BrokePlomb
 	BASE.BrokePlomb = function(self,but,...)
 		oldbroke(self,but,...)
+		BrokenPlombs[self] = BrokenPlombs[self] or {}
 		BrokenPlombs[self][but] = self[but].Value
 	end
 	
