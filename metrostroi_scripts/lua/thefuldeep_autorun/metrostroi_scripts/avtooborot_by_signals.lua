@@ -113,15 +113,16 @@ concommand.Add(
 
 
 local NamesSignals = {}
-hook.Add("OnEntityCreated","Update NamesSignals table for avtooborot",function(ent)
-	timer.Simple(0,function()
-		if not IsValid(ent) or ent:GetClass() ~= "gmod_track_signal" then return end
-		timer.Create("Update NamesSignals table for avtooborot",2,1,function()
+timer.Simple(0,function()
+	local oldload = Metrostroi.Load
+	Metrostroi.Load = function(...)
+		oldload(...)
+		timer.Simple(1,function()
 			for _,sig in pairs(ents.FindByClass("gmod_track_signal")) do
 				if IsValid(sig) and sig.Name then NamesSignals[sig.Name] = sig end
 			end
 		end)
-	end)
+	end
 end)
 
 local function CheckOccupationTbl(tbl,needoccuped)--во время перевода стрелок occupied становится true. Это проблема
@@ -186,7 +187,7 @@ local function CheckCondition(tbl,dothings)
 			local comms = tbl[1]
 			for _,comm in pairs(comms) do
 				for _,sig in pairs(NamesSignals) do
-					if sig.SayHook then sig:SayHook(nil,comm) end
+					if IsValid(sig) and sig.SayHook then sig:SayHook(nil,comm) end
 				end
 				ChatPrintAll(comm)
 			end
