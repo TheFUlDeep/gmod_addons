@@ -13,8 +13,7 @@ if not lanes then include("lanes/lanes_main.lua")end
 
 if lanes.configure then lanes.configure(--[[{track_lanes=true,nb_keepers=10}]])end
 
---lanes.LaneTasks = lanes.LaneTasks or {}
-local LaneTasks = {}
+lanes.LaneTasks = lanes.LaneTasks or {}
 
 lanes.TerminateAllTasks = function()
 	for id,task in pairs(LaneTasks)do
@@ -193,6 +192,14 @@ lanes.SetInputArgs = function(id,args)
 	end
 end
 
+lanes.GetTask = function(id)
+	return lane.LaneTasks[id]
+end
+
+lanes.GetTasks = function()
+	return lane.LaneTasks
+end
+
 --[[
 	EXAMPLES
 	
@@ -214,6 +221,7 @@ end
 		function(args)--callback with output argument
 			print(args)
 			lanes.SetInputArgs("example",args) -- changing input argument
+			lanes.LaneTasks.example.inArgs = args -- another variant of changing input argument (without converting)
 		end,
 		nil -- input arument
 	)	
