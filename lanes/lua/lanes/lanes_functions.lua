@@ -214,7 +214,7 @@ end
 		end,
 		function(args)--callback with output argument
 			print(args[1])
-			lanes.SetInputArgs("example",args) -- changing input argument. it will push table
+			lanes.SetInputArgs("example",args) -- changing input argument
 			lanes.GetTasks().example.inArgs = args -- another variant of changing input argument (without converting to table if it needed). I dont recommend to use this method.
 		end,
 		nil -- input arument. It will convert to table
