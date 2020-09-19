@@ -136,7 +136,7 @@ hook.Add("Think","LuaLanesCallbacks",function()
 			--print(tostring(res[1]))
 			local status = res.status
 			if status == "done" then
-				task.callback(TableCopyToNormal(task.res[1]))
+				task.callback(task.dontConvertArgs and task.res[1] or TableCopyToNormal(task.res[1]))
 				task.res = nil
 				CheckDelay(id,task)
 			elseif calceled_strings[status] then
@@ -158,8 +158,8 @@ hook.Add("Think","LuaLanesCallbacks",function()
 	end
 end)
 
-lanes.CreateSingleTask = function(id,libs,opts,func,callback,inArgs)
-	inArgs = TableCopyToLanes(inArgs)
+lanes.CreateSingleTask = function(id,libs,opts,dontConvertArgs,func,callback,inArgs)
+	inArgs = dontConvertArgs and inArgs or TableCopyToLanes(inArgs)
 	TerminateTask(id)
 	LaneTasks[id] = {}
 	--LaneTasks[id].curcount = nil
@@ -167,6 +167,7 @@ lanes.CreateSingleTask = function(id,libs,opts,func,callback,inArgs)
 	--LaneTasks[id].delay = nil
 	--LaneTasks[id].dont_die = nil
 	local task = LaneTasks[id]
+	task.dontConvertArgs = dontConvertArgs
 	task.callback = callback
 	local f = lanes.gen(libs,opts,func)
 	task.f = f
@@ -188,7 +189,7 @@ end
 lanes.SetInputArgs = function(id,args)
 	local task = LaneTasks[id]
 	if task then
-		task.inArgs = TableCopyToLanes(args)
+		task.inArgs = task.dontConvertArgs and args or TableCopyToLanes(args)
 	end
 end
 
@@ -209,13 +210,14 @@ end
 		"example",--id
 		nil,--libs (see lua lanes documentation)
 		nil,--opts (see lua lanes documentation)
+		true,--if true it will not convert args to table (for performance)
 		function(args)--function that will run parallel
 			return args[1] and args[1] + 1 or 0
 		end,
-		function(args)--callback with output argument (always table)
+		function(args)--callback with output argument
 			print(args[1])
 			lanes.SetInputArgs("example",args) -- changing input argument. it will push table
-			lanes.GetTasks().example.inArgs = args -- another variant of changing input argument (without converting to table).
+			lanes.GetTasks().example.inArgs = args -- another variant of changing input argument (without converting to table if it needed). I dont recommend to use this method.
 		end,
 		nil -- input arument. It will convert to table
 	)	
@@ -224,10 +226,11 @@ end
 		"asd",--id
 		nil,--libs (see lua lanes documentation)
 		nil,--opts (see lua lanes documentation)
+		nil,--if true it will not convert args to table (for performance)
 		function(args)--function that will run parallel
 			return args[1] + 1
 		end,
-		function(args)--callback with output argument (always table)
+		function(args)--callback with output argument
 			print(args[1])
 		end,
 		0 -- input arument. It will convert to table
