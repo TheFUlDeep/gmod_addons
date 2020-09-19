@@ -229,10 +229,10 @@ end
 		nil,--libs (see lua lanes documentation)
 		nil,--opts (see lua lanes documentation)
 		function(args)--function that will run parallel
-			return args + 1
+			return args[1] + 1
 		end,
 		function(args)--callback with output argument (always table)
-			print(args)
+			print(args[1])
 		end,
 		0 -- input arument
 	)
