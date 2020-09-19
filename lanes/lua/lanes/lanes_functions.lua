@@ -1,3 +1,4 @@
+	--TODO проверить, передается ли таблица по ссылке или занчения копируются
 	if SERVER then AddCSLuaFile("lanes/lanes_main.lua")end
 	local files = file.Find("lua/bin/*", "GAME")
 	local found
@@ -18,7 +19,7 @@
 		for id,task in pairs(LaneTasks)do
 			if task.res then res:cancel(0,true)end
 		end
-		LaneTasks[id] = nil
+		LaneTasks = {}
 	end
 	
 	lanes.TerminateTask = function(id)
@@ -28,6 +29,81 @@
 		LaneTasks[id] = nil
 	end
 	local TerminateTask = lanes.TerminateTask
+	
+	
+--Vector, Angle, color, --entity, table
+local typesToconvert = {Vector=true,Angle=true}
+local function IsNeedConvertTableToLanes(tbl)
+	for k,v in pairs(tbl)do
+		if typesToconvert[type(v)] or IsColor(v) or IsEntity(v) then
+			return true
+		elseif istable(v) then
+			if IsNeedConvertTableToLanes(v) then return true end
+		end
+	end
+end
+local TableCopyToLanes = function(tbl)
+		tbl = tbl or {}
+		tbl = istable(tbl) and tbl or {tbl}
+		
+		if not IsNeedConvertTableToLanes(tbl) then return tbl end
+		
+		local res = {}
+		for k,v in pairs(tbl)do
+			if IsColor(v) then
+				res[k] = {lanesTableType="color",v.r,v.g,v.b,v.a}
+			elseif istable(v) then
+				res[k] = lanes.TableCopyToLanes(v)
+			elseif isvector(v) then
+				res[k] = {lanesTableType="Vector",v[1],v[2],v[3]}
+			elseif isangle(v) then
+				res[k] = {lanesTableType="Angle",v[1],v[2],v[3]}
+			elseif IsEntity(v) then
+				continue
+				--res[k] = lanes.TableCopyToLanes(v:GetTable())
+				--res[k].lanesTableType = "entity"
+			else
+				res[k] = v
+			end
+		end
+		return res
+end
+lanes.TableCopyToLanes = TableCopyToLanes
+	
+local function IsNeedConvertTableToNormal(tbl)
+	for k,v in pairs(tbl)do
+		if istable(v) and v.lanesTableType then return true end
+	end
+end
+local TableCopyToNormal = function(tbl)
+		tbl = tbl or {}
+		tbl = istable(tbl) and tbl or {tbl}
+		
+		if not IsNeedConvertTableToNormal(tbl) then return tbl end
+		
+		local res = {}
+		for k,v in pairs(tbl)do
+			if type(v) == "table" then
+				local type = v.lanesTableType
+				if type == "Vector" then
+					res[k] = Vector(v[1],v[2],v[3])
+				elseif type == "Angle" then
+					res[k] = Angle(v[1],v[2],v[3])
+				elseif type == "color" then
+					res[k] = Color(v[1],v[2],v[3],v[4])
+				--[[elseif type == "entity" then
+					res[k] = ]]
+				else
+					res[k] = lanes.TableCopyToNormal(v)
+				end
+			else
+				res[k] = v
+			end
+		end
+		return res
+end
+lanes.TableCopyToNormal = TableCopyToNormal
+	
 	
 	local calceled_strings = {["error"]=true,cancelled=true,killed=true}
 	
@@ -60,7 +136,7 @@
 				--print(tostring(res[1]))
 				local status = res.status
 				if status == "done" then
-					task.callback(task.res[1])
+					task.callback(TableCopyToNormal(task.res[1]))
 					task.res = nil
 					CheckDelay(id,task)
 				elseif calceled_strings[status] then
@@ -83,6 +159,7 @@
 	end)
 	
 	lanes.CreateSingleTask = function(id,libs,opts,func,callback,inArgs)
+		inArgs = TableCopyToLanes(inArgs)
 		TerminateTask(id)
 		LaneTasks[id] = {}
 		--LaneTasks[id].curcount = nil
@@ -108,6 +185,13 @@
 		task.PrevStartTime = CurTime()
 	end
 	
+	lanes.SetInputArgs = function(id,args)
+		local task = LaneTasks[id]
+		if task then
+			task.inArgs = TableCopyToLanes(args)
+		end
+	end
+	
 	--[[
 		EXAMPLES
 	
@@ -123,7 +207,7 @@
 			end,
 			function(args)--callback with output argument
 				print(args)
-				lanes.LaneTasks.example.inArgs = args -- changing input argument
+				lanes.SetInputArgs("example",args) -- changing input argument
 			end,
 			nil -- input arument
 		)	
@@ -137,7 +221,6 @@
 			end,
 			function(args)--callback with output argument
 				print(args)
-				lanes.LaneTasks.asd.inArgs = args -- changing input argument
 			end,
 			0 -- input arument
 		)
