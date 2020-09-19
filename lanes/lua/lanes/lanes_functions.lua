@@ -1,36 +1,36 @@
 --TODO проверить, правильно ли работает функция Terminate
-	if SERVER then AddCSLuaFile("lanes/lanes_main.lua")end
-	local files = file.Find("lua/bin/*", "GAME")
-	local found
-	for _,name in pairs(files)do
-		if (CLIENT and name:sub(1,5) == "gmcl_" or SERVER and name:sub(1,5) == "gmsv_") and name:sub(6,16) == "lanes.core_" and name:sub(-4,-1) == ".dll" then found = true break end
-	end
-	if not found then return end
-	
-	
-	if not lanes then include("lanes/lanes_main.lua")end
+if SERVER then AddCSLuaFile("lanes/lanes_main.lua")end
+local files = file.Find("lua/bin/*", "GAME")
+local found
+for _,name in pairs(files)do
+	if (CLIENT and name:sub(1,5) == "gmcl_" or SERVER and name:sub(1,5) == "gmsv_") and name:sub(6,16) == "lanes.core_" and name:sub(-4,-1) == ".dll" then found = true break end
+end
+if not found then return end
 
-	if lanes.configure then lanes.configure(--[[{track_lanes=true,nb_keepers=10}]])end
-	
-	--lanes.LaneTasks = lanes.LaneTasks or {}
-	local LaneTasks = {}
-	
-	lanes.TerminateAllTasks = function()
-		for id,task in pairs(LaneTasks)do
-			if task.res then res:cancel(0,true)end
-		end
-		LaneTasks = {}
+
+if not lanes then include("lanes/lanes_main.lua")end
+
+if lanes.configure then lanes.configure(--[[{track_lanes=true,nb_keepers=10}]])end
+
+--lanes.LaneTasks = lanes.LaneTasks or {}
+local LaneTasks = {}
+
+lanes.TerminateAllTasks = function()
+	for id,task in pairs(LaneTasks)do
+		if task.res then res:cancel(0,true)end
 	end
-	
-	lanes.TerminateTask = function(id)
-		if LaneTasks[id] and LaneTasks[id].res then
-			LaneTasks[id].res:cancel(0,true)
-		end
-		LaneTasks[id] = nil
+	LaneTasks = {}
+end
+
+lanes.TerminateTask = function(id)
+	if LaneTasks[id] and LaneTasks[id].res then
+		LaneTasks[id].res:cancel(0,true)
 	end
-	local TerminateTask = lanes.TerminateTask
-	
-	
+	LaneTasks[id] = nil
+end
+local TerminateTask = lanes.TerminateTask
+
+
 --Vector, Angle, color, --entity, table
 local typesToconvert = {Vector=true,Angle=true}
 local function IsNeedConvertTableToLanes(tbl)
@@ -105,130 +105,130 @@ end
 lanes.TableCopyToNormal = TableCopyToNormal
 	
 	
-	local calceled_strings = {["error"]=true,cancelled=true,killed=true}
 	
-	local function CheckDelay(id,task)
-		local delay = task.delay
-		if delay then
-			if (CurTime() - task.PrevStartTime) >= delay then
-				task.PrevStartTime = task.PrevStartTime + delay--благодаря этому, если программа будет опаздывать, в следующий раз запустится мгновенно
-				local maxcount = task.maxcount
-				if not maxcount or maxcount == 0 then--чтобы не считать task.curcount при отсутствии лимита
+local function CheckDelay(id,task)
+	local delay = task.delay
+	if delay then
+		if (CurTime() - task.PrevStartTime) >= delay then
+			task.PrevStartTime = task.PrevStartTime + delay--благодаря этому, если программа будет опаздывать, в следующий раз запустится мгновенно
+			local maxcount = task.maxcount
+			if not maxcount or maxcount == 0 then--чтобы не считать task.curcount при отсутствии лимита
+				task.res = task.f(task.inArgs)
+			else
+				task.curcount = task.curcount + 1
+				if task.curcount < maxcount then
 					task.res = task.f(task.inArgs)
 				else
-					task.curcount = task.curcount + 1
-					if task.curcount < maxcount then
-						task.res = task.f(task.inArgs)
-					else
-						TerminateTask(id)
-					end
+					TerminateTask(id)
+				end
+			end
+		end
+	else
+		TerminateTask(id)
+	end
+end
+
+local calceled_strings = {["error"]=true,cancelled=true,killed=true}
+hook.Add("Think","LuaLanesCallbacks",function()
+	for id,task in pairs(LaneTasks)do
+		local res = task.res
+		if res then
+			--print(tostring(res[1]))
+			local status = res.status
+			if status == "done" then
+				task.callback(TableCopyToNormal(task.res[1]))
+				task.res = nil
+				CheckDelay(id,task)
+			elseif calceled_strings[status] then
+				if not task.printerErr then
+					task.printerErr = true
+					print(task.res[1])
+				end
+				--task.res = nil
+				if task.dont_die then
+					task.printerErr = nil
+					task.res = nil
+				else
+					TerminateTask(id)
 				end
 			end
 		else
-			TerminateTask(id)
+			CheckDelay(id,task)
 		end
 	end
+end)
+
+lanes.CreateSingleTask = function(id,libs,opts,func,callback,inArgs)
+	inArgs = TableCopyToLanes(inArgs)
+	TerminateTask(id)
+	LaneTasks[id] = {}
+	--LaneTasks[id].curcount = nil
+	--LaneTasks[id].maxcount = nil
+	--LaneTasks[id].delay = nil
+	--LaneTasks[id].dont_die = nil
+	local task = LaneTasks[id]
+	task.callback = callback
+	local f = lanes.gen(libs,opts,func)
+	task.f = f
+	task.res = f(inArgs)
+	task.inArgs = inArgs
+end
+local CreateSingleTask = lanes.CreateSingleTask
+
+lanes.CreateRepeatingTask = function(delay,count,dont_die,id,...)
+	CreateSingleTask(id,...)
+	local task = LaneTasks[id]
+	task.curcount = 0
+	task.maxcount = count
+	task.delay = delay
+	task.dont_die = dont_die
+	task.PrevStartTime = CurTime()
+end
+
+lanes.SetInputArgs = function(id,args)
+	local task = LaneTasks[id]
+	if task then
+		task.inArgs = TableCopyToLanes(args)
+	end
+end
+
+--[[
+	EXAMPLES
+
+	lanes.CreateRepeatingTask(--terminates by conditions
+		1,--delay
+		0,--repetitions limiit
+		nil,--if true it will not terminate on error.
+		"example",--id
+		nil,--libs (see lua lanes documentation)
+		nil,--opts (see lua lanes documentation)
+		function(args)--function that will run parallel
+			return args and args + 1 or 0
+		end,
+		function(args)--callback with output argument
+			print(args)
+			lanes.SetInputArgs("example",args) -- changing input argument
+		end,
+		nil -- input arument
+	)	
 	
-	hook.Add("Think","LuaLanesCallbacks",function()
-		for id,task in pairs(LaneTasks)do
-			local res = task.res
-			if res then
-				--print(tostring(res[1]))
-				local status = res.status
-				if status == "done" then
-					task.callback(TableCopyToNormal(task.res[1]))
-					task.res = nil
-					CheckDelay(id,task)
-				elseif calceled_strings[status] then
-					if not task.printerErr then
-						task.printerErr = true
-						print(task.res[1])
-					end
-					--task.res = nil
-					if task.dont_die then
-						task.printerErr = nil
-						task.res = nil
-					else
-						TerminateTask(id)
-					end
-				end
-			else
-				CheckDelay(id,task)
-			end
-		end
+	lanes.CreateSingleTask(--terminates after one usage
+		"asd",--id
+		nil,--libs (see lua lanes documentation)
+		nil,--opts (see lua lanes documentation)
+		function(args)--function that will run parallel
+			return args + 1
+		end,
+		function(args)--callback with output argument
+			print(args)
+		end,
+		0 -- input arument
+	)
+	
+	
+	timer.Simple(5,function()
+		lanes.TerminateTask("example")--terminating task by id
 	end)
 	
-	lanes.CreateSingleTask = function(id,libs,opts,func,callback,inArgs)
-		inArgs = TableCopyToLanes(inArgs)
-		TerminateTask(id)
-		LaneTasks[id] = {}
-		--LaneTasks[id].curcount = nil
-		--LaneTasks[id].maxcount = nil
-		--LaneTasks[id].delay = nil
-		--LaneTasks[id].dont_die = nil
-		local task = LaneTasks[id]
-		task.callback = callback
-		local f = lanes.gen(libs,opts,func)
-		task.f = f
-		task.res = f(inArgs)
-		task.inArgs = inArgs
-	end
-	local CreateSingleTask = lanes.CreateSingleTask
-	
-	lanes.CreateRepeatingTask = function(delay,count,dont_die,id,...)
-		CreateSingleTask(id,...)
-		local task = LaneTasks[id]
-		task.curcount = 0
-		task.maxcount = count
-		task.delay = delay
-		task.dont_die = dont_die
-		task.PrevStartTime = CurTime()
-	end
-	
-	lanes.SetInputArgs = function(id,args)
-		local task = LaneTasks[id]
-		if task then
-			task.inArgs = TableCopyToLanes(args)
-		end
-	end
-	
-	--[[
-		EXAMPLES
-	
-		lanes.CreateRepeatingTask(--terminates by conditions
-			1,--delay
-			0,--repetitions limiit
-			nil,--if true it will not terminate on error.
-			"example",--id
-			nil,--libs (see lua lanes documentation)
-			nil,--opts (see lua lanes documentation)
-			function(args)--function that will run parallel
-				return args and args + 1 or 0
-			end,
-			function(args)--callback with output argument
-				print(args)
-				lanes.SetInputArgs("example",args) -- changing input argument
-			end,
-			nil -- input arument
-		)	
-		
-		lanes.CreateSingleTask(--terminates after one usage
-			"asd",--id
-			nil,--libs (see lua lanes documentation)
-			nil,--opts (see lua lanes documentation)
-			function(args)--function that will run parallel
-				return args + 1
-			end,
-			function(args)--callback with output argument
-				print(args)
-			end,
-			0 -- input arument
-		)
-		
-		
-		timer.Simple(5,function()
-			lanes.TerminateTask("example")--terminating task by id
-		end)
-		
-		--lanes.TerminateAllTasks()--terminating all tasks
-	]]
+	--lanes.TerminateAllTasks()--terminating all tasks
+]]
