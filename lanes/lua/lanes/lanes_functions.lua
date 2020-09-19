@@ -1,4 +1,4 @@
-	--TODO проверить, передается ли таблица по ссылке или занчения копируются
+--TODO проверить, правильно ли работает функция Terminate
 	if SERVER then AddCSLuaFile("lanes/lanes_main.lua")end
 	local files = file.Find("lua/bin/*", "GAME")
 	local found
