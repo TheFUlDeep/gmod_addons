@@ -188,7 +188,7 @@ THEFULDEEP.MirrorDraw = function(self)
 end
 local DrawFunc = THEFULDEEP.MirrorDraw
 
-local classesToSkip = {"prop_vehicle_prisoner_pod"}
+local classesToSkip = {prop_vehicle_prisoner_pod = true}
 
 timer.Simple(0,function()
 	for _,class in pairs(Metrostroi.TrainClasses or {})do
