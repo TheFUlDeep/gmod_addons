@@ -14,6 +14,7 @@ if not lanes then include("lanes/lanes_main.lua")end
 if lanes.configure then lanes.configure(--[[{track_lanes=true,nb_keepers=10}]])end
 
 lanes.LaneTasks = lanes.LaneTasks or {}
+local LaneTasks = lanes.LaneTasks
 
 lanes.TerminateAllTasks = function()
 	for id,task in pairs(LaneTasks)do
@@ -193,11 +194,11 @@ lanes.SetInputArgs = function(id,args)
 end
 
 lanes.GetTask = function(id)
-	return lane.LaneTasks[id]
+	return LaneTasks[id]
 end
 
 lanes.GetTasks = function()
-	return lane.LaneTasks
+	return LaneTasks
 end
 
 --[[
