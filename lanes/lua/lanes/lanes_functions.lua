@@ -221,7 +221,7 @@ end
 			lanes.SetInputArgs("example",args) -- changing input argument. it will push table
 			lanes.GetTask("example").inArgs = args -- another variant of changing input argument (without converting to table).
 		end,
-		nil -- input arument
+		nil -- input arument. It will convert to table
 	)	
 	
 	lanes.CreateSingleTask(--terminates after one usage
@@ -234,7 +234,7 @@ end
 		function(args)--callback with output argument (always table)
 			print(args[1])
 		end,
-		0 -- input arument
+		0 -- input arument. It will convert to table
 	)
 	
 	
