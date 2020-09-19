@@ -30,8 +30,30 @@
 	local TerminateTask = lanes.TerminateTask
 	
 	local calceled_strings = {["error"]=true,cancelled=true,killed=true}
+	
+	local function CheckDelay(id,task)
+		local delay = task.delay
+		if delay then
+			if (CurTime() - task.PrevStartTime) >= delay then
+				task.PrevStartTime = task.PrevStartTime + delay--благодаря этому, если программа будет опаздывать, в следующий раз запустится мгновенно
+				local maxcount = task.maxcount
+				if not maxcount or maxcount == 0 then--чтобы не считать task.curcount при отсутствии лимита
+					task.res = task.f(task.inArgs)
+				else
+					task.curcount = task.curcount + 1
+					if task.curcount < maxcount then
+						task.res = task.f(task.inArgs)
+					else
+						TerminateTask(id)
+					end
+				end
+			end
+		else
+			TerminateTask(id)
+		end
+	end
+	
 	hook.Add("Think","LuaLanesCallbacks",function()
-		local CurTime = CurTime()
 		for id,task in pairs(LaneTasks)do
 			local res = task.res
 			if res then
@@ -40,25 +62,7 @@
 				if status == "done" then
 					task.callback(task.res[1])
 					task.res = nil
-					local delay = task.delay--начало куска 1
-					if delay then
-						if (CurTime - task.PrevStartTime) >= delay then
-							task.PrevStartTime = task.PrevStartTime + delay
-							local maxcount = task.maxcount
-							if not maxcount or maxcount == 0 then--чтобы не считать task.curcount при отсутствии лимита
-								task.res = task.f(task.inArgs)
-							else
-								task.curcount = task.curcount + 1
-								if task.curcount < maxcount then
-									task.res = task.f(task.inArgs)
-								else
-									TerminateTask(id)
-								end
-							end
-						end
-					else
-						TerminateTask(id)
-					end--конец куска 1
+					CheckDelay(id,task)
 				elseif calceled_strings[status] then
 					if not task.printerErr then
 						task.printerErr = true
@@ -73,25 +77,7 @@
 					end
 				end
 			else
-				local delay = task.delay--начало куска 1
-				if delay then
-					if (CurTime - task.PrevStartTime) >= delay then
-						task.PrevStartTime = task.PrevStartTime + delay
-						local maxcount = task.maxcount
-						if not maxcount or maxcount == 0 then
-							task.res = task.f(task.inArgs)
-						else
-							task.curcount = task.curcount + 1
-							if task.curcount < maxcount then
-								task.res = task.f(task.inArgs)
-							else
-								TerminateTask(id)
-							end
-						end
-					end
-				else
-					TerminateTask(id)--конец куска 1
-				end
+				CheckDelay(id,task)
 			end
 		end
 	end)
