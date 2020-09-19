@@ -21,12 +21,13 @@
 		LaneTasks[id] = nil
 	end
 	
-	local function TerminateTask(id)
+	lanes.TerminateTask = function(id)
 		if LaneTasks[id] and LaneTasks[id].res then
 			LaneTasks[id].res:cancel(0,true)
 		end
 		LaneTasks[id] = nil
 	end
+	local TerminateTask = lanes.TerminateTask
 	
 	local calceled_strings = {["error"]=true,cancelled=true,killed=true}
 	hook.Add("Think","LuaLanesCallbacks",function()
@@ -44,7 +45,7 @@
 						if (CurTime - task.PrevStartTime) >= delay then
 							task.PrevStartTime = task.PrevStartTime + delay
 							local maxcount = task.maxcount
-							if not maxcount or maxcount == 0 then
+							if not maxcount or maxcount == 0 then--чтобы не считать task.curcount при отсутствии лимита
 								task.res = task.f(task.inArgs)
 							else
 								task.curcount = task.curcount + 1
@@ -63,8 +64,13 @@
 						task.printerErr = true
 						print(task.res[1])
 					end
-					task.printerErr = nil
-					task.res = nil
+					--task.res = nil
+					if task.dont_die then
+						task.printerErr = nil
+						task.res = nil
+					else
+						TerminateTask(id)
+					end
 				end
 			else
 				local delay = task.delay--начало куска 1
@@ -96,6 +102,7 @@
 		LaneTasks[id].curcount = nil
 		LaneTasks[id].maxcount = nil
 		LaneTasks[id].delay = nil
+		LaneTasks[id].dont_die = nil
 		local task = LaneTasks[id]
 		task.callback = callback
 		local f = lanes.gen(libs,opts,func)
@@ -105,26 +112,54 @@
 	end
 	local CreateSingleTask = lanes.CreateSingleTask
 	
-	lanes.CreateRepeatingTask = function(delay,count,id,...)
+	lanes.CreateRepeatingTask = function(delay,count,dont_die,id,...)
 		CreateSingleTask(id,...)
 		local task = LaneTasks[id]
 		task.curcount = 0
 		task.maxcount = count
 		task.delay = delay
+		task.dont_die = dont_die
 		task.PrevStartTime = CurTime()
 	end
 	
-	--[[CreateRepeatingTask(
-		0.1,
-		5,
-		"asd",
-		"table",
-		nil,
-		function(args)
-			return args
-		end,
-		function(args)
-			LaneTasks.asd.inArgs = args + 1
-		end,
-		1
-	)]]
+	--[[
+		EXAMPLES
+	
+		lanes.CreateRepeatingTask(--terminates by conditions
+			1,--delay
+			0,--repetitions limiit
+			nil,--if true it will not terminate on error.
+			"example",--id
+			nil,--libs (see lua lanes documentation)
+			nil,--opts (see lua lanes documentation)
+			function(args)--function that will run parallel
+				return args and args + 1 or 0
+			end,
+			function(args)--callback with output argument
+				print(args)
+				lanes.LaneTasks.example.inArgs = args -- changing input argument
+			end,
+			nil -- input arument
+		)	
+		
+		lanes.CreateSingleTask(--terminates after one usage
+			"asd",--id
+			nil,--libs (see lua lanes documentation)
+			nil,--opts (see lua lanes documentation)
+			function(args)--function that will run parallel
+				return args + 1
+			end,
+			function(args)--callback with output argument
+				print(args)
+				lanes.LaneTasks.asd.inArgs = args -- changing input argument
+			end,
+			0 -- input arument
+		)
+		
+		
+		timer.Simple(5,function()
+			lanes.TerminateTask("example")--terminating task by id
+		end)
+		
+		--lanes.TerminateAllTasks()--terminating all tasks
+	]]
