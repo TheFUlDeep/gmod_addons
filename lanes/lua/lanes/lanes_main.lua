@@ -1,7 +1,7 @@
 local files = file.Find("lua/bin/*", "GAME")
 local found
 for _,name in pairs(files)do
-	if (CLIENT and name:sub(1,5) == "gmcl_" or SERVER and name:sub(1,5) == "gmsv_") and name:sub(6,16) == "lanes.core_" and name:sub(-4,-1) == ".dll" then found = true end
+	if (CLIENT and name:sub(1,5) == "gmcl_" or SERVER and name:sub(1,5) == "gmsv_") and name:sub(6,16) == "lanes.core_" and name:sub(-4,-1) == ".dll" then found = true break end
 end
 if not found then return end
 --
