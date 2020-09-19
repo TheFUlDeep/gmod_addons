@@ -192,10 +192,6 @@ lanes.SetInputArgs = function(id,args)
 	end
 end
 
-lanes.GetTask = function(id)
-	return LaneTasks[id]
-end
-
 lanes.GetTasks = function()
 	return LaneTasks
 end
@@ -219,7 +215,7 @@ end
 		function(args)--callback with output argument (always table)
 			print(args[1])
 			lanes.SetInputArgs("example",args) -- changing input argument. it will push table
-			lanes.GetTask("example").inArgs = args -- another variant of changing input argument (without converting to table).
+			lanes.GetTasks().example.inArgs = args -- another variant of changing input argument (without converting to table).
 		end,
 		nil -- input arument. It will convert to table
 	)	
