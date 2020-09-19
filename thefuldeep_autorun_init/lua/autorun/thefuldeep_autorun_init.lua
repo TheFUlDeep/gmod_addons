@@ -40,7 +40,7 @@ local function InitAutorun(path,param)
 	end
 end
 print("TheFulDeep's autorun initializing")
-local lanes = "lanes/lanes_main.lua"
+local lanes = "lanes/lanes_functions.lua"
 if file.Exists(lanes,"LUA")then
 	if SERVER then AddCSLuaFile(lanes)end
 	include(lanes)
