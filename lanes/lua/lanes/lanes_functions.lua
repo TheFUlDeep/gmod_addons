@@ -204,9 +204,7 @@ end
 	EXAMPLES
 	
 	accept input arg types:
-		string,bool,nil,number,vector,color,angle,table with all this types
-		
-		not sure about functions
+		string,bool,nil,number,vector,color,angle,some functions,table with all this types
 
 	lanes.CreateRepeatingTask(--terminates by conditions
 		1,--delay
@@ -216,12 +214,12 @@ end
 		nil,--libs (see lua lanes documentation)
 		nil,--opts (see lua lanes documentation)
 		function(args)--function that will run parallel
-			return args and args + 1 or 0
+			return args[1] and args[1] + 1 or 0
 		end,
-		function(args)--callback with output argument
-			print(args)
-			lanes.SetInputArgs("example",args) -- changing input argument
-			lanes.LaneTasks.example.inArgs = args -- another variant of changing input argument (without converting)
+		function(args)--callback with output argument (always table)
+			print(args[1])
+			lanes.SetInputArgs("example",args) -- changing input argument. it will push table
+			lanes.GetTask("example").inArgs = args -- another variant of changing input argument (without converting to table).
 		end,
 		nil -- input arument
 	)	
@@ -233,7 +231,7 @@ end
 		function(args)--function that will run parallel
 			return args + 1
 		end,
-		function(args)--callback with output argument
+		function(args)--callback with output argument (always table)
 			print(args)
 		end,
 		0 -- input arument
