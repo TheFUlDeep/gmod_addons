@@ -1,4 +1,5 @@
 --TODO проверить, правильно ли работает функция Terminate
+--таблицы при перемещениями между луа стейтами вроде копируются, а не передаеются по ссылкe?
 if SERVER then AddCSLuaFile("lanes/lanes_main.lua")end
 local files = file.Find("lua/bin/*", "GAME")
 local found
@@ -194,6 +195,11 @@ end
 
 --[[
 	EXAMPLES
+	
+	accept input arg types:
+		string,bool,nil,number,vector,color,angle,table with all this types
+		
+		not sure about functions
 
 	lanes.CreateRepeatingTask(--terminates by conditions
 		1,--delay
