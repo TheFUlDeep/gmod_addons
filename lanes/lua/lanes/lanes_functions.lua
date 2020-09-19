@@ -12,8 +12,8 @@
 
 	if lanes.configure then lanes.configure(--[[{track_lanes=true,nb_keepers=10}]])end
 	
-	lanes.LaneTasks = lanes.LaneTasks or {}
-	local LaneTasks = lanes.LaneTasks
+	--lanes.LaneTasks = lanes.LaneTasks or {}
+	local LaneTasks = {}
 	
 	lanes.TerminateAllTasks = function()
 		for id,task in pairs(LaneTasks)do
