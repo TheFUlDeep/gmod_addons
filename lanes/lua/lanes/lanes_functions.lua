@@ -53,14 +53,14 @@ local TableCopyToLanes = function(tbl)
 			if IsColor(v) then
 				res[k] = {lanesTableType="color",v.r,v.g,v.b,v.a}
 			elseif istable(v) then
-				res[k] = lanes.TableCopyToLanes(v)
+				res[k] = TableCopyToLanes(v)
 			elseif isvector(v) then
 				res[k] = {lanesTableType="Vector",v[1],v[2],v[3]}
 			elseif isangle(v) then
 				res[k] = {lanesTableType="Angle",v[1],v[2],v[3]}
 			elseif IsEntity(v) then
 				continue
-				--res[k] = lanes.TableCopyToLanes(v:GetTable())
+				--res[k] = TableCopyToLanes(v:GetTable())
 				--res[k].lanesTableType = "entity"
 			else
 				res[k] = v
@@ -68,7 +68,6 @@ local TableCopyToLanes = function(tbl)
 		end
 		return res
 end
-lanes.TableCopyToLanes = TableCopyToLanes
 	
 local function IsNeedConvertTableToNormal(tbl)
 	for k,v in pairs(tbl)do
@@ -94,7 +93,7 @@ local TableCopyToNormal = function(tbl)
 				--[[elseif type == "entity" then
 					res[k] = ]]
 				else
-					res[k] = lanes.TableCopyToNormal(v)
+					res[k] = TableCopyToNormal(v)
 				end
 			else
 				res[k] = v
@@ -102,7 +101,6 @@ local TableCopyToNormal = function(tbl)
 		end
 		return res
 end
-lanes.TableCopyToNormal = TableCopyToNormal
 	
 	
 	
