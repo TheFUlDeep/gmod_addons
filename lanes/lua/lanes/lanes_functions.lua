@@ -224,12 +224,12 @@ end
 		"asd",--id
 		nil,--libs (see lua lanes documentation)
 		nil,--opts (see lua lanes documentation)
-		nil,--if true it will not convert args to table (for performance)
+		true,--if true it will not convert args to table (for performance)
 		function(args)--function that will run parallel
-			return args[1] + 1
+			return args + 1
 		end,
 		function(args)--callback with output argument
-			print(args[1])
+			print(args)
 		end,
 		0 -- input arument. It will convert to table
 	)
