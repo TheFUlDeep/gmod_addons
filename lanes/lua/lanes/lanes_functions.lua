@@ -99,10 +99,10 @@
 	lanes.CreateSingleTask = function(id,libs,opts,func,callback,inArgs)
 		TerminateTask(id)
 		LaneTasks[id] = {}
-		LaneTasks[id].curcount = nil
-		LaneTasks[id].maxcount = nil
-		LaneTasks[id].delay = nil
-		LaneTasks[id].dont_die = nil
+		--LaneTasks[id].curcount = nil
+		--LaneTasks[id].maxcount = nil
+		--LaneTasks[id].delay = nil
+		--LaneTasks[id].dont_die = nil
 		local task = LaneTasks[id]
 		task.callback = callback
 		local f = lanes.gen(libs,opts,func)
