@@ -43,16 +43,18 @@ local function IsNeedConvertTableToLanes(tbl)
 		end
 	end
 end
-local TableCopyToLanes = function(tbl)
-		tbl = tbl or {}
-		tbl = istable(tbl) and tbl or {tbl}
-		
-		if not IsNeedConvertTableToLanes(tbl) then return tbl end
+local TableCopyToLanes = function(tbl,recurse)
+		if not recurse then
+			tbl = tbl or {}
+			tbl = istable(tbl) and tbl or {tbl}
+			
+			if not IsNeedConvertTableToLanes(tbl) then return tbl end
+		end
 		
 		local res = {}
 		for k,v in pairs(tbl)do
 			if istable(v) then
-				res[k] = TableCopyToLanes(v)
+				res[k] = TableCopyToLanes(v,true)
 			elseif isvector(v) then
 				res[k] = {lanesTableType="Vector",v[1],v[2],v[3]}
 			elseif isangle(v) then
@@ -71,11 +73,13 @@ local function IsNeedConvertTableToNormal(tbl)
 		if istable(v) and v.lanesTableType then return true end
 	end
 end
-local TableCopyToNormal = function(tbl)
-		tbl = tbl or {}
-		tbl = istable(tbl) and tbl or {tbl}
-		
-		if not IsNeedConvertTableToNormal(tbl) then return tbl end
+local TableCopyToNormal = function(tbl,recurse)
+		if not recurse then
+			tbl = tbl or {}
+			tbl = istable(tbl) and tbl or {tbl}
+			
+			if not IsNeedConvertTableToNormal(tbl) then return tbl end
+		end
 		
 		local res = {}
 		for k,v in pairs(tbl)do
@@ -88,7 +92,7 @@ local TableCopyToNormal = function(tbl)
 				elseif type == "Entity" then
 					res[k] = Entity(v[1])
 				else
-					res[k] = TableCopyToNormal(v)
+					res[k] = TableCopyToNormal(v,true)
 				end
 			else
 				res[k] = v
