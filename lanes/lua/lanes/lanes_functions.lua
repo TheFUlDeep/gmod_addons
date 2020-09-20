@@ -17,14 +17,15 @@ local LaneTasks = {}
 
 lanes.TerminateAllTasks = function()
 	for id,task in pairs(LaneTasks)do
-		if istable(task) and task.res then res:cancel(0,true)end
+		if task and task.res then task.res:cancel(0,true)end
 	end
 	LaneTasks = {}
 end
 
 lanes.TerminateTask = function(id)
-	if istable(LaneTasks[id]) and LaneTasks[id].res then
-		LaneTasks[id].res:cancel(0,true)
+	local task = LaneTasks[id]
+	if task and task.res then
+		task.res:cancel(0,true)
 	end
 	LaneTasks[id] = nil
 end
@@ -127,7 +128,7 @@ end
 local calceled_strings = {["error"]=true,cancelled=true,killed=true}
 hook.Add("Think","LuaLanesCallbacks",function()
 	for id,task in pairs(LaneTasks)do
-		if not istable(task) or task.paused then continue end
+		if task.paused then continue end
 		local res = task.res
 		if res then
 			--print(tostring(res[1]))
@@ -185,7 +186,7 @@ end
 
 lanes.SetInputArgs = function(id,args)
 	local task = LaneTasks[id]
-	if istable(task) then
+	if task then
 		if task.dontConvertArgs then task.inArgs = args else task.inArgs = TableCopyToLanes(inArgs) end
 	end
 end
@@ -196,12 +197,12 @@ end
 
 lanes.PauseTask = function(id)
 	local task = LaneTasks[id]
-	if istable(task) then task.paused = true end
+	if task then task.paused = true end
 end
 
 lanes.ResumeTask = function(id)
 	local task = LaneTasks[id]
-	if istable(task) then task.paused = nil end
+	if task then task.paused = nil end
 end
 
 --[[
