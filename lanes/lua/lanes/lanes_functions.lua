@@ -81,7 +81,7 @@ local TableCopyToNormal = function(tbl)
 		
 		local res = {}
 		for k,v in pairs(tbl)do
-			if type(v) == "table" then
+			if istable(v) then
 				local type = v.lanesTableType
 				if type == "Vector" then
 					res[k] = Vector(v[1],v[2],v[3])
