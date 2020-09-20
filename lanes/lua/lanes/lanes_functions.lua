@@ -32,11 +32,11 @@ end
 local TerminateTask = lanes.TerminateTask
 
 
---Vector, Angle, color, entity, table
+--Vector, Angle, entity, table
 local typesToconvert = {Vector=true,Angle=true}
 local function IsNeedConvertTableToLanes(tbl)
 	for k,v in pairs(tbl)do
-		if typesToconvert[type(v)] or IsColor(v) or IsEntity(v) then
+		if typesToconvert[type(v)] or IsEntity(v) then
 			return true
 		elseif istable(v) then
 			if IsNeedConvertTableToLanes(v) then return true end
@@ -51,9 +51,7 @@ local TableCopyToLanes = function(tbl)
 		
 		local res = {}
 		for k,v in pairs(tbl)do
-			if IsColor(v) then
-				res[k] = {lanesTableType="color",v.r,v.g,v.b,v.a}
-			elseif istable(v) then
+			if istable(v) then
 				res[k] = TableCopyToLanes(v)
 			elseif isvector(v) then
 				res[k] = {lanesTableType="Vector",v[1],v[2],v[3]}
@@ -87,8 +85,6 @@ local TableCopyToNormal = function(tbl)
 					res[k] = Vector(v[1],v[2],v[3])
 				elseif type == "Angle" then
 					res[k] = Angle(v[1],v[2],v[3])
-				elseif type == "color" then
-					res[k] = Color(v[1],v[2],v[3],v[4])
 				elseif type == "Entity" then
 					res[k] = Entity(v[1])
 				else
