@@ -43,7 +43,7 @@ function tfdTableCopy(tbl)--нерекурсивная фнукция копир
 	end
 	
 	local res = {}
-	for k,v in pairs(layers[1])do
+	for k,v in pairs(layers[1] or {})do
 		res[v[1]] = v[2]
 	end
 	
