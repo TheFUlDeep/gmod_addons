@@ -11,7 +11,7 @@ if not found then return end
 
 if not lanes then include("lanes/lanes_main.lua")end
 
-if lanes.configure then lanes.configure(--[[{track_lanes=true,nb_keepers=10}]])end
+if lanes.configure then lanes.configure()end--demote_full_userdata
 
 local LaneTasks = {}
 
@@ -31,7 +31,7 @@ end
 local TerminateTask = lanes.TerminateTask
 
 
---Vector, Angle, color, --entity, table
+--Vector, Angle, color, entity, table
 local typesToconvert = {Vector=true,Angle=true}
 local function IsNeedConvertTableToLanes(tbl)
 	for k,v in pairs(tbl)do
@@ -59,9 +59,7 @@ local TableCopyToLanes = function(tbl)
 			elseif isangle(v) then
 				res[k] = {lanesTableType="Angle",v[1],v[2],v[3]}
 			elseif IsEntity(v) then
-				continue
-				--res[k] = TableCopyToLanes(v:GetTable())
-				--res[k].lanesTableType = "entity"
+				res[k] = {lanesTableType="Entity",IsValid(v) and v:EntIndex() or -1}
 			else
 				res[k] = v
 			end
@@ -90,8 +88,8 @@ local TableCopyToNormal = function(tbl)
 					res[k] = Angle(v[1],v[2],v[3])
 				elseif type == "color" then
 					res[k] = Color(v[1],v[2],v[3],v[4])
-				--[[elseif type == "entity" then
-					res[k] = ]]
+				elseif type == "Entity" then
+					res[k] = Entity(v[1])
 				else
 					res[k] = TableCopyToNormal(v)
 				end
@@ -129,6 +127,7 @@ end
 local calceled_strings = {["error"]=true,cancelled=true,killed=true}
 hook.Add("Think","LuaLanesCallbacks",function()
 	for id,task in pairs(LaneTasks)do
+		if task.paused then continue end
 		local res = task.res
 		if res then
 			--print(tostring(res[1]))
@@ -195,11 +194,22 @@ lanes.GetTasks = function()
 	return LaneTasks
 end
 
+lanes.PauseTask = function(id)
+	local task = LaneTasks[id]
+	if task then task.paused = true end
+end
+
+lanes.ResumeTask = function(id)
+	local task = LaneTasks[id]
+	if task then task.paused = nil end
+end
+
 --[[
 	EXAMPLES
 	
 	accept input arg types:
 		string,bool,nil,number,vector,color,angle,some functions,table with all this types
+		--it also will transfer ents (and tables with it), but only indexes (without content) and if "dontConvertArgs" setted to false or nil
 
 	lanes.CreateRepeatingTask(--terminates by conditions
 		1,--delay
@@ -232,6 +242,28 @@ end
 			print(args)
 		end,
 		0 -- input arument
+	)
+	
+	if you want delay by ending, do it like this
+	lanes.CreateRepeatingTask(--terminates by conditions
+		0,--delay
+		0,--repetitions limiit
+		nil,--if true it will not terminate on error.
+		"example3",--id
+		nil,--libs (see lua lanes documentation)
+		nil,--opts (see lua lanes documentation)
+		true,--if true it will not convert args to table (for performance)
+		function(args)--function that will run parallel
+			return args
+		end,
+		function(args)--callback with output argument
+			print(args,CurTime())
+			lanes.PauseTask("example3")
+			timer.Simple(1,function()
+				lanes.ResumeTask("example3")
+			end)
+		end,
+		"asd" -- input arument. It will convert to table
 	)
 	
 	
