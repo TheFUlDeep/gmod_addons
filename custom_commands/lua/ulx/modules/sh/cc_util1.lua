@@ -432,6 +432,7 @@ if CLIENT then
 			text6 = "ДСЦП(4) Проспект Энергетиков: " .. (Metrostroi.ActiveDSCP4 or "отсутствует")
 			text7 = "ДСЦП(5) Селигерская роща " .. (Metrostroi.ActiveDSCP5 or "отсутствует")
 		end
+		local background_color = Color(0, 0, 0, 150)
 		local font = "ChatFont"
 		local text = "ДЦХ: " .. (Metrostroi.ActiveDispatcher or "отсутствует")
 		local text2 = "Интервал: " .. (Metrostroi.ActiveInt and Metrostroi.ActiveInt >= 30 and (math.floor(Metrostroi.ActiveInt/60)..":"..Format("%02d",math.fmod(Metrostroi.ActiveInt,60))) or "не выставлен")
@@ -443,23 +444,23 @@ if CLIENT then
 		local w5,h5 = surface.GetTextSize(text5)
 		local w6,h6 = surface.GetTextSize(text6)
 		local w7,h7 = surface.GetTextSize(text7)
-		draw.RoundedBox(6, ScrW() - math.Max(Width,w2) - 28, (ScrH()/2 - 200) - 10, math.Max(Width,w2) + 20, Height + h2 + 6  , Color(0, 0, 0, 150))
-		draw.SimpleText(text, font, ScrW() - (Width / 2) - 20, ScrH()/2 - 200, Color(255, 255, 255, 255), 1, 1)
-		draw.SimpleText(text2, font, ScrW() - (w2 / 2) - 20, ScrH()/2 - 200 + Height, Color(255, 255, 255, 255), 1, 1)
+		draw.RoundedBox(6, ScrW() - math.Max(Width,w2) - 28, (ScrH()/2 - 200) - 10, math.Max(Width,w2) + 20, Height + h2 + 6  , background_color)
+		draw.SimpleText(text, font, ScrW() - (Width / 2) - 20, ScrH()/2 - 200, color_white, 1, 1)
+		draw.SimpleText(text2, font, ScrW() - (w2 / 2) - 20, ScrH()/2 - 200 + Height, color_white, 1, 1)
 		if game.GetMap() == "gm_mus_crimson_line_tox_v9_21" then 
-			draw.RoundedBox(6, ScrW() - math.Max(w3,w4,w5,w6) - 28, (ScrH()/2 - 170) - 13 + Height + h2, math.Max(w3,w4,w5,w6) + 20, h3 + h4 + h5 + h6 --[[+ h6]] + 11, Color(0, 0, 0, 150))
-			draw.SimpleText(text3, font, ScrW() - (w3 / 2) - 20, ScrH()/2 - 170 + Height + h2, Color(255, 255, 255, 255), 1, 1)
-			draw.SimpleText(text4, font, ScrW() - (w4 / 2) - 20, ScrH()/2 - 170 + Height + h2 + h3, Color(255, 255, 255, 255), 1, 1)
-			draw.SimpleText(text5, font, ScrW() - (w5 / 2) - 20, ScrH()/2 - 170 + Height + h2 + h3 + h4, Color(255, 255, 255, 255), 1, 1)
-			draw.SimpleText(text6, font, ScrW() - (w6 / 2) - 20, ScrH()/2 - 170 + Height + h2 + h3 + h4 + h5, Color(255, 255, 255, 255), 1, 1)
+			draw.RoundedBox(6, ScrW() - math.Max(w3,w4,w5,w6) - 28, (ScrH()/2 - 170) - 13 + Height + h2, math.Max(w3,w4,w5,w6) + 20, h3 + h4 + h5 + h6 --[[+ h6]] + 11, background_color)
+			draw.SimpleText(text3, font, ScrW() - (w3 / 2) - 20, ScrH()/2 - 170 + Height + h2, color_white, 1, 1)
+			draw.SimpleText(text4, font, ScrW() - (w4 / 2) - 20, ScrH()/2 - 170 + Height + h2 + h3, color_white, 1, 1)
+			draw.SimpleText(text5, font, ScrW() - (w5 / 2) - 20, ScrH()/2 - 170 + Height + h2 + h3 + h4, color_white, 1, 1)
+			draw.SimpleText(text6, font, ScrW() - (w6 / 2) - 20, ScrH()/2 - 170 + Height + h2 + h3 + h4 + h5, color_white, 1, 1)
 		end
 		if game.GetMap() == "gm_mus_neoorange_d" or game.GetMap() == "gm_metro_jar_imagine_line_v3_n" then 
-			draw.RoundedBox(6, ScrW() - math.Max(w3,w4,w5,w6,w7) - 28, (ScrH()/2 - 170) - 13 + Height + h2, math.Max(w3,w4,w5,w6,w7) + 20, h3 + h4 + h5 + h6 + h7 --[[+ h6]] + 11, Color(0, 0, 0, 150))
-			draw.SimpleText(text3, font, ScrW() - (w3 / 2) - 20, ScrH()/2 - 170 + Height + h2, Color(255, 255, 255, 255), 1, 1)
-			draw.SimpleText(text4, font, ScrW() - (w4 / 2) - 20, ScrH()/2 - 170 + Height + h2 + h3, Color(255, 255, 255, 255), 1, 1)
-			draw.SimpleText(text5, font, ScrW() - (w5 / 2) - 20, ScrH()/2 - 170 + Height + h2 + h3 + h4, Color(255, 255, 255, 255), 1, 1)
-			draw.SimpleText(text6, font, ScrW() - (w6 / 2) - 20, ScrH()/2 - 170 + Height + h2 + h3 + h4 + h5, Color(255, 255, 255, 255), 1, 1)
-			draw.SimpleText(text7, font, ScrW() - (w7 / 2) - 20, ScrH()/2 - 170 + Height + h2 + h3 + h4 + h5 + h6, Color(255, 255, 255, 255), 1, 1)
+			draw.RoundedBox(6, ScrW() - math.Max(w3,w4,w5,w6,w7) - 28, (ScrH()/2 - 170) - 13 + Height + h2, math.Max(w3,w4,w5,w6,w7) + 20, h3 + h4 + h5 + h6 + h7 --[[+ h6]] + 11, background_color)
+			draw.SimpleText(text3, font, ScrW() - (w3 / 2) - 20, ScrH()/2 - 170 + Height + h2, color_white, 1, 1)
+			draw.SimpleText(text4, font, ScrW() - (w4 / 2) - 20, ScrH()/2 - 170 + Height + h2 + h3, color_white, 1, 1)
+			draw.SimpleText(text5, font, ScrW() - (w5 / 2) - 20, ScrH()/2 - 170 + Height + h2 + h3 + h4, color_white, 1, 1)
+			draw.SimpleText(text6, font, ScrW() - (w6 / 2) - 20, ScrH()/2 - 170 + Height + h2 + h3 + h4 + h5, color_white, 1, 1)
+			draw.SimpleText(text7, font, ScrW() - (w7 / 2) - 20, ScrH()/2 - 170 + Height + h2 + h3 + h4 + h5 + h6, color_white, 1, 1)
 		end
 	end)
 end
