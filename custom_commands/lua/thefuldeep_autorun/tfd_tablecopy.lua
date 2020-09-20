@@ -1,4 +1,4 @@
-function tfdTableCopy(tbl)--нерекурсивная фнукция копирования таблицы. Не съедает стэк, работает с рекурсивными таблицами
+function tfdTableToLayers(tbl)--копирование содержимоого таблицы по слоям
 	local copuiedAddresses = {}--запоминаю уже скопированные адресы, чтобы не войти в бесконечную рекурсию (если таблица рекурсивна)
 	local layers = {}--запоминаю каждый уровень глубины
 	local function CanGoDown(tbl)
@@ -30,6 +30,12 @@ function tfdTableCopy(tbl)--нерекурсивная фнукция копир
 		end
 	end
 	layers[#layers] = nil
+	
+	return layers
+end
+
+function tfdTableCopy(tbl)--нерекурсивная фнукция копирования таблицы. Не съедает стэк, работает с рекурсивными таблицами
+	local layers = tfdTableToLayers(tbl)
 	
 	for i = #layers,2,-1 do
 		for k,v in pairs(layers[i])do

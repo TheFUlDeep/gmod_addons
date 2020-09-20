@@ -47,9 +47,8 @@ local TableCopyToLanes = function(tbl,recurse)
 		if not recurse then
 			tbl = tbl or {}
 			tbl = istable(tbl) and tbl or {tbl}
-			
-			if not IsNeedConvertTableToLanes(tbl) then return tbl end
 		end
+		if not IsNeedConvertTableToLanes(tbl) then return tbl end
 		
 		local res = {}
 		for k,v in pairs(tbl)do
@@ -70,7 +69,7 @@ end
 	
 local function IsNeedConvertTableToNormal(tbl)
 	for k,v in pairs(tbl)do
-		if istable(v) and v.lanesTableType then return true end
+		if istable(v) and (v.lanesTableType or IsNeedConvertTableToNormal(v)) then return true end
 	end
 end
 local TableCopyToNormal = function(tbl,recurse)
@@ -78,8 +77,8 @@ local TableCopyToNormal = function(tbl,recurse)
 			tbl = tbl or {}
 			tbl = istable(tbl) and tbl or {tbl}
 			
-			if not IsNeedConvertTableToNormal(tbl) then return tbl end
 		end
+		if not IsNeedConvertTableToNormal(tbl) then return tbl end
 		
 		local res = {}
 		for k,v in pairs(tbl)do
