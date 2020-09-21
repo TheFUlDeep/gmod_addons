@@ -8,6 +8,10 @@ for _,name in pairs(files)do
 end
 if not found then return end
 
+local tfdTableCopyPath = "thefuldeep_autorun/tfd_tablecopy.lua"
+if not file.Exists( tfdTableCopyPath, "LUA") then return end
+include(tfdTableCopyPath)
+
 
 if not lanes then include("lanes/lanes_main.lua")end
 
@@ -30,76 +34,6 @@ lanes.TerminateTask = function(id)
 	LaneTasks[id] = nil
 end
 local TerminateTask = lanes.TerminateTask
-
-
---Vector, Angle, entity, table
-local typesToconvert = {Vector=true,Angle=true}
-local function IsNeedConvertTableToLanes(tbl)
-	for k,v in pairs(tbl)do
-		if typesToconvert[type(v)] or IsEntity(v) then
-			return true
-		elseif istable(v) then
-			if IsNeedConvertTableToLanes(v) then return true end
-		end
-	end
-end
-local TableCopyToLanes = function(tbl,recurse)
-		if not recurse then
-			tbl = tbl or {}
-			tbl = istable(tbl) and tbl or {tbl}
-		end
-		if not IsNeedConvertTableToLanes(tbl) then return tbl end
-		
-		local res = {}
-		for k,v in pairs(tbl)do
-			if istable(v) then
-				res[k] = TableCopyToLanes(v,true)
-			elseif isvector(v) then
-				res[k] = {lanesTableType="Vector",v[1],v[2],v[3]}
-			elseif isangle(v) then
-				res[k] = {lanesTableType="Angle",v[1],v[2],v[3]}
-			elseif IsEntity(v) then
-				res[k] = {lanesTableType="Entity",IsValid(v) and v:EntIndex() or -1}
-			else
-				res[k] = v
-			end
-		end
-		return res
-end
-	
-local function IsNeedConvertTableToNormal(tbl)
-	for k,v in pairs(tbl)do
-		if istable(v) and (v.lanesTableType or IsNeedConvertTableToNormal(v)) then return true end
-	end
-end
-local TableCopyToNormal = function(tbl,recurse)
-		if not recurse then
-			tbl = tbl or {}
-			tbl = istable(tbl) and tbl or {tbl}
-			
-		end
-		if not IsNeedConvertTableToNormal(tbl) then return tbl end
-		
-		local res = {}
-		for k,v in pairs(tbl)do
-			if istable(v) then
-				local type = v.lanesTableType
-				if type == "Vector" then
-					res[k] = Vector(v[1],v[2],v[3])
-				elseif type == "Angle" then
-					res[k] = Angle(v[1],v[2],v[3])
-				elseif type == "Entity" then
-					res[k] = Entity(v[1])
-				else
-					res[k] = TableCopyToNormal(v,true)
-				end
-			else
-				res[k] = v
-			end
-		end
-		return res
-end
-	
 	
 	
 local function CheckDelay(id,task)
@@ -133,7 +67,11 @@ hook.Add("Think","LuaLanesCallbacks",function()
 			--print(tostring(res[1]))
 			local status = res.status
 			if status == "done" then
-				if task.dontConvertArgs then task.callback(task.res[1])else task.callback(TableCopyToNormal(task.res[1])) end
+				if task.dontConvertArgs then 
+					task.callback(task.res[1])
+				else 
+					task.callback(tfdTableCopy(task.res[1],true)) 
+				end
 				task.res = nil
 				CheckDelay(id,task)
 			elseif calceled_strings[status] then
@@ -156,7 +94,9 @@ hook.Add("Think","LuaLanesCallbacks",function()
 end)
 
 lanes.CreateSingleTask = function(id,libs,opts,dontConvertArgs,func,callback,inArgs)
-	if not dontConvertArgs then inArgs = TableCopyToLanes(inArgs) end
+	if not dontConvertArgs then 
+		inArgs = tfdTableCopy(inArgs,false)
+	end
 	TerminateTask(id)
 	LaneTasks[id] = {}
 	--LaneTasks[id].curcount = nil
@@ -186,7 +126,11 @@ end
 lanes.SetInputArgs = function(id,args)
 	local task = LaneTasks[id]
 	if task then
-		if task.dontConvertArgs then task.inArgs = args else task.inArgs = TableCopyToLanes(inArgs) end
+		if task.dontConvertArgs then 
+			task.inArgs = args 
+		else 
+			task.inArgs = tfdTableCopy(args,false) 
+		end
 	end
 end
 
