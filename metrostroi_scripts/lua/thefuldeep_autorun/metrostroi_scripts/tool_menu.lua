@@ -70,32 +70,32 @@ CreateClientConVar("metrostroi_custom_time", "3", true, false, "" )
 end
 
 if not GetConVar("hideothertrains") then
-CreateClientConVar("hideothertrains", "0", true, false, "" )
+CreateClientConVar("hideothertrains", "0", true, false, "", 0, 1 )
 end
 
 
 if not GetConVar("hidealltrains") then
-CreateClientConVar("hidealltrains","0",true,false,"")
+CreateClientConVar("hidealltrains","0",true,false,"", 0, 1)
 end
 
 
 if not GetConVar("hidetrains_behind_props") then
-CreateClientConVar("hidetrains_behind_props","1",true,false,"")
+CreateClientConVar("hidetrains_behind_props","1",true,false,"", 0, 1)
 end
 
 
 if not GetConVar("hidetrains_behind_player") then
-CreateClientConVar("hidetrains_behind_player","1",true,false,"")
+CreateClientConVar("hidetrains_behind_player","1",true,false,"", 0, 1)
 end
 
 
 if not GetConVar("draw_signal_routes") then
-CreateClientConVar("draw_signal_routes","1",true,false,"")
+CreateClientConVar("draw_signal_routes","1",true,false,"", 0, 1)
 end
 
 
 if not GetConVar("metrostroi_custom_passengers") then
-CreateClientConVar("metrostroi_custom_passengers","0",true,false,"")
+CreateClientConVar("metrostroi_custom_passengers","0",true,false,"", 0, 1)
 end
 
 hook.Add( "PopulateToolMenu", "MetrostroiCustomPanel", function()
