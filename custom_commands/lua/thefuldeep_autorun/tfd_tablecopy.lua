@@ -29,8 +29,7 @@ local function ConvertValue(v,tonormal)
 	end
 end
 
-local function tfdTableToLayers(tabl,tonormal)--копирование содержимоого таблицы по слоям
-	local tbl = tabl
+local function tfdTableToLayers(tbl,tonormal)--копирование содержимоого таблицы по слоям
 	if tonormal or tonormal == false then
 		tbl = tbl or {}
 		tbl = istable(tbl) and tbl or {tbl}
