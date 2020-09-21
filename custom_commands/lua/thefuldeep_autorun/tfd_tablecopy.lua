@@ -19,12 +19,10 @@ function tfdTableToLayers(tbl)--копирование содержимоого 
 		local newlayer = layers[#layers]
 		for k,val in pairs(layers[#layers-1])do
 			local v = val[valuesCount]
-			if istable(v) then
-				if not copuiedAddresses[v] then
-					copuiedAddresses[v] = true
-					for k1,v1 in pairs(v)do
-						newlayer[#newlayer+1] = {k,k1,v1}
-					end
+			if istable(v) and not copuiedAddresses[v] then
+				copuiedAddresses[v] = true
+				for k1,v1 in pairs(v)do
+					newlayer[#newlayer+1] = {k,k1,v1}
 				end
 			end
 		end
