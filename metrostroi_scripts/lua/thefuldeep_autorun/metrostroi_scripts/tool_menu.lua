@@ -1,9 +1,11 @@
 if SERVER then return end
 
-local multithread_enabled = CreateClientConVar("multi_thread_rendering_enabled", "2", true, false, "0 - disable, 1 - enable, 2 - do nothing", 0, 2)
+local multithread_enabled = CreateClientConVar("multi_thread_rendering_enabled", "1", true, false, "", 0, 1)
+local dont_touch_multithread = CreateClientConVar("dont_touch_multi_thread_rendering", "1", true, false, "", 0, 1)
 
 local disabling
 local function Enable()
+	if dont_touch_multithread:GetBool() then return end
 	if disabling then
 		timer.Create("enable multithread rendering",1,0,function()
 			if disabling then 
@@ -29,6 +31,7 @@ local function Enable()
 end
 
 local function Disable()
+	if dont_touch_multithread:GetBool() then return end
 	if disabling then return end
 	disabling = true
 	timer.Simple(0.5,function()
@@ -55,7 +58,6 @@ local function Disable()
 end
 
 local function EnableOrDisable()
-	if multithread_enabled:GetInt() == 2 then return end
 	if multithread_enabled:GetBool()then Enable()else Disable()end
 end
 
@@ -108,6 +110,7 @@ hook.Add( "PopulateToolMenu", "MetrostroiCustomPanel", function()
 		panel:CheckBox("Отображать команды светофоров","draw_signal_routes")
 		panel:CheckBox("Кастомные пассажиры","metrostroi_custom_passengers")
 		panel:CheckBox("Вкл. многопоточный рендеринг","multi_thread_rendering_enabled")
+		panel:CheckBox("Не трогать многопоточный рендеринг","dont_touch_multi_thread_rendering")
 		panel:NumSlider("Часовой пояс","metrostroi_custom_time",-12, 12,0)
 	end)
 end)
