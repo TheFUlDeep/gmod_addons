@@ -8,9 +8,7 @@ for _,name in pairs(files)do
 end
 if not found then return end
 
-local tfdTableCopyPath = "thefuldeep_autorun/tfd_tablecopy.lua"
-if not file.Exists( tfdTableCopyPath, "LUA") then return end
-include(tfdTableCopyPath)
+if not tfdTableCopy then include("thefuldeep_autorun/tfd_tablecopy.lua") end
 
 
 if not lanes then include("lanes/lanes_main.lua")end
