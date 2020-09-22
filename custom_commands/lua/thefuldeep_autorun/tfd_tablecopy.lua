@@ -30,7 +30,7 @@ local function ConvertValue(v,tonormal)
 	end
 end
 
-local function tfdTableToLayers(tbl,tonormal)--копирование содержимоого таблицы по слоям
+local function tfdTableToLayers1(tbl,tonormal)--копирование содержимоого таблицы по слоям
 	if tonormal or tonormal == false then
 		tbl = tbl or {}
 		tbl = istable(tbl) and tbl or {tbl}
@@ -75,8 +75,8 @@ local function tfdTableToLayers(tbl,tonormal)--копирование содер
 	return layers
 end
 
-function tfdTableCopy(tbl,tonormal)--нерекурсивная фнукция копирования таблицы. Не съедает стэк, работает с рекурсивными таблицами
-	local layers = tfdTableToLayers(tbl,tonormal)
+function tfdTableCopy1(tbl,tonormal)--нерекурсивная фнукция копирования таблицы. Не съедает стэк, работает с рекурсивными таблицами
+	local layers = tfdTableToLayers1(tbl,tonormal)
 	
 	local c = #layers
 	if c > 2 then
