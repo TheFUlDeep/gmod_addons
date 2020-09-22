@@ -151,7 +151,7 @@ end
 	
 	accept input arg types (if convert argument):
 		string,bool,nil,number,vector,color,angle,some functions,table with all this types
-		--it also will transfer ents (and tables with it), but only indexes (without content) and if "dontConvertArgs" setted to false or nil
+		--it also will transfer ents (and tables with it), but only indexes (without content)
 		
 		if not converting, it accepts string,bool,nil,number,some functions,table with all this types
 
