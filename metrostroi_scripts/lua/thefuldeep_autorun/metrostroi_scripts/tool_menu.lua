@@ -62,6 +62,7 @@ local function EnableOrDisable()
 end
 
 cvars.AddChangeCallback("multi_thread_rendering_enabled", EnableOrDisable)
+cvars.AddChangeCallback("dont_touch_multi_thread_rendering", EnableOrDisable)
 
 timer.Simple(0,EnableOrDisable)
 
