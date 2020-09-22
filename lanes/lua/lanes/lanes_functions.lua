@@ -92,9 +92,6 @@ hook.Add("Think","LuaLanesCallbacks",function()
 end)
 
 lanes.CreateSingleTask = function(id,libs,opts,convert,func,callback,inArgs)
-	if convert then
-		inArgs = convert == 1 and tfdTableCopy1(inArgs,false) or tfdTableCopy2(inArgs,false)
-	end
 	TerminateTask(id)
 	LaneTasks[id] = {}
 	--LaneTasks[id].curcount = nil
@@ -102,7 +99,10 @@ lanes.CreateSingleTask = function(id,libs,opts,convert,func,callback,inArgs)
 	--LaneTasks[id].delay = nil
 	--LaneTasks[id].dont_die = nil
 	local task = LaneTasks[id]
-	task.convert = convert
+	if convert then
+		inArgs = convert == 1 and tfdTableCopy1(inArgs,false) or tfdTableCopy2(inArgs,false)
+		task.convert = convert
+	end
 	task.callback = callback
 	local f = lanes.gen(libs,opts,func)
 	task.f = f
