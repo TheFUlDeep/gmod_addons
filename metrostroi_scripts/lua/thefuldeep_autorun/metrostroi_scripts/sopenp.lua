@@ -69,6 +69,14 @@ local function SopenP(ply,comm)
 		end
 	end
 	
+	if not needdprintends and not was[endsig] then 
+		if ply then
+			ply:ChatPrint("Не удалось найти конечный сигнал.")
+			ply:ChatPrint("Все возможные варианты конечного сигнала выведены в консоль.")
+		end
+		needdprintends = true
+	end
+	
 	if needdprintends then
 		was[startsig] = nil
 		for k,v in pairs(was)do
