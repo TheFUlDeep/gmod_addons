@@ -96,7 +96,7 @@ local function SopenP(ply,comm)
 		return ""
 	end
 	was = {}--чтобы не уйти в рекурсию
-	local name = endsig.Name
+	local name = endsig.Name or ""
 	while cursig do
 		if was[cursig] then break end
 		was[cursig] = true
@@ -116,7 +116,7 @@ local function SopenP(ply,comm)
 				end
 			end)
 		end
-		name = cursig.Name
+		name = cursig.Name or ""
 		cursig = prevsignals[cursig] and prevsignals[cursig][1]
 	end
 end
