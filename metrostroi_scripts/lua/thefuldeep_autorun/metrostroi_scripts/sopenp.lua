@@ -95,8 +95,11 @@ local function SopenP(ply,comm)
 		ply:ChatPrint("Не удалось открыть маршрут к сигналу.")
 		return ""
 	end
+	was = {}--чтобы не уйти в рекурсию
 	local name = endsig.Name
 	while cursig do
+		if was[cursig] then break end
+		was[cursig] = true
 		local needprint
 		if cursig.Close then 
 			cursig.Close = false
