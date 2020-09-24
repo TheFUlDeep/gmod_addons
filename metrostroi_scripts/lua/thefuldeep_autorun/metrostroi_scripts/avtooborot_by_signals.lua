@@ -1,3 +1,4 @@
+--TODO проверять положение остряков
 timer.Simple(0,function()
 	if not ulx or not ulx.command then return end
 	
@@ -54,7 +55,7 @@ TheFulDeepsAvtooborot.Add = function(Name,Commands,Occupied,NotOccuped,NeedOpene
 	NeedOpened = NeedOpened or {}
 	NeedNotOpened = NeedNotOpened or {}
 	Switches = Switches or {}
-	if not istable(Commands) then Commands = {tostring(Commands)} end
+	if not istable(Commands) then Commands = {isnumber(Commands) and Commands or tostring(Commands)} end
 	if not istable(Occupied) then Occupied = {tostring(Occupied)} end
 	if not istable(NotOccuped) then NotOccuped = {tostring(NotOccuped)} end
 	if not istable(NeedOpened) then NeedOpened = {tostring(NeedOpened)} end
@@ -186,8 +187,16 @@ local function CheckCondition(tbl,dothings)
 				
 			local comms = tbl[1]
 			for _,comm in pairs(comms) do
+				local func,arg1,arg2
+				if isstring(comm) then
+					func = "SayHook"
+					arg2 = comm
+				else
+					func = "OpenRoute"
+					arg1 = comm
+				end
 				for _,sig in pairs(NamesSignals) do
-					if IsValid(sig) and sig.SayHook then sig:SayHook(nil,comm) end
+					if IsValid(sig) and sig[func] then sig[func](sig,arg1,arg2) end
 				end
 				ChatPrintAll(comm)
 			end
