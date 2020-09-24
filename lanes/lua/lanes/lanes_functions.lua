@@ -8,7 +8,7 @@ for _,name in pairs(files)do
 end
 if not found then return end
 
-if not tfdTableCopy then include("thefuldeep_autorun/tfd_tablecopy.lua") end
+if not tfdTableCopy1 then include("thefuldeep_autorun/tfd_tablecopy.lua") end
 
 
 if not lanes then include("lanes/lanes_main.lua")end
@@ -65,10 +65,10 @@ hook.Add("Think","LuaLanesCallbacks",function()
 			--print(tostring(res[1]))
 			local status = res.status
 			if status == "done" then
-				if task.dontConvertArgs then 
+				if task.convert then 
+					task.callback(task.convert == 1 and tfdTableCopy1(task.res[1],true) or tfdTableCopy2(task.res[1],true)) 
+				else
 					task.callback(task.res[1])
-				else 
-					task.callback(tfdTableCopy(task.res[1],true)) 
 				end
 				task.res = nil
 				CheckDelay(id,task)
@@ -91,10 +91,7 @@ hook.Add("Think","LuaLanesCallbacks",function()
 	end
 end)
 
-lanes.CreateSingleTask = function(id,libs,opts,dontConvertArgs,func,callback,inArgs)
-	if not dontConvertArgs then 
-		inArgs = tfdTableCopy(inArgs,false)
-	end
+lanes.CreateSingleTask = function(id,libs,opts,convert,func,callback,inArgs)
 	TerminateTask(id)
 	LaneTasks[id] = {}
 	--LaneTasks[id].curcount = nil
@@ -102,7 +99,10 @@ lanes.CreateSingleTask = function(id,libs,opts,dontConvertArgs,func,callback,inA
 	--LaneTasks[id].delay = nil
 	--LaneTasks[id].dont_die = nil
 	local task = LaneTasks[id]
-	task.dontConvertArgs = dontConvertArgs
+	if convert then
+		inArgs = convert == 1 and tfdTableCopy1(inArgs,false) or tfdTableCopy2(inArgs,false)
+		task.convert = convert
+	end
 	task.callback = callback
 	local f = lanes.gen(libs,opts,func)
 	task.f = f
@@ -124,10 +124,10 @@ end
 lanes.SetInputArgs = function(id,args)
 	local task = LaneTasks[id]
 	if task then
-		if task.dontConvertArgs then 
+		if task.convert then 
+			task.inArgs = task.convert == 1 and tfdTableCopy1(args,false)  or tfdTableCopy2(args,false)
+		else
 			task.inArgs = args 
-		else 
-			task.inArgs = tfdTableCopy(args,false) 
 		end
 	end
 end
@@ -149,9 +149,11 @@ end
 --[[
 	EXAMPLES
 	
-	accept input arg types:
+	accept input arg types (if convert argument):
 		string,bool,nil,number,vector,color,angle,some functions,table with all this types
-		--it also will transfer ents (and tables with it), but only indexes (without content) and if "dontConvertArgs" setted to false or nil
+		--it also will transfer ents (and tables with it), but only indexes (without content)
+		
+		if not converting, it accepts string,bool,nil,number,some functions,table with all this types
 
 	lanes.CreateRepeatingTask(--terminates by conditions
 		1,--delay
@@ -160,7 +162,7 @@ end
 		"example",--id
 		nil,--libs (see lua lanes documentation)
 		nil,--opts (see lua lanes documentation)
-		nil,--if true it will not convert args to table (for performance)
+		nil,--if not false and not nil in will convert args (lower performance). 1 - for small tables, any else value for big tables
 		function(args)--function that will run parallel
 			return args[1] and args[1] + 1 or 0
 		end,
@@ -176,7 +178,7 @@ end
 		"asd",--id
 		nil,--libs (see lua lanes documentation)
 		nil,--opts (see lua lanes documentation)
-		true,--if true it will not convert args to table (for performance)
+		nil,--if not false and not nil in will convert args (lower performance). 1 - for small tables, any else value for big tables
 		function(args)--function that will run parallel
 			return args + 1
 		end,
@@ -194,7 +196,7 @@ end
 		"example3",--id
 		nil,--libs (see lua lanes documentation)
 		nil,--opts (see lua lanes documentation)
-		true,--if true it will not convert args to table (for performance)
+		1,--if not false and not nil in will convert args (lower performance). 1 - for small tables, any else value for big tables
 		function(args)--function that will run parallel
 			return args
 		end,
