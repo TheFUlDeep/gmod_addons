@@ -55,6 +55,18 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm emu",function()
 	
 	local ENT = scripted_ents.GetStored(nomerogg).t
 	
+	local oldinit = ENT.Initialize
+	ENT.Initialize = function(self,...)
+		oldinit(self,...)
+		if self.LastStation then
+			local oldthink = self.LastStation.ClientThink
+			self.LastStation.ClientThink = function(sys,...)
+				if not IsValid(self.ClientEnts[sys.EntityName]) then return end
+				oldthink(sys,...)
+			end
+		end
+	end
+	
 	table.insert(ENT.Cameras,{Vector(407.5+75,0.3,44.5),Angle(20,180,0),"Train.Common.LastStation"})
 	
 	ENT.LastGettedLastStationForEmu = 0
@@ -80,8 +92,8 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm emu",function()
 			return "Обкатка"
 		else
 			if self.ASNPState < 7 then return "Посадки нет" end
-			local Selected = Metrostroi.ASNPSetup[self:GetNW2Int("Announcer",0)] or nil
-			local Line = Selected and Selected[self:GetNW2Int("ASNP:Line",0)] or nil
+			local Selected = Metrostroi.ASNPSetup[self:GetNW2Int("Announcer",0)]
+			local Line = Selected and Selected[self:GetNW2Int("ASNP:Line",0)]
 			local Path = self:GetNW2Bool("ASNP:Path",false)
 			local Station = Line and (not Path and Line[self:GetNW2Int("ASNP:LastStation",0)] or Path and Line[self:GetNW2Int("ASNP:FirstStation",0)]) or nil		--красивый враиант. Спереди показывается одна станция, сзади другая
 			--local Station = Line and Line[self:GetNW2Int("ASNP:LastStation",0)] or nil		--вариант, как в реальности. То есть и спереди и сзади одна и та же станция
