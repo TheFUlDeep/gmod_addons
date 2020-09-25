@@ -20,7 +20,7 @@ timer.Create("set last station by asnp for 81-717",5,0,function()
 	for _,ent in pairs(ents.FindByClass("gmod_subway_81-717_mvm"))do
 		if not IsValid(ent)then return end
 		local res = GetLastStation(ent)
-		res = res and Metrostroi.Skins[id][GetLastStation(ent)]
+		res = res and Metrostroi.Skins[id][res]
 		if res then
 			ent:SetNW2String("LastStationID",res)
 		end
