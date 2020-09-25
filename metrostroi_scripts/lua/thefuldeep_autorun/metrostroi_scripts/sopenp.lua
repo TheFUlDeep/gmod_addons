@@ -59,6 +59,7 @@ local function SopenP(ply,comm)
 			if not was[sig] --[[and table.Count(sig.NextSignals) > 0]] then
 				was[sig] = true
 				for _,nextsig in pairs(sig.NextSignals)do
+					if not IsValid(nextsig) then continue end
 					cursigs[nextsig] = true
 					prevsignals[nextsig] = prevsignals[nextsig] or {}
 					--prevsignals[nextsig][sig] = sig
