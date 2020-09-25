@@ -55,6 +55,18 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm emu",function()
 	
 	local ENT = scripted_ents.GetStored(nomerogg).t
 	
+	local oldinit = ENT.Initialize
+	ENT.Initialize = function(self,...)
+		oldinit(self,...)
+		if self.LastStation then
+			local oldthink = self.LastStation.ClientThink
+			self.LastStation.ClientThink = function(sys,...)
+				if not IsValid(self.ClientEnts[sys.EntityName]) then return end
+				oldthink(sys,...)
+			end
+		end
+	end
+	
 	table.insert(ENT.Cameras,{Vector(407.5+75,0.3,44.5),Angle(20,180,0),"Train.Common.LastStation"})
 	
 	ENT.LastGettedLastStationForEmu = 0
