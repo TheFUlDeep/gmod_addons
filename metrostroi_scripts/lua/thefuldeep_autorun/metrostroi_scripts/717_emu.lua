@@ -88,16 +88,18 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm emu",function()
 	}
 	
 	local function GetLastStation(self)
-		if not Metrostroi.StationConfigurations or not Metrostroi.ASNPSetup or self.ASNPState < 7 then
-			return
+		if not Metrostroi.StationConfigurations or not Metrostroi.ASNPSetup then
+			return "Обкатка"
 		else
+			if self.ASNPState < 7 then return "Посадки нет" end
 			local Selected = Metrostroi.ASNPSetup[self:GetNW2Int("Announcer",0)]
 			local Line = Selected and Selected[self:GetNW2Int("ASNP:Line",0)]
 			local Path = self:GetNW2Bool("ASNP:Path",false)
 			local Station = Line and (not Path and Line[self:GetNW2Int("ASNP:LastStation",0)] or Path and Line[self:GetNW2Int("ASNP:FirstStation",0)]) or nil		--красивый враиант. Спереди показывается одна станция, сзади другая
 			--local Station = Line and Line[self:GetNW2Int("ASNP:LastStation",0)] or nil		--вариант, как в реальности. То есть и спереди и сзади одна и та же станция
-			Station = Station and Station[1]
-			Station = Station and tonumber(Station)
+			if Station then Station = Station[2] or nil end
+			if Line and not Station then Station = "Кольцевая" end
+			if Station then return Station else return "Посадки нет" end
 		end
 	end
 	
