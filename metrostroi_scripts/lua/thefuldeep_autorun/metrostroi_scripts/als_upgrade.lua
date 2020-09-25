@@ -32,8 +32,8 @@ timer.Simple(0,function()
 		end
 	end
 
-	Metrostroi.GetARSJoint = function(node,x,...)
-		local forw,back = oldGetARSJoint(node,x,...)
+	Metrostroi.GetARSJoint = function(node,x,dir,train)
+		local forw,back = oldGetARSJoint(node,x,dir,train)
 		if train and not forw then
 			forw = CheckForw(train,nil,node)
 		end
