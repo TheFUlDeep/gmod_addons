@@ -94,6 +94,9 @@ if not GetConVar("draw_signal_routes") then
 CreateClientConVar("draw_signal_routes","1",true,false,"", 0, 1)
 end
 
+if not GetConVar("draw_signals_names") then
+CreateClientConVar("draw_signals_names","1",true,false,"", 0, 1)
+end
 
 if not GetConVar("metrostroi_custom_passengers") then
 CreateClientConVar("metrostroi_custom_passengers","0",true,false,"", 0, 1)
@@ -109,6 +112,7 @@ hook.Add( "PopulateToolMenu", "MetrostroiCustomPanel", function()
 		panel:CheckBox("Не прогружать составы за спиной","hidetrains_behind_player")
 		panel:CheckBox("Не прогружать составы за пропами","hidetrains_behind_props")
 		panel:CheckBox("Отображать команды светофоров","draw_signal_routes")
+		panel:CheckBox("Отображать имена рельсовых цепей","draw_signals_names")
 		panel:CheckBox("Кастомные пассажиры","metrostroi_custom_passengers")
 		panel:CheckBox("Вкл. многопоточный рендеринг","multi_thread_rendering_enabled")
 		panel:CheckBox("Не трогать многопоточный рендеринг","dont_touch_multi_thread_rendering")
