@@ -79,7 +79,6 @@ timer.Simple(0,function()
 end)
 
 
-local maxdistDef = 2000*2000
 --методом os.clock было вычислено, что постоянный потсоянный по таблице из 200 элементов медленнее, чем потсоянный проход по таблице из 10ти элементов при постоянной ее очистке и обращении к таблице из 200 по ключу раз в секунду
 --разница в производительности примерно в 10 раз
 --короче чем больше таблица, тем медленнее работает. Поэтому в таймере я делаю маленькую таблицу, из которой уже ресуются текста
@@ -88,10 +87,11 @@ local THEFULDEEP = THEFULDEEP
 THEFULDEEP.RealViewPos = Vector(0)
 timer.Create("Get signals routes for drawing",1,0,function()
 	texts = {}
-	if C_Enabled and C_Enabled:GetBool() then		
-		local maxdist = C_Distance and C_Distance:GetInt()^2 or maxdistDef
+	if C_Enabled:GetBool() then		
+		local maxdist = C_Distance:GetInt()^2
 		local viewpos = THEFULDEEP.RealViewPos
 		
+		local index = 0
 		for _,signal in pairs(entsFindByClass(signals_class)) do
 			if not IsValid(signal) or signal:GetPos():DistToSqr(viewpos) > maxdist then continue end
 			
@@ -101,7 +101,8 @@ timer.Create("Get signals routes for drawing",1,0,function()
 			
 			if #commands < 1 and not IsClosedManually then continue end
 			
-			texts[#texts+1] = {signal,signal:GetPos()+Vector(0,0,80),signal:GetAngles()+Angle(0,180,90),commands,IsClosedManually}
+			index = index + 1
+			texts[index] = {signal,signal:GetPos()+Vector(0,0,80),signal:GetAngles()+Angle(0,180,90),commands,IsClosedManually}
 		end
 	end
 end)
