@@ -4,15 +4,30 @@ local maxdist = 3000*3000
 local vec = Vector(3.8,50,5)
 local ang = Angle(0,180,-30)
 
+local cvar = GetConVar("show_rcs_names")
+if not cvar then cvar = CreateClientConVar("show_rcs_names","1",true,false,"", 0, 1) end
+
 local CEnts = {}
 local scale = 3
 local symboloffset = 3
 timer.Create("Metrostroi RC names",1,0,function()
+	if not cvar:GetBool() then--если выключено, то все удалить
+		for sig,symbols in pairs(CEnts)do
+			if symbols then
+				for k,v in ipairs(symbols)do
+					SafeRemoveEntity(v)
+				end
+			end
+			CEnts[sig] = nil
+		end
+		return
+	end
+
 	local ply = LocalPlayer and LocalPlayer()
 	if not ply then return end
 	local plypos = ply:GetPos()
 	
-	for sig,rcnames in pairs(CEnts)do
+	for sig,rcnames in pairs(CEnts)do--проверяю, надо ли удалить
 		if not IsValid(sig) then
 			if rcnames then
 				for k,v in pairs(rcnames) do
@@ -25,35 +40,38 @@ timer.Create("Metrostroi RC names",1,0,function()
 	
 	for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do
 		if not IsValid(sig) or not sig.ARSOnly then continue end
-		if sig:GetPos():DistToSqr(plypos) > maxdist then
-			if sig.RCNames then 
-				for k,v in pairs(sig.RCNames)do
+		if sig:GetPos():DistToSqr(plypos) > maxdist then--проверяю, надо ли удалить
+			if CEnts[sig] then 
+				for k,v in ipairs(CEnts[sig])do
 					SafeRemoveEntity(v)
 				end
-				sig.RCNames = nil
+				CEnts[sig] = nil
 			end
 		else
-			if sig.RCNames then
+			if CEnts[sig] then--проверяю, надо ли удалить
 				local delete
-				for k,v in pairs(sig.RCNames)do
-					if not IsValid(v) then delete = true break end
+				local same_name = sig.Name == CEnts[sig].RCName
+				if same_name then
+					for k,v in ipairs(CEnts[sig])do
+						if not IsValid(v) then delete = true break end
+					end
 				end
-				if delete or sig.Name ~= sig.RCName then
-					for k,v in pairs(sig.RCNames)do
+				if delete or not same_name then
+					for k,v in ipairs(CEnts[sig])do
 						SafeRemoveEntity(v)
 					end
-					sig.RCNames = nil
+					CEnts[sig] = nil
 				end
 			end
 		
-			if not sig.RCNames and sig.Name then
-				sig.RCName = sig.Name
+			if not CEnts[sig] and sig.Name then--спавню, если надо
 				local len = sig.Name:len()
 				if len > 0 then
-					sig.RCNames = {}
+					CEnts[sig] = {}
+					CEnts[sig].RCName = sig.Name
 					for i = 1,len do
 						local ent = ClientsideModel("models/metrostroi/signals/mus/sign_letter_small.mdl")
-						sig.RCNames[i] = ent
+						CEnts[sig][i] = ent
 						if IsValid(ent) then
 							ent:SetModelScale(scale)
 							for k,v in pairs(ent:GetMaterials()) do
@@ -63,13 +81,12 @@ timer.Create("Metrostroi RC names",1,0,function()
 							end
 						end
 					end
-					CEnts[sig] = sig.RCNames
 				end
 			end
 			
-			if sig.RCNames then
-				local offset = (#sig.RCNames*symboloffset*scale)/2
-				for k,v in pairs(sig.RCNames) do
+			if CEnts[sig] then
+				local offset = (#CEnts[sig]*symboloffset*scale)/2
+				for k,v in ipairs(CEnts[sig]) do
 					if IsValid(v) then
 						v:SetPos(sig:LocalToWorld(vec+Vector(offset+k*-symboloffset*scale,0,0)))
 						v:SetAngles(sig:LocalToWorldAngles(ang))
