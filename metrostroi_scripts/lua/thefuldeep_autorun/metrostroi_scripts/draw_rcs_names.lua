@@ -52,11 +52,14 @@ timer.Create("Metrostroi RC names",1,0,function()
 				if len > 0 then
 					sig.RCNames = {}
 					for i = 1,len do
-						sig.RCNames[i] = ClientsideModel("models/metrostroi/signals/mus/sign_letter_small.mdl")
-						sig.RCNames[i]:SetModelScale(scale)
-						for k,v in pairs(sig.RCNames[i]:GetMaterials()) do
-							if v:find("models/metrostroi/signals/let/let_start") then
-								sig.RCNames[i]:SetSubMaterial(k-1,"models/metrostroi/signals/let/"..(Metrostroi.LiterWarper[sig.Name[i]] or sig.Name[i]))
+						local ent = ClientsideModel("models/metrostroi/signals/mus/sign_letter_small.mdl")
+						sig.RCNames[i] = ent
+						if IsValid(ent) then
+							ent:SetModelScale(scale)
+							for k,v in pairs(ent:GetMaterials()) do
+								if v:find("models/metrostroi/signals/let/let_start") then
+									ent:SetSubMaterial(k-1,"models/metrostroi/signals/let/"..(Metrostroi.LiterWarper[sig.Name[i]] or sig.Name[i]))
+								end
 							end
 						end
 					end
