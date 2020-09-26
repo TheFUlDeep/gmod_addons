@@ -1,51 +1,3 @@
-if CLIENT then
-	local signals_class = "gmod_track_signal"
-	local C_Enabled
-	local C_Distance
-	timer.Simple(0,function()
-		C_Enabled = GetConVar("draw_signals_names")
-		if not C_Enabled then C_Enabled = CreateClientConVar("draw_signals_names","1",true,false,"",0,1) end
-		
-		C_Distance = GetConVar("draw_signals_names_distance")
-		if not C_Distance then C_Distance = CreateClientConVar("draw_signals_names_distance","2000",true,false,"") end
-	end)
-
-	THEFULDEEP = THEFULDEEP or {}
-	local THEFULDEEP = THEFULDEEP
-	THEFULDEEP.RealViewPos = Vector(0)
-	local texts = {}
-	timer.Create("Get signals names for drawing",1,0,function()
-		texts = {}
-		if C_Enabled:GetBool() then		
-			local maxdist =  C_Distance:GetInt()^2
-			local viewpos = THEFULDEEP.RealViewPos
-			
-			local index = 0
-			for _,signal in pairs(ents.FindByClass(signals_class)) do
-				if not IsValid(signal) or not signal.ARSOnly or signal:GetPos():DistToSqr(viewpos) > maxdist then continue end
-				
-				index = index + 1
-				texts[index] = {signal:GetPos()+Vector(0,0,60),signal:GetAngles()+Angle(0,180,90),signal.Name and '"'..signal.Name..'"' or '""'}
-			end
-		end
-	end)
-	
-	
-	local font = "Default"
-	local drawSimpleTextOutlined = draw.SimpleTextOutlined
-	local r,g,b = 255,255,255
-	local color = Color(r,g,b,255)
-	local color2 = Color(255-r,255-g,255-b,255)
-	local EyePos = EyePos
-	hook.Add("PreDrawEffects","Draw Signals Names",function()
-		for _,params in pairs(texts) do
-			cam.Start3D2D(params[1],params[2],1)
-				drawSimpleTextOutlined(params[3], font, 0, 0, color, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, color2)
-			cam.End3D2D()
-		end
-	end)
-	--PostDrawEffects
-end
 if CLIENT then return end
 
 
@@ -68,12 +20,15 @@ local function OpenRoute(sig,nextsigname)
 	end
 	
 	if route then
-		sig:OpenRoute(route)
-		--for k,v in pairs(ents.FindByClass("gmod_track_signal"))do
-			--if v.SayHook then
-				--v:SayHook(nil,sig.Routes[route])
-			--end
-		--end
+		local routename = sig.Routes[route].Name
+		if routename then
+			routename = "!sopen "..routename
+			for k,v in pairs(ents.FindByClass("gmod_track_signal"))do
+				if IsValid(v) and v.SayHook then v:SayHook(nil,routename)end
+			end
+		else
+			sig:OpenRoute(route)
+		end
 		return true
 	end
 	
