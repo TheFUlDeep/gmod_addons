@@ -2,7 +2,7 @@ if CLIENT then return end
 
 
 local function OpenRoute(sig,nextsigname)
-	if not sig.Routes or #sig.Routes == 1 and not sig.Routes[1].Manual then return end
+	if not sig.Routes or #sig.Routes == 1 and (not sig.Routes[1].Switches or sig.Routes[1].Switches == "") and not sig.Routes[1].Manual then return end
 	local route
 	
 	for k,v in pairs(sig.Routes)do
