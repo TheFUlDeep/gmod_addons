@@ -2,15 +2,16 @@ if SERVER then return end
 
 local maxdist = 4000^2
 local hlimit = 1000--вместо этого будет IsDormant
-local vec = Vector(3.8,50,5)
 local ang = Angle(0,180,-30)
 
 local cvar = GetConVar("show_rcs_names")
 if not cvar then cvar = CreateClientConVar("show_rcs_names","1",true,false,"", 0, 1) end
 
 local CEnts = {}
-local scale = 3
+local scale = 2.6
+local vec = Vector(1.48*scale,50,1.7*scale)
 local symboloffset = 3
+hook.Add("InitPostEntity","Metrostroi RC names",function()
 timer.Create("Metrostroi RC names",1,0,function()
 	if not cvar:GetBool() then--если выключено, то все удалить
 		for sig,symbols in pairs(CEnts)do
@@ -24,9 +25,7 @@ timer.Create("Metrostroi RC names",1,0,function()
 		return
 	end
 
-	local ply = LocalPlayer and LocalPlayer()
-	if not ply then return end
-	local plypos = ply:GetPos()
+	local plypos = LocalPlayer():GetPos()
 	
 	for sig,rcnames in pairs(CEnts)do--проверяю, надо ли удалить
 		if not IsValid(sig) then
@@ -96,4 +95,5 @@ timer.Create("Metrostroi RC names",1,0,function()
 			end
 		end
 	end
+end)
 end)
