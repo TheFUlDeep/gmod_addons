@@ -69,6 +69,7 @@ timer.Create("Metrostroi RC names",1,0,function()
 				if len > 0 then
 					CEnts[sig] = {}
 					CEnts[sig].RCName = sig.Name
+					CEnts[sig].count = len
 					for i = 1,len do
 						local ent = ClientsideModel("models/metrostroi/signals/mus/sign_letter_small.mdl")
 						CEnts[sig][i] = ent
@@ -85,7 +86,7 @@ timer.Create("Metrostroi RC names",1,0,function()
 			end
 			
 			if CEnts[sig] then
-				local offset = (#CEnts[sig]*symboloffset*scale)/2
+				local offset = (CEnts[sig].count*symboloffset*scale)/2
 				for k,v in ipairs(CEnts[sig]) do
 					if IsValid(v) then
 						v:SetPos(sig:LocalToWorld(vec+Vector(offset+k*-symboloffset*scale,0,0)))
