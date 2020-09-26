@@ -10,7 +10,7 @@ if not cvar then cvar = CreateClientConVar("show_rcs_names","1",true,false,"", 0
 local CEnts = {}
 local scale = 2.6
 local vec = Vector(1.48*scale,50,1.7*scale)
-local symboloffset = 3
+local symboloffset = 3*scale
 hook.Add("InitPostEntity","Metrostroi RC names",function()
 timer.Create("Metrostroi RC names",1,0,function()
 	if not cvar:GetBool() then--если выключено, то все удалить
@@ -85,10 +85,10 @@ timer.Create("Metrostroi RC names",1,0,function()
 			end
 			
 			if CEnts[sig] then
-				local offset = (CEnts[sig].count*symboloffset*scale)/2
+				local offset = (CEnts[sig].count*symboloffset)/2
 				for k,v in ipairs(CEnts[sig]) do
 					if IsValid(v) then
-						v:SetPos(sig:LocalToWorld(vec+Vector(offset+k*-symboloffset*scale,0,0)))
+						v:SetPos(sig:LocalToWorld(vec+Vector(offset+k*-symboloffset,0,0)))
 						v:SetAngles(sig:LocalToWorldAngles(ang))
 					end
 				end
