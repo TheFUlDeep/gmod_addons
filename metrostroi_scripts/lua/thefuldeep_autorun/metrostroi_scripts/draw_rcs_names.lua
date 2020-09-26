@@ -1,6 +1,7 @@
 if SERVER then return end
 
-local maxdist = 3000*3000
+local maxdist = 4000^2
+local hlimit = 1000--вместо этого будет IsDormant
 local vec = Vector(3.8,50,5)
 local ang = Angle(0,180,-30)
 
@@ -30,7 +31,7 @@ timer.Create("Metrostroi RC names",1,0,function()
 	for sig,rcnames in pairs(CEnts)do--проверяю, надо ли удалить
 		if not IsValid(sig) then
 			if rcnames then
-				for k,v in pairs(rcnames) do
+				for k,v in ipairs(rcnames) do
 					SafeRemoveEntity(v)
 				end
 			end
@@ -40,7 +41,7 @@ timer.Create("Metrostroi RC names",1,0,function()
 	
 	for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do
 		if not IsValid(sig) or not sig.ARSOnly then continue end
-		if sig:GetPos():DistToSqr(plypos) > maxdist then--проверяю, надо ли удалить
+		if sig:IsDormant() or sig:GetPos():DistToSqr(plypos) > maxdist or math.abs(sig:GetPos().z - plypos.z) > hlimit then--проверяю, надо ли удалить
 			if CEnts[sig] then 
 				for k,v in ipairs(CEnts[sig])do
 					SafeRemoveEntity(v)
@@ -48,10 +49,9 @@ timer.Create("Metrostroi RC names",1,0,function()
 				CEnts[sig] = nil
 			end
 		else
-			if CEnts[sig] then--проверяю, надо ли удалить
-				local delete
-				local same_name = sig.Name == CEnts[sig].RCName
-				if same_name then
+			if CEnts[sig] then--проверяю, надо ли зареспавнить
+				local delete = sig.Name ~= CEnts[sig].RCName
+				if not delete then
 					for k,v in ipairs(CEnts[sig])do
 						if not IsValid(v) then delete = true break end
 					end
