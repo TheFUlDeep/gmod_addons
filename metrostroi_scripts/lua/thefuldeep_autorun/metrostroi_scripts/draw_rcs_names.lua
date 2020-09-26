@@ -56,7 +56,7 @@ timer.Create("Metrostroi RC names",1,0,function()
 						if not IsValid(v) then delete = true break end
 					end
 				end
-				if delete or not same_name then
+				if delete then
 					for k,v in ipairs(CEnts[sig])do
 						SafeRemoveEntity(v)
 					end
