@@ -26,9 +26,8 @@ local function OpenRoute(sig,nextsigname)
 			for k,v in pairs(ents.FindByClass("gmod_track_signal"))do
 				if IsValid(v) and v.SayHook then v:SayHook(nil,routename)end
 			end
-		else
-			sig:OpenRoute(route)
 		end
+		sig:OpenRoute(route)
 		return true
 	end
 	
