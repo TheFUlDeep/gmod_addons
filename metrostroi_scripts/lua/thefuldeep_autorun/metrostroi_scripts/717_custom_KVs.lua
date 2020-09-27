@@ -79,7 +79,7 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm custom KVs",function()
 			if wag:GetNW2Int(tablename,0) ~= inserted_index then return end
 			local ent = wag.ClientEnts and wag.ClientEnts[propname]
 			if not IsValid(ent) then return end
-			ent:SetPos(wag:LocalToWorld(Vector(0,0,0)))
+			ent:SetPos(wag:LocalToWorld(vector_origin))
 		end]]
 	)
 	

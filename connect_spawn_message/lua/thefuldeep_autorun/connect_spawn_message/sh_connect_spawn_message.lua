@@ -63,14 +63,14 @@ end
 if CLIENT then
 	net.Receive("tfd_connectmsg",function()
 		local nick = net.ReadString()
-		chat.AddText(color_white,'Игрок "'..nick..'"', Color(255,255,0)," присоединяется",color_white,".")
+		chat.AddText(color_white,'Игрок "'..nick..'"', color_255_255_0," присоединяется",color_white,".")
 	end)
 	
 	net.Receive("tfd_spawnmsg",function()
 		local nick = net.ReadString()
 		local color = net.ReadColor()
 		local IsAdmin = net.ReadBool()
-		chat.AddText(color_white,"Игрок ",'"',color,nick,color_white,'"',Color(150,255,0)," заспавнился",color_white,".")
+		chat.AddText(color_white,"Игрок ",'"',color,nick,color_white,'"',color_155_255_0," заспавнился",color_white,".")
 		
 		if IsAdmin then
 			sound.PlayURL( 

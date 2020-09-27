@@ -18,7 +18,7 @@ function ENT:Initialize()
 	self.Stick = ClientsideModel("models/props_c17/signpole001.mdl",RENDERGROUP_STATIC)--хз по поводу рендер группы
 	self.Stick:SetPos(self.Frame:LocalToWorld(not IsSquare and Vector(0,-2.5*size,stickdown and -153*size or 42*size) or Vector(0,-2.5*size,stickdown and -135*size or 25*size)))
 	--self.Stick:SetModel("models/props_c17/signpole001.mdl")
-	self.Stick:SetAngles(Angle(0,0,0))
+	self.Stick:SetAngles(angle_zero)
 	self.Stick:SetModelScale(size)
 	self.Stick:Spawn()
 	

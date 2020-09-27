@@ -142,7 +142,7 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm emu",function()
 				pos = { 44, 90 },
 				xalign = TEXT_ALIGN_CENTER,
 				yalign = TEXT_ALIGN_CENTER,
-				color = Color(0,255,0,255)})
+				color = color_0_255_0})
 		end)
 		self:DrawOnPanel("EMU",function()
 			draw.Text({
@@ -151,7 +151,7 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm emu",function()
 				pos = { 315	, 135 },
 				xalign = TEXT_ALIGN_CENTER,
 				yalign = TEXT_ALIGN_CENTER,
-				color = Color(0,255,0,255)})
+				color = color_0_255_0})
 		end)
 	end
 	

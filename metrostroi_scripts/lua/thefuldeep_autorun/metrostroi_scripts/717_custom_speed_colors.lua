@@ -61,10 +61,10 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm custom speed color",function()
 				ENT,
 				propname,
 				function(wag,cent)
-					if wag:GetNW2Int(tablename,0) == inserted_index1 then cent:SetColor(Color(255,255,255))
-					elseif wag:GetNW2Int(tablename,0) == inserted_index2 then cent:SetColor(Color(255,0,0))
-					elseif wag:GetNW2Int(tablename,0) == inserted_index3 then cent:SetColor(Color(0,255,0))
-					elseif wag:GetNW2Int(tablename,0) == inserted_index4 then cent:SetColor(Color(0,0,255))
+					if wag:GetNW2Int(tablename,0) == inserted_index1 then cent:SetColor(color_white)
+					elseif wag:GetNW2Int(tablename,0) == inserted_index2 then cent:SetColor(color_255_0_0)
+					elseif wag:GetNW2Int(tablename,0) == inserted_index3 then cent:SetColor(color_0_255_0)
+					elseif wag:GetNW2Int(tablename,0) == inserted_index4 then cent:SetColor(color_0_0_255)
 					end
 				end
 			)

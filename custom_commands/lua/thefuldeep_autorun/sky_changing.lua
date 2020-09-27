@@ -38,7 +38,7 @@ if SERVER then
 		--dawn = entsFindByClass("dawn")[1]
 		--dusk = entsFindByClass("dusk")[1]
 		
-		env_skypaint:SetTopColor(Vector(0,0,0))
+		env_skypaint:SetTopColor(vector_origin)
 		env_skypaint:SetBottomColor(Vector(1,1,1))
 		env_skypaint:SetFadeBias(0)--горизонт со всех скорон
 		env_skypaint:SetHDRScale(0)--?

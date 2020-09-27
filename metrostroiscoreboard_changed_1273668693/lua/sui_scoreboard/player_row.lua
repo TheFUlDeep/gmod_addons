@@ -94,7 +94,7 @@ function PANEL:Paint( w, h )
 	surface.DrawTexturedRect( 0, 0, self:GetWide() - 36, 38 ) 
 	
 	--[[surface.SetTexture( self.texRating )
-	surface.SetDrawColor( 255, 255, 255, 255 )
+	surface.SetDrawcolor_white
 	-- surface.DrawTexturedRect( 20, 4, 16, 16 )
 	surface.DrawTexturedRect( 56, 3, 16, 16 )]]
 	

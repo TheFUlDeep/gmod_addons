@@ -13,7 +13,7 @@ local function InitAutorun(path,param)
 			end
 			if param == "sh" or param == "sv" then
 				for k,v in pairs(files) do
-					MsgC(Color(0,255,0),"including "..path..v.." by TheFulDeep's autorun\n")
+					MsgC(color_0_255_0,"including "..path..v.." by TheFulDeep's autorun\n")
 					include(path..v) 
 				end
 			end
@@ -28,7 +28,7 @@ local function InitAutorun(path,param)
 		if CLIENT and (param == "sh" or param == "cl") then
 			for k,v in pairs(files) do
 				include(path..v)
-				MsgC(Color(0,255,0),"included "..path..v.." by TheFulDeep's autorun\n")
+				MsgC(color_0_255_0,"included "..path..v.." by TheFulDeep's autorun\n")
 			end
 		end
 	end
