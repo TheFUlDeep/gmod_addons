@@ -30,7 +30,7 @@ local function IsPointInEntity(ent,vec)
 end
 
 
-local AnglesForPlanes = {Angle(0,0,0),Angle(90,0,0),Angle(0,90,0)}
+local AnglesForPlanes = {angle_zero,Angle(90,0,0),Angle(0,90,0)}
 local function IsSectionPartInEntity(ent,Start,End)
 	if IsPointInEntity(ent,Start) or IsPointInEntity(ent,End) then return true end
 	

@@ -165,7 +165,7 @@ function PANEL:Paint( w, h )
 	else 
 		tColorGradientB = tColor.b
 	end
-	draw.RoundedBox( 8, 24, 12, 80, 80, Color( 255, 255, 255, 255 ) )
+	draw.RoundedBox( 8, 24, 12, 80, 80, color_white )
 	surface.SetTexture( surface.GetTextureID("gui/metrostroi") )
 	surface.SetDrawColor( 255, 255, 255, 127 )
 	surface.DrawTexturedRect( 24, 12, 80, 80 ) 

@@ -235,7 +235,7 @@ THEFULDEEP = THEFULDEEP or {}
 THEFULDEEP.DETECTSTATION = detectstation
 --[[timer.Create("Debug detectstation",1,0,function()
 	for _,ply in pairs(player.GetHumans()) do
-		print(detectstation(ply:GetEyeTraceNoCursor().HitPos+Vector(0,0,0)))
+		print(detectstation(ply:GetEyeTraceNoCursor().HitPos+vector_origin))
 	end
 end)]]
 --timer.Remove("Debug detectstation")

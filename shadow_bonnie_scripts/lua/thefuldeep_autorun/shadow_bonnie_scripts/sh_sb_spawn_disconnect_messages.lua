@@ -38,7 +38,7 @@ if CLIENT then
 	net.Receive("SB_PlayerDisconnectedMessage",function(len)
 		local nick,steam,reason = net.ReadString(),net.ReadString(),net.ReadString()
 
-		chat.AddText(color_white,"Игрок \"",nick,"\"(",steam,") ",Color(255,0,0),"вышел ",color_white,"с сервера (",reason,").")
+		chat.AddText(color_white,"Игрок \"",nick,"\"(",steam,") ",color_255_0_0,"вышел ",color_white,"с сервера (",reason,").")
 	end)
 end
 
@@ -101,6 +101,6 @@ if CLIENT then
 		local nick = net.ReadString()
 		local color = net.ReadColor()
 
-		chat.AddText(color_white,"Игрок \"",color,nick,color_white,"\"",Color(0,255,0)," загрузился",color_white,".")
+		chat.AddText(color_white,"Игрок \"",color,nick,color_white,"\"",color_0_255_0," загрузился",color_white,".")
 	end)
 end

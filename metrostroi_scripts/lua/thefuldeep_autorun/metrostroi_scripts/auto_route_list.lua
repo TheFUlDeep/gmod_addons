@@ -393,8 +393,8 @@ if CLIENT then
 				local XPos = xPos+(GetW(RowNumber,ColNumber) or 0)
 				local YPos = yPos+(h1 and h1*RowNumber or 0)-(h1 or 0)
 				local w,h = surface.GetTextSize(val)
-				draw.RoundedBox( 10, XPos-2, YPos-1,w+5,h, Color(0, 0, 0, 150))
-				draw.SimpleText( val, font, XPos, YPos, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP )
+				draw.RoundedBox( 10, XPos-2, YPos-1,w+5,h, color_0_0_0_150)
+				draw.SimpleText( val, font, XPos, YPos, color_white, TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP )
 			end
 		end
 		]]
@@ -433,7 +433,7 @@ if CLIENT then
 		end
 		for k,str in pairs(StringsPositions) do
 			--print(xPos, yPos,StringsPositions[#StringsPositions].wB,StringsPositions[#StringsPositions].hB)
-			--draw.SimpleText( str.val, font, str.xpos, str.ypos, Color( 255, 255, 255, 255 ), TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP )
+			--draw.SimpleText( str.val, font, str.xpos, str.ypos, color_white, TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP )
 			draw.SimpleTextOutlined( str.val, font, str.xpos, str.ypos, Color( r3, g3, b3, alph3), TEXT_ALIGN_LEFT,TEXT_ALIGN_TOP,1,Color(r4,g4,b4,alph4) )
 		end
 	end)
@@ -495,7 +495,7 @@ if CLIENT then
 		cam.Start3D2D( pos, ang, scale )
 		
 			surface.DrawRect(0,0, Maxs[3] or 5,Maxs[4] or 5)
-			surface.SetDrawColor(Color(0,0,0,255))
+			surface.SetDrawColor(color_black)
 			--surface.DrawTexturedRect(0,0, Maxs[3] or 5,Maxs[4] or 5)
 			for _,line in pairs(Lines) do
 				surface.DrawLine( line.Start.x-xoffset, line.Start.y-yoffset, line.End.x-xoffset , line.End.y-yoffset )

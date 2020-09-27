@@ -53,7 +53,7 @@ if SERVER then
 		local discord = "https://discord.gg/wZp4EzT"
 		--local ply = tostring(calling_ply:Nick())
 		ulx.fancyLogAdmin(calling_ply, false, "#A, вот ссылка на наш дискорд: #s", discord)
-		--ULib.tsayColor(nil, true, discord, Color(255,255,255,255))
+		--ULib.tsayColor(nil, true, discord, color_white)
 		--ULib.tsay(nil, "Наш дискорд: https://discord.gg/p4mJVKr", true)
 	end
 end
@@ -432,7 +432,7 @@ if CLIENT then
 			text6 = "ДСЦП(4) Проспект Энергетиков: " .. (Metrostroi.ActiveDSCP4 or "отсутствует")
 			text7 = "ДСЦП(5) Селигерская роща " .. (Metrostroi.ActiveDSCP5 or "отсутствует")
 		end
-		local background_color = Color(0, 0, 0, 150)
+		local background_color = color_0_0_0_150
 		local font = "ChatFont"
 		local text = "ДЦХ: " .. (Metrostroi.ActiveDispatcher or "отсутствует")
 		local text2 = "Интервал: " .. (Metrostroi.ActiveInt and Metrostroi.ActiveInt >= 30 and (math.floor(Metrostroi.ActiveInt/60)..":"..Format("%02d",math.fmod(Metrostroi.ActiveInt,60))) or "не выставлен")
