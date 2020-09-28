@@ -609,7 +609,7 @@ end
 
 local function SendChatMessageToClients(tbl)
 	for i = 1,#tbl.Texts do
-		MsgC(i == 1 and Color(255,255,255) or string.ToColor(tbl.Colors[i] or ""),tbl.Texts[i])--i == 1 and Color(255,255,255) чтобы в консоли имя сервера было белым
+		MsgC(i == 1 and color_white or string.ToColor(tbl.Colors[i] or ""),tbl.Texts[i])--i == 1 and color_white чтобы в консоли имя сервера было белым
 	end
 	Msg("\n")
 	net.Start("MetrostroiChatSync")

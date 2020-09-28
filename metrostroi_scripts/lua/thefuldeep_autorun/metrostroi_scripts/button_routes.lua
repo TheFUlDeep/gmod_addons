@@ -12,7 +12,7 @@ local function SpawnButton(name,pos,ang,model,SignalCommands,switchnames,switchs
 	button.Name = name
 	button.Type = "button for metrostroi"
 	button:SetPos(pos)
-	button:SetAngles(ang or Angle(0,0,0))
+	button:SetAngles(ang or angle_zero)
 	button:SetModel(model or "models/dav0r/buttons/button.mdl" )
 	button.SignalCommands = SignalCommands
 	button.switchnames = switchnames

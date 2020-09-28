@@ -35,7 +35,7 @@ local function SpawnButton(name,pos,ang,model,modelscale,SignalCommands,switchna
 	button.Name = name
 	button.Type = "button for metrostroi on crossline redux"
 	button:SetPos(pos)
-	button:SetAngles(ang or Angle(0,0,0))
+	button:SetAngles(ang or angle_zero)
 	button:SetModel(model or "models/maxofs2d/button_05.mdl" )
 	--button:SetModel(model or "models/station/disp_sigment_1.mdl" )
 	button:SetModelScale(modelscale or 1)

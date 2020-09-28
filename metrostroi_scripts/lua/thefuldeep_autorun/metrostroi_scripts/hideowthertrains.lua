@@ -16,15 +16,15 @@ hook.Add("Think","RecomendHideTrains",function()
 		if CurTime - LagsStarted > TimeLimit then
 			hook.Remove("Think","RecomendHideTrains")
 			chat.AddText(
-				Color(255,0,0),"Обнаружена низкая производительность. Для повышения fps попробуйте консольные команды ", 
-				Color(255,255,0), "multi_thread_rendering_enabled 1", 
-				Color(255,0,0), ", ", 
-				Color(255,255,0), "hideothertrains 1", 
-				Color(255,0,0), " или ", 
-				Color(255,255,0), "hidealltrains 1", 
-				Color(255,0,0), ". А также убедитесь, что режим съемки выключен (", 
-				Color(255,255,0), "metrostroi_screenshotmode 0", 
-				Color(255,0,0), ")!"
+				color_255_0_0,"Обнаружена низкая производительность. Для повышения fps попробуйте консольные команды ", 
+				color_255_255_0, "multi_thread_rendering_enabled 1", 
+				color_255_0_0, ", ", 
+				color_255_255_0, "hideothertrains 1", 
+				color_255_0_0, " или ", 
+				color_255_255_0, "hidealltrains 1", 
+				color_255_0_0, ". А также убедитесь, что режим съемки выключен (", 
+				color_255_255_0, "metrostroi_screenshotmode 0", 
+				color_255_0_0, ")!"
 			)
 		end
 	else
@@ -112,7 +112,7 @@ local angles = {
 	Vector(-1,-1,-1),
 	Vector(-1,1,-1),
 	
-	Vector(0,0,0)
+	vector_origin
 }
 
 --чуток уменьшаю

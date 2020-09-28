@@ -1,4 +1,5 @@
 --TODO проверять положение остряков
+--TODO возможность указывать номер маршрута, а не только команды
 timer.Simple(0,function()
 	if not ulx or not ulx.command then return end
 	

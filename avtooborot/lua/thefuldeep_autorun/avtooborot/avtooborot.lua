@@ -807,7 +807,7 @@ if CLIENT then--отображение информации об автообо�
 		text = AvtooborotStatus == 1 and text.."\n"..stations or text
 		surface.SetFont("ChatFont")
 		local w,h = surface.GetTextSize(text)
-		draw.RoundedBox( 5, ScrW() - 20 - w - 4, ScrH()/2 - 100 - 3,w + 10,h + 5, Color(0, 0, 0, 150))
-		draw.DrawText( text, "ChatFont", ScrW() - 20, ScrH()/2 - 100, Color( 255, 255, 255, 255 ), TEXT_ALIGN_RIGHT)
+		draw.RoundedBox( 5, ScrW() - 20 - w - 4, ScrH()/2 - 100 - 3,w + 10,h + 5, color_0_0_0_150)
+		draw.DrawText( text, "ChatFont", ScrW() - 20, ScrH()/2 - 100, color_white, TEXT_ALIGN_RIGHT)
 	end)
 end

@@ -59,15 +59,15 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm round voltm and amperm",function()
 	
 	ENT.ClientProps["RoundVaALight"] = {
         model = "models/dev4you/new_voltm/new_voltm_light.mdl",
-        pos = Vector(0,0,0),
-        ang = Angle(0,0,0),
+        pos = vector_origin,
+        ang = angle_zero,
         hideseat = 0.2,
 	}
 	
 	ENT.ClientProps["RoundVaA"] = {
         model = "models/dev4you/new_voltm/new_voltm.mdl",
-        pos = Vector(0,0,0),
-        ang = Angle(0,0,0),
+        pos = vector_origin,
+        ang = angle_zero,
         hideseat = 0.2,
 	}
 	

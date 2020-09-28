@@ -37,7 +37,7 @@ local function TrainSpawnerUpdate(self,int)
 				self.UPO.Buzz = math.random() > 0.4 and 2 or math.random() > 0.4 and 1
 			end
 			if not IsValid(self.LightSensor) then
-				self.LightSensor = self:AddLightSensor(Vector(0,0,0),Angle(0,0,0),"models/metrostroi_train/81-717/rfid_reader.mdl")
+				self.LightSensor = self:AddLightSensor(vector_origin,angle_zero,"models/metrostroi_train/81-717/rfid_reader.mdl")
 			end
 			SafeRemoveEntity(self.LeftAutoCoil)
 			SafeRemoveEntity(self.RightAutoCoil)
@@ -54,7 +54,7 @@ local function TrainSpawnerUpdate(self,int)
 			self.UPO.Buzz = math.random() > 0.6 and 2 or math.random() > 0.6 and 1
 			if self.SBPP then
 				if not IsValid(self.SBPPSensor) then
-					self.SBPPSensor = self:AddLightSensor(Vector(0,0,0),Angle(0,0,0),"models/metrostroi_train/81-717/dkp_reader.mdl")
+					self.SBPPSensor = self:AddLightSensor(vector_origin,angle_zero,"models/metrostroi_train/81-717/dkp_reader.mdl")
 				end
 				SafeRemoveEntity(self.LeftAutoCoil)
 				SafeRemoveEntity(self.RightAutoCoil)
@@ -73,7 +73,7 @@ local function TrainSpawnerUpdate(self,int)
 			self:SetNW2Int("AVType",3)
 			self.UPO.Buzz = math.random() > 0.6 and 2 or math.random() > 0.6 and 1
 
-			if not IsValid(self.LightSensor) then self.LightSensor = self:AddLightSensor(Vector(0,0,0),Angle(0,0,0),"models/metrostroi_train/81-717/rfid_reader.mdl") end
+			if not IsValid(self.LightSensor) then self.LightSensor = self:AddLightSensor(vector_origin,angle_zero,"models/metrostroi_train/81-717/rfid_reader.mdl") end
 			SafeRemoveEntity(self.LeftAutoCoil)
 			SafeRemoveEntity(self.RightAutoCoil)
 			SafeRemoveEntity(self.SBPPSensor)

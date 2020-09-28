@@ -248,7 +248,7 @@ function UpdateGhostPos(pl)
     if not tbl then tbl = Trace(pl, trace) end
     local class = IsValid(trace.Entity) and trace.Entity:GetClass()
 
-    local pos,ang = Vector(0,0,0),Angle(0,0,0)
+    local pos,ang = vector_origin,angle_zero
     if tbl[3] ~= nil then
         pos = tbl[1]+Vector(0,0,55)
         ang = tbl[2]
@@ -272,7 +272,7 @@ function TOOL:UpdateGhost()
                 ang = ang+Angle(0,180,0)
             end
         elseif type(t) ~= "string" then
-            pos,ang = self.GhostEntities[1]:LocalToWorld(t.pos or Vector(0,0,0)),self.GhostEntities[1]:LocalToWorldAngles(self.Model[i].ang or Angle(0,0,0))
+            pos,ang = self.GhostEntities[1]:LocalToWorld(t.pos or vector_origin),self.GhostEntities[1]:LocalToWorldAngles(self.Model[i].ang or angle_zero)
         else
             pos,ang = self.GhostEntities[1]:GetPos(),self.GhostEntities[1]:GetAngles()
         end
@@ -283,7 +283,7 @@ function TOOL:UpdateGhost()
         elseif self:GetOwner():GetNW2Bool("metrostroi_train_spawner_rev") then
             e:SetColor(Color(255,255,150,255))
         else
-            e:SetColor(Color(255,255,255,255))
+            e:SetColor(color_white)
         end
         e:SetPos(pos)
         e:SetAngles(ang)
@@ -376,7 +376,7 @@ function TOOL:SpawnWagon(trace)
             else
                 ent = self.Train:SpawnFunction(ply,trace,self.Train.Spawner.head or self.Train.ClassName,self:GetOwner():GetNW2Bool("metrostroi_train_spawner_rev"))
             end
-            --nil,self:GetOwner():GetNW2Bool("metrostroi_train_spawner_rev") and Angle(0,180,0) or Angle(0,0,0)) --Create a first entity in queue
+            --nil,self:GetOwner():GetNW2Bool("metrostroi_train_spawner_rev") and Angle(0,180,0) or angle_zero) --Create a first entity in queue
             if ent then
                 undo.Create(self.Train.Spawner.head or self.Train.ClassName)
             else
