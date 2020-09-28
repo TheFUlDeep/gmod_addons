@@ -1,5 +1,3 @@
-include("color_optimization.lua")
-
 local function InitAutorun(path,param)
 	--if not file.Exists(string.sub(path,1,-2),"LUA") then return end
 	local files, directories = file.Find( path.."*", "LUA" )
@@ -42,6 +40,11 @@ local function InitAutorun(path,param)
 	end
 end
 print("TheFulDeep's autorun initializing")
+local optimization = "thefuldeep_autorun/color_optimization.lua"
+if SERVER then AddCSLuaFile(optimization)end
+include(optimization)
+
+
 local lanes = "lanes/lanes_functions.lua"
 if file.Exists(lanes,"LUA")then
 	if SERVER then AddCSLuaFile(lanes)end
