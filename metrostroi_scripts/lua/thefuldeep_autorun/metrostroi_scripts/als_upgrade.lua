@@ -16,9 +16,9 @@ timer.Simple(0,function()
 	local function CheckForw(train,lasttry,node)
 		local opts = {ignore_path=lasttry and  node.path or nil,radius=350}
 		local pos = Metrostroi.GetPositionOnTrack(train:GetPos(),train:GetAngles(),opts)[1]
-		local pos2 = Metrostroi.GetPositionOnTrack(train:LocalToWorld(Vector(25,0,0)), train:GetAngles(),opts)[1]
 		local direction = true
 		if pos then
+			local pos2 = Metrostroi.GetPositionOnTrack(train:LocalToWorld(Vector(25,0,0)), train:GetAngles(),opts)[1]
 			if pos2 then
 				direction = (pos2.x - pos.x) > 0
 			end
