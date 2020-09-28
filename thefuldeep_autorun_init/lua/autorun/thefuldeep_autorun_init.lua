@@ -1,3 +1,5 @@
+include("color_optimization.lua")
+
 local function InitAutorun(path,param)
 	--if not file.Exists(string.sub(path,1,-2),"LUA") then return end
 	local files, directories = file.Find( path.."*", "LUA" )
