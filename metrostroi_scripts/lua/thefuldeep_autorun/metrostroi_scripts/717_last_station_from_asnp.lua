@@ -2,7 +2,7 @@
 if CLIENT then return end
 
 local function GetLastStation(self)
-	if not Metrostroi.StationConfigurations or not Metrostroi.ASNPSetup or self.ASNP.State < 7 then
+	if not Metrostroi.StationConfigurations or not Metrostroi.ASNPSetup or self:GetNW2Int("ASNP:State",0) < 7 then
 		return
 	else
 		local Selected = Metrostroi.ASNPSetup[self:GetNW2Int("Announcer",0)]
