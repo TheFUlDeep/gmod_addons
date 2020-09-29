@@ -1,9 +1,8 @@
 --ВНИМАНИЕ
---пражский аддон и metrostroi ext не должны быть в коллекции сервера!!! (чтобы не было их скриптов)
+--metrostroi ext не должен быть в коллекции сервера!!! (чтобы не было их скриптов)
 
 --мне не нравится, что у emm все на финках, поэтому напишу аналог на коллбэках
 
---новый салон из-за измененной геометрии кррыши надо двигать лампы, а мне впадлу
 if SERVER then 
 	resource.AddWorkshop("2240199465") 
 end
@@ -664,6 +663,29 @@ hook.Add("InitPostEntity","Metrostroi extrinsions on callbacks",function()
 		UpdateModelCallBack(
 			TISU,
 			"couch_cap",
+			function(wag)
+				if wag:GetNW2Int("SeatsType",0) == seats_tisu_index1 then return "models/metrostroi_train/81-717/couch_new_cap.mdl" end
+			end
+		)
+		UpdateModelCallBack(
+			TISU_719,
+			"seats",
+			function(wag)
+				if wag:GetNW2Int("SeatsType",0) == seats_tisu_index1 then
+					return "models/metrostroi_train/81-717/couch_new_int.mdl" 
+				end
+			end
+		)
+		UpdateModelCallBack(
+			TISU_719,
+			"seats_old_cap",
+			function(wag)
+				if wag:GetNW2Int("SeatsType",0) == seats_tisu_index1 then return "models/metrostroi_train/81-717/couch_new_cap.mdl" end
+			end
+		)
+		UpdateModelCallBack(
+			TISU_719,
+			"seats_old_cap_o",
 			function(wag)
 				if wag:GetNW2Int("SeatsType",0) == seats_tisu_index1 then return "models/metrostroi_train/81-717/couch_new_cap.mdl" end
 			end
