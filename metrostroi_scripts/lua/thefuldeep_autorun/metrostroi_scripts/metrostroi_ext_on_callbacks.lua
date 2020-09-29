@@ -12,7 +12,6 @@ end
 
 hook.Add("InitPostEntity","Metrostroi extrinsions on callbacks",function()
 	--TODO кран выключения дверей
-	--TODO звуки
 	--НОМЕРНОЙ
 	local NOMER_CUSTOM = scripted_ents.GetStored("gmod_subway_81-717_mvm_custom")
 	if NOMER_CUSTOM then NOMER_CUSTOM = NOMER_CUSTOM.t else return end--больше таких проверок делать не надо, так как 718 точно прогрузится, если 717 есть
@@ -185,7 +184,7 @@ hook.Add("InitPostEntity","Metrostroi extrinsions on callbacks",function()
 		end
 	end
 	
-	--ТАБЛИЧКА ИЩГОТОВИТЕЛЯ В САЛОНЕ
+	--ТАБЛИЧКА ИЗГОТОВИТЕЛЯ В САЛОНЕ
 	local interrior_nameplate_index1 = -1
 	local interrior_nameplate_index2 = -1
 	foundtable = nil
@@ -305,6 +304,74 @@ hook.Add("InitPostEntity","Metrostroi extrinsions on callbacks",function()
 				max = 1
 			end
 			return base_animate(self,prop,val,min,max,...)
+		end
+	end
+	
+	
+	--НОВЫЙ ЗВУК КВ
+	foundtable = nil
+	local kv_sounds_index = -1
+	for k,v in pairs(NOMER_CUSTOM.Spawner) do
+		if istable(v) and v[1] == "KVSoundsType" then foundtable = k break end
+	end
+	
+	if not foundtable then
+		table.insert(NOMER_CUSTOM.Spawner,6,{"KVSoundsType","Тип звуков КВ","List",{"Default","Ext"}})
+		kv_sounds_index = 2
+	else
+		kv_sounds_index = table.insert(NOMER_CUSTOM.Spawner[foundtable][4],"Ext")
+	end
+	if CLIENT then
+		local defaultsounds = {}
+		local names = {
+			"kv70_0_t1",
+			"kv70_t1_0_fix",
+			"kv70_t1_0",
+			"kv70_t1_t1a",
+			"kv70_t1a_t1",
+			"kv70_t1a_t2",
+			"kv70_t2_t1a",
+			"kv70_0_x1",
+			"kv70_x1_0",
+			"kv70_x1_x2",
+			"kv70_x2_x1",
+			"kv70_x2_x3",
+			"kv70_x3_x2"
+		}
+		for i = 1,#names do names[#names+1] = names[i].."_2" end
+		local oldinitsounds = NOMER.InitializeSounds
+		NOMER.InitializeSounds = function(self,...)
+			oldinitsounds(self,...)
+			for _,name in pairs(names)do
+				defaultsounds[name] = self.SoundNames[name]
+			end
+		end
+		
+		local oldupdate = NOMER.UpdateWagonNumber
+		NOMER.UpdateWagonNumber = function(self,...)
+			oldupdate(self,...)
+			for _, name in pairs(names)do
+				self.SoundNames[name] = defaultsounds[name]
+			end
+			
+			if self:GetNW2Int("KVSoundsType",0) == kv_sounds_index then
+                 self.SoundNames["kv70_0_t1"] = "subway_trains/extpack/0-t1.mp3"
+                 self.SoundNames["kv70_t1_0_fix"] = "subway_trains/extpack/t1-0.mp3"
+                 self.SoundNames["kv70_t1_0"] = self.SoundNames["kv70_t1_0_fix"]
+                 self.SoundNames["kv70_t1_t1a"] = "subway_trains/extpack/t1-t1a.mp3"
+                 self.SoundNames["kv70_t1a_t1"] = "subway_trains/extpack/t1a-t1.mp3"
+                 self.SoundNames["kv70_t1a_t2"] = "subway_trains/extpack/t1a-t2.mp3" 
+                 self.SoundNames["kv70_t2_t1a"] = "subway_trains/extpack/t2-t1a.mp3"
+                 self.SoundNames["kv70_0_x1"] = "subway_trains/extpack/0-x1.mp3"
+                 self.SoundNames["kv70_x1_0"] = "subway_trains/extpack/x1-0.mp3"
+                 self.SoundNames["kv70_x1_x2"] = "subway_trains/extpack/x1-x2.mp3"
+                 self.SoundNames["kv70_x2_x1"] = "subway_trains/extpack/x2-x1.mp3"
+                 self.SoundNames["kv70_x2_x3"] = "subway_trains/extpack/x2-x3.mp3"
+                 self.SoundNames["kv70_x3_x2"] = "subway_trains/extpack/x3-x2.mp3"
+				for i = 1,13 do
+					self.SoundNames[names[i+13]] = self.SoundNames[names[i]]
+				end
+			end
 		end
 	end
 	
