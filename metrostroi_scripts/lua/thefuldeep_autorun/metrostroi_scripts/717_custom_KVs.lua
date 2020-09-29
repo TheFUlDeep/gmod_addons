@@ -1,19 +1,25 @@
-if 1 then return end
+--ВНИМАНИЕ
+--пражский аддон и metrostroi ext не должны быть в коллекции сервера!!! (чтобы не было их скриптов)
+if SERVER then 
+	resource.AddWorkshop("2189954527") 
+end
 
 local nomerogg = "gmod_subway_81-717_mvm"
 local inserted_index = -1
 local inserted_index2 = -1
-local paramname = "какое-то имя"
+local paramname = "Пражский 1"
+local paramname2 = "Пражский 2"
 
 local model1 = "models/metrostroi_train/81-717/kv_black.mdl"
 local model2 = "models/metrostroi_train/81-717/kv_white.mdl"
 local model3 = "models/metrostroi_train/81-717/kv_wood.mdl"
 local model4 = "models/metrostroi_train/81-717/kv_yellow.mdl"
-local model_new = "путь к новой модели"
+local model_praha = "models/yaz/717_praha/kv_praha.mdl"
+local model_praha2 = "models/yaz/717_praha/kv_praha2.mdl"
 
 local tablename = "KVTypeCustom"
 local readtablename = "Тип КВ"
-hook.Add("InitPostEntity","Metrostroi 717_mvm custom KVs",function()
+hook.Add("InitPostEntity","Metrostroi 717_mvm praha kv",function()
     local ENT = scripted_ents.GetStored(nomerogg.."_custom")
     if ENT then ENT = ENT.t else return end
 	if not ENT.Spawner then return end
@@ -24,10 +30,12 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm custom KVs",function()
 	end
 	
 	if not foundtable then
-		table.insert(ENT.Spawner,6,{tablename,readtablename,"List",{"Черный","Белый","Деревянный","Желтый",paramname}})
+		table.insert(ENT.Spawner,6,{tablename,readtablename,"List",{"Черный","Белый","Деревянный","Желтый",paramname,paramname2}})
 		inserted_index = 5
+		inserted_index2 = 6
 	else
 		inserted_index = table.insert(ENT.Spawner[foundtable][4],paramname)
+		inserted_index2 = table.insert(ENT.Spawner[foundtable][4],paramname2)
 	end
 	
 	if SERVER then return end
@@ -67,7 +75,8 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm custom KVs",function()
 		ENT,
 		propname,
 		function(wag)
-			if wag:GetNW2Int(tablename,0) == inserted_index then return model_new
+			if wag:GetNW2Int(tablename,0) == inserted_index then return model_praha
+			elseif wag:GetNW2Int(tablename,0) == inserted_index2 then return model_praha2
 			elseif wag:GetNW2Int(tablename,0) == 1 then return model1
 			elseif wag:GetNW2Int(tablename,0) == 2 then return model2
 			elseif wag:GetNW2Int(tablename,0) == 3 then return model3
@@ -79,7 +88,7 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm custom KVs",function()
 			if wag:GetNW2Int(tablename,0) ~= inserted_index then return end
 			local ent = wag.ClientEnts and wag.ClientEnts[propname]
 			if not IsValid(ent) then return end
-			ent:SetPos(wag:LocalToWorld(vector_origin))
+			ent:SetPos(wag:LocalToWorld(Vector(0,0,0)))
 		end]]
 	)
 	
