@@ -41,9 +41,9 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm round voltm and amperm",function()
 		
 		if callback then
 			local oldcallback = ENT.ClientProps[cprop].callback or function() end
-			ENT.ClientProps[cprop].callback = function(wag,...)
-				oldcallback(wag,...)
-				callback(wag,...)
+			ENT.ClientProps[cprop].callback = function(wag,cent,...)
+				oldcallback(wag,cent,...)
+				callback(wag,cent,...)
 			end
 		end
 		
@@ -61,32 +61,29 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm round voltm and amperm",function()
         model = "models/dev4you/new_voltm/new_voltm_light.mdl",
         pos = vector_origin,
         ang = angle_zero,
-        hideseat = 0.2,
+        --hideseat = 0.2,
+		hide = 2
 	}
 	
 	ENT.ClientProps["RoundVaA"] = {
         model = "models/dev4you/new_voltm/new_voltm.mdl",
         pos = vector_origin,
         ang = angle_zero,
-        hideseat = 0.2,
+        --hideseat = 0.2,
+		hide = 2
 	}
 	
-	UpdateModelCallBack(
-		ENT,
-		"RoundVaA",
-		nil,
-		function(wag)--скрываю, если ентити есть, но его не должно быть
-			if wag:GetNW2Int(tablename,0) ~= inserted_index then wag:ShowHide("RoundVaA",false) end
-		end
-	)
+	local oldupdate = ENT.UpdateWagonNumber
+	ENT.UpdateWagonNumber = function(self,...)
+		self:ShowHide("RoundVaA",self:GetNW2Int(tablename,0) == inserted_index)
+		oldupdate(self,...)
+	end
 	
 	UpdateModelCallBack(
 		ENT,
 		"cabine_mvm",
 		function(wag)
 			if wag:GetNW2Int(tablename,0) == inserted_index then 
-				wag:ShowHide("RoundVaA",true)--показываю новые датчики
-				--не уверен на сто процентов в работе ShowHide датчиков через кабину
 				return "models/dev4you/new_voltm/cabine_mvm_new_voltm.mdl" 
 			end
 		end
@@ -97,8 +94,6 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm round voltm and amperm",function()
 		"cabine_lvz",
 		function(wag)
 			if wag:GetNW2Int(tablename,0) == inserted_index then 
-				wag:ShowHide("RoundVaA",true)--показываю новые датчики
-				--не уверен на сто процентов в работе ShowHide датчиков через кабину
 				return "models/dev4you/new_voltm/cabine_lvz_new_voltm.mdl" 
 			end
 		end
@@ -108,12 +103,10 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm round voltm and amperm",function()
 		ENT,
 		"ampermeter",
 		nil,
-		function(wag)
+		function(wag,cent)
 			if wag:GetNW2Int(tablename,0) ~= inserted_index then return end
-			local ent = wag.ClientEnts and wag.ClientEnts.ampermeter
-			if not IsValid(ent)then return end
-			ent:SetPos(wag:LocalToWorld(Vector(449.799988,-33.349998,14.5)))
-			ent:SetAngles(wag:LocalToWorldAngles(Angle(90,0,20)))
+			cent:SetPos(wag:LocalToWorld(Vector(449.799988,-33.349998,14.5)))
+			cent:SetAngles(wag:LocalToWorldAngles(Angle(90,0,20)))
 		end
 	)
 	
@@ -121,12 +114,10 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm round voltm and amperm",function()
 		ENT,
 		"voltmeter",
 		nil,
-		function(wag)
+		function(wag,cent)
 			if wag:GetNW2Int(tablename,0) ~= inserted_index then return end
-			local ent = wag.ClientEnts and wag.ClientEnts.voltmeter
-			if not IsValid(ent)then return end
-			ent:SetPos(wag:LocalToWorld(Vector(451.399994,-28.923,14.3)))
-			ent:SetAngles(wag:LocalToWorldAngles(Angle(90,0,20)))
+			cent:SetPos(wag:LocalToWorld(Vector(451.399994,-28.923,14.3)))
+			cent:SetAngles(wag:LocalToWorldAngles(Angle(90,0,20)))
 		end
 	)
 	
@@ -138,5 +129,3 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm round voltm and amperm",function()
 	end
 	
 end)
-
-
