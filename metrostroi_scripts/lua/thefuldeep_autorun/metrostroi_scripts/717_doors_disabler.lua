@@ -25,6 +25,11 @@ hook.Add("InitPostEntity","Metrostroi 717 doors disabling",function()
 			"DoorR4ManualClose"
 		}
 		
+		local buttonsnames = {}
+		for _,name in pairs(buttons)do
+			buttonsnames[name] = true
+		end
+		
 	if SERVER then
 	
 		local oldinit = NOMER.Initialize
@@ -42,9 +47,9 @@ hook.Add("InitPostEntity","Metrostroi 717 doors disabling",function()
 				local openedR
 				for k,bname in pairs(buttons)do
 					local str = "Door"..(k < 9 and "L" or "R")..((k+3)%4+1)
-					if wag[bname.."asd"] then
+					if wag[bname] then
 						--								startvalue																len		  						speed					isopeinig		
-						local val = mathClamp((DoorsDisabled and wag["Prev"..str.."State"] or wag:GetNW2Float(str,0))+(not DoorsDisabled and (CurTime-wag[bname.."asd"])*250 or 50)*((k < 5 or k > 8 and k < 13) and 1 or -1),0,500)
+						local val = mathClamp((DoorsDisabled and wag["Prev"..str.."State"] or wag:GetNW2Float(str,0))+(not DoorsDisabled and (CurTime-wag[bname])*250 or 50)*((k < 5 or k > 8 and k < 13) and 1 or -1),0,500)
 						wag:SetNW2Float(str,val)
 					elseif DoorsDisabled then
 						wag:SetNW2Float(str,wag["Prev"..str.."State"] or wag:GetNW2Float(str,0))
@@ -74,7 +79,9 @@ hook.Add("InitPostEntity","Metrostroi 717 doors disabling",function()
 		local oldpress = NOMER.OnButtonPress
 		NOMER.OnButtonPress = function(self,button,...)
 			--print(button)
-			self[button.."asd"] = CurTime()
+			if buttonsnames[button] then
+				self[button] = CurTime()
+			end
 			if button == "DisableDoors" then
 				self:SetNW2Bool("DoorsDisabled",not self:GetNW2Bool("DoorsDisabled"))
 			end
@@ -84,7 +91,9 @@ hook.Add("InitPostEntity","Metrostroi 717 doors disabling",function()
 		local oldrelease = NOMER.OnButtonRelease
 		NOMER.OnButtonRelease = function(self,button,...)
 			--print(button)
-			self[button.."asd"] = false
+			if buttonsnames[button] then
+				self[button] = false
+			end
 			oldrelease(self,button,...)
 		end
 	end
