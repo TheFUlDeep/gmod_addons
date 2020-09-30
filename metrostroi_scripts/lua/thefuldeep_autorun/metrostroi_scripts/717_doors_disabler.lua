@@ -36,6 +36,7 @@ hook.Add("InitPostEntity","Metrostroi 717 doors disabling",function()
 			local oldinit = NOMER.Initialize
 			NOMER.Initialize = function(self,...)
 				oldinit(self,...)
+				self.PrevsDoorsStates = {}
 				local oldpneumo = self.Pneumatic.Think
 				self.Pneumatic.Think = function(sys,...)
 					oldpneumo(sys,...)
@@ -46,18 +47,19 @@ hook.Add("InitPostEntity","Metrostroi 717 doors disabling",function()
 					local DoorsDisabled = wag:GetNW2Bool("DoorsDisabled")
 					local openedL
 					local openedR
+					local prevs = wag.PrevsDoorsStates
 					for k,bname in pairs(buttons)do
 						local str = "Door"..(k < 9 and "L" or "R")..((k+3)%4+1)
 						if wag[bname] then
 							--								startvalue																len		  						speed					isopeinig		
-							local val = mathClamp((DoorsDisabled and wag["Prev"..str.."State"] or wag:GetNW2Float(str,0))+(not DoorsDisabled and (CurTime-wag[bname])*250 or 50)*((k < 5 or k > 8 and k < 13) and 1 or -1),0,500)
+							local val = mathClamp((DoorsDisabled and prevs[str] or wag:GetNW2Float(str,0))+(not DoorsDisabled and (CurTime-wag[bname])*250 or 50)*((k < 5 or k > 8 and k < 13) and 1 or -1),0,500)
 							wag:SetNW2Float(str,val)
 						elseif DoorsDisabled then
-							wag:SetNW2Float(str,wag["Prev"..str.."State"] or wag:GetNW2Float(str,0))
+							wag:SetNW2Float(str,prevs[str] or wag:GetNW2Float(str,0))
 						end
 						--print(wag:GetNW2Float(str,0))
 						local val = wag:GetNW2Float(str,0)
-						wag["Prev"..str.."State"] = val
+						prevs[str] = val
 							if val ~= 0 then
 								if k < 9 then
 									openedL = true
