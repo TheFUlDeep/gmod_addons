@@ -26,10 +26,13 @@ hook.Add("InitPostEntity","Metrostroi 717 doors disabling",function()
 		buttonsnames[name] = true
 	end
 	
+	local NOMER_CUSTOM = scripted_ents.GetStored("gmod_subway_81-717_mvm_custom")
+	if not NOMER_CUSTOM then return else NOMER_CUSTOM = NOMER_CUSTOM.t end
+	table.insert(NOMER_CUSTOM.Spawner,9,{"DoorsDisabler","Выключатель дверей","Boolean"})
+	
 	for i = 1,2 do
 		local class = i == 1 and "gmod_subway_81-717_mvm" or "gmod_subway_81-714_mvm"
-		local NOMER = scripted_ents.GetStored(class)
-		if not NOMER then continue else NOMER = NOMER.t end
+		local NOMER = scripted_ents.GetStored(class).t
 			
 		if SERVER then
 		
@@ -41,39 +44,40 @@ hook.Add("InitPostEntity","Metrostroi 717 doors disabling",function()
 				self.Pneumatic.Think = function(sys,...)
 					oldpneumo(sys,...)
 					local wag = sys.Train
-					--print(wag:GetNW2Bool("DoorL"),wag:GetNW2Bool("DoorR"))--true, если открыты
-					--0 закрыты, 500 открыты
-					local CurTime = CurTime()
-					local DoorsDisabled = wag:GetNW2Bool("DoorsDisabled")
-					local openedL
-					local openedR
-					local prevs = wag.PrevsDoorsStates
-					for k,bname in pairs(buttons)do
-						local str = "Door"..(k < 9 and "L" or "R")..((k+3)%4+1)
-						if wag[bname] then
-							--								startvalue																len		  						speed					isopeinig		
-							wag:SetNW2Float(str,mathClamp((DoorsDisabled and prevs[str] or wag:GetNW2Float(str,0))+(not DoorsDisabled and (CurTime-wag[bname])*250 or 50)*((k < 5 or k > 8 and k < 13) and 1 or -1),0,500))
-						elseif DoorsDisabled then
-							wag:SetNW2Float(str,prevs[str] or wag:GetNW2Float(str,0))
-						end
-						--print(wag:GetNW2Float(str,0))
-						local val = wag:GetNW2Float(str,0)
-						if val ~= 0 then
-							if k < 9 then
-								openedL = true
-							else
-								openedR = true
+					if wag:GetNW2Bool("DoorsDisabler") then
+						--print(wag:GetNW2Bool("DoorL"),wag:GetNW2Bool("DoorR"))--true, если открыты
+						--0 закрыты, 500 открыты
+						local CurTime = CurTime()
+						local DoorsDisabled = wag:GetNW2Bool("DoorsDisabled")
+						local openedL
+						local openedR
+						local prevs = wag.PrevsDoorsStates
+						for k,bname in pairs(buttons)do
+							local str = "Door"..(k < 9 and "L" or "R")..((k+3)%4+1)
+							if wag[bname] then
+								--								startvalue																len		  						speed					isopeinig		
+								wag:SetNW2Float(str,mathClamp((DoorsDisabled and prevs[str] or wag:GetNW2Float(str,0))+(not DoorsDisabled and (CurTime-wag[bname])*250 or 50)*((k < 5 or k > 8 and k < 13) and 1 or -1),0,500))
+							elseif DoorsDisabled then
+								wag:SetNW2Float(str,prevs[str] or wag:GetNW2Float(str,0))
 							end
+							local val = wag:GetNW2Float(str,0)
+							if val ~= 0 then
+								if k < 9 then
+									openedL = true
+								else
+									openedR = true
+								end
+							end
+							prevs[str] = val
 						end
-						prevs[str] = val
+						if openedL then 
+							wag:SetNW2Bool("DoorL",true)
+						end
+						if openedR then 
+							wag:SetNW2Bool("DoorR",true)
+						end
+						wag.BD:TriggerInput("Set",not openedL and not openedR)
 					end
-					if openedL then 
-						wag:SetNW2Bool("DoorL",true)
-					end
-					if openedR then 
-						wag:SetNW2Bool("DoorR",true)
-					end
-					wag.BD:TriggerInput("Set",not openedL and not openedR)
 					
 				end
 			end
@@ -148,6 +152,17 @@ hook.Add("InitPostEntity","Metrostroi 717 doors disabling",function()
 				local res = oldthink(self,...)
 				self:Animate("DoorsDisabler1",self:GetNW2Bool("DoorsDisabled") and 0.25 or 0, 0,1, 5,false)
 				return res
+			end
+			
+			local oldupdate = NOMER.UpdateWagonNumber
+			NOMER.UpdateWagonNumber = function(self,...)
+				oldupdate(self,...)
+				local nw = not self:GetNW2Bool("DoorsDisabler")
+				self:HidePanel("DoorsManualLeft",nw)
+				self:HidePanel("DoorsManualRight",nw)
+				self:HidePanel("DoorsManualLeftOutside",nw)
+				self:HidePanel("DoorsManualRightOutside",nw)
+				self:ShowHide("DoorsDisabler1",not nw)
 			end
 		end
 	end
