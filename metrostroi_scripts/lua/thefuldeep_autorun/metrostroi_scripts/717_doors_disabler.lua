@@ -52,21 +52,20 @@ hook.Add("InitPostEntity","Metrostroi 717 doors disabling",function()
 						local str = "Door"..(k < 9 and "L" or "R")..((k+3)%4+1)
 						if wag[bname] then
 							--								startvalue																len		  						speed					isopeinig		
-							local val = mathClamp((DoorsDisabled and prevs[str] or wag:GetNW2Float(str,0))+(not DoorsDisabled and (CurTime-wag[bname])*250 or 50)*((k < 5 or k > 8 and k < 13) and 1 or -1),0,500)
-							wag:SetNW2Float(str,val)
+							wag:SetNW2Float(str,mathClamp((DoorsDisabled and prevs[str] or wag:GetNW2Float(str,0))+(not DoorsDisabled and (CurTime-wag[bname])*250 or 50)*((k < 5 or k > 8 and k < 13) and 1 or -1),0,500))
 						elseif DoorsDisabled then
 							wag:SetNW2Float(str,prevs[str] or wag:GetNW2Float(str,0))
 						end
 						--print(wag:GetNW2Float(str,0))
 						local val = wag:GetNW2Float(str,0)
-						prevs[str] = val
-							if val ~= 0 then
-								if k < 9 then
-									openedL = true
-								else
-									openedR = true
-								end
+						if val ~= 0 then
+							if k < 9 then
+								openedL = true
+							else
+								openedR = true
 							end
+						end
+						prevs[str] = val
 					end
 					if openedL then 
 						wag:SetNW2Bool("DoorL",true)
