@@ -1,3 +1,5 @@
+require("utf8")
+
 local nomerogg = "gmod_subway_81-717_mvm"
 local inserted_index = -1
 local paramname = "Электронный"
@@ -108,14 +110,16 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm emu",function()
 		sogltbl[sogltbl[i]] = true
 		sogltbl[i] = nil
 	end
-	local maxlen = 11*2
+	local maxlen = 11
 	local function ShortingString(str)
-		if #str <= maxlen then return str end
-		for i = maxlen-1,0,-2 do
-			if sogltbl[str:sub(i,i+1)] then
-				return str:sub(1,i+1).."."
+		local len = utf8.len(str)
+		if len <= maxlen then return str end
+		for i = maxlen,1,-1 do
+			if sogltbl[utf8.sub(str,i,i)] then
+				return utf8.sub(str,1,i).."."
 			end
 		end
+		return utf8.sub(str,1,maxlen).."."
 	end
 	
 	local oldDrawPost = ENT.DrawPost
