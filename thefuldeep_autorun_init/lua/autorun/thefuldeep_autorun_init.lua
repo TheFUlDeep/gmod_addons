@@ -44,12 +44,10 @@ local optimization = "thefuldeep_autorun/color_optimization.lua"
 if SERVER then AddCSLuaFile(optimization)end
 include(optimization)
 
-
-local lanes = "lanes/lanes_functions.lua"
-if file.Exists(lanes,"LUA")then
-	if SERVER then AddCSLuaFile(lanes)end
-	include(lanes)
+if SERVER then
+	include("lanes/lanes_functions.lua")
 end
+
 InitAutorun("thefuldeep_autorun/","sh")				-- same as next line
 InitAutorun("thefuldeep_autorun_sh/","sh")
 InitAutorun("thefuldeep_autorun_cl/","cl")
