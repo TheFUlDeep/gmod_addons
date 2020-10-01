@@ -104,19 +104,18 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm emu",function()
 	end
 	
 	local sogltbl = {"б","в","г","д","ж","з","к","л","м","н","п","р","с","т","ф","х","ц","ч","ш","щ"}
+	for i = 1, #sogltbl do
+		sogltbl[sogltbl[i]] = true
+		sogltbl[i] = nil
+	end
+	local maxlen = 11*2
 	local function ShortingString(str)
-		if #str <= 17*2 - 1 then return str end
-		for i = 1, #str do
-			for k,v in pairs(sogltbl) do
-				local startpos = string.find(str,v,i)
-				if startpos then 
-					if startpos <= 15*2 then 
-						return string.sub(str,1,startpos + 1).."." 
-					end
-				end
+		if #str <= maxlen then return str end
+		for i = maxlen-1,0,-2 do
+			if sogltbl[str:sub(i,i+1)] then
+				return str:sub(1,i+1).."."
 			end
 		end
-		return str
 	end
 	
 	local oldDrawPost = ENT.DrawPost
