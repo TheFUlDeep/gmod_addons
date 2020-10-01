@@ -1,5 +1,6 @@
 --TODO проверить, правильно ли работает функция Terminate
 --таблицы при перемещениями между луа стейтами вроде копируются, а не передаеются по ссылкe?
+if CLIENT then return end
 if SERVER then AddCSLuaFile("lanes/lanes_main.lua")end
 local files = file.Find("lua/bin/*", "GAME")
 local found
