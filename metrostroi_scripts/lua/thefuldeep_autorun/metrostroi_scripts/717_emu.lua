@@ -116,7 +116,7 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm emu",function()
 		if idx == 0 then return "" end
 		if idx > utf8.len( str ) then return "" end
 
-		local off = offset( str, idx - 1 )
+		local off = utf8.offset( str, idx - 1 )
 		return utf8.char( codepoint( str, off ) )
 	end
 	local function sub( str, charstart, charend )
