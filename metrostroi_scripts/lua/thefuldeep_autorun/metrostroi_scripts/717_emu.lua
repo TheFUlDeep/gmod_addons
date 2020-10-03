@@ -1,5 +1,3 @@
-if 1 then return end
-
 local nomerogg = "gmod_subway_81-717_mvm"
 local inserted_index = -1
 local paramname = "Электронный"
