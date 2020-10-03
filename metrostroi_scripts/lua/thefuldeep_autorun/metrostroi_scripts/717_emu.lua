@@ -103,21 +103,49 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm emu",function()
 		end
 	end
 	
+	--копирую код функции utf8.sub, потому что иногда клиент ее не видит, по какой-то причине
+	local function strRelToAbsChar( str, pos )--getted from https://github.com/Facepunch/garrysmod/blob/master/garrysmod/lua/includes/modules/utf8.lua#L364-L377
+		if pos < 0 then
+			pos = math.max( pos + utf8.len( str ) + 1, 0 )
+		end
+		return pos
+	end
+	local function GetChar( str, idx )
+		idx = strRelToAbsChar( str, idx )
+
+		if idx == 0 then return "" end
+		if idx > utf8.len( str ) then return "" end
+
+		local off = utf8.offset( str, idx - 1 )
+		return utf8.char( utf8.codepoint( str, off ) )
+	end
+	local function sub( str, charstart, charend )
+		charstart = strRelToAbsChar( str, charstart )
+		charend = strRelToAbsChar( str, charend or -1 )
+
+		local buf = {}
+		for i = charstart, charend do
+			buf[#buf + 1] = GetChar( str, i )
+		end
+
+		return table.concat( buf )
+	end
+	
 	local sogltbl = {"б","в","г","д","ж","з","к","л","м","н","п","р","с","т","ф","х","ц","ч","ш","щ"}
 	for i = 1, #sogltbl do
 		sogltbl[sogltbl[i]] = true
 		sogltbl[i] = nil
 	end
-	local maxlen = 11
+	local maxlen = 19
 	local function ShortingString(str)
 		local len = utf8.len(str)
 		if len <= maxlen then return str end
 		for i = maxlen,1,-1 do
-			if sogltbl[utf8.sub(str,i,i)] then
-				return utf8.sub(str,1,i).."."
+			if sogltbl[sub(str,i,i)] then
+				return sub(str,1,i).."."
 			end
 		end
-		return utf8.sub(str,1,maxlen).."."
+		return sub(str,1,maxlen).."."
 	end
 	
 	local oldDrawPost = ENT.DrawPost
