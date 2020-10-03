@@ -135,7 +135,8 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm emu",function()
 			self.ASNPState = self:GetNW2Int("ASNP:State",-1)
 			self.GettedLastStationForEmu = ShortingString(GetLastStation(self))
 		end
-		if self.ASNPState < 1 then return end
+		if self.ASNPState < 1 or self:GetPackedRatio("BatteryVoltage") == 0 then return end
+		
 		
 		self:DrawOnPanel("EMU1",function()
 			local rn = Format("%02d",self:GetNW2Int("ASNP:RouteNumber",0))
@@ -189,3 +190,4 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm emu",function()
 	end
 	
 end)
+
