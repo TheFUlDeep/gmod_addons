@@ -151,6 +151,7 @@ hook.Add("InitPostEntity","Metrostroi 717 minsk chapaeff",function()
 	NOMER.UpdateWagonNumber = function(self,...)
 		self:ShowHide("route1",true)
 		self:ShowHide("route2",true)
+		self:ShowHide("Minsk_Dist_Light",false)
 		oldupdate(self,...)
 		local nw = self:GetNW2Bool("MinskParts")
 		self:ShowHide("minsk_parts",nw)
@@ -210,6 +211,7 @@ hook.Add("InitPostEntity","Metrostroi 717 minsk chapaeff",function()
 			self:ShowHide("route2",bv)
 			self:ShowHide("Minsk_RouteNumber_Inside1",bv)
 			self:ShowHide("Minsk_RouteNumber_Inside2",bv)
+			self:ShowHide("Minsk_Dist_Light",bv)
 			if self.ClientEnts then
 				local texture = Metrostroi.Skins["702_routes"] and Metrostroi.Skins["702_routes"][self:GetNW2Int("LastStationID",0)]
 				if texture then
@@ -229,7 +231,6 @@ hook.Add("InitPostEntity","Metrostroi 717 minsk chapaeff",function()
 	        	end
    			end
 		end
-		self:ShowHide("Minsk_Dist_Light",nw and bv)
 		return res
 	end
 	
@@ -244,8 +245,7 @@ hook.Add("InitPostEntity","Metrostroi 717 minsk chapaeff",function()
 	local oldupdate = NOMER_714.UpdateWagonNumber
 	NOMER_714.UpdateWagonNumber = function(self,...)
 		oldupdate(self,...)
-		local nw = self:GetNW2Bool("MinskParts")
-		self:ShowHide("minsk_stickers_outside",nw)
+		self:ShowHide("minsk_stickers_outside",self:GetNW2Bool("MinskParts"))
 	end
 end)
 
