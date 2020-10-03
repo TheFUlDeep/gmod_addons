@@ -106,7 +106,7 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm emu",function()
 	--копирую код функции utf8.sub, потому что иногда клиент ее не видит, по какой-то причине
 	local function strRelToAbsChar( str, pos )--getted from https://github.com/Facepunch/garrysmod/blob/master/garrysmod/lua/includes/modules/utf8.lua#L364-L377
 		if pos < 0 then
-			pos = math.max( pos + len( str ) + 1, 0 )
+			pos = math.max( pos + utf8.len( str ) + 1, 0 )
 		end
 		return pos
 	end
@@ -114,10 +114,10 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm emu",function()
 		idx = strRelToAbsChar( str, idx )
 
 		if idx == 0 then return "" end
-		if idx > len( str ) then return "" end
+		if idx > utf8.len( str ) then return "" end
 
 		local off = offset( str, idx - 1 )
-		return char( codepoint( str, off ) )
+		return utf8.char( codepoint( str, off ) )
 	end
 	local function sub( str, charstart, charend )
 		charstart = strRelToAbsChar( str, charstart )
