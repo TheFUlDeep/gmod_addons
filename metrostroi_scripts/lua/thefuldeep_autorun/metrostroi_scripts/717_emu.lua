@@ -136,7 +136,7 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm emu",function()
 		sogltbl[sogltbl[i]] = true
 		sogltbl[i] = nil
 	end
-	local maxlen = 11
+	local maxlen = 19
 	local function ShortingString(str)
 		local len = utf8.len(str)
 		if len <= maxlen then return str end
