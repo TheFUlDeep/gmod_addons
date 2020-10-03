@@ -63,7 +63,7 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm praha kv",function()
 		--удаление пропа при апдейте спавнером для принудительного обновленяи модели
 		local oldupdate = ENT.UpdateWagonNumber or function() end
 		ENT.UpdateWagonNumber = function(wag,...)
-				RemoveEnt(wag.ClientEnts and wag.ClientEnts[cprop])
+			RemoveEnt(wag.ClientEnts and wag.ClientEnts[cprop])
 			oldupdate(wag,...)
 		end
 	end

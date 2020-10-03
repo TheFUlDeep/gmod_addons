@@ -1,3 +1,5 @@
+require("utf8")
+
 local nomerogg = "gmod_subway_81-717_mvm"
 local inserted_index = -1
 local paramname = "Электронный"
@@ -104,19 +106,20 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm emu",function()
 	end
 	
 	local sogltbl = {"б","в","г","д","ж","з","к","л","м","н","п","р","с","т","ф","х","ц","ч","ш","щ"}
+	for i = 1, #sogltbl do
+		sogltbl[sogltbl[i]] = true
+		sogltbl[i] = nil
+	end
+	local maxlen = 11
 	local function ShortingString(str)
-		if #str <= 17*2 - 1 then return str end
-		for i = 1, #str do
-			for k,v in pairs(sogltbl) do
-				local startpos = string.find(str,v,i)
-				if startpos then 
-					if startpos <= 15*2 then 
-						return string.sub(str,1,startpos + 1).."." 
-					end
-				end
+		local len = utf8.len(str)
+		if len <= maxlen then return str end
+		for i = maxlen,1,-1 do
+			if sogltbl[utf8.sub(str,i,i)] then
+				return utf8.sub(str,1,i).."."
 			end
 		end
-		return str
+		return utf8.sub(str,1,maxlen).."."
 	end
 	
 	local oldDrawPost = ENT.DrawPost
@@ -132,7 +135,8 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm emu",function()
 			self.ASNPState = self:GetNW2Int("ASNP:State",-1)
 			self.GettedLastStationForEmu = ShortingString(GetLastStation(self))
 		end
-		if self.ASNPState < 1 then return end
+		if self.ASNPState < 1 or self:GetPackedRatio("BatteryVoltage") == 0 then return end
+		
 		
 		self:DrawOnPanel("EMU1",function()
 			local rn = Format("%02d",self:GetNW2Int("ASNP:RouteNumber",0))
@@ -186,3 +190,4 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm emu",function()
 	end
 	
 end)
+
