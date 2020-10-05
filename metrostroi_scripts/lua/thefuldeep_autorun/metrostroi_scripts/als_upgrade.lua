@@ -3,43 +3,45 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 	local continuations = {}--тут сохраняю связи концов треков, если есть
 	local function FindNearNode(node)
 		local maxdist = (384/2)^2
-		local pathToSkip = node.path.id
+		local nodepathid = node.path.id
 		local pos = node.pos
-		local nrearestnode,curdist,x,isselfpos
+		local nrearestnode,curdist,x,lerptonext
 		for pathid,path in pairs(Metrostroi.Paths)do
-			if pathid == pathToSkip then continue end
 			for id,node1 in ipairs(path)do
-				for i = 1, node1.next and 2 or 1 do
-					local curpos = i == 1 and node1.pos or LerpVector(0.5,node1.pos,node1.next.pos)--делю попалам потому что не всегда находит
+				if pathid == nodepathid and math.abs(id - node.id) < 5 then continue end--если это соседний ноуд, то пропустить
+				local nextnode = node1.next
+				for i = 0, node1.next and 3 or 0 do
+					local lerp = i/3
+					local curpos = LerpVector(lerp,node1.pos,nextnode and nextnode.pos or node1.pos)--делю на части потому что не всегда находит
 					if nrearestnode then
 						if pos:DistToSqr(curpos) < pos:DistToSqr(nrearestnode.pos) then
 							nrearestnode = node1
-							isselfpos = i == 1
+							lerptonext = lerp
 						end
 					elseif pos:DistToSqr(curpos) < maxdist then
 						nrearestnode = node1
-						isselfpos = i == 1
+						lerptonext = lerp
 					end
 				end
 			end
 		end
-		return nrearestnode,isselfpos
+		return nrearestnode,lerptonext
 	end
 
 	local function UpgradeTracks()
 		continuations = {}
 		--тут прохожусь во всем концам треков и ищу, есть ли продолжения
 		for id,path in pairs(Metrostroi.TrackEditor.Paths)do
-			continuations[id] = {}
+			continuations[id] = continuations[id] or {}
 			local count = #path
 			if count > 2 then
 				for i = 1,2 do
 					local idx = i == 1 and i or count
 					local selfnode = Metrostroi.Paths[id][idx]
 					if selfnode then
-						local another,isselfpos = FindNearNode(selfnode)
+						local another,lerptonext = FindNearNode(selfnode)
 						if another then
-							continuations[id][idx] = {another.path.id,another.id, isselfpos and another.x or another.x + (another.pos:Distance(LerpVector(0.5,another.pos, another.next.pos)))*0.01905}
+							continuations[id][idx] = {another.path.id,another.id,  another.x + (another.pos:Distance(LerpVector(lerptonext,another.pos, lerptonext ~= 0 and another.next.pos or another.pos)))*0.01905}
 						end
 					end
 				end
@@ -60,10 +62,7 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 
 
 
-	--первый раз ищется стандартно
-	--Если не нашел, то ищется по тому же треку в радиусе 350. Если нашел, то проверяется, что состав точно на этом треке
-	--Если не нашел, то ищется по другому треку в радиусе 350. Если нашел, то проверяется, что состав точно на этом треке
-	--И если все равно не нашел, то иду до конца трека, ищу там новый трек, и ищу по нему в направлении в зависимости от угла
+	
 	local oldGetARSJoint = Metrostroi.GetARSJoint
 	
 	
@@ -77,11 +76,16 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 	end
 	
 	local function CheckForw(train,lasttry,node)
-		local opts = {ignore_path=lasttry and  node.path or nil,radius=350}
-		local pos = Metrostroi.GetPositionOnTrack(train:GetPos(),train:GetAngles(),opts)[1]
+		local opts = {ignore_path=lasttry and  node.path or nil,radius=350,z_pad=200}
+		local posent = IsValid(train.FrontBogey) and train.FrontBogey or train
+		local pos = Metrostroi.GetPositionOnTrack(posent:GetPos(),posent:GetAngles(),opts)[1]
+		if not pos then 
+			posent = train 
+			pos = Metrostroi.GetPositionOnTrack(posent:GetPos(),posent:GetAngles(),opts)[1]
+		end
 		local direction = true
 		if pos then
-			local pos2 = Metrostroi.GetPositionOnTrack(train:LocalToWorld(Vector(25,0,0)), train:GetAngles(),opts)[1]
+			local pos2 = Metrostroi.GetPositionOnTrack(posent:LocalToWorld(Vector(25,0,0)), posent:GetAngles(),opts)[1]
 			if pos2 then
 				direction = (pos2.x - pos.x) > 0
 			end
@@ -95,50 +99,52 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 		end
 	end
 	
-	local function GetLastNode(startnode,dir)
-		local curnode = startnode
-		local prevnode
-		if dir then
-			prevnode = curnode.prev
-		else
-			prevnode = curnode.next
-		end
-		local dir = dir and "next" or "prev"
-		while curnode[dir] do
-			prevnode = curnode
-			curnode = curnode[dir]
-		end
-		if not prevnode then return end--если нет предыдущего ноуда, то я не смогу определить угол
-		local ang = (curnode.pos-prevnode.pos):Angle()--угол в сторону конца
-		return curnode,ang
-	end
 
 	Metrostroi.GetARSJoint = function(node,x,dir,train)
+		--первый раз ищется стандартно
 		local forw,back = oldGetARSJoint(node,x,dir,train)
-		--[[if IsValid(train) and IsValid(back) and back:GetClass() == "gmod_track_signal" and back.NextSignalLink and back.NextSignalLink ~= back then
-			forw = back.NextSignalLink
-		end]]
-		if IsValid(train) and not forw then
-			forw = CheckForw(train,nil,node)
-		end
+		--do return forw,back end
+		--print("first",forw and forw.Name)
 		
+		--Если не нашел, то ищется по тому же треку в радиусе 350 стандартным способом. Если нашел, то проверяется, что состав точно на этом треке
+		--Если не нашел, то ищется по другому треку в радиусе 350 стандартным способом. Если нашел, то проверяется, что состав точно на этом треке
+		--Глеб сказал, что этот вариант медленнее, поэтому пока что отключил
+		--[[if IsValid(train) and not forw then
+			forw = CheckForw(train,nil,node)
+		end]]
+		--print("second",forw and forw.Name)
+		
+		--И если все равно не нашел, то иду до конца трека, ищу там новый трек, и ищу по нему в направлении в зависимости от угла новым способом
+		--фишка этой штуки в том, что оно может перепрыгивать с трека на трек. Но может спрыгивать только с конца трека, а запрыгивать в любом месте трека
 		if not forw then
-			local endNode,ang = GetLastNode(node,dir)
-			if endNode and continuations[endNode.path.id][endNode.id] then
-				local newnodeparams = continuations[endNode.path.id][endNode.id]
-				local newnode = newnodeparams and Metrostroi.Paths[newnodeparams[1]][newnodeparams[2]]
+			local nodepathid = node.path.id
+			local path = Metrostroi.Paths[nodepathid]
+			local nodeid = dir and #path or 1
+			local endNode = path[nodeid]
+			local ang = (endNode.pos - (dir and path[nodeid-1].pos or path[nodeid+1].pos)):Angle()--угол в сторону крайнего ноуда
+			local newnodeparams = continuations[nodepathid][endNode.id]
+			if newnodeparams then
+				local newnode = Metrostroi.Paths[newnodeparams[1]][newnodeparams[2]]
 				if newnode then
 					if newnode.next then
 						local newang = (newnode.next.pos - newnode.pos):Angle()--угол в сторону next ноуда
+						--print(ang,newang)
 						forw = Metrostroi.GetARSJoint(newnode,newnodeparams[3],math.abs(ang[2]-newang[2]) < 90,train)
 					end
 					
 					if not forw and newnode.prev then
 						local newang = (newnode.prev.pos - newnode.pos):Angle()--угол в сторону prev ноуда
+						--print(ang,newang)
 						forw = Metrostroi.GetARSJoint(newnode,newnodeparams[3],math.abs(ang[2]-newang[2]) > 90,train)
 					end
 				end
 			end
+		end
+		
+		--этот вариант не сработает, потому что мрашрут может дропнуться во время проезда
+		--или сработает?
+		if IsValid(train) and not forw and IsValid(back) and back:GetClass() == "gmod_track_signal" and back.NextSignalLink and back.NextSignalLink ~= back then
+			forw = back.NextSignalLink
 		end
 		
 		--back не надо, так как он используется только для определения проезда сигнала?
