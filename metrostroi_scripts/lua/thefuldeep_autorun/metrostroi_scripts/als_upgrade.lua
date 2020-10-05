@@ -5,7 +5,7 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 		local maxdist = (384/2)^2
 		local pathToSkip = node.path.id
 		local pos = node.pos
-		local nrearestnode,curdist,x,minpos
+		local nrearestnode,curdist,x,isselfpos
 		for pathid,path in pairs(Metrostroi.Paths)do
 			if pathid == pathToSkip then continue end
 			for id,node1 in ipairs(path)do
@@ -14,16 +14,16 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 					if nrearestnode then
 						if pos:DistToSqr(curpos) < pos:DistToSqr(nrearestnode.pos) then
 							nrearestnode = node1
-							minpos = curpos
+							isselfpos = i == 1
 						end
 					elseif pos:DistToSqr(curpos) < maxdist then
 						nrearestnode = node1
-						minpos = curpos
+						isselfpos = i == 1
 					end
 				end
 			end
 		end
-		return nrearestnode,minpos
+		return nrearestnode,isselfpos
 	end
 
 	local function UpgradeTracks()
@@ -37,9 +37,9 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 					local idx = i == 1 and i or count
 					local selfnode = Metrostroi.Paths[id][idx]
 					if selfnode then
-						local another,pos = FindNearNode(selfnode)
+						local another,isselfpos = FindNearNode(selfnode)
 						if another then
-							continuations[id][idx] = {another.path.id,another.id,pos == another.pos and another.x or another.x + (another.pos:Distance(LerpVector(0.5,another.pos, another.next.pos)))*0.01905}
+							continuations[id][idx] = {another.path.id,another.id, isselfpos and another.x or another.x + (another.pos:Distance(LerpVector(0.5,another.pos, another.next.pos)))*0.01905}
 						end
 					end
 				end
@@ -124,7 +124,6 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 			local endNode,ang = GetLastNode(node,dir)
 			if endNode and continuations[endNode.path.id][endNode.id] then
 				local newnodeparams = continuations[endNode.path.id][endNode.id]
-				print("going to",newnodeparams[1],newnodeparams[2])
 				local newnode = newnodeparams and Metrostroi.Paths[newnodeparams[1]][newnodeparams[2]]
 				if newnode then
 					if newnode.next then
