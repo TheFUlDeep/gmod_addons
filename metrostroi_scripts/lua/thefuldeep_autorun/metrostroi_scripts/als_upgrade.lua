@@ -110,12 +110,14 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 		end
 		if not prevnode then return end--если нет предыдущего ноуда, то я не смогу определить угол
 		local ang = (curnode.pos-prevnode.pos):Angle()--угол в сторону конца
-		ang:Normalize()
 		return curnode,ang
 	end
 
 	Metrostroi.GetARSJoint = function(node,x,dir,train)
 		local forw,back = oldGetARSJoint(node,x,dir,train)
+		--[[if IsValid(train) and IsValid(back) and back:GetClass() == "gmod_track_signal" and back.NextSignalLink and back.NextSignalLink ~= back then
+			forw = back.NextSignalLink
+		end]]
 		if IsValid(train) and not forw then
 			forw = CheckForw(train,nil,node)
 		end
@@ -128,19 +130,19 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 				if newnode then
 					if newnode.next then
 						local newang = (newnode.next.pos - newnode.pos):Angle()--угол в сторону next ноуда
-						newang:Normalize()
 						forw = Metrostroi.GetARSJoint(newnode,newnodeparams[3],math.abs(ang[2]-newang[2]) < 90,train)
 					end
 					
 					if not forw and newnode.prev then
-						local newang = (newnode.prev.pos - newnode.pos):Angle()--угол в сторону next ноуда
-						newang:Normalize()
+						local newang = (newnode.prev.pos - newnode.pos):Angle()--угол в сторону prev ноуда
 						forw = Metrostroi.GetARSJoint(newnode,newnodeparams[3],math.abs(ang[2]-newang[2]) > 90,train)
 					end
 				end
 			end
 		end
 		
+		--back не надо, так как он используется только для определения проезда сигнала?
+		--print(forw and forw.Name, back and back.Name)
 		return forw,back
 	end
 	
@@ -167,3 +169,4 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 		end
 	end]]
 end)
+
