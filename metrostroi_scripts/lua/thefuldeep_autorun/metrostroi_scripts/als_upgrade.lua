@@ -71,8 +71,8 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 	Metrostroi.Load = function(...)
 		oldload(...)
 		UpgradeTracks()
-		backsignals = {}
-		forwsignals = {}
+		--backsignals = {}
+		--forwsignals = {}
 	end
 
 
