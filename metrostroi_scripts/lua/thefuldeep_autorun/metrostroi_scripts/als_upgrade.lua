@@ -142,12 +142,12 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 			if curnode[dirstr] then
 				curnode = curnode[dirstr]
 			else
-				local newnode = continuations[curnode.path.id][curnode.id]
-				if newnode then
-					curnode = Metrostroi.Paths[newnode[1]][newnode[2]]
+				local newnodeparams = continuations[curnode.path.id][curnode.id]
+				if newnodeparams then
+					curnode = Metrostroi.Paths[newnodeparams[1]][newnodeparams[2]]
 					if curnode then
-						startx = newnode[3]
-						dir = newnode[4]
+						startx = newnodeparams[3]
+						dir = newnodeparams[4]
 						dirstr = dir and "next" or "prev"
 					end
 				else
