@@ -1,4 +1,6 @@
 if CLIENT then return end
+--local backsignals,forwsignals = {},{}
+
 hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 	local continuations = {}--тут сохраняю связи концов треков, если есть
 	local maxdist = (384/2)^2
@@ -64,10 +66,14 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 			end
 		end
 	end
+	
+	
 	local oldload = Metrostroi.Load
 	Metrostroi.Load = function(...)
 		oldload(...)
 		UpgradeTracks()
+		backsignals = {}
+		forwsignals = {}
 	end
 
 
@@ -152,7 +158,7 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 	end
 	
 	Metrostroi.GetARSJoint = function(node,x,dir,train)
-		первый раз ищется стандартно
+		--первый раз ищется стандартно
 		local forw,back = oldGetARSJoint(node,x,dir,train)
 		--do return forw,back end
 		--print("first",forw and forw.Name)
@@ -187,8 +193,47 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 			end
 		end
 		
+		--[[if IsValid(train) then
+			local CurTime = CurTime()
+			if forw then forwsignals[forw] = CurTime end
+			if back then backsignals[back] = CurTime end
+			
+			--ищу сигнал вперед относительно задней головы
+			local lastwag = train.WagonList and train.WagonList[#train.WagonList]
+			local pos = lastwag and Metrostroi.TrainPositions[lastwag]
+			if pos then
+				local backsig = findfunc(pos.node1,pos.x,Metrostroi.TrainDirections[lastwag])
+				local forwsig = findfunc(pos.node1,pos.x,Metrostroi.TrainDirections[lastwag],true)
+				if backsig then backsignals[backsig] = CurTime end
+				if forwsig then forwsignals[forwsig] = CurTime end
+			end
+		end]]
 		--print("res",forw and forw.Name, back and back.Name)
 		return forw,back
 	end
 end)
+
+--TODO
+--[[hook.Add("InitPostEntity","Metrostroi signals occupation upgrade",function()
+	local SIG = scripted_ents.GetStored("gmod_track_signal")
+	if not SIG then return else SIG = SIG.t end
+	
+	SIG.CheckOccupation = function(self,...)
+		local CurTime = CurTime()
+		
+		self.Occupied = backsignals[self] and CurTime - backsignals[self] < 2 or self.NextSignalLink and self ~= self.NextSignalLink and forwsignals[self.NextSignalLink] and CurTime - forwsignals[self.NextSignalLink] < 2 or self.Routes[self.Route] and self.Routes[self.Route].Manual and not self.Routes[self.Route].IsOpened or self.Close or self.KGU
+		if self.Close or self.KGU then
+			self.NextSignalLink = nil
+		end
+		
+		local occupied
+		occupied,self.OccupiedBy,self.OccupiedByNow = Metrostroi.IsTrackOccupied(self.Node, self.TrackPosition.x,self.TrackPosition.forward,self.ARSOnly and "ars" or "light", self)
+		self.Occupied = self.Occupied or occupied
+		
+		if self.PrevOccupiedBy ~= self.OccupiedByNow then
+			self.InvationSignal = false
+			self.PrevOccupied = self.OccupiedByNow
+		end
+	end
+end)]]
 
