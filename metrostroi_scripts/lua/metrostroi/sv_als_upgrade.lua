@@ -37,7 +37,7 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 		continuations = {}
 		--тут прохожусь во всем концам треков и ищу, есть ли продолжения
 		for id,path in pairs(Metrostroi.TrackEditor.Paths)do
-			continuations[id] = continuations[id] or {}
+			continuations[id] = {}
 			local count = #path
 			if count > 2 then
 				for i = 1,2 do
