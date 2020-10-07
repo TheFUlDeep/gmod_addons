@@ -8,11 +8,12 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 	--делю каждый ноуд на три части, и тогда лимит в 192 пройдет корректно
 	local function FindNearNode(node)--довольно медленная функция, но она вызывается только при загрузке сигналки, поэтому пофиг
 		local nodepathid = node.path.id
+		local nodeid = node.id
 		local pos = node.pos
 		local nrearestnode,curdist,x,lerptonext
 		for pathid,path in pairs(Metrostroi.Paths)do
 			for id,node1 in ipairs(path)do
-				if pathid == nodepathid and math.abs(id - node.id) < 5 then continue end--если это соседний ноуд, то пропустить
+				if pathid == nodepathid and math.abs(id - nodeid) < 5 then continue end--если это соседний ноуд, то пропустить
 				local nextnode = node1.next
 				for i = 0, nextnode and parts or 0 do
 					local lerp = i/parts
