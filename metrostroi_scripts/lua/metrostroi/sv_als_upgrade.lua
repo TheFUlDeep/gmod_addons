@@ -1,4 +1,3 @@
-if CLIENT then return end
 --local backsignals,forwsignals = {},{}
 
 hook.Add("MetrostroiLoaded","UpgradeTracks",function()
