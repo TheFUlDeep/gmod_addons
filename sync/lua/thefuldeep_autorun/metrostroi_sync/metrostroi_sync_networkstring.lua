@@ -547,7 +547,7 @@ local function SendNetValues(wag,params,onspawn)
 		TblToSend.rca = params.rca
 	end
 	
-	net.Start("MetrostroiSync WagonsInfo")
+	net.Start("MetrostroiSync WagonsInfo",true)
 		net.WriteTable(TblToSend)
 	net.Broadcast()
 	
@@ -612,7 +612,7 @@ local function SendChatMessageToClients(tbl)
 		MsgC(i == 1 and color_white or string.ToColor(tbl.Colors[i] or ""),tbl.Texts[i])--i == 1 and color_white чтобы в консоли имя сервера было белым
 	end
 	Msg("\n")
-	net.Start("MetrostroiChatSync")
+	net.Start("MetrostroiChatSync",true)
 		local data = util.Compress(util.TableToJSON(tbl))
 		local dataN = #data
 		net.WriteUInt(dataN,32)
