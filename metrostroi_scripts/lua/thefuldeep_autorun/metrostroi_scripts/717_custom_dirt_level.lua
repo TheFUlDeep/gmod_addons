@@ -5,18 +5,19 @@ hook.Add("InitPostEntity","Metrostroi 717 custom dirt level",function()
 	table.insert(NOMER_CUSTOM.Spawner,#NOMER_CUSTOM.Spawner-1,{"DirtLevelCustom","Загрязненность","Slider",0,-1,100})
 	
 	if SERVER then
-		local NOMER = scripted_ents.GetStored("gmod_subway_81-717_mvm").t
-		local oldinit = NOMER.Initialize
-		NOMER.Initialize = function(self,...)
-			oldinit(self,...)
-			local oldupdate = self.UpdateTextures
-			self.UpdateTextures = function(self,...)
-				oldupdate(self,...)
-				local dirtlevel = self:GetNW2Int("DirtLevelCustom",-1)
-				if dirtlevel == -1 then dirtlevel = math.random(1,60) end
-				self:SetNW2Vector("DirtLevel",(dirtlevel/100)*3)
+		for i = 1,2 do
+			local NOMER = scripted_ents.GetStored(i == 1 and "gmod_subway_81-717_mvm" or "gmod_subway_81-714_mvm").t
+			local oldinit = NOMER.Initialize
+			NOMER.Initialize = function(self,...)
+				oldinit(self,...)
+				local oldupdate = self.UpdateTextures
+				self.UpdateTextures = function(self,...)
+					oldupdate(self,...)
+					local dirtlevel = self:GetNW2Int("DirtLevelCustom",-1)
+					if dirtlevel == -1 then dirtlevel = math.random(1,60) end
+					self:SetNW2Vector("DirtLevel",(dirtlevel/100)*3)
+				end
 			end
 		end
-
 	end
 end)
