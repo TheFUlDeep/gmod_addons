@@ -155,6 +155,7 @@ hook.Add("InitPostEntity","Metrostroi upgrade couples collision for security",fu
 	end
 	
 	hook.Add(EventName,"Block physgun on trains with normal collision",function(ply,ent)
+		if IsValid(ply) and ply:GetUserGroup() ~= "user" then return end
 		if not IsValid(ent) then return end
 		local class = ent:GetClass()
 		
