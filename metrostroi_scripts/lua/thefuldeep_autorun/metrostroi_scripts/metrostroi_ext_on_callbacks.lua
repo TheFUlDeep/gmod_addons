@@ -1,51 +1,98 @@
 --ВНИМАНИЕ
 --metrostroi ext не должен быть в коллекции сервера!!! (чтобы не было их скриптов)
 
---мне не нравится, что у emm все на финках, поэтому напишу аналог на коллбэках
-
 if SERVER then 
 	resource.AddWorkshop("2240199465") 
 end
 
 
 
+if CLIENT then
+	MetrostroiWagNumUpdateRecieve = MetrostroiWagNumUpdateRecieve or function(index)
+		local ent = Entity(index)
+		--таймер, чтобы дождаться обновления сетевых значений (ну а вдруг)
+		timer.Simple(0.3,function()
+			if IsValid(ent) and ent.UpdateWagNumCallBack then 
+				ent:UpdateWagNumCallBack()
+				ent:UpdateTextures()
+			end
+		end)
+	end
+end
+
+if SERVER then
+	local hooks = hook.GetTable()
+	if not hook.MetrostroiSpawnerUpdate or not hook.MetrostroiSpawnerUpdate["Call hook on clientside"] then
+		hook.Add("MetrostroiSpawnerUpdate","Call hook on clientside",function(ent)
+			if not IsValid(ent) then return end
+			local idx = ent:EntIndex()
+			for _,ply in pairs(player.GetHumans())do
+				if IsValid(ply)then ply:SendLua("MetrostroiWagNumUpdateRecieve("..idx..")")end
+			end
+		end)
+	end
+end
+
+local function RemoveEnt(wag,prop)
+	local ent = wag.ClientEnts and wag.ClientEnts[prop]
+	if IsValid(ent) then SafeRemoveEntity(ent)end
+end
+
+local function UpdateModelCallBack(ENT,cprop,modelcallback,,callback,precallback)	
+	if not ENT.UpdateWagNumCallBack then
+		function ENT:UpdateWagNumCallBack()end
+	end
+	
+	if modelcallback then
+		local oldmodelcallback = ENT.ClientProps[cprop].modelcallback or function() end
+		ENT.ClientProps[cprop].modelcallback = function(wag,...)
+			return modelcallback(wag) or oldmodelcallback(wag,...)
+		end
+		
+		local oldstartedcallback = ENT.UpdateWagNumCallBack
+		ENT.UpdateWagNumCallBack = function(wag)
+			oldstartedcallback(wag)
+			RemoveEnt(wag,cprop)
+		end
+	end
+	
+	if precallback then
+		local oldcallback = ENT.ClientProps[cprop].callback or function() end
+		ENT.ClientProps[cprop].callback = function(wag,cent,...)
+			precallback(wag,cent)
+			oldcallback(wag,cent,...)
+		end
+		
+		local oldstartedcallback = ENT.UpdateWagNumCallBack
+		ENT.UpdateWagNumCallBack = function(wag)
+			oldstartedcallback(wag)
+			RemoveEnt(wag,cprop)
+		end
+	end
+	
+	if callback then
+		local oldcallback = ENT.ClientProps[cprop].callback or function() end
+		ENT.ClientProps[cprop].callback = function(wag,cent,...)
+			oldcallback(wag,cent,...)
+			callback(wag,cent)
+		end
+		
+		local oldstartedcallback = ENT.UpdateWagNumCallBack
+		ENT.UpdateWagNumCallBack = function(wag)
+			oldstartedcallback(wag)
+			RemoveEnt(wag,cprop)
+		end
+	end
+end
+
+
+
 hook.Add("InitPostEntity","Metrostroi extrinsions on callbacks",function()
-	--TODO кран выключения дверей
 	--НОМЕРНОЙ
 	local NOMER_CUSTOM = scripted_ents.GetStored("gmod_subway_81-717_mvm_custom")
 	if NOMER_CUSTOM then NOMER_CUSTOM = NOMER_CUSTOM.t else return end--больше таких проверок делать не надо, так как 718 точно прогрузится, если 717 есть
 	local NOMER = scripted_ents.GetStored("gmod_subway_81-717_mvm").t
 	local NOMER_714 = scripted_ents.GetStored("gmod_subway_81-714_mvm").t
-	
-	local UpdateModelCallBack
-	local RemoveEnt
-	if CLIENT then
-		RemoveEnt = function(ent)if ent then SafeRemoveEntity(ent) end end
-		UpdateModelCallBack = function(ENT,cprop,modelcallback,callback,precallback)
-			if modelcallback then
-				local oldmodelcallback = ENT.ClientProps[cprop].modelcallback or function() end
-				ENT.ClientProps[cprop].modelcallback = function(wag,...)
-					return modelcallback(wag,...) or oldmodelcallback(wag,...)
-				end
-			end
-			
-			if callback then
-				local oldcallback = ENT.ClientProps[cprop].callback or function() end
-				ENT.ClientProps[cprop].callback = function(wag,cent,...)
-					if precallback then precallback(wag,cent,...)end
-					oldcallback(wag,cent,...)
-					callback(wag,cent,...)
-				end
-			end
-			
-			--удаление пропа при апдейте спавнером для принудительного обновленяи модели
-			local oldupdate = ENT.UpdateWagonNumber or function() end
-			ENT.UpdateWagonNumber = function(wag,...)
-					RemoveEnt(wag.ClientEnts and wag.ClientEnts[cprop])
-				oldupdate(wag,...)
-			end
-		end
-	end
 	
 	--ТИП САЛОНА
 	local interior_type_dot_five_index = -1

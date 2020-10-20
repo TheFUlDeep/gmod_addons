@@ -132,6 +132,7 @@ hook.Add("InitPostEntity","Metrostroi 717 minsk chapaeff",function()
 	
 	--models/metrostroi_custom/minsk/minsk_destination_display.mdl
 	--models/metrostroi_custom/minsk/minsk_destination.mdl
+	local defRNpos,defRNang = NOMER.ButtonMap["Route"].pos, NOMER.ButtonMap["Route"].ang
 	UpdateModelCallBack(
 		NOMER,
 		"route",
@@ -143,10 +144,13 @@ hook.Add("InitPostEntity","Metrostroi 717 minsk chapaeff",function()
 				cent:SetPos(wag:LocalToWorld(Vector(0)))
 				cent:SetAngles(wag:LocalToWorldAngles(Angle(0)))
 			end
+		end,
+		function(wag)
+			wag.ButtonMap["Route"].pos = defRNpos
+			wag.ButtonMap["Route"].ang = defRNang
 		end
 	)
 	
-	local defRNpos,defRNang = NOMER.ButtonMap["Route"].pos, NOMER.ButtonMap["Route"].ang
 	local oldupdate = NOMER.UpdateWagonNumber
 	NOMER.UpdateWagonNumber = function(self,...)
 		self:ShowHide("route1",true)
@@ -166,9 +170,6 @@ hook.Add("InitPostEntity","Metrostroi 717 minsk chapaeff",function()
 		if nw then
 			self.ButtonMap["Route"].pos = Vector(457,-51,43)
 			self.ButtonMap["Route"].ang = Angle(0,81,90)
-		else
-			self.ButtonMap["Route"].pos = defRNpos
-			self.ButtonMap["Route"].ang = defRNang
 		end
 	end
 	
