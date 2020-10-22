@@ -1,3 +1,4 @@
+--TODO перемещение камеры
 if SERVER then resource.AddWorkshop("2245045087") end
 hook.Add("InitPostEntity","Metrostroi 717 minsk chapaeff",function()
 --timer.Simple(0,function()
