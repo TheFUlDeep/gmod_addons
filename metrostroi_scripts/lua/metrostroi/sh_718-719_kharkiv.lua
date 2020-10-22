@@ -1,9 +1,9 @@
+--файл ижет по такому же пути, как и в аддоне, чтобы перезаписать его
 --в этом файле микрообновления вресии, которая лежит в воркшопе
 --отключена функция UpdateTextures. Убран таймер установки материала для маски
 --правильно указан айди аддона
 --апгрейды для 718го кроме ЭМУ (но тут меняется логика ЭМУ)
 if SERVER then resource.AddWorkshop("2264299764") end
-
 if CLIENT then
 	MetrostroiWagNumUpdateRecieve = MetrostroiWagNumUpdateRecieve or function(index)
 		local ent = Entity(index)
@@ -19,7 +19,7 @@ end
 
 if SERVER then
 	local hooks = hook.GetTable()
-	if not hook.MetrostroiSpawnerUpdate or not hook.MetrostroiSpawnerUpdate["Call hook on clientside"] then
+	if not hooks.MetrostroiSpawnerUpdate or not hooks.MetrostroiSpawnerUpdate["Call hook on clientside"] then
 		hook.Add("MetrostroiSpawnerUpdate","Call hook on clientside",function(ent)
 			if not IsValid(ent) then return end
 			local idx = ent:EntIndex()
@@ -283,13 +283,13 @@ hook.Add("InitPostEntity","Metrostroi 718-719 kharkiv",function()
 						--wag:SetNW2Bool("Mask №0250-0251",false)
 					end
 					--кузов 718
-					if wag:GetNW2Int(body_type_table_name,0) == body_type_index_old and wag:GetModel() ~= "models/metrostroi_train/81-718/718_body_orig.mdl" then wag:SetModel("models/metrostroi_train/81-718/718_body_orig.mdl")
-					elseif wag:GetNW2Int(body_type_table_name,0) == body_type_index_new and wag:GetModel() ~= "models/metrostroi_train/81-718/718_body_mp.mdl" then wag:SetModel("models/metrostroi_train/81-718/718_body_mp.mdl")
+					if wag:GetNW2Int(body_type_table_name,0) == body_type_index_old and wag:GetModel() ~= "models/metrostroi_train/81-718/718_body_orig.mdl" then wag:SetModel("models/metrostroi_train/81-718/718_body_orig.mdl") --wag:UpdateTextures() print("asd1")
+					elseif wag:GetNW2Int(body_type_table_name,0) == body_type_index_new and wag:GetModel() ~= "models/metrostroi_train/81-718/718_body_mp.mdl" then wag:SetModel("models/metrostroi_train/81-718/718_body_mp.mdl") --wag:UpdateTextures() print("asd2")
 					end
 				else
 					--кузов 719
-					if wag:GetNW2Int(body_type_table_name,0) == body_type_index_old and wag:GetModel() ~= TISU.Model then wag:SetModel(TISU.Model)
-					elseif wag:GetNW2Int(body_type_table_name,0) == body_type_index_new and wag:GetModel() ~= "models/metrostroi_train/81-718/718_int_body_mp.mdl" then wag:SetModel("models/metrostroi_train/81-718/718_int_body_mp.mdl")
+					if wag:GetNW2Int(body_type_table_name,0) == body_type_index_old and wag:GetModel() ~= TISU.Model then wag:SetModel(TISU.Model) --wag:UpdateTextures() print("asd3")
+					elseif wag:GetNW2Int(body_type_table_name,0) == body_type_index_new and wag:GetModel() ~= "models/metrostroi_train/81-718/718_int_body_mp.mdl" then wag:SetModel("models/metrostroi_train/81-718/718_int_body_mp.mdl") --wag:UpdateTextures() print("asd4")
 					end
 				end
 			end
@@ -353,11 +353,11 @@ hook.Add("InitPostEntity","Metrostroi 718-719 kharkiv",function()
 				function(wag,cent)
 					--таймер, потому что сначала вызывается коллбэк, а потом обновление текстуры, и моя текстура заменяется
 					--gmod_subwa_base строка 751
-					timer.Simple(0.1,function()
-						if not IsValid(wag) or not IsValid(cent) then return end
+					--timer.Simple(0.1,function()
+						--if not IsValid(wag) or not IsValid(cent) then return end
 						--if wag:GetNW2Bool("Mask №0250-0251") then cent:SetSubMaterial(7,"models/metrostroi_train/81_718/mp718_2")end
 						if wag:GetNW2Int(mask_type_table_name,0) == mask_type_index_new and wag:GetNW2Int(body_type_table_name,0) == body_type_index_old then cent:SetSubMaterial(7,"models/metrostroi_train/81_718/mp718_2")end
-					end)
+					--end)
 				end
 			)
 		end

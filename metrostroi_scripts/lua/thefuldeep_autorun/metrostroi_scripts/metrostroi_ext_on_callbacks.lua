@@ -22,7 +22,7 @@ end
 
 if SERVER then
 	local hooks = hook.GetTable()
-	if not hook.MetrostroiSpawnerUpdate or not hook.MetrostroiSpawnerUpdate["Call hook on clientside"] then
+	if not hooks.MetrostroiSpawnerUpdate or not hooks.MetrostroiSpawnerUpdate["Call hook on clientside"] then
 		hook.Add("MetrostroiSpawnerUpdate","Call hook on clientside",function(ent)
 			if not IsValid(ent) then return end
 			local idx = ent:EntIndex()
@@ -38,7 +38,7 @@ local function RemoveEnt(wag,prop)
 	if IsValid(ent) then SafeRemoveEntity(ent)end
 end
 
-local function UpdateModelCallBack(ENT,cprop,modelcallback,,callback,precallback)	
+local function UpdateModelCallBack(ENT,cprop,modelcallback,callback,precallback)	
 	if not ENT.UpdateWagNumCallBack then
 		function ENT:UpdateWagNumCallBack()end
 	end
