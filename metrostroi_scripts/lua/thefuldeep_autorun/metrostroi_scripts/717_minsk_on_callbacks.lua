@@ -208,7 +208,7 @@ hook.Add("InitPostEntity","Metrostroi 717 minsk chapaeff",function()
 		self:ShowHide("route1",true)
 		self:ShowHide("route2",true)
 		self:ShowHide("Minsk_Dist_Light",false)
-		oldupdate(self,...)
+		oldupdate(self)
 		local nw = self:GetNW2Bool("MinskParts")
 		self:ShowHide("minsk_parts",nw)
 		self:ShowHide("minsk_parts2",nw)
@@ -291,8 +291,8 @@ hook.Add("InitPostEntity","Metrostroi 717 minsk chapaeff",function()
         ang = Angle(0,0,0),
         nohide=true, 
     }
-	NOMER_714.UpdateWagNumCallBack = NOMER_714.UpdateWagNumCallBack or function(wag)end
-	local oldupdate = NOMER_714.UpdateWagNumCallBack
+
+	local oldupdate = NOMER_714.UpdateWagNumCallBack or function()end
 	NOMER_714.UpdateWagNumCallBack = function(self)
 		oldupdate(self)
 		self:ShowHide("minsk_stickers_outside",self:GetNW2Bool("MinskParts"))
