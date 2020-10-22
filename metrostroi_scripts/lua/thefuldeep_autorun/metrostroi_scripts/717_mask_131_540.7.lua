@@ -13,6 +13,18 @@ local nomerogg = "gmod_subway_81-717_mvm"
 local inserted_index = -1
 local paramname = "1-3-1 540.7"
 
+if CLIENT then
+	MetrostroiWagNumUpdateRecieve = MetrostroiWagNumUpdateRecieve or function(index)
+		local ent = Entity(index)
+		--таймер, чтобы дождаться обновления сетевых значений (ну а вдруг)
+		timer.Simple(0.3,function()
+			if IsValid(ent) and ent.UpdateWagNumCallBack then 
+				ent:UpdateWagNumCallBack()
+				--ent:UpdateTextures()
+			end
+		end)
+	end
+end
 
 if SERVER then
 	local hooks = hook.GetTable()
@@ -91,21 +103,6 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm 540.7 mask",function()
 	end
 end)
 if SERVER then return end
-
-
-if SERVER then
-	local hooks = hook.GetTable()
-	if not hooks.MetrostroiSpawnerUpdate or not hooks.MetrostroiSpawnerUpdate["Call hook on clientside"] then
-		hook.Add("MetrostroiSpawnerUpdate","Call hook on clientside",function(ent)
-			if not IsValid(ent) then return end
-			local idx = ent:EntIndex()
-			for _,ply in pairs(player.GetHumans())do
-				if IsValid(ply)then ply:SendLua("MetrostroiWagNumUpdateRecieve("..idx..")")end
-			end
-		end)
-	end
-end
-
 
 local masks = {"mask22_mvm","mask222_mvm","mask222_lvz","mask141_mvm"}
 
