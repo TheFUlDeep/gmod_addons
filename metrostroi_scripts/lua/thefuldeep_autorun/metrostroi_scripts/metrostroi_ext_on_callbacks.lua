@@ -14,7 +14,7 @@ if CLIENT then
 		timer.Simple(0.3,function()
 			if IsValid(ent) and ent.UpdateWagNumCallBack then 
 				ent:UpdateWagNumCallBack()
-				ent:UpdateTextures()
+				--ent:UpdateTextures()
 			end
 		end)
 	end
