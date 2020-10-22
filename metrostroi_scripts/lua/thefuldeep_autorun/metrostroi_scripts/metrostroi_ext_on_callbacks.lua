@@ -393,9 +393,9 @@ hook.Add("InitPostEntity","Metrostroi extrinsions on callbacks",function()
 			end
 		end
 		
-		local oldupdate = NOMER.UpdateWagonNumber
-		NOMER.UpdateWagonNumber = function(self,...)
-			oldupdate(self,...)
+		local oldupdate = NOMER.UpdateWagNumCallBack
+		NOMER.UpdateWagNumCallBack = function(self)
+			oldupdate(self)
 			for _, name in pairs(names)do
 				self.SoundNames[name] = defaultsounds[name]
 			end
@@ -516,12 +516,12 @@ hook.Add("InitPostEntity","Metrostroi extrinsions on callbacks",function()
             hide=2,
         }
         
-		local oldupdate = NOMER.UpdateWagonNumber
-		NOMER.UpdateWagonNumber = function(self,...)
+		local oldupdate = NOMER.UpdateWagNumCallBack
+		NOMER.UpdateWagNumCallBack = function(self)
+			oldupdate(self)
 			local nw = self:GetNW2Bool("RepairBook")
 			self:ShowHide("repairbook_slot",nw)
 			self:ShowHide("repairbook_book",nw)
-			oldupdate(self,...)
 		end
 	end
 	
