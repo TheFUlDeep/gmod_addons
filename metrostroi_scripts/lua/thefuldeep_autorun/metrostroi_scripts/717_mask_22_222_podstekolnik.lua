@@ -15,6 +15,19 @@ local nomerogg = "gmod_subway_81-717_mvm"
 local inserted_indexes = {-1,-1,-1,-1}
 local paramnames = {"2-2 Подстекольник МВМ","2-2 Подстекльник ЛВЗ","2-2-2 Подстекольник МВМ","2-2-2 Подстекольник ЛВЗ"}
 
+if CLIENT then
+	MetrostroiWagNumUpdateRecieve = MetrostroiWagNumUpdateRecieve or function(index)
+		local ent = Entity(index)
+		--таймер, чтобы дождаться обновления сетевых значений (ну а вдруг)
+		timer.Simple(0.3,function()
+			if IsValid(ent) and ent.UpdateWagNumCallBack then 
+				ent:UpdateWagNumCallBack()
+				--ent:UpdateTextures()
+			end
+		end)
+	end
+end
+
 if SERVER then
 	local hooks = hook.GetTable()
 	if not hooks.MetrostroiSpawnerUpdate or not hooks.MetrostroiSpawnerUpdate["Call hook on clientside"] then
