@@ -144,6 +144,8 @@ hook.Add("InitPostEntity","Metrostroi 717 minsk chapaeff",function()
 			if wag:GetNW2Int(tablename,0) == inserted_index then
 				cent:SetPos(wag:LocalToWorld(Vector(0)))
 				cent:SetAngles(wag:LocalToWorldAngles(Angle(0)))
+				wag.ButtonMap["Route"].pos = Vector(457,-51,43)
+				wag.ButtonMap["Route"].ang = Angle(0,81,90)
 			end
 		end,
 		function(wag)
@@ -168,10 +170,6 @@ hook.Add("InitPostEntity","Metrostroi 717 minsk chapaeff",function()
 		self:ShowHide("Minsk_RouteNumber_Inside2",nw)
 		--self:ShowHide("Minsk_Dist_Frame_And_Route",nw)
 		--self:ShowHide("route",not nw)
-		if nw then
-			self.ButtonMap["Route"].pos = Vector(457,-51,43)
-			self.ButtonMap["Route"].ang = Angle(0,81,90)
-		end
 	end
 	
 	
