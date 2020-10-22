@@ -15,11 +15,6 @@ if CLIENT then
 			end
 		end)
 	end
-	local old = MetrostroiWagNumUpdateRecieve
-	MetrostroiWagNumUpdateRecieve = function(wag)
-		old(wag)
-		print("recieve spawner update")
-	end
 end
 
 if SERVER then
