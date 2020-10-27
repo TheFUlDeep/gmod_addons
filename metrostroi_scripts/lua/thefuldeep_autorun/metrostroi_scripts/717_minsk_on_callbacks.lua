@@ -207,18 +207,23 @@ hook.Add("InitPostEntity","Metrostroi 717 minsk chapaeff",function()
 	NOMER.UpdateWagNumCallBack = function(self)
 		self:ShowHide("route1",true)
 		self:ShowHide("route2",true)
-		self:ShowHide("minsk_parts",true)
-		self:ShowHide("minsk_parts2",true)
-		self:ShowHide("minsk_stickers_outside",true)
-		self:ShowHide("Minsk_Dist_Light",true)
-		self:ShowHide("Minsk_RouteNumber_Inside1",true)
-		self:ShowHide("Minsk_RouteNumber_Inside2",true)
 		oldupdate(self)
+		
+		local nw = self:GetNW2Bool("MinskParts")
+		self:ShowHide("minsk_parts",nw)
+		self:ShowHide("minsk_parts2",nw)
+		self:ShowHide("minsk_stickers_outside",nw)
+
+		local nw = self:GetNW2Int(tablename,0) == inserted_index
+		self:ShowHide("Minsk_Dist_Light",nw)
+		self:ShowHide("Minsk_RouteNumber_Inside1",nw)
+		self:ShowHide("Minsk_RouteNumber_Inside2",nw)
 		
 		--self:ShowHide("Minsk_Dist_Frame_And_Route",nw)
 		--self:ShowHide("route",not nw)
 	end
 	
+	--если UpdateWagNumCallBack не вызвалась из-за того, что состав уже был
 	UpdateModelCallBack(
 		NOMER,
 		"minsk_parts",

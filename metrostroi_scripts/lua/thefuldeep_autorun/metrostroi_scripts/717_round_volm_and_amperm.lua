@@ -137,10 +137,11 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm round voltm and amperm",function()
 	
 	local oldupdate = ENT.UpdateWagNumCallBack
 	ENT.UpdateWagNumCallBack = function(self)
-		self:ShowHide("RoundVaA",true)
 		oldupdate(self)
+		self:ShowHide("RoundVaA",self:GetNW2Int(tablename,0) == inserted_index)
 	end
 	
+	--если UpdateWagNumCallBack не вызвалась из-за того, что состав уже был
 	UpdateModelCallBack(
 		ENT,
 		"RoundVaA",

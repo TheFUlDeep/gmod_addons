@@ -267,6 +267,7 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm emu",function()
 		wag:HidePanel("LastStation",true)
 	end
 	
+	--если UpdateWagNumCallBack не вызвалась из-за того, что состав уже был
 	UpdateModelCallBack(
 		ENT,
 		"route",
