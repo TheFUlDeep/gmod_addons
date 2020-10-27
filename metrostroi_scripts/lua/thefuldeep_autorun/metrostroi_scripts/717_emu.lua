@@ -1,3 +1,4 @@
+--TODO не создавать новую камеру, а двигать имеющиеся
 local nomerogg = "gmod_subway_81-717_mvm"
 local inserted_index = -1
 local paramname = "Электронный"
