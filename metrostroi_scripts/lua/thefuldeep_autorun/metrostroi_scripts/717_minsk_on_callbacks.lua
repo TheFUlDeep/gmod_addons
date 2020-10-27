@@ -207,19 +207,66 @@ hook.Add("InitPostEntity","Metrostroi 717 minsk chapaeff",function()
 	NOMER.UpdateWagNumCallBack = function(self)
 		self:ShowHide("route1",true)
 		self:ShowHide("route2",true)
-		self:ShowHide("Minsk_Dist_Light",false)
+		self:ShowHide("minsk_parts",true)
+		self:ShowHide("minsk_parts2",true)
+		self:ShowHide("minsk_stickers_outside",true)
+		self:ShowHide("Minsk_Dist_Light",true)
+		self:ShowHide("Minsk_RouteNumber_Inside1",true)
+		self:ShowHide("Minsk_RouteNumber_Inside2",true)
 		oldupdate(self)
-		local nw = self:GetNW2Bool("MinskParts")
-		self:ShowHide("minsk_parts",nw)
-		self:ShowHide("minsk_parts2",nw)
-		self:ShowHide("minsk_stickers_outside",nw)
 		
-		local nw = self:GetNW2Int(tablename,0) == inserted_index
-		self:ShowHide("Minsk_RouteNumber_Inside1",nw)
-		self:ShowHide("Minsk_RouteNumber_Inside2",nw)
 		--self:ShowHide("Minsk_Dist_Frame_And_Route",nw)
 		--self:ShowHide("route",not nw)
 	end
+	
+	UpdateModelCallBack(
+		NOMER,
+		"minsk_parts",
+		nil,
+		function(wag)
+			if not wag:GetNW2Bool("MinskParts") then wag:ShowHide("minsk_parts",false)end
+		end
+	)
+	UpdateModelCallBack(
+		NOMER,
+		"minsk_parts2",
+		nil,
+		function(wag)
+			if not wag:GetNW2Bool("MinskParts") then wag:ShowHide("minsk_parts2",false)end
+		end
+	)
+	UpdateModelCallBack(
+		NOMER,
+		"minsk_stickers_outside",
+		nil,
+		function(wag)
+			if not wag:GetNW2Bool("MinskParts") then wag:ShowHide("minsk_stickers_outside",false)end
+		end
+	)
+	UpdateModelCallBack(
+		NOMER,
+		"Minsk_Dist_Light",
+		nil,
+		function(wag)
+			if wag:GetNW2Int(tablename,0) ~= inserted_index then wag:ShowHide("Minsk_Dist_Light",false)end
+		end
+	)
+	UpdateModelCallBack(
+		NOMER,
+		"Minsk_RouteNumber_Inside1",
+		nil,
+		function(wag)
+			if wag:GetNW2Int(tablename,0) ~= inserted_index then wag:ShowHide("Minsk_RouteNumber_Inside1",false)end
+		end
+	)
+	UpdateModelCallBack(
+		NOMER,
+		"Minsk_RouteNumber_Inside2",
+		nil,
+		function(wag)
+			if wag:GetNW2Int(tablename,0) ~= inserted_index then wag:ShowHide("Minsk_RouteNumber_Inside2",false)end
+		end
+	)
 	
 	
 	

@@ -519,11 +519,28 @@ hook.Add("InitPostEntity","Metrostroi extrinsions on callbacks",function()
         
 		local oldupdate = NOMER.UpdateWagNumCallBack
 		NOMER.UpdateWagNumCallBack = function(self)
+			self:ShowHide("repairbook_slot",true)
+			self:ShowHide("repairbook_book",true)
 			oldupdate(self)
-			local nw = self:GetNW2Bool("RepairBook")
-			self:ShowHide("repairbook_slot",nw)
-			self:ShowHide("repairbook_book",nw)
 		end
+		
+		UpdateModelCallBack(
+			NOMER,
+			"repairbook_slot",
+			nil,
+			function(wag)
+				if not wag:GetNW2Bool("RepairBook") then wag:ShowHide("repairbook_slot",false)end
+			end
+		)
+		UpdateModelCallBack(
+			NOMER,
+			"repairbook_book",
+			nil,
+			function(wag)
+				if not wag:GetNW2Bool("RepairBook") then wag:ShowHide("repairbook_book",false)end
+			end
+		)
+		
 	end
 	
 	

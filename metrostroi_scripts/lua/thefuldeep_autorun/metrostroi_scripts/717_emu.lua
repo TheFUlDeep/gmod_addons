@@ -267,5 +267,30 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm emu",function()
 		wag:HidePanel("LastStation",true)
 	end
 	
+	UpdateModelCallBack(
+		ENT,
+		"route",
+		nil,
+		function(wag)
+			if wag:GetNW2Int(tablename,0) == inserted_index then wag:ShowHide("route",false)end
+		end
+	)
+	UpdateModelCallBack(
+		ENT,
+		"route1",
+		nil,
+		function(wag)
+			if wag:GetNW2Int(tablename,0) == inserted_index then wag:ShowHide("route1",false)end
+		end
+	)
+	UpdateModelCallBack(
+		ENT,
+		"route2",
+		nil,
+		function(wag)
+			if wag:GetNW2Int(tablename,0) == inserted_index then wag:ShowHide("route2",false)end
+		end
+	)
+	
 end)
 
