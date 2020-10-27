@@ -141,6 +141,16 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm round voltm and amperm",function()
 		self:ShowHide("RoundVaA",self:GetNW2Int(tablename,0) == inserted_index)
 	end
 	
+	--если UpdateWagNumCallBack не вызвалась из-за того, что состав уже был
+	UpdateModelCallBack(
+		ENT,
+		"RoundVaA",
+		nil,
+		function(wag)
+			if wag:GetNW2Int(tablename,0) ~= inserted_index then wag:ShowHide("RoundVaA",false)end
+		end
+	)
+	
 	UpdateModelCallBack(
 		ENT,
 		"cabine_lvz",

@@ -1,5 +1,6 @@
 --ВНИМАНИЕ
 --metrostroi ext не должен быть в коллекции сервера!!! (чтобы не было их скриптов)
+--TODO не переопределять animate, а вывести формулу изменения стандартного значения
 
 if SERVER then 
 	resource.AddWorkshop("2240199465") 
@@ -523,6 +524,25 @@ hook.Add("InitPostEntity","Metrostroi extrinsions on callbacks",function()
 			self:ShowHide("repairbook_slot",nw)
 			self:ShowHide("repairbook_book",nw)
 		end
+		
+		--если UpdateWagNumCallBack не вызвалась из-за того, что состав уже был
+		UpdateModelCallBack(
+			NOMER,
+			"repairbook_slot",
+			nil,
+			function(wag)
+				if not wag:GetNW2Bool("RepairBook") then wag:ShowHide("repairbook_slot",false)end
+			end
+		)
+		UpdateModelCallBack(
+			NOMER,
+			"repairbook_book",
+			nil,
+			function(wag)
+				if not wag:GetNW2Bool("RepairBook") then wag:ShowHide("repairbook_book",false)end
+			end
+		)
+		
 	end
 	
 	

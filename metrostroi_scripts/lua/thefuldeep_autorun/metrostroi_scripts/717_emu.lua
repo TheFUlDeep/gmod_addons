@@ -1,3 +1,4 @@
+--TODO не создавать новую камеру, а двигать имеющиеся
 local nomerogg = "gmod_subway_81-717_mvm"
 local inserted_index = -1
 local paramname = "Электронный"
@@ -265,6 +266,32 @@ hook.Add("InitPostEntity","Metrostroi 717_mvm emu",function()
 		wag:HidePanel("Route",true)
 		wag:HidePanel("LastStation",true)
 	end
+	
+	--если UpdateWagNumCallBack не вызвалась из-за того, что состав уже был
+	UpdateModelCallBack(
+		ENT,
+		"route",
+		nil,
+		function(wag)
+			if wag:GetNW2Int(tablename,0) == inserted_index then wag:ShowHide("route",false)end
+		end
+	)
+	UpdateModelCallBack(
+		ENT,
+		"route1",
+		nil,
+		function(wag)
+			if wag:GetNW2Int(tablename,0) == inserted_index then wag:ShowHide("route1",false)end
+		end
+	)
+	UpdateModelCallBack(
+		ENT,
+		"route2",
+		nil,
+		function(wag)
+			if wag:GetNW2Int(tablename,0) == inserted_index then wag:ShowHide("route2",false)end
+		end
+	)
 	
 end)
 
