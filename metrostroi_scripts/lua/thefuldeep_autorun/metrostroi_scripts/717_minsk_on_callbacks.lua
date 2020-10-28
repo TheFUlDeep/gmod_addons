@@ -355,7 +355,7 @@ hook.Add("InitPostEntity","Metrostroi 717 minsk chapaeff",function()
 		"minsk_stickers_outside",
 		nil,
 		function(wag)
-			self:ShowHide("minsk_stickers_outside",self:GetNW2Bool("MinskParts"))
+			wag:ShowHide("minsk_stickers_outside",wag:GetNW2Bool("MinskParts"))
 		end
 	)
 end)
