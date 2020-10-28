@@ -349,6 +349,7 @@ hook.Add("InitPostEntity","Metrostroi 717 minsk chapaeff",function()
 		oldupdate(self)
 		self:ShowHide("minsk_stickers_outside",self:GetNW2Bool("MinskParts"))
 	end
+	--если UpdateWagNumCallBack не вызвалась из-за того, что состав уже был
 	UpdateModelCallBack(
 		NOMER_714,
 		"minsk_stickers_outside",
