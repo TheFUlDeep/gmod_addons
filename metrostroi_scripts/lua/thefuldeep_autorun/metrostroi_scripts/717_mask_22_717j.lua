@@ -1,5 +1,3 @@
-do return end
---TODO индекс на сервере не соответствует индексу на клиенте
 if SERVER then resource.AddWorkshop("2079217659") end
 
 if CLIENT then
