@@ -79,4 +79,57 @@ local function UpdateCpropCallBack(ENT,cprop,modelcallback,precallback,callback)
 end
 
 
---TODO
+hook.Add("InitPostEntity","Metrostroi 717 mask 262",function()
+	local NOMER_CUSTOM = scripted_ents.GetStored("gmod_subway_81-717_mvm_custom")
+	if not NOMER_CUSTOM then return else NOMER_CUSTOM = NOMER_CUSTOM.t end
+	local NOMER = scripted_ents.GetStored("gmod_subway_81-717_mvm").t
+	
+	local masks = {"mask22_mvm","mask222_mvm","mask222_lvz","mask141_mvm"}
+
+	local lights1 = {"Headlights222_1","Headlights141_1","Headlights22_1"}
+	local lights2 = {"Headlights222_2","Headlights141_2","Headlights22_2"}
+	
+	local inserted_index = -1
+	
+	local tablename = "MaskType"
+	
+	for _,v in pairs(NOMER_CUSTOM.Spawner or {}) do
+		if istable(v) and v[1] == tablename then
+			inserted_index = table.insert(v[4],"2-6-2")
+			break
+		end
+	end
+	
+	if SERVER then return end
+	
+	for _,prop in pairs(masks)do
+		UpdateCpropCallBack(
+			NOMER,
+			prop,
+			function(wag)
+				if wag:GetNW2Int(tablename,0) == inserted_index then return "models/metrostroi_train/81-711/mask_540_9.mdl"end
+			end
+		)
+	end
+	
+	for _,prop in pairs(lights1)do
+		UpdateCpropCallBack(
+			NOMER,
+			prop,
+			function(wag)
+				if wag:GetNW2Int(tablename,0) == inserted_index then return "models/metrostroi_train/81-711/lamps/headlights_540_group1.mdl"end
+			end
+		)
+	end
+	
+	for _,prop in pairs(lights2)do
+		UpdateCpropCallBack(
+			NOMER,
+			prop,
+			function(wag)
+				if wag:GetNW2Int(tablename,0) == inserted_index then return "models/metrostroi_train/81-711/lamps/headlights_540_group2.mdl"end
+			end
+		)
+	end
+end)
+

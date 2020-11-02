@@ -78,4 +78,39 @@ local function UpdateCpropCallBack(ENT,cprop,modelcallback,precallback,callback)
 	end
 end
 
---TODO
+hook.Add("InitPostEntity","Metrostroi 717 PultShelf",function()
+	local NOMER_CUSTOM = scripted_ents.GetStored("gmod_subway_81-717_mvm_custom")
+	if not NOMER_CUSTOM then return else NOMER_CUSTOM = NOMER_CUSTOM.t end
+	local NOMER = scripted_ents.GetStored("gmod_subway_81-717_mvm").t
+
+	
+	table.insert(NOMER_CUSTOM.Spawner,9,{"PultShelf","Подставка у пульта","Boolean"})
+	
+	if SERVER then return end
+	
+    NOMER.ClientProps["models/metrostroi_custom/81-717/lighter.mdl"] = {
+        model = "models/metrostroi_custom/81-717/lighter.mdl",
+        pos = Vector(-0.2,0,0.2),
+        ang = Angle(0,0,0),
+        hideseat = 0.8,
+    }
+	
+	--если UpdateWagNumCallBack не вызвалась из-за того, что состав уже был
+	UpdateCpropCallBack(
+		NOMER,
+		"models/metrostroi_custom/81-717/lighter.mdl",
+		nil,
+		nil,
+		function(wag)
+			wag:ShowHide("models/metrostroi_custom/81-717/lighter.mdl",wag:GetNW2Bool("PultShelf"))
+		end
+	)
+	
+	local oldstartedcallback = NOMER.UpdateWagNumCallBack
+	NOMER.UpdateWagNumCallBack = function(wag)
+		oldstartedcallback(wag)
+		wag:ShowHide("models/metrostroi_custom/81-717/lighter.mdl",wag:GetNW2Bool("PultShelf"))
+	end
+	
+end)
+

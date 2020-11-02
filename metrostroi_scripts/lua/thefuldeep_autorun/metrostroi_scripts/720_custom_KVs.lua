@@ -79,4 +79,45 @@ local function UpdateCpropCallBack(ENT,cprop,modelcallback,precallback,callback)
 end
 
 
---TODO
+hook.Add("InitPostEntity","Metrostroi 720 custom KVs",function()
+	local YAUZA = scripted_ents.GetStored("gmod_subway_81-720")
+	if not YAUZA then return else YAUZA = YAUZA.t end
+
+	local kv_type_index1 = -1
+	local kv_type_index2 = -1
+	local kv_type_read_table_name = "Тип КВ asd"
+	local kv_type_table_name = "KVTypeCustom"
+	local foundtable
+	for k,v in pairs(YAUZA.Spawner) do
+		if istable(v) and v[1] == kv_type_table_name then foundtable = k break end
+	end
+	if not foundtable then
+		table.insert(YAUZA.Spawner,6,{kv_type_table_name,kv_type_read_table_name,"List",{"Default","Black","White"}})
+		kv_type_index1 = 2
+		kv_type_index2 = 3
+	else
+		kv_type_index1 = table.insert(YAUZA.Spawner[foundtable][4],"Black")
+		kv_type_index2 = table.insert(YAUZA.Spawner[foundtable][4],"White")
+	end
+	
+	if SERVER then return end
+	
+	UpdateCpropCallBack(
+		YAUZA,
+		"controller",
+		function(wag)
+			if wag:GetNW2Int(kv_type_table_name,0) == kv_type_index1 then return "models/metrostroi_train/skif_kv/kv_black.mdl"
+			elseif wag:GetNW2Int(kv_type_table_name,0) == kv_type_index2 then return "models/metrostroi_train/skif_kv/kv_white.mdl"
+			end
+		end,
+		nil,
+		function(wag,cent)
+			local nw = wag:GetNW2Int(kv_type_table_name,0)
+			if nw == kv_type_index1 or nw == kv_type_index2 then
+				cent:SetPos(wag:LocalToWorld(Vector(458.114589,25.265604,-29.064625)))
+				cent:SetAngles(wag:LocalToWorldAngles(Angle(0.000000,-90.000000,30.589429)))
+			end
+		end
+	)
+end)
+
