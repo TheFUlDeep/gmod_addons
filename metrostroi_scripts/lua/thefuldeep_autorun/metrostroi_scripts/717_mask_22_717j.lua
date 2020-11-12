@@ -1,3 +1,4 @@
+do return end
 if SERVER then resource.AddWorkshop("2079217659") end
 
 if CLIENT then
