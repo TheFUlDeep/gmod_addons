@@ -1,3 +1,4 @@
+do return end
 if SERVER then
 	function ulx.autooborot(ply,comm)
 		AvtooborotControl(ply,comm)
