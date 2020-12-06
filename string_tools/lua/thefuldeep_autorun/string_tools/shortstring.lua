@@ -74,7 +74,6 @@ local function ShortString(str,maxlen,currentShorts,saveLoadBuffer,shortEverySwo
 		if res then return res end
 	end
 	local res = str
-	local strlow = bigrustusmall(str)
 	if currentShorts then
 		currentShorts = istable(currentShorts) and currentShorts or defShorts
 		for word,newword in pairs(currentShorts)do
