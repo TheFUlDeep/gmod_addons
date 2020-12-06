@@ -20,10 +20,7 @@ local gltbl = {["а"]=true,["е"]=true,["ё"]=true,["и"]=true,["о"]=true,["у"
 local utf8sub = utf8.sub
 local utf8len = utf8.len
 
-local function JustShortFromEnd(str,maxlen)
-	if maxlen >= utf8len(str) then return str end
-	if maxlen < 1 then return "" end
-	
+local function JustShortFromEnd(str,maxlen)	
 	--если граница оканчивается на согласную, а дальше идет гласная, то сразу подходит
 	
 	local IsNextGl = gltbl[utf8sub(str,maxlen+1,maxlen+1)]
@@ -69,6 +66,9 @@ end
 --currentShorts надо ли сокращять конкретные слова. Если true, то возьмется стандартное значение, иначе своя таблица в нужном регистре
 --saveLoadBuffer не будет заного сокращать стринг, а найдет/сделает сохраненную версию по своему уникальному айди, составленному из аргументов
 local function ShortString(str,maxlen,currentShorts,saveLoadBuffer,shortEverySword)
+	if maxlen >= utf8len(str) then return str end
+	if maxlen < 1 then return "" end
+	
 	if saveLoadBuffer then
 		local res = buffer[CreateID(str,maxlen,currentShorts,saveLoadBuffer,shortEverySword)]
 		if res then return res end
