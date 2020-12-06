@@ -79,7 +79,7 @@ local function ShortString(str,maxlen,currentShorts,saveLoadBuffer,shortEverySwo
 	if currentShorts then
 		currentShorts = istable(currentShorts) and currentShorts or defShorts
 		for word,newword in pairs(currentShorts)do
-			res:gsub(word,newword)
+			res = res:gsub(word,newword)
 		end
 	end
 	
