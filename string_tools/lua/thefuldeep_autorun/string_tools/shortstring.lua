@@ -14,18 +14,17 @@ local sogltbl = {["б"]=true,["в"]=true,["г"]=true,["д"]=true,["ж"]=true,["�
 
 local gltbl = {["а"]=true,["е"]=true,["ё"]=true,["и"]=true,["о"]=true,["у"]=true,["ы"]=true,["э"]=true,["ю"]=true,["я"]=true,["А"]=true,["Е"]=true,["Ё"]=true,["И"]=true,["О"]=true,["У"]=true,["Ы"]=true,["Э"]=true,["Ю"]=true,["Я"]=true}
 
-local min = math.min
 local utf8sub = utf8.sub
 local utf8len = utf8.len
 
 local function JustShortFromEnd(str,maxlen)
-	local start = min(utf8len(str),maxlen)
+	if maxlen >= utf8len(str) then return str end
 	
 	--если граница оканчивается на согласную, а дальше идет гласная, то сразу подходит
-	if sogltbl[utf8sub(str,start,start)] and gltbl[utf8sub(str,start+1,start+1)] then return utf8sub(str,1,start).."." end
+	if sogltbl[utf8sub(str,maxlen,maxlen)] and gltbl[utf8sub(str,maxlen+1,maxlen+1)] then return utf8sub(str,1,maxlen).."." end
 	
-	local IsPrevGl = gltbl[utf8sub(str,start,start)]
-	for i = start - 1,1,-1 do
+	local IsPrevGl = gltbl[utf8sub(str,maxlen,maxlen)]
+	for i = maxlen - 1,1,-1 do
 		local cursymbol = utf8sub(str,i,i)
 		if sogltbl[cursymbol] and IsPrevGl then
 			return utf8sub(str,1,i).."."
@@ -34,7 +33,7 @@ local function JustShortFromEnd(str,maxlen)
 	end
 	
 	--если не вернул ничего, то ищу первую найденую согласную и сокращаю по мней
-	for i = start,1,-1 do
+	for i = maxlen,1,-1 do
 		local cursymbol = utf8sub(str,i,i)
 		if sogltbl[cursymbol] then
 			return utf8sub(str,1,i).."."
@@ -42,7 +41,7 @@ local function JustShortFromEnd(str,maxlen)
 	end
 	
 	--если не вернул по первой найденной согласной, то сокращаю просто по длине
-	return utf8sub(str,1,start).."."
+	return utf8sub(str,1,maxlen).."."
 end
 
 
