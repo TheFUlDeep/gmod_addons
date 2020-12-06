@@ -5,9 +5,12 @@ include("thefuldeep_autorun/string_tools/bigrustusmall.lua")
 local buffer = {}
 
 local defShorts = {
-	["улица"] = "л.",
-	["проспект"] = "р-кт",
-	["площадь"] = "л-дь",
+	["улица"] = "ул.",
+	["Улица"] = "Ул.",
+	["проспект"] = "пр-кт",
+	["Проспект"] = "Пр-кт",
+	["площадь"] = "пл-дь",
+	["Площадь"] = "Пл-дь",
 }
 
 local sogltbl = {["б"]=true,["в"]=true,["г"]=true,["д"]=true,["ж"]=true,["з"]=true,["к"]=true,["л"]=true,["м"]=true,["н"]=true,["п"]=true,["р"]=true,["с"]=true,["т"]=true,["ф"]=true,["х"]=true,["ц"]=true,["ч"]=true,["ш"]=true,["щ"]=true,["Б"]=true,["В"]=true,["Г"]=true,["Д"]=true,["Ж"]=true,["З"]=true,["К"]=true,["Л"]=true,["М"]=true,["Н"]=true,["П"]=true,["Р"]=true,["С"]=true,["Т"]=true,["Ф"]=true,["Х"]=true,["Ц"]=true,["Ч"]=true,["Ш"]=true,["Щ"]=true}
@@ -64,7 +67,7 @@ local function CreateID(str,maxlen,currentShorts,saveLoadBuffer,shortEverySword)
 	return str..maxlen..TableToString(currentShorts)..(saveLoadBuffer and "true" or "false")..(shortEverySword and "true" or "false")
 end
 
---currentShorts надо ли сокращять конкретные слова. Если true, то возьмется стандартное значение, иначе своя таблица в нижнем регистре
+--currentShorts надо ли сокращять конкретные слова. Если true, то возьмется стандартное значение, иначе своя таблица в нужном регистре
 --saveLoadBuffer не будет заного сокращать стринг, а найдет/сделает сохраненную версию по своему уникальному айди, составленному из аргументов
 local function ShortString(str,maxlen,currentShorts,saveLoadBuffer,shortEverySword)
 	if saveLoadBuffer then
@@ -75,14 +78,8 @@ local function ShortString(str,maxlen,currentShorts,saveLoadBuffer,shortEverySwo
 	local strlow = bigrustusmall(str)
 	if currentShorts then
 		currentShorts = istable(currentShorts) and currentShorts or defShorts
-		for word,neword in pairs(currentShorts)do
-			local start = strlow:find(word,1,true)
-			while start do
-				local wordlen = utf8len(word)
-				res = utf8sub(res,1,start)..neword..utf8sub(res,start + wordlen)
-				strlow = utf8sub(strlow,1,start)..neword..utf8sub(strlow,start + wordlen)
-				start = strlow:find(word,1,true)
-			end
+		for word,newword in pairs(currentShorts)do
+			res:gsub(word,newword)
 		end
 	end
 	
