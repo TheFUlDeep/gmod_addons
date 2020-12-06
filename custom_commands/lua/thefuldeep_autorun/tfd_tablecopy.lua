@@ -188,7 +188,7 @@ function tfdTableCopy2(tbl,tonormal)--нерекурсивная фнукция 
 			a[b[j]][c[j]] = d[j]
 		end
 	end
-	Tbl = layers[1]
+	local Tbl = layers[1]
 	--PrintTable(Tbl)
 	local res = {}
 	for i = 1, #Tbl[1] do

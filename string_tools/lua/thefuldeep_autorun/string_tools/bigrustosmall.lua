@@ -3,7 +3,7 @@ local BIGRUS = {"А","Б","В","Г","Д","Е","Ё","Ж","З","И","Й","К","Л"
 local smallrus = {"а","б","в","г","д","е","ё","ж","з","и","й","к","л","м","н","о","п","р","с","т","у","ф","х","ц","ч","ш","щ","ъ","ы","ь","э","ю","я"}
 
 function bigrustosmall(str)
-	for i,letter in pairs(BIGRUS) do
+	for i in pairs(BIGRUS) do
 		str = str:gsub(BIGRUS[i],smallrus[i])
 	end
 	return string.lower(str)
