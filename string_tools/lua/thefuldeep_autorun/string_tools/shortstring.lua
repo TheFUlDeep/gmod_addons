@@ -37,8 +37,7 @@ local function JustShortFromEnd(str,maxlen)
 	
 	--если не вернул ничего, то ищу первую найденую согласную и сокращаю по мней
 	for i = maxlen,1,-1 do
-		local cursymbol = utf8sub(str,i,i)
-		if sogltbl[cursymbol] then
+		if sogltbl[utf8sub(str,i,i)] then
 			return utf8sub(str,1,i).."."
 		end
 	end
