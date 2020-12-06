@@ -22,17 +22,17 @@ local utf8len = utf8.len
 
 local function JustShortFromEnd(str,maxlen)
 	if maxlen >= utf8len(str) then return str end
+	if maxlen < 1 then return "" end
 	
 	--если граница оканчивается на согласную, а дальше идет гласная, то сразу подходит
-	if sogltbl[utf8sub(str,maxlen,maxlen)] and gltbl[utf8sub(str,maxlen+1,maxlen+1)] then return utf8sub(str,1,maxlen).."." end
 	
-	local IsPrevGl = gltbl[utf8sub(str,maxlen,maxlen)]
-	for i = maxlen - 1,1,-1 do
+	local IsNextGl = gltbl[utf8sub(str,maxlen+1,maxlen+1)]
+	for i = maxlen,1,-1 do
 		local cursymbol = utf8sub(str,i,i)
-		if sogltbl[cursymbol] and IsPrevGl then
+		if IsNextGl and sogltbl[cursymbol] then
 			return utf8sub(str,1,i).."."
 		end
-		IsPrevGl = gltbl[cursymbol]
+		IsNextGl = gltbl[cursymbol]
 	end
 	
 	--если не вернул ничего, то ищу первую найденую согласную и сокращаю по мней
