@@ -8,6 +8,7 @@ if SERVER then
 	--можно конечно было сделать, чтобы таблица генерировалась один раз при перезагрузки сигналки, и уже готовая просто отправлялясь, но вроде оно несильно ест производительность, поэтмоу пофиг
 	local function SendRoutesInfo(ply)
 		timer.Simple(1,function()
+		timer.Simple(1,function()
 			local signalsCommands = {}
 			for _,signal in pairs(entsFindByClass(signals_class)) do
 				if not IsValid(signal) then continue end
@@ -33,11 +34,12 @@ if SERVER then
 				
 			net.Start("SignalsRoutesForDrawing")
 				net.WriteTable(signalsCommands)
-			if ply then 
+			if IsValid(ply) then 
 				net.Send(ply)
 			else
 				net.Broadcast()
 			end
+		end)
 		end)
 	end
 
@@ -75,11 +77,24 @@ if not C_Enabled then C_Enabled = CreateClientConVar("draw_signal_routes","1",tr
 local C_Distance = GetConVar("draw_signal_routes_distance")
 if not C_Distance then C_Distance = CreateClientConVar("draw_signal_routes_distance","2000",true,false,"") end
 
-local maxdistDef = 2000
+local maxdistDef = 2000*2000
 local maxdist = C_Distance:GetInt()^2
+maxdist = maxdist == 0 and maxdistDef or maxdist
 
 cvars.AddChangeCallback("draw_signal_routes_distance", function(convar,old,new)
-	maxdist = (tostring(new) or maxdistDef)^2
+	local newval = tonumber(new)
+	if not newval then
+		print("draw_signal_routes_distance: can't convert value to number. Setting default value...")
+		maxdist = maxdistDef
+	else
+		if newval == 0 then
+			print("draw_signal_routes_distance: can't set value to 0, use 'draw_signal_routes 0' for it. Setting defaul value...")
+			maxdist = maxdistDef
+		else
+			maxdist = newval^2
+			print("draw_signal_routes_distance changed to "..newval)
+		end
+	end
 end)
 
 
