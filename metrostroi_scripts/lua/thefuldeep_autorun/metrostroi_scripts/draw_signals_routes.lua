@@ -5,6 +5,7 @@ local tableinsert = table.insert
 if SERVER then
 	util.AddNetworkString("SignalsRoutesForDrawing")
 
+	--можно конечно было сделать, чтобы таблица генерировалась один раз при перезагрузки сигналки, и уже готовая просто отправлялясь, но вроде оно несильно ест производительность, поэтмоу пофиг
 	local function SendRoutesInfo(ply)
 		timer.Simple(1,function()
 			local signalsCommands = {}
@@ -41,7 +42,7 @@ if SERVER then
 	end
 
 	
-	timer.Simple(0,function()
+	timer.Simple(0.01,function()
 		local oldload = Metrostroi.Load
 		Metrostroi.Load = function(...)
 			oldload(...)
@@ -68,17 +69,15 @@ net.Receive("SignalsRoutesForDrawing", function()
 end)
 
 
-local C_Enabled
-local C_Distance
-timer.Simple(0,function()
-	C_Enabled = GetConVar("draw_signal_routes")
-	if not C_Enabled then C_Enabled = CreateClientConVar("draw_signal_routes","1",true,false,"") end
-	
-	C_Distance = GetConVar("draw_signal_routes_distance")
-	if not C_Distance then C_Distance = CreateClientConVar("draw_signal_routes_distance","2000",true,false,"") end
-end)
+
+local C_Enabled = GetConVar("draw_signal_routes")
+if not C_Enabled then C_Enabled = CreateClientConVar("draw_signal_routes","1",true,false,"") end
+
+local C_Distance = GetConVar("draw_signal_routes_distance")
+if not C_Distance then C_Distance = CreateClientConVar("draw_signal_routes_distance","2000",true,false,"") end
 
 
+local maxdistDef = 2000*2000
 --методом os.clock было вычислено, что постоянный потсоянный по таблице из 200 элементов медленнее, чем потсоянный проход по таблице из 10ти элементов при постоянной ее очистке и обращении к таблице из 200 по ключу раз в секунду
 --разница в производительности примерно в 10 раз
 --короче чем больше таблица, тем медленнее работает. Поэтому в таймере я делаю маленькую таблицу, из которой уже ресуются текста
@@ -87,11 +86,10 @@ local THEFULDEEP = THEFULDEEP
 THEFULDEEP.RealViewPos = Vector(0)
 timer.Create("Get signals routes for drawing",1,0,function()
 	texts = {}
-	if C_Enabled:GetBool() then		
-		local maxdist = C_Distance:GetInt()^2
+	if C_Enabled and C_Enabled:GetBool() then		
+		local maxdist = C_Distance and C_Distance:GetInt()^2 or maxdistDef
 		local viewpos = THEFULDEEP.RealViewPos
 		
-		local index = 0
 		for _,signal in pairs(entsFindByClass(signals_class)) do
 			if not IsValid(signal) or signal:GetPos():DistToSqr(viewpos) > maxdist then continue end
 			
@@ -101,8 +99,7 @@ timer.Create("Get signals routes for drawing",1,0,function()
 			
 			if #commands < 1 and not IsClosedManually then continue end
 			
-			index = index + 1
-			texts[index] = {signal,signal:GetPos()+Vector(0,0,80),signal:GetAngles()+Angle(0,180,90),commands,IsClosedManually}
+			texts[#texts+1] = {signal,signal:GetPos()+Vector(0,0,80),signal:GetAngles()+Angle(0,180,90),commands,IsClosedManually}
 		end
 	end
 end)
