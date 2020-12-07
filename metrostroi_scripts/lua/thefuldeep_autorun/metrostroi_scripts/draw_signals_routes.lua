@@ -87,13 +87,8 @@ cvars.AddChangeCallback("draw_signal_routes_distance", function(convar,old,new)
 		print("draw_signal_routes_distance: can't convert value to number. Setting default value...")
 		maxdist = maxdistDef
 	else
-		if newval == 0 then
-			print("draw_signal_routes_distance: can't set value to 0, use 'draw_signal_routes 0' for it. Setting defaul value...")
-			maxdist = maxdistDef
-		else
-			maxdist = newval^2
-			print("draw_signal_routes_distance changed to "..newval)
-		end
+		maxdist = newval^2
+		print("draw_signal_routes_distance changed to "..newval)
 	end
 end)
 
