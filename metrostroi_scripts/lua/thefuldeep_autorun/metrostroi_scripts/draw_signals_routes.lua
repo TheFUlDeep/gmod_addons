@@ -78,10 +78,9 @@ local C_Distance = GetConVar("draw_signal_routes_distance")
 if not C_Distance then C_Distance = CreateClientConVar("draw_signal_routes_distance","2000",true,false,"") end
 
 local maxdistDef = 2000*2000
-local maxdist = C_Distance:GetInt()^2
-maxdist = maxdist == 0 and maxdistDef or maxdist
+local maxdist
 
-cvars.AddChangeCallback("draw_signal_routes_distance", function(convar,old,new)
+local function SetNewValue(new)
 	local newval = tonumber(new)
 	if not newval then
 		print("draw_signal_routes_distance: can't convert value to number. Setting default value...")
@@ -90,7 +89,11 @@ cvars.AddChangeCallback("draw_signal_routes_distance", function(convar,old,new)
 		maxdist = newval^2
 		print("draw_signal_routes_distance changed to "..newval)
 	end
-end)
+end
+
+SetNewValue(C_Distance:GetString())
+
+cvars.AddChangeCallback("draw_signal_routes_distance", function(convar,old,new)SetNewValue(new)end)
 
 
 
