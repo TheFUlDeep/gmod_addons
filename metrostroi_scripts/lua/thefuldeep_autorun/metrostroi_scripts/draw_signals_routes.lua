@@ -5,7 +5,9 @@ local tableinsert = table.insert
 if SERVER then
 	util.AddNetworkString("SignalsRoutesForDrawing")
 
+	--можно конечно было сделать, чтобы таблица генерировалась один раз при перезагрузки сигналки, и уже готовая просто отправлялясь, но вроде оно несильно ест производительность, поэтмоу пофиг
 	local function SendRoutesInfo(ply)
+		timer.Simple(1,function()
 		timer.Simple(1,function()
 			local signalsCommands = {}
 			for _,signal in pairs(entsFindByClass(signals_class)) do
@@ -32,16 +34,17 @@ if SERVER then
 				
 			net.Start("SignalsRoutesForDrawing")
 				net.WriteTable(signalsCommands)
-			if ply then 
+			if IsValid(ply) then 
 				net.Send(ply)
 			else
 				net.Broadcast()
 			end
 		end)
+		end)
 	end
 
 	
-	timer.Simple(0,function()
+	timer.Simple(0.01,function()
 		local oldload = Metrostroi.Load
 		Metrostroi.Load = function(...)
 			oldload(...)
@@ -68,15 +71,30 @@ net.Receive("SignalsRoutesForDrawing", function()
 end)
 
 
-local C_Enabled
-local C_Distance
-timer.Simple(0,function()
-	C_Enabled = GetConVar("draw_signal_routes")
-	if not C_Enabled then C_Enabled = CreateClientConVar("draw_signal_routes","1",true,false,"") end
-	
-	C_Distance = GetConVar("draw_signal_routes_distance")
-	if not C_Distance then C_Distance = CreateClientConVar("draw_signal_routes_distance","2000",true,false,"") end
-end)
+local C_Enabled = GetConVar("draw_signal_routes")
+if not C_Enabled then C_Enabled = CreateClientConVar("draw_signal_routes","1",true,false,"") end
+
+local C_Distance = GetConVar("draw_signal_routes_distance")
+if not C_Distance then C_Distance = CreateClientConVar("draw_signal_routes_distance","2000",true,false,"") end
+
+local maxdistDef = 2000*2000
+local maxdist
+
+local function SetNewValue(new)
+	local newval = tonumber(new)
+	if not newval then
+		print("draw_signal_routes_distance: can't convert value to number. Setting default value...")
+		maxdist = maxdistDef
+	else
+		maxdist = newval^2
+		print("draw_signal_routes_distance changed to "..newval)
+	end
+end
+
+SetNewValue(C_Distance:GetString())
+
+cvars.AddChangeCallback("draw_signal_routes_distance", function(convar,old,new)SetNewValue(new)end)
+
 
 
 --методом os.clock было вычислено, что постоянный потсоянный по таблице из 200 элементов медленнее, чем потсоянный проход по таблице из 10ти элементов при постоянной ее очистке и обращении к таблице из 200 по ключу раз в секунду
@@ -88,7 +106,6 @@ THEFULDEEP.RealViewPos = Vector(0)
 timer.Create("Get signals routes for drawing",1,0,function()
 	texts = {}
 	if C_Enabled:GetBool() then		
-		local maxdist = C_Distance:GetInt()^2
 		local viewpos = THEFULDEEP.RealViewPos
 		
 		local index = 0
@@ -130,4 +147,3 @@ hook.Add("PreDrawEffects","Draw Signals Routes",function()
 	end
 end)
 --PostDrawEffects
-
