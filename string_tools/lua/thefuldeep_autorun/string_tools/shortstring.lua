@@ -1,5 +1,4 @@
 --TODO shortEverySword сокращает каждое слово, а не только с конца (либо с фиксированными словами, либо без)
---TODO не проверено
 include("thefuldeep_autorun/string_tools/bigrustusmall.lua")
 
 local buffer = {}
@@ -78,6 +77,7 @@ local function ShortString(str,maxlen,currentShorts,saveLoadBuffer,shortEverySwo
 		currentShorts = istable(currentShorts) and currentShorts or defShorts
 		for word,newword in pairs(currentShorts)do
 			res = res:gsub(word,newword)
+			if utf8len(res) < maxlen then break end
 		end
 	end
 	
