@@ -74,8 +74,86 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 		--backsignals = {}
 		--forwsignals = {}
 	end
+	
+	
 
 
+
+	--TODO не проверено достаточно качественно
+	if false then
+		local function Rotate180(ang)if ang <= 180 then return ang + 180 else return ang - 180 end end
+		
+		--данный апгрейд сделан, чтобы не ловвить неправильный трек на перекрестиях
+		local oldGetPositionOnTrack = Metrostroi.GetPositionOnTrack
+		Metrostroi.GetPositionOnTrack = function(pos,ang,opts)
+			if not ang then
+				return oldGetPositionOnTrack(pos,ang,opts)
+			else
+				local res = oldGetPositionOnTrack(pos,ang,opts)
+				
+				--если найдено хоть что-то
+				if res[1] then
+					ang = ang[2]
+					--метод :Angle возвращает угол от 0 до 360, а ang может прийти в формате от -180 до 180, поэтому явно преобразую в нужный мне формат
+					if ang < 0 then ang = -ang + 180 end
+					
+					--ищу трек, который лучше всего по углу подходит к искомому углу
+					local minang,minkey
+					for k,params in pairs(res)do
+						local node = params.node1
+						if node.next then
+							local curang = math.abs(ang - (node.pos - node.next.pos):Angle()[2])
+							curang = math.min(curang,Rotate180(curang))
+							if not minang or minang > curang then minang = curang minkey = k end
+						end
+						if node.prev then
+							local curang = math.abs(ang - (node.pos - node.prev.pos):Angle()[2])
+							curang = math.min(curang,Rotate180(curang))
+							if not minang or minang > curang then minang = curang minkey = k end
+						end
+					end
+					if minkey then
+						-- print("выбрал трек",res[minkey].node1.path.id)
+						res = {res[minkey]}
+					end
+				end
+				
+				return res
+			end
+		end	
+	end
+
+
+
+
+
+	
+	--данный апгрейд сделан, чтобы не ловвить неправильный трек на перекрестиях
+	local oldGetPositionOnTrack = Metrostroi.GetPositionOnTrack
+	Metrostroi.GetPositionOnTrack = function(pos,ang,opts)
+		if not ang then
+			return oldGetPositionOnTrack(pos,ang,opts)
+		else
+			local res = oldGetPositionOnTrack(pos,ang,opts)
+			
+			--если найдено хоть что-то
+			if res[1] then
+				for k,params in pairs(res)do
+					local isToNextWrong = not params.node1.next and math.abs(ang - (node1.pos - node1.next.pos):Angle()[2]) > 45
+					local isToPrevWrong = not params.node1.prev and math.abs(ang - (node1.pos - node1.prev.pos):Angle()[2]) > 45
+					if isToNextWrong and isToPrevWrong then
+						print("трек",params.node1.path.id,"был пропущен, так как он под углом больше чем в 45 градусов, относительно имсомого угла")
+						table.remove(res,k)
+					end
+				end
+			end
+			
+			return res
+		end
+	end
+	
+	
+	
 	
 	local oldGetARSJoint = Metrostroi.GetARSJoint
 	
