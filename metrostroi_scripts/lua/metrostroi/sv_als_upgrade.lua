@@ -122,36 +122,6 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 			end
 		end	
 	end
-
-
-
-
-
-	
-	--данный апгрейд сделан, чтобы не ловвить неправильный трек на перекрестиях
-	local oldGetPositionOnTrack = Metrostroi.GetPositionOnTrack
-	Metrostroi.GetPositionOnTrack = function(pos,ang,opts)
-		if not ang then
-			return oldGetPositionOnTrack(pos,ang,opts)
-		else
-			local res = oldGetPositionOnTrack(pos,ang,opts)
-			
-			--если найдено хоть что-то
-			if res[1] then
-				for k,params in pairs(res)do
-					local isToNextWrong = not params.node1.next and math.abs(ang - (node1.pos - node1.next.pos):Angle()[2]) > 45
-					local isToPrevWrong = not params.node1.prev and math.abs(ang - (node1.pos - node1.prev.pos):Angle()[2]) > 45
-					if isToNextWrong and isToPrevWrong then
-						print("трек",params.node1.path.id,"был пропущен, так как он под углом больше чем в 45 градусов, относительно имсомого угла")
-						table.remove(res,k)
-					end
-				end
-			end
-			
-			return res
-		end
-	end
-	
 	
 	
 	
