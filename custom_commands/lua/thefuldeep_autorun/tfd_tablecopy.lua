@@ -164,6 +164,7 @@ end
 
 --этот метод работает быстрее, чем первый, если в таблице на одном уровне много элементов
 --но для маленьких таблиц он медленнее
+--однако данный метод будет работать предсказуемее по скорости, потому что создается всегда 3 таблицы на уровень, а не неопределенное количество
 function tfdTableCopy2(tbl,tonormal)--нерекурсивная фнукция копирования таблицы. Не съедает стэк, работает с рекурсивными таблицами
 	local layers = tfdTableToLayers2(tbl,tonormal)
 	
@@ -188,7 +189,7 @@ function tfdTableCopy2(tbl,tonormal)--нерекурсивная фнукция 
 			a[b[j]][c[j]] = d[j]
 		end
 	end
-	Tbl = layers[1]
+	local Tbl = layers[1]
 	--PrintTable(Tbl)
 	local res = {}
 	for i = 1, #Tbl[1] do
@@ -196,3 +197,65 @@ function tfdTableCopy2(tbl,tonormal)--нерекурсивная фнукция 
 	end
 	return res
 end
+
+
+--автоматический выбор метода копирования
+--если использовать его, до процесс пойдет медленнее, даже если выбрать "неправильный" метод, так что почти всегда этот метод бесполезен (только если в каждой таблице не по 500 элемементов, грубо говоря)
+local function AutoTableCopy(tbl,tonormal)
+	if tonormal or tonormal == false then
+		tbl = tbl or {}
+		tbl = istable(tbl) and tbl or {tbl}
+	end
+	
+	local need_check = {[tbl]=true}
+	local needCheclkCount = 1
+	local was = {}
+	local method = 0
+	while needCheclkCount > 0 do
+		for t in pairs(need_check)do
+			if was[t] then
+				need_check[t] = nil
+				needCheclkCount = needCheclkCount - 1
+			else
+				was[t] = true
+				need_check[t] = nil
+				needCheclkCount = needCheclkCount - 1
+				local valuesCount = 0
+				for k,v in pairs(t) do
+					valuesCount = valuesCount + 1
+					if istable(v) then
+						need_check[v] = true
+						needCheclkCount = needCheclkCount + 1
+					end
+				end
+				if valuesCount > 2 then
+					method = method + 1
+				else
+					method = method - 1
+				end
+			end
+		end
+	end
+	
+	if method >= 0 then
+		-- print("method for large tables")
+		return tfdTableCopy2(tbl,tonormal)
+	else
+		-- print("method for small tables")
+		return tfdTableCopy1(tbl,tonormal)
+	end
+end
+
+
+-- local large = {{{1,2,3,4},{1,2,3,4},{1,2,3,4}},{{1,2,3,4},{1,2,3,4},{1,2,3,4}},{{1,2,3,4},{1,2,3,4},{1,2,3,4}},{{1,2,3,4},{1,2,3,4},{1,2,3,4}},{{1,2,3,4},{1,2,3,4},{1,2,3,4}},{{1,2,3,4},{1,2,3,4},{1,2,3,4}},{{1,2,3,4},{1,2,3,4},{1,2,3,4}}}
+
+-- large = Entity(1):GetTable()
+
+-- local start = os.clock()
+-- for i = 1,100000 do
+	-- AutoTableCopy(large)	-- время выполнения - 1,1
+	-- tfdTableCopy2(large) -- время выполнения - 0,9
+	-- tfdTableCopy1(large) -- время выполнения - 1
+-- end
+
+-- print(os.clock() - start)

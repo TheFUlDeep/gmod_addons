@@ -1,6 +1,7 @@
 if CLIENT then return end
 
 local DIST_TO_ENABLE_COLLISION = 200^2
+--TODO поменять COLLISION_GROUP_INTERACTIVE_DEBRIS на COLLISION_GROUP_IN_VEHICLE
 
 
 --проверка, есть ли Use доступ у игроков друг к другу
