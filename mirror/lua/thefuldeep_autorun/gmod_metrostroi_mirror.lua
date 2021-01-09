@@ -1,5 +1,5 @@
 --TODO фикс конфликта с камерами метростроя
---if 1 then return end
+if 1 then return end
 THEFULDEEP = THEFULDEEP or {}
 local THEFULDEEP = THEFULDEEP
 
