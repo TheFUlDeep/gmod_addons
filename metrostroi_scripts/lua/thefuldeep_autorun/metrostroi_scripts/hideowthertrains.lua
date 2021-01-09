@@ -205,6 +205,10 @@ local function ShouldRenderEnts(self)
 			tracelinesetup.endpos = curvec
 			local output = utilTraceLine(tracelinesetup)
 			--если состав не за пропом, то однозначно прогрузить
+			if not output then
+				ShouldRender = true
+				break
+			end
 			local resEnt = output.Entity
 			if output.Fraction == 1 or  resEnt == self or IsValid(resEnt) and resEnt:GetNW2Entity("TrainEntity",nil) == self then 
 				ShouldRender = true
