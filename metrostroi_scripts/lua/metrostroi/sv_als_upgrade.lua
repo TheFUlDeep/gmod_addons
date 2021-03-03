@@ -235,7 +235,7 @@ timer.Create("Metrostroi Signals Occupation Upgrade",1,0,function()
 				if not IsValid(sig) or not sig.TrackPosition then continue end
 				if pathid ~= sig.TrackPosition.path.id or pathid == sig.TrackPosition.path.id and (sig.TrackDir and pos.x > sig.TrackPosition.x or not sig.TrackDir and pos.x < sig.TrackPosition.x) then
 					occupiedSigs[sig] = train
-					print(sig.Name, "occupied")
+					-- print(sig.Name, "occupied")
 					--если репитер или галка PassOccupation то надо передать это назад до тех пор, пока не попадется обычный чигнал
 					local sigs = {sig}
 					local wassigs = {}
@@ -250,7 +250,7 @@ timer.Create("Metrostroi Signals Occupation Upgrade",1,0,function()
 						if cursig.PassOcc and PrevSignals[cursig] then
 							for prevsig in pairs(PrevSignals[cursig])do
 								occupiedSigs[prevsig] = train
-								print(prevsig.Name, "occupied")
+								-- print(prevsig.Name, "occupied")
 								sigscount = sigscount + 1
 								sigs[sigscount] = prevsig
 							end
