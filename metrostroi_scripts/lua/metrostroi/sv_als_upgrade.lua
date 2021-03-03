@@ -56,7 +56,7 @@ local function UpgradeTracks()
 	continuations = {}
 	--тут прохожусь во всем концам треков и ищу, есть ли продолжения
 	for id,path in pairs(Metrostroi.TrackEditor.Paths)do
-		continuations[id] = {}
+		continuations[id] = continuations[id] or {}
 		local count = #path
 		if count > 2 then
 			for i = 1,2 do
@@ -71,16 +71,19 @@ local function UpgradeTracks()
 							another.path.id,
 							another.id,
 							another.x + (another.pos:Distance(LerpVector(lerptonext,another.pos, lerptonext ~= 0 and another.next.pos or another.pos)))*0.01905,
-							another.next and math.abs(selfang - (another.next.pos - another.pos):Angle()[2]) < 90 or another.prev and math.abs(selfang - (another.prev.pos - another.pos):Angle()[2]) > 90
+							another.next and math.abs(selfang - (another.next.pos - another.pos):Angle()[2]) < 90 or another.prev and math.abs(selfang - (another.prev.pos - another.pos):Angle()[2]) > 90,
+							--i == 2--не нужно, так как тут берутся только концы треков
 						}
 						
 						--связываю в обратную сторону
+						--TODO не уверен в этом
 						continuations[another.path.id] = continuations[another.path.id] or {}
 						continuations[another.path.id][another.id] = {
 							id,
 							idx,
 							selfnode.x,
-							not continuations[id][idx][4]
+							i == 1,
+							not continuations[id][idx][4]--рестрикт, указание, с какого направления можно перепрыгивать
 						}
 					end
 				end
@@ -89,58 +92,11 @@ local function UpgradeTracks()
 	end
 	for k,v in pairs(continuations)do
 		for k1,v1 in pairs(v)do
-			print("linked path",k,"node",k1,"and path",v1[1],"node",v1[2])
+			print("linked path",k,"node",k1,"and path",v1[1],"node",v1[2],"new dir is",v1[4],"allow from dir",v1[5])
 		end
 	end
 end
 
-
-
-
-
---TODO не проверено достаточно качественно
-if false then
-	local function Rotate180(ang)if ang <= 180 then return ang + 180 else return ang - 180 end end
-	
-	--данный апгрейд сделан, чтобы не ловвить неправильный трек на перекрестиях
-	local oldGetPositionOnTrack = Metrostroi.GetPositionOnTrack
-	Metrostroi.GetPositionOnTrack = function(pos,ang,opts)
-		if not ang then
-			return oldGetPositionOnTrack(pos,ang,opts)
-		else
-			local res = oldGetPositionOnTrack(pos,ang,opts)
-			
-			--если найдено хоть что-то
-			if res[1] then
-				ang = ang[2]
-				--метод :Angle возвращает угол от 0 до 360, а ang может прийти в формате от -180 до 180, поэтому явно преобразую в нужный мне формат
-				if ang < 0 then ang = -ang + 180 end
-				
-				--ищу трек, который лучше всего по углу подходит к искомому углу
-				local minang,minkey
-				for k,params in pairs(res)do
-					local node = params.node1
-					if node.next then
-						local curang = math.abs(ang - (node.pos - node.next.pos):Angle()[2])
-						curang = math.min(curang,Rotate180(curang))
-						if not minang or minang > curang then minang = curang minkey = k end
-					end
-					if node.prev then
-						local curang = math.abs(ang - (node.pos - node.prev.pos):Angle()[2])
-						curang = math.min(curang,Rotate180(curang))
-						if not minang or minang > curang then minang = curang minkey = k end
-					end
-				end
-				if minkey then
-					-- print("выбрал трек",res[minkey]..path.id)
-					res = {res[minkey]}
-				end
-			end
-			
-			return res
-		end
-	end	
-end
 
 --TODO нет проверки на isolating
 local function findfunc(startnode,startx,dir,back,returnPassedNodes)
@@ -165,6 +121,7 @@ local function findfunc(startnode,startx,dir,back,returnPassedNodes)
 		
 		
 		--поиск сигнала
+		local needcontinue
 		if Metrostroi.SignalEntitiesForNode[curnode] then
 			local nearestent
 			for _,ent in pairs(Metrostroi.SignalEntitiesForNode[curnode]) do
@@ -175,12 +132,12 @@ local function findfunc(startnode,startx,dir,back,returnPassedNodes)
 				end
 			end
 			
-			
 			if nearestent then
 				if not returnPassedNodes then
 					return nearestent
 				else
-					continue
+					-- print(nearestent.Name)
+					needcontinue = true
 				end
 			end
 		end
@@ -188,9 +145,10 @@ local function findfunc(startnode,startx,dir,back,returnPassedNodes)
 		--переход на следующий ноуд (или на следующий трек)		
 		--сначала ищется на другом треке
 		local newnodeparams = continuations[pathid] and continuations[pathid][curnode.id]
+		-- print(pathid,curnode.id, needcontinue)
 		if newnodeparams then
 			local curnode = Metrostroi.Paths[newnodeparams[1]][newnodeparams[2]]
-			if curnode then
+			if curnode and (newnodeparams[5] == nil or dir == newnodeparams[5]) then
 				nodescount = nodescount + 1
 				curnodes[1][nodescount] = newnodeparams[3]
 				curnodes[2][nodescount] = newnodeparams[4]
@@ -198,6 +156,7 @@ local function findfunc(startnode,startx,dir,back,returnPassedNodes)
 			end
 		end
 		
+		if needcontinue then continue end
 		--потом ищется на том же треке, потому что добавляется в конец списка и будет проверятсья первым
 		if curnode[dirstr] then
 			nodescount = nodescount + 1
@@ -232,10 +191,23 @@ local function GenerateRawOccupationSections()
 			RawOccupationSections[pathid][nodeid][sig] = true
 		end		
 	end
-	
-	local SIGNAL = scripted_ents.GetStored("gmod_track_signal").t
-	SIGNAL.CheckOccupation = function(self)end
 end
+-- UpgradeTracks()
+--GenerateRawOccupationSections()
+-- for k,v in pairs(RawOccupationSections)do
+	-- for k1,v1 in pairs(v) do
+		-- for k2 in pairs(v1) do
+			-- if k2.Name ~= "PRD" then continue end
+			-- print(k,k1,k2)
+		-- end
+	-- end
+-- end
+-- local asd = Metrostroi.GetSignalByName("MR283")
+-- print("AAAAAAAAAAAAAAAAAAAAAAAAA")
+-- for k,v in pairs(findfunc(asd.TrackPosition.node1,asd.TrackPosition.x,asd.TrackDir,false,true))do
+	-- print(k.path.id,k.id)
+-- end
+-- print("BBBBBBBBBBBBBBBBBBBBBBBBB")
 
 local PrevSignals = {}
 local function GeneratePrevSignals()
@@ -262,8 +234,8 @@ timer.Create("Metrostroi Signals Occupation Upgrade",1,0,function()
 			for sig in pairs(RawOccupationSections[pathid][nodeid])do
 				if not IsValid(sig) or not sig.TrackPosition then continue end
 				if pathid ~= sig.TrackPosition.path.id or pathid == sig.TrackPosition.path.id and (sig.TrackDir and pos.x > sig.TrackPosition.x or not sig.TrackDir and pos.x < sig.TrackPosition.x) then
-					print(sig.Name, "Occupied")
 					occupiedSigs[sig] = train
+					print(sig.Name, "occupied")
 					--если репитер или галка PassOccupation то надо передать это назад до тех пор, пока не попадется обычный чигнал
 					local sigs = {sig}
 					local wassigs = {}
@@ -274,10 +246,11 @@ timer.Create("Metrostroi Signals Occupation Upgrade",1,0,function()
 						sigscount = sigscount - 1
 						if wassigs[cursig] then continue end
 						wassigs[cursig] = true
-						if (cursig.PassOcc or cursig.Routes and cursig.Route and cursig.Routes[cursig.Route].Repeater) and PrevSignals[cursig] then
+						-- if (cursig.PassOcc or cursig.Routes and cursig.Route and cursig.Routes[cursig.Route].Repeater) and PrevSignals[cursig] then
+						if cursig.PassOcc and PrevSignals[cursig] then
 							for prevsig in pairs(PrevSignals[cursig])do
 								occupiedSigs[prevsig] = train
-								print(prevsig.Name, "Occupied")
+								print(prevsig.Name, "occupied")
 								sigscount = sigscount + 1
 								sigs[sigscount] = prevsig
 							end
@@ -293,7 +266,8 @@ end)
 
 
 hook.Add("MetrostroiLoaded","UpgradeTracks",function()
--- timer.Simple(0.1,function()	
+-- timer.Simple(0,function()
+-- hook.Add("InitPostEntity","test",function()
 	local oldload = Metrostroi.Load
 	Metrostroi.Load = function(...)
 		oldload(...)
@@ -399,11 +373,59 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 		--print("res",forw and forw.Name, back and back.Name)
 		return forw,back
 	end
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	--TODO не проверено достаточно качественно
+	local function Rotate180(ang)if ang <= 180 then return ang + 180 else return ang - 180 end end
+
+	--данный апгрейд сделан, чтобы не ловвить неправильный трек на перекрестиях
+	local oldGetPositionOnTrack = Metrostroi.GetPositionOnTrack
+	Metrostroi.GetPositionOnTrack = function(pos,ang,opts)
+		if not ang then
+			return oldGetPositionOnTrack(pos,ang,opts)
+		else
+			local res = oldGetPositionOnTrack(pos,ang,opts)
+			
+			--если найдено хоть что-то
+			if res[1] then
+				ang = ang[2]
+				--метод :Angle возвращает угол от 0 до 360, а ang может прийти в формате от -180 до 180, поэтому явно преобразую в нужный мне формат
+				if ang < 0 then ang = -ang + 180 end
+				
+				--ищу трек, который лучше всего по углу подходит к искомому углу
+				local minang,minkey
+				for k,params in pairs(res)do
+					local node = params.node1
+					if node.next then
+						local curang = math.abs(ang - (node.pos - node.next.pos):Angle()[2])
+						curang = math.min(curang,Rotate180(curang))
+						if not minang or minang > curang then minang = curang minkey = k end
+					end
+					if node.prev then
+						local curang = math.abs(ang - (node.pos - node.prev.pos):Angle()[2])
+						curang = math.min(curang,Rotate180(curang))
+						if not minang or minang > curang then minang = curang minkey = k end
+					end
+				end
+				if minkey then
+					-- print("выбрал трек",res[minkey]..path.id)
+					res = {res[minkey]}
+				end
+			end
+			
+			return res
+		end
+	end	
 end)
 
 
---TODO доделать
-do return end
 hook.Add("InitPostEntity","Metrostroi signals occupation upgrade",function()
 	local SIGNAL = scripted_ents.GetStored("gmod_track_signal").t
 	--основу скопировал из ентити сигнала
@@ -430,3 +452,4 @@ hook.Add("InitPostEntity","Metrostroi signals occupation upgrade",function()
 		end
 	end
 end)
+
