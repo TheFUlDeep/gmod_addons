@@ -80,6 +80,7 @@ updateulx:help("Обновляет меню (не нужно обычным иг
 
 
 -------------------------	DISPATHER SCRIPT  -----------------------------------------
+--TODO переделать это говно
 if SERVER then
 	Metrostroi.ActiveDispatcher,Metrostroi.ActiveInt,Metrostroi.ActiveDSCP1,Metrostroi.ActiveDSCP2,Metrostroi.ActiveDSCP3,Metrostroi.ActiveDSCP4,Metrostroi.ActiveDSCP5 = nil,0,nil,nil,nil,nil,nil
 	RunConsoleCommand("FPP_Setting", "FPP_PLAYERUSE1",  "worldprops", 1)
