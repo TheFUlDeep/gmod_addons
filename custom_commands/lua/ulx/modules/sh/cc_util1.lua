@@ -1984,7 +1984,6 @@ timer.Simple(1,function()
 	wagons:defaultAccess( ULib.ACCESS_ALL )
 	wagons:help( "Shows you the current wagons." )
 end)
---TODO автоподключение удочки
 --for k,v in ipairs(tbl) медленнее, чем pairs(tbl), медленнее, чем next,tbl
 
 --pairs работает быстрее, чем ipairs
