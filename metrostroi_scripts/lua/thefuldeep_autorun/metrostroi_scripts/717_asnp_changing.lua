@@ -5,7 +5,7 @@ local tablename = "ASNPPreSoundType"
 
 hook.Add("InitPostEntity","Metrostroi 717_mvm asnp changing",function()
 
-	local readtablename = "Изменение ASNP"
+	local readtablename = "Перезвон информатора"
 	local paramname1 = "Нижний Новгород"
 	local paramname2 = "Аэроэкспресс"
 	
