@@ -282,9 +282,9 @@ end)
 
 
 
--- hook.Add("MetrostroiLoaded","UpgradeTracks",function()
+hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 -- timer.Simple(0,function()
-hook.Add("InitPostEntity","test",function()
+-- hook.Add("InitPostEntity","test",function()
 	local oldload = Metrostroi.Load
 	Metrostroi.Load = function(...)
 		oldload(...)
