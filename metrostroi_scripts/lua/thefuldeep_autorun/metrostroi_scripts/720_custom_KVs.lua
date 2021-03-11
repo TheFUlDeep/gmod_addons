@@ -85,7 +85,7 @@ hook.Add("InitPostEntity","Metrostroi 720 custom KVs",function()
 
 	local kv_type_index1 = -1
 	local kv_type_index2 = -1
-	local kv_type_read_table_name = "Тип КВ asd"
+	local kv_type_read_table_name = "Тип рукоятки КВ"
 	local kv_type_table_name = "KVTypeCustom"
 	local foundtable
 	for k,v in pairs(YAUZA.Spawner) do
