@@ -1,4 +1,3 @@
---Функция, позволяющая копировать большие таблицы размером больше чем в 64 килобайта
 local networkStringName = "bigtables"
 BigNetTables = BigNetTables or {}
 
@@ -10,23 +9,18 @@ if CLIENT then
 		local dataLen = net.ReadUInt(32)
 		local data = net.ReadData(dataLen)		
 		BigNetTables[tableid] = BigNetTables[tableid] or {}
+		BigNetTables[tableid].partscount = BigNetTables[tableid].partscount and BigNetTables[tableid].partscount + 1 or 1
 		if isLastPart then
 			BigNetTables[tableid].lastpart = tablepart
 		end
 		BigNetTables[tableid][tablepart] = data
-		if BigNetTables[tableid].lastpart then
-			local waitForNext
+		if BigNetTables[tableid].lastpart and BigNetTables[tableid].partscount == BigNetTables[tableid].lastpart then
+			local json = ""
 			for i = 1, BigNetTables[tableid].lastpart do
-				if not BigNetTables[tableid][i] then waitForNext = true break end
+				json = json .. BigNetTables[tableid][i]
 			end
-			if not waitForNext then
-				local json = ""
-				for i = 1, BigNetTables[tableid].lastpart do
-					json = json .. BigNetTables[tableid][i]
-				end
-				BigNetTables[tableid] = nil --для очистки памяти
-				hook.Run("BigNetTablesReceive",util.JSONToTable(util.Decompress(json)))
-			end
+			BigNetTables[tableid] = nil --для очистки памяти
+			hook.Run("BigNetTablesReceive",util.JSONToTable(util.Decompress(json)))
 		end
 	end)
 end
