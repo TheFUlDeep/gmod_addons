@@ -32,6 +32,7 @@ local empty_table = {}
 local maxsize = 60000
 util.AddNetworkString(networkStringName)
 function SendBigNetTable(tbl,ply)
+	if BigNetTables.SendedTables == 4294967295 then BigNetTables.SendedTables = 0 end--потому что это максимальное число, которое можно в 32 бита
 	BigNetTables.SendedTables = BigNetTables.SendedTables + 1
 	local IsValidPly = IsValid(ply)
 	local tbl = util.Compress(util.TableToJSON(tbl or empty_table))
