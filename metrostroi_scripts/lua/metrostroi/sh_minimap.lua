@@ -1,20 +1,21 @@
-hook.Add("MetrostroiLoaded",function()
--- hook.Add("InitPostEntity","asd",function()
+--выключено, потому что не доработано
+do return end
+--TODO проверить на нынещней версии метростроя, а не на dev ветке
+-- hook.Add("MetrostroiLoaded",function()
+local NWValuesSignalsServer = {}
+hook.Add("InitPostEntity","asd",function()
 -- timer.Simple(0,function()
-	if CLIENT then
 	-- if false then
+	if CLIENT then
 		Metrostroi.Minimap = Metrostroi.Minimap or {}
-		local Minimap = Metrostroi.Minimap
-		Minimap.SignsEnts = Minimap.SignsEnts or {}
-		local SignsEnts = Minimap.SignsEnts
-		for _,ent in pairs(SignsEnts)do
-			SafeRemoveEntity(ent)
-		end
+		-- local Minimap = Metrostroi.Minimap
 		
 		local color_green = Color(0,255,0)
 		local color_white = Color(255,255,255)
 		local color_black = Color(0,0,0)
 		local color_red = Color(255,0,0)
+		local AngleZero = Angle(0,0,0)
+		local VectorZero = Vector(0,0,0)
 		local VectorHalfThousand = Vector(500,0,0)
 		
 		--max angle for tracks (оптимизадницы)
@@ -32,17 +33,56 @@ hook.Add("MetrostroiLoaded",function()
 		
 		local Pos
 		
-		--TODO при загрузке сигналки отправляется инфа о каждом сигнале со всеми параметрами, также отправляются все таблички (сигны)
-		
-		--TODO постоянно обновляются: 
-			--сигналы: какие линзы должны гореть (и мрашрутные указатели), закрыт ли сигнал вручную, занятость сигнала, какой сейчас выбран маршрут, состояние автостопа. 
-			--составы: их местоположение, модельки кузовов
 		local LinesRaw = {}
 		local StationNamesRaw = {}
 		local Lines = {}
 		local StationNames = {}
 		local SignsRaw = {}
 		local Signs = {}
+		local SignalsRaw = {}
+		local Signals = {}
+		Signals.NWValues = {}
+		local SignalsModelsMinimapPositions = {}
+		local SignalsModelsScales = {}
+		local empty_func = function()end
+		
+		local function LocalToWorldForSigns(self,pos)
+			return LocalToWorld(self.params[2], self.params[4], pos, AngleZero)
+		end
+		
+		local function LocalToWorldAnglesForSigns(self,ang)
+			local pos,ang = LocalToWorld(self.params[2], self.params[4], VectorZero, ang)
+			return ang
+		end
+		
+		local function GetNWIntForSigns(self,str,def)
+			return self.params[1] or def or 0
+		end
+		
+		local function GetNWBoolForSigns(self,str,def)
+			return self.params[5] or def or false
+		end
+		
+		local function GetNWVectorForSigns(self,str,def)
+			return self.params[3] or def or VectorZero
+		end
+		
+		local function LocalToWorldForSignals(self,pos)
+			return LocalToWorld(self.Position, self.Angles, pos, AngleZero)
+		end
+		
+		local function LocalToWorldAnglesForSignals(self,ang)
+			local pos,ang = LocalToWorld(self.Position, self.Angles, VectorZero, ang)
+			return ang
+		end
+
+		local function GetAnglesSignals(self)
+			return self.Angles
+		end
+		
+		local function GetPosSignals(self)
+			return self.Position
+		end
 		
 		local function CalcPositions()
 			if not Pos then return end
@@ -84,31 +124,71 @@ hook.Add("MetrostroiLoaded",function()
 				StationNames[index] = {params[1] * Scale + Pos, params[2]}
 			end
 			
-			
-			Signs = {}
-			for _,ent in pairs(SignsEnts)do
-				SafeRemoveEntity(ent)
+			for _,sig in pairs(Signs)do
+				sig:OnRemove()
 			end
-			SignsEnts = {}
+			Signs = {}
 			local sigsEnt = scripted_ents.GetStored("gmod_track_signs").t
 			for k,params in pairs(SignsRaw)do
-				local model = sigsEnt.SignModels[params[1]-1]
-				if not model then continue end
-				--TODO у оффсета беру только z, потому что с y какая-то беда
-				--TODO рейки вешаются под кривым углом
-				local pos,ang = LocalToWorld(params[2],params[4], not params[5] and (params[3]+model.pos*Vector(0,0,1)) or (params[3]+model.pos*Vector(0,0,1)) * Vector(1,-1,1),params[5] and model.rotate and model.angles - Angle(0,180,0) or model.angles)
-				local modelname
-				if params[5] and not model.noleft then
-					local r,rc = model.model:gsub("_r.mdl","_l.mdl")
-					if rc > 0 then
-						modelname = r
-					else
-						modelname = model.model:gsub("_l.mdl","_r.mdl")
-					end
-				else
-					modelname = model.model
+				Signs[k] = {}
+				local SigTbl = Signs[k]
+				SigTbl.params = params
+				for k,v in pairs(sigsEnt)do
+					SigTbl[k] = v
 				end
-				Signs[k] = {modelname,pos * Scale + Pos, ang}
+				SigTbl.NextThink = empty_func
+				SigTbl.SetNextClientThink = empty_func
+				SigTbl.IsDormant = empty_func
+				SigTbl.LocalToWorld = LocalToWorldForSigns
+				SigTbl.LocalToWorldAngles = LocalToWorldAnglesForSigns
+				SigTbl.GetNWInt = GetNWIntForSigns
+				SigTbl.GetNWBool = GetNWBoolForSigns
+				SigTbl.GetNWVector = GetNWVectorForSigns
+			end
+			
+			
+			SignalsModelsMinimapPositions = {}
+			SignalsModelsScales = {}
+			local sigEnt = scripted_ents.GetStored("gmod_track_signal").t
+
+			for _,sig in pairs(Signals)do
+				if sig.OnRemove then sig:OnRemove() end
+			end
+			Signals = {}
+			Signals.NWValues = {}
+			for idx,sig in pairs(SignalsRaw)do
+				Signals[idx] = {}
+				local SigTbl = Signals[idx]
+				--копирую метатаблицу
+				for k1,v in pairs(sigEnt)do
+					SigTbl[k1] = v
+				end
+				
+				--копирую данные
+				local SigTbl = Signals[idx]
+				for k1,v in pairs(sig)do
+					SigTbl[k1] = v
+				end
+				
+				local Entity = FindMetaTable("Entity")
+				local funcs = {}
+				for k,v in pairs(Entity)do
+					if isstring(k) and k:find("GetNW2",1,true) then
+						funcs[k] = v
+						SigTbl[k] = function(self,str,def,...)
+							-- local selfidx = self:EntIndex()
+								local type = k:sub(7)
+							return Signals.NWValues[type] and Signals.NWValues[type][idx] and Signals.NWValues[type][idx][str] or type == "String" and ""
+						end
+					end
+				end
+				
+				SigTbl.IsDormant = empty_func
+				SigTbl.LocalToWorld = LocalToWorldForSignals
+				SigTbl.LocalToWorldAngles = LocalToWorldAnglesForSignals
+				SigTbl.GetPos = GetPosSignals
+				SigTbl.GetAngles = GetAnglesSignals
+				SigTbl:Initialize()
 			end
 		end
 		
@@ -143,8 +223,11 @@ hook.Add("MetrostroiLoaded",function()
 				CalcPositions() 
 			else 
 				Pos = nil end
-				for _,ent in pairs(SignsEnts)do
-					SafeRemoveEntity(ent)
+				for _,ent in pairs(Signs)do
+					ent:OnRemove()
+				end
+				for _,sig in pairs(Signals)do
+					if sig.OnRemove then sig:OnRemove() end
 				end
 		end
 		
@@ -153,37 +236,71 @@ hook.Add("MetrostroiLoaded",function()
 		SetScale(ScaleC:GetFloat())
 		SetMaxAng(MaxAngC:GetInt())
 		
-		hook.Add("BigNetTablesReceive","metrostori minimap info",function(tbl)
-			if tbl.type ~= "Minimap Info" then return end
-			local data = tbl.data
-			LinesRaw = data.Lines
-
-			StationNamesRaw = data.PlatformsNames
-			
-			SignsRaw = data.Signs
-			
-			CalcPositions()
-		end)
 		
 		local OccupiedLines = {}
+		hook.Add("BigNetTablesReceive","metrostori minimap info",function(tbl)
+			if tbl.type == "Minimap Info Update" then
+				local data = tbl.data
+				for _,wag in pairs(data.wagons)do
+					local pos = LocalToWorld(wag[1],wag[2],VectorHalfThousand,AngleZero)
+					local pos2 = LocalToWorld(wag[1],wag[2],-VectorHalfThousand,AngleZero)
+					table.insert(OccupiedLines,{wpos, pos2})
+				end
+				
+				Signals.NWValues = data.NWValuesSignals
+				
+			elseif tbl.type == "Minimap Info" then
+				local data = tbl.data
+				LinesRaw = data.Lines
+
+				StationNamesRaw = data.PlatformsNames
+				
+				SignsRaw = data.Signs
+				
+				SignalsRaw = data.Signals
+				
+				CalcPositions()
+			end
+		end)
+		
 		timer.Create("MetrostroiMinimapThink",1,0,function()
 			if not Pos then return end
-			--TODO это должен отправлять сервер, так как клиент может прогрузить не все составы
+
 			OccupiedLines = {}
 			for _,wag in pairs(ents.FindByClass("gmod_subway_*"))do
 				table.insert(OccupiedLines,{wag:LocalToWorld(VectorHalfThousand) * Scale + Pos, wag:LocalToWorld(Vector(-VectorHalfThousand,0,0)) * Scale +  Pos})
 			end
 			
+			--think табличек
+			for _,sig in pairs(Signs)do
+				sig:Think()
+				if IsValid(sig.Model) then
+					local ent = sig.Model
+					if not sig.MinimapPos then
+						sig.MinimapPos = ent:GetPos() * (Scale) + Pos
+						sig.ModelScale = ent:GetModelScale()
+					end
+					ent:SetPos(sig.MinimapPos)
+					ent:SetModelScale(sig.ModelScale*Scale)
+				end
+			end
 			
-			--так как при лаге сервера клиентсайд модели могут удалиться, делаю в таймере
-			for k,params in pairs(Signs)do
-				if not IsValid(SignsEnts[k]) then
-					if SignsEnts[k] then SafeRemoveEntity(SignsEnts[k]) end
-					local cent = ClientsideModel(params[1])
-					cent:SetModelScale(Scale*4)
-					SignsEnts[k] = cent
-					cent:SetPos(params[2])
-					cent:SetAngles(params[3])
+			--think сигналов
+			--TODO
+			for _,sig in pairs(Signals)do
+				if sig.Think then sig:Think()end
+				for k,v in pairs(sig.Models or {})do
+					if not istable(v) then continue end
+					for k1,cent in pairs(v)do
+						if IsValid(cent) then
+							if not SignalsModelsMinimapPositions[cent] then
+								SignalsModelsMinimapPositions[cent] = cent:GetPos() * Scale + Pos
+								SignalsModelsScales[cent] = cent:GetModelScale()
+							end
+							cent:SetPos(SignalsModelsMinimapPositions[cent])
+							cent:SetModelScale(SignalsModelsScales[cent] * Scale)
+						end
+					end
 				end
 			end
 		end)
@@ -234,6 +351,7 @@ hook.Add("MetrostroiLoaded",function()
 	end
 
 	local function SendMinimapinfo(ply)
+		SavePlatformsTrackNodes()
 		local Tbl = {}
 		Tbl.type = "Minimap Info"
 		Tbl.data = {}
@@ -280,21 +398,67 @@ hook.Add("MetrostroiLoaded",function()
 			-- table.insert(Signs,{sign.SignType or 1,sign:GetPos()+Vector(0,0,0),sign:GetAngles(),sign.Left})
 		end
 		
+		--сохраняю сигналы
+		data.Signals = {}
+		local Signals = data.Signals
+		for _,signal in pairs(ents.FindByClass("gmod_track_signal"))do
+			if not IsValid(signal) then continue end
+			local idx = signal:EntIndex()
+			Signals[idx] = {}
+			local SigTbl = Signals[idx]
+			SigTbl.LightType = signal.SignalType or 0
+			SigTbl.Name = signal.Name or "NOT LOADED"
+			SigTbl.Lenses = signal.ARSOnly and "ARSOnly" or signal.LensesStr
+			SigTbl.RouteNumber =   signal.RouteNumber
+			SigTbl.RouteNumberSetup =  signal.SignalType == 0 and signal.RouteNumberSetup or ""
+			SigTbl.IsolateSwitches = signal.IsolateSwitches
+			SigTbl.Approve0 = signal.Approve0
+			SigTbl.TwoToSix = signal.TwoToSix
+			SigTbl.ARSOnly = SigTbl.Lenses == "ARSOnly"
+			SigTbl.NonAutoStop = not signal.NonAutoStop
+			SigTbl.PassOcc = signal.PassOcc
+			SigTbl.Routes = signal.Routes
+			SigTbl.Left = signal.Left
+			SigTbl.Double = signal.Double
+			SigTbl.DoubleL = signal.DoubleL
+			if not SigTbl.ARSOnly then
+				SigTbl.LensesTBL = string.Explode("-",SigTbl.Lenses)
+			end
+			SigTbl.Position = signal:GetPos()
+			SigTbl.Angles = signal:GetAngles()
+		end
+		
 		SendBigNetTable(Tbl,ply)
 	end
 	
 	local oldload = Metrostroi.Load
 	Metrostroi.Load = function()
 		oldload()
-		SavePlatformsTrackNodes()
 		SendMinimapinfo()
 	end
 	
 	local MinimapStatuses = {}
 	hook.Add("PlayerInitialSpawn","Metrostroi Minimap",function(ply)
-		SavePlatformsTrackNodes()
 		SendMinimapinfo(ply)
 		MinimapStatuses[ply] = nil
+	end)
+	
+	timer.Create("Minimap Info Update",1,0,function()
+		local Tbl = {}
+		Tbl.Type = "Minimap Info Update"
+		Tbl.data = {}
+		local data = Tbl.data
+		data.wagons = {}
+		local wagons = data.wagons
+		for _,ent in pairs(ents.FindByClass("gmod_subway_*"))do
+			if not IsValid(ent) then continue end
+			wagons[ent:EntIndex()] = {ent:GetPos(), ent:GetAngles()}
+		end
+		
+		data.NWValuesSignals = NWValuesSignalsServer
+		
+		--TODO отправлять только тем, у кого включена карта
+		SendBigNetTable(Tbl)
 	end)
 	
 	concommand.Add("metrostroi_minimap_toggle", function(ply)
@@ -302,7 +466,39 @@ hook.Add("MetrostroiLoaded",function()
 		MinimapStatuses[ply] = not MinimapStatuses[ply]
 	end)
 	
-	-- SavePlatformsTrackNodes()
-	-- SendMinimapinfo()
+	SendMinimapinfo()
+end)
+
+hook.Add("InitPostEntity","Upgrade functions for Metrostroi Minimap",function()
+	if SERVER then
+		local Entity = FindMetaTable("Entity")
+		local funcs = {}
+		for k,v in pairs(Entity)do
+			if isstring(k) and k:find("SetNW2",1,true) then
+				print(k)
+				funcs[k] = v
+				NWValuesSignalsServer[k:sub(7)] = {}
+			end
+		end
+	
+		local sigEnt = scripted_ents.GetStored("gmod_track_signal").t
+		for k,v in pairs(funcs)do
+			sigEnt[k] = function(self,str,val,...)
+				v(self,str,val,...)
+				local type = k:sub(7)
+				local idx = self:EntIndex()
+				NWValuesSignalsServer[type][idx] = NWValuesSignalsServer[k:sub(7)][idx] or {}
+				NWValuesSignalsServer[type][idx][str] = val
+			end
+		end
+	end
+	
+	if SERVER then return end
+	local Entity = FindMetaTable("Entity")
+	local oldSetParent = Entity.SetParent
+	Entity.SetParent = function(self,ent,...)
+		if not IsValid(ent) then return end
+		return oldSetParent(self,ent,...)
+	end
 end)
 

@@ -1,20 +1,21 @@
---TODO проверять положение остряков
---TODO возможность указывать номер маршрута, а не только команды
-timer.Simple(0,function()
+--TODO возможность добавлять и убирать автообороты в игре
+--возможно на других серверах будет работать некорректно, так как у меня свой алгоритм занятости сигналов
+-- timer.Simple(0,function()
+hook.Add("InitPostEntity","Avtooborot by signals init",function()
 	if not ulx or not ulx.command then return end
 	
 	local function toggle(calling_ply,str)
 		if CLIENT then return end
-		calling_ply:ConCommand("thefuldeeps_avtooborot_toggle_"..str)
+		calling_ply:ConCommand("metrostroi_avtooborot_toggle "..str)
 	end
-	local comm = ulx.command("Metrostroi", "ulx avtooborot", toggle, "!avtooborot", true, false, true)
+	local comm = ulx.command("Metrostroi", "ulx avtooborottoggle", toggle, "!avtooborottoggle", true, false, true)
 	comm:addParam{ type=ULib.cmds.StringArg, hint="name"}
 	comm:defaultAccess(ULib.ACCESS_OPERATOR)
 	comm:help("Включить/выключить автооборот по его имени")
 	
 	local function info(calling_ply)
 		if CLIENT then return end
-		calling_ply:ConCommand("thefuldeeps_avtooborot_info")
+		calling_ply:ConCommand("metrostroi_avtooborot_info")
 	end
 	local comm = ulx.command("Metrostroi", "ulx avtooborotinfo", info, "!avtooborotinfo", true, false, true)
 	comm:defaultAccess(ULib.ACCESS_ALL)
@@ -25,9 +26,10 @@ if CLIENT then return end
 --ulx.fancyLogAdmin(ply, true, "#A заспавнил #s", TrainName)
 --ulx.fancyLog(true, "Вагонов: #i", WagNum)
 
-Metrostroi = Metrostroi or {}
-Metrostroi.TheFulDeepsAvtooborot = Metrostroi.TheFulDeepsAvtooborot or {}
-local TheFulDeepsAvtooborot = Metrostroi.TheFulDeepsAvtooborot
+-- Metrostroi = Metrostroi or {}
+-- Metrostroi.TheFulDeepsAvtooborot = Metrostroi.TheFulDeepsAvtooborot or {}
+-- local TheFulDeepsAvtooborot = Metrostroi.TheFulDeepsAvtooborot
+TheFulDeepsAvtooborot = TheFulDeepsAvtooborot or {}
 
 TheFulDeepsAvtooborot.ConditionsTbls = TheFulDeepsAvtooborot.ConditionsTbls or {}
 local ConditionsTbls = TheFulDeepsAvtooborot.ConditionsTbls
@@ -49,40 +51,49 @@ local function ChatPrintAll(msg,ply2)
 	--end
 end
 
-TheFulDeepsAvtooborot.Add = function(Name,Commands,Occupied,NotOccuped,NeedOpened,NeedNotOpened,Switches)--в качестве аргументов подаются таблицы имен сигналов
+concommand.Add(
+	"metrostroi_avtooborot_toggle",
+	function(ply,cmd,args)
+		if IsValid(ply) and not (ply:IsSuperAdmin() or ULib and ULib.ucl.query(ply,"ulx avtooborottoggle")) then ChatPrint(ply,"Недостаточно прав для переключения автооборота") return end
+		local Name = args[1]
+		if not Name or not ConditionsTbls[Name] then
+			ChatPrint(ply,"Автооборота с именем '"..(Name or '').."' не найдено")
+			return
+		end
+		if ConditionsTbls[Name][6] then
+			ConditionsTbls[Name][6] = nil
+			ChatPrintAll("Автооборот "..Name.." включен.",ply)
+		else
+			ConditionsTbls[Name][6] = true
+			ChatPrintAll("Автооборот "..Name.." выключен.",ply)
+		end
+	end,
+	nil,
+	"enabling/disabling avtooborot by name"
+)
+
+TheFulDeepsAvtooborot.Add = function(Name,Commands,Occupied,NotOccuped,NeedOpened,NeedNotOpened,SwitchesToChange,SwitchesToCheck,RouteIndexesToOpen)--в качестве аргументов подаются таблицы имен сигналов
 	Commands = Commands or {}
 	Occupied = Occupied or {}
 	NotOccuped = NotOccuped or {}
 	NeedOpened = NeedOpened or {}
 	NeedNotOpened = NeedNotOpened or {}
-	Switches = Switches or {}
+	SwitchesToChange = SwitchesToChange or {}
+	SwitchesToCheck = SwitchesToCheck or {}
+	RouteIndexesToOpen = RouteIndexesToOpen or {}
 	if not istable(Commands) then Commands = {tostring(Commands)} end
 	if not istable(Occupied) then Occupied = {tostring(Occupied)} end
 	if not istable(NotOccuped) then NotOccuped = {tostring(NotOccuped)} end
 	if not istable(NeedOpened) then NeedOpened = {tostring(NeedOpened)} end
 	if not istable(NeedNotOpened) then NeedNotOpened = {tostring(NeedNotOpened)} end
-	if not istable(Switches) then Switches = {tostring(Switches)} end
+	if not istable(SwitchesToChange) then SwitchesToChange = {tostring(SwitchesToChange)} end
+	if not istable(SwitchesToCheck) then SwitchesToCheck = {tostring(SwitchesToCheck)} end
+	--if not istable(RouteIndexesToOpen) then RouteIndexesToOpen = {tostring(RouteIndexesToOpen)} end
 	if not Name or not isstring(Name) or Name == "" then ChatPrint(nil,"wrong Avtooborot Add arguments") return end
-	Name = Name:gsub(' ', '_')
-	
-	concommand.Add(
-		"thefuldeeps_avtooborot_toggle_"..Name,
-		function(ply)
-			if IsValid(ply) and not ply:IsAdmin() then ChatPrint(ply,"Только админ может переключать автооборот") return end
-			if ConditionsTbls[Name][6] then
-				ConditionsTbls[Name][6] = nil
-				ChatPrintAll("Автооборот "..Name.." включен.",ply)
-			else
-				ConditionsTbls[Name][6] = true
-				ChatPrintAll("Автооборот "..Name.." выключен.",ply)
-			end
-		end,
-		nil,
-		"enabling/disabling avtooborot by name",
-		128
-	)
+	Name = Name:gsub('%s', '_')
+
 	--имя = команды, занятые, не занятые, должен быть открыт, должен быть не открыт, выключен ли, открыт ли, количество проверок (защита от ложных срабатываний)
-	ConditionsTbls[Name] = {Commands,Occupied,NotOccuped,NeedOpened,NeedNotOpened,false,false,0,Switches}
+	ConditionsTbls[Name] = {Commands,Occupied,NotOccuped,NeedOpened,NeedNotOpened,false,false,0,SwitchesToChange,SwitchesToCheck,RouteIndexesToOpen}
 	print("added avtooborot "..Name)
 end
 local Add = TheFulDeepsAvtooborot.Add
@@ -90,19 +101,18 @@ local Add = TheFulDeepsAvtooborot.Add
 TheFulDeepsAvtooborot.Remove = function(Name)
 	if not ConditionsTbls[Name] then print("автооборота с таким именем не существует") return end
 	ConditionsTbls[Name] = nil
-	concommand.Remove("thefuldeeps_avtooborot_toggle_"..Name)
 	print("Автооборот "..Name.." удален.")
 end
 local Remove = TheFulDeepsAvtooborot.Remove
 
 TheFulDeepsAvtooborot.Toggle = function(Name)
 	if not ConditionsTbls[Name] then print("автооборота с таким именем не существует") return end
-	RunConsoleCommand("thefuldeeps_avtooborot_toggle_"..Name)
+	RunConsoleCommand("metrostroi_avtooborot_toggle_"..Name)
 end
 local Toggle = TheFulDeepsAvtooborot.Toggle
 
 concommand.Add(
-	"thefuldeeps_avtooborot_info",
+	"metrostroi_avtooborot_info",
 	function(ply)
 		if table.Count(ConditionsTbls) == 0 then ChatPrint(ply,"Автооборотов нет.") return end
 		for name,tbl in pairs(ConditionsTbls) do
@@ -114,22 +124,9 @@ concommand.Add(
 )
 
 
-local NamesSignals = {}
-timer.Simple(0,function()
-	local oldload = Metrostroi.Load
-	Metrostroi.Load = function(...)
-		oldload(...)
-		timer.Simple(1,function()
-			for _,sig in pairs(ents.FindByClass("gmod_track_signal")) do
-				if IsValid(sig) and sig.Name then NamesSignals[sig.Name] = sig end
-			end
-		end)
-	end
-end)
-
 local function CheckOccupationTbl(tbl,needoccuped)--во время перевода стрелок occupied становится true. Это проблема
 	for _,name in pairs(tbl) do
-		local sig = NamesSignals[name]
+		local sig = Metrostroi.SignalEntitiesByName[name]
 		if IsValid(sig) and ((needoccuped and not sig.Occupied) or (not needoccuped and sig.Occupied)) then return end
 	end
 	return true
@@ -154,7 +151,7 @@ end
 
 --[[local function IsSignalsRed(tbl)
 	for _,name in pairs(tbl) do
-		local sig = NamesSignals[name]
+		local sig = Metrostroi.SignalEntitiesByName[name]
 		if IsValid(sig) and sig.Red then return true end
 	end
 end
@@ -175,8 +172,24 @@ local function CompareTables(tbl1,tbl2)
 	return true
 end
 
+local function CheckSwitches(tbl)
+	for _,name in pairs(tbl)do
+		local state = name:sub(-1,-1)
+		if state == "+" or state == "-" then
+			for _,ent in pairs(ents.FindByName(swh:sub(1,-2)))do
+				if IsValid(ent) and ent:GetClass() == "prop_door_rotating" then
+					local curstate = ent:GetInternalVariable("m_eDoorState") or 0
+					--TODO проверить правильность m_eDoorState, потому что я не помню, какие числа должны быть
+					if state == "+" and curstate ~= 0 and curstate ~= 2 or state == "-" and curstate ~= 1 and curstate ~= 3 then return end
+				end
+			end
+		end
+	end
+	return true
+end
+
 local function CheckCondition(tbl,dothings)
-	if not tbl[6] and CheckOccupationTbl(tbl[2],true) and CheckOccupationTbl(tbl[3]) and CheckForOpened(tbl[4],true) and CheckForOpened(tbl[5]) then
+	if not tbl[6] and CheckOccupationTbl(tbl[2],true) and CheckOccupationTbl(tbl[3]) and CheckForOpened(tbl[4],true) and CheckForOpened(tbl[5]) and CheckSwitches(tbl[10]) then
 		tbl[8] = 0
 		if tbl[7] then return end--tbl[7] означает, что этот автооборот уже сработал
 		
@@ -188,7 +201,8 @@ local function CheckCondition(tbl,dothings)
 				
 			local comms = tbl[1]
 			for _,comm in pairs(comms) do
-				for _,sig in pairs(NamesSignals) do
+				for _,sig in pairs(Metrostroi.SignalEntitiesByName) do
+					--TODO после обновы будет MSignalSayHook а не SayHook
 					if IsValid(sig) and sig.SayHook then sig:SayHook(nil,comm) end
 				end
 				ChatPrintAll(comm)
@@ -205,6 +219,15 @@ local function CheckCondition(tbl,dothings)
 					end
 				end
 			end
+			
+			for signame,routeindex in pairs(tbl[10])do
+				local sig = Metrostroi.SignalEntitiesByName[signame]
+				--TODO не уверен, возможно тут нужны еще дополнительыне проверки (например как на sig.Close)
+				if IsValid(sig) and sig.Routes and sig.Routes[routeindex] then 
+					sig.Close = false
+					sig:OpenRoute(routeindex)
+				end
+			end
 		else
 			return true
 		end
@@ -218,6 +241,7 @@ local timerdelay = 5
 local opendelay = timerdelay - 0.5
 
 local function AvtooborotThink()
+	if not Metrostroi or not Metrostroi.SignalEntitiesByName then return end
 	for _,tbl in pairs(ConditionsTbls) do
 		if CheckCondition(tbl)then timer.Simple(opendelay,function()CheckCondition(tbl,true)end)end
 	end
@@ -226,9 +250,8 @@ end
 timer.Create("Avtooborot Think",timerdelay,0,AvtooborotThink)
 
 
---эти две строчки, чтобы я могу перезапускать скрипт
+--эта строчка, чтобы я мог перезапускать скрипт
 for name,tbl in pairs(ConditionsTbls)do Remove(name)end
-for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do if IsValid(sig)and sig.Name then NamesSignals[sig.Name]=sig end end
 
 
 
@@ -352,4 +375,7 @@ elseif map == "gm_metro_nsk_line_2_v4" then
 	--золотая нива
 	Add("zn1-1","!sopen zn1-1","ZN194B",{"ZN311","ZN194A","ZN321","ZN194"},nil,"zn1-2","zn_switch1+")
 	Add("zn1-2","!sopen zn1-2",nil,{"ZN311","ZN194A","ZN321","ZN194","ZN194B"},nil,"zn1-1","zn_switch1-")
+elseif map == "gm_mustox_neocrimson_line_a" then
+	--сталинская
+	--Add()
 end
