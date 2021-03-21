@@ -165,9 +165,15 @@ local function SignalCommand(signals,commands)
 	end
 end]]
 
-local function CompareTables(tbl1,tbl2)
-	for _,val1 in pairs(tbl1) do
-		if not table.HasValue(tbl2,val1) then return end
+local function CompareTables(tbl1,tbl2,forRouteIndexes)
+	if forRouteIndexes then
+		for signame,routeindex in pairs(tbl1) do
+			if tbl2[signame] ~= routeindex then return end
+		end
+	else
+		for _,val1 in pairs(tbl1) do
+			if not table.HasValue(tbl2,val1) then return end
+		end
 	end
 	return true
 end
@@ -188,22 +194,35 @@ local function CheckSwitches(tbl)
 	return true
 end
 
+local function CheckRouteIndexes(tbl)
+	for signame,routeindex in pairs(tbl)do
+		local sig = Metrostroi.SignalEntitiesByName[signame]
+		if IsValid(sig) and sig.Route ~= routeindex or (sig.Routes and sig.Routes[routeindex] and not sig.Routes[routeindex].IsOpened) then return end
+	end
+	return true
+end
+
 local function CheckCondition(tbl,dothings)
-	if not tbl[6] and CheckOccupationTbl(tbl[2],true) and CheckOccupationTbl(tbl[3]) and CheckForOpened(tbl[4],true) and CheckForOpened(tbl[5]) and CheckSwitches(tbl[10]) then
+	--если добавить not CheckRouteIndexes(tbl[11]), то при ручном переводе оно вернет обратно
+	--а без этого условия он откроет маршрут только если обновится состояние оккупации или открытия других оборотов
+	if not tbl[6] and CheckOccupationTbl(tbl[2],true) and CheckOccupationTbl(tbl[3]) and CheckForOpened(tbl[4],true) and CheckForOpened(tbl[5]) and CheckSwitches(tbl[10]) --[[and not CheckRouteIndexes(tbl[11])]] then
 		tbl[8] = 0
 		if tbl[7] then return end--tbl[7] означает, что этот автооборот уже сработал
 		
 		if dothings then
 			--если есть несколько условий для открытия одного маршрута, то всем условиям сообщяю, что маршрут открыт
 			for _,t in pairs(ConditionsTbls) do
-				if CompareTables(t[1], tbl[1]) then t[7] = true end
+				if CompareTables(t[1], tbl[1]) or CompareTables(t[9], tbl[9]) or CompareTables(t[11], tbl[11],true) then t[7] = true end
 			end
 				
 			local comms = tbl[1]
 			for _,comm in pairs(comms) do
 				for _,sig in pairs(Metrostroi.SignalEntitiesByName) do
-					--TODO после обновы будет MSignalSayHook а не SayHook
-					if IsValid(sig) and sig.SayHook then sig:SayHook(nil,comm) end
+					if IsValid(sig) then
+						if sig.SayHook then sig:SayHook(nil,comm)
+						elseif MSignalSayHook then MSignalSayHook(nil,comm)--TODO не работает для нового метростроя почему лол?
+						end
+					end
 				end
 				ChatPrintAll(comm)
 			end
@@ -216,16 +235,18 @@ local function CheckCondition(tbl,dothings)
 						if IsValid(ent) and ent:GetClass() == "prop_door_rotating" then
 							ent:Fire(pos == "+" and "Close" or "Open","","0")
 						end
+						ChatPrintAll(swh)
 					end
 				end
 			end
 			
-			for signame,routeindex in pairs(tbl[10])do
+			for signame,routeindex in pairs(tbl[11])do
 				local sig = Metrostroi.SignalEntitiesByName[signame]
 				--TODO не уверен, возможно тут нужны еще дополнительыне проверки (например как на sig.Close)
 				if IsValid(sig) and sig.Routes and sig.Routes[routeindex] then 
 					sig.Close = false
 					sig:OpenRoute(routeindex)
+					ChatPrintAll("Opening route '"..(sig.Routes[routeindex].RouteName and sig.Routes[routeindex].RouteName:find("%a") and sig.Routes[routeindex].RouteName or routeindex).."' for signal '"..signame.."'")
 				end
 			end
 		else
@@ -377,5 +398,7 @@ elseif map == "gm_metro_nsk_line_2_v4" then
 	Add("zn1-2","!sopen zn1-2",nil,{"ZN311","ZN194A","ZN321","ZN194","ZN194B"},nil,"zn1-1","zn_switch1-")
 elseif map == "gm_mustox_neocrimson_line_a" then
 	--сталинская
-	--Add()
+	Add("ste-1","!sopen ste-1","RCST125A",{"STE","ST133","131A","ST131","ST127","ST123"},nil,{"st1-3","st1-4"})
+	Add("st1-4","!sopen st1-4","131A",{"ST133","RCST31","RCST41","ST1","ST2"},nil,{"st4-2","st3-2"})
+	Add("st1-3","!sopen st1-3",{"131A","RCST41"},{"ST133","RCST31","ST1"},nil,{"st3-2","st1-4"})
 end
