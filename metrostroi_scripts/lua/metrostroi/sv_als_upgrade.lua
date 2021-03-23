@@ -70,7 +70,6 @@ local function UpgradeTracks()
 					if another and
 						(
 						another.next and another.prev
-						--TODO проверить две следующие строчки. Не уверен в правильности углов
 						or not another.prev and another.next and math.abs(selfang - (another.next.pos - another.pos):Angle()[2]) < 90
 						or not another.next and another.prev and math.abs(selfang - (another.prev.pos - another.pos):Angle()[2]) > 90
 						)
