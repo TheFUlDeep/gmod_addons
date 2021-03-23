@@ -214,6 +214,10 @@ local function OverWriteUlxCommands()
 	local function SetBan(SteamID,Nick,WhoBannedSteamID,WhoBanned,reason,duration)
 		if not SteamID then ULib.tsayError(ply,"No SteamID") return end
 		duration = tostring(duration)
+		if FamilySteamIDs[SteamID] then
+			reason = reason.." Child SteamID="..SteamID
+			SteamID = FamilySteamIDs[SteamID]
+		end
 		--if not ULib.isValidSteamID(id) then ULib.tsayError( calling_ply, "Invalid SteamID", true ) return end
 		if not WhoBannedSteamID then WhoBannedSteamID = "Console" end
 		if not WhoBanned then WhoBanned = "Console" end

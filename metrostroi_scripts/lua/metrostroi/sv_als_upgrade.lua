@@ -66,33 +66,48 @@ local function UpgradeTracks()
 				if selfnode then
 					local selfang = (selfnode.pos - (i == 1 and p[2].pos or p[count-1].pos)):Angle()[2]--угол в сторону крайнего ноуда
 					local another,lerptonext = FindNearNode(selfnode)--может можно использовать Metrostroi.NearestNodes(pos)?
-					if another then
-						continuations[id][idx] = {
-							another.path.id,
-							another.id,
-							another.x + (another.pos:Distance(LerpVector(lerptonext,another.pos, lerptonext ~= 0 and another.next.pos or another.pos)))*0.01905,
-							another.next and math.abs(selfang - (another.next.pos - another.pos):Angle()[2]) < 90 or another.prev and math.abs(selfang - (another.prev.pos - another.pos):Angle()[2]) > 90,
-							--i == 2--не нужно, так как тут берутся только концы треков
-						}
+					--если перепрыгивает на новый трек, и у этого нового трека это первый (или последний) ноуд, то добавлять только в том случае, если угол подходит
+					if another and
+						(
+						another.next and another.prev
+						--TODO проверить две следующие строчки. Не уверен в правильности углов
+						or not another.prev and another.next and math.abs(selfang - (another.next.pos - another.pos):Angle()[2]) < 90
+						or not another.next and another.prev and math.abs(selfang - (another.prev.pos - another.pos):Angle()[2]) > 90
+						)
+					then
+						continuations[id][idx] = continuations[id][idx] or {}
+						local n = table.insert(continuations[id][idx],
+							{
+								another.path.id,
+								another.id,
+								another.x + (another.pos:Distance(LerpVector(lerptonext,another.pos, lerptonext ~= 0 and another.next.pos or another.pos)))*0.01905,
+								another.next and math.abs(selfang - (another.next.pos - another.pos):Angle()[2]) < 90 or another.prev and math.abs(selfang - (another.prev.pos - another.pos):Angle()[2]) > 90,
+								--i == 2--не нужно, так как тут берутся только концы треков
+							}
+						)
 						
 						--связываю в обратную сторону
-						--TODO не уверен в этом
 						continuations[another.path.id] = continuations[another.path.id] or {}
-						continuations[another.path.id][another.id] = {
-							id,
-							idx,
-							selfnode.x,
-							i == 1,
-							not continuations[id][idx][4]--рестрикт, указание, с какого направления можно перепрыгивать
-						}
+						continuations[another.path.id][another.id] = continuations[another.path.id][another.id] or {}
+						table.insert(continuations[another.path.id][another.id],
+							{
+								id,
+								idx,
+								selfnode.x,
+								i == 1,
+								not continuations[id][idx][n][4]--рестрикт, указание, с какого направления можно перепрыгивать
+							}
+						)
 					end
 				end
 			end
 		end
 	end
 	for k,v in pairs(continuations)do
-		for k1,v1 in pairs(v)do
-			print("linked path",k,"node",k1,"and path",v1[1],"node",v1[2],"new dir is",v1[4],"allow from dir",v1[5])
+		for k1,v2 in pairs(v)do
+			for _,v1 in pairs(v2) do
+				print("linked path",k,"node",k1,"and path",v1[1],"node",v1[2],"new dir is",v1[4],"allow from dir",v1[5])
+			end
 		end
 	end
 end
@@ -144,15 +159,17 @@ local function findfunc(startnode,startx,dir,back,returnPassedNodes)
 
 		--переход на следующий ноуд (или на следующий трек)		
 		--сначала ищется на другом треке
-		local newnodeparams = continuations[pathid] and continuations[pathid][curnode.id]
+		local newnodeparamsTbl = continuations[pathid] and continuations[pathid][curnode.id]
 		-- print(pathid,curnode.id, needcontinue)
-		if newnodeparams then
-			local curnode = Metrostroi.Paths[newnodeparams[1]][newnodeparams[2]]
-			if curnode and (newnodeparams[5] == nil or dir == newnodeparams[5]) then
-				nodescount = nodescount + 1
-				curnodes[1][nodescount] = newnodeparams[3]
-				curnodes[2][nodescount] = newnodeparams[4]
-				curnodes[3][nodescount] = curnode
+		if newnodeparamsTbl then
+			for _,newnodeparams in pairs(newnodeparamsTbl) do
+				local curnode = Metrostroi.Paths[newnodeparams[1]][newnodeparams[2]]
+				if curnode and (newnodeparams[5] == nil or dir == newnodeparams[5]) then
+					nodescount = nodescount + 1
+					curnodes[1][nodescount] = newnodeparams[3]
+					curnodes[2][nodescount] = newnodeparams[4]
+					curnodes[3][nodescount] = curnode
+				end
 			end
 		end
 		
