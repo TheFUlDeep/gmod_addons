@@ -193,9 +193,6 @@ local function GenerateRawOccupationSections()
 	RawOccupationSections = {}
 	for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do
 		if not IsValid(sig) or not sig.TrackPosition then continue end
-		--создаю отрезки от стартового сигнала до всех возможных следующих сигналов
-		local starttrackid = sig.TrackPosition.path.id
-		local startnodeid = sig.TrackPosition.node1.id
 		
 		--поиск всех ограничивающих светофоров спереди
 		local way = findfunc(sig.TrackPosition.node1,sig.TrackPosition.x,sig.TrackDir,false,true)
@@ -209,22 +206,6 @@ local function GenerateRawOccupationSections()
 		end		
 	end
 end
--- UpgradeTracks()
---GenerateRawOccupationSections()
--- for k,v in pairs(RawOccupationSections)do
-	-- for k1,v1 in pairs(v) do
-		-- for k2 in pairs(v1) do
-			-- if k2.Name ~= "PRD" then continue end
-			-- print(k,k1,k2)
-		-- end
-	-- end
--- end
--- local asd = Metrostroi.GetSignalByName("MR283")
--- print("AAAAAAAAAAAAAAAAAAAAAAAAA")
--- for k,v in pairs(findfunc(asd.TrackPosition.node1,asd.TrackPosition.x,asd.TrackDir,false,true))do
-	-- print(k.path.id,k.id)
--- end
--- print("BBBBBBBBBBBBBBBBBBBBBBBBB")
 
 local PrevSignals = {}
 local function GeneratePrevSignals()
@@ -279,7 +260,41 @@ timer.Create("Metrostroi Signals Occupation Upgrade",1,0,function()
 	end
 end)
 
-
+-- local RemovedSignals = {}
+local function RemoveUselessRepeaters()
+	local sigs = ents.FindByClass("gmod_track_signal")
+	for _,sig in pairs(sigs)do
+		if not IsValid(sig) or not sig.TrackPosition then continue end
+		
+		local IsBadRepeater
+		for routeid, params in pairs(sig.Routes or {})do
+			if not params.Repeater or params.Switches and (params.Switches:find("+",1,true) or params.Switches:find("-",1,true)) then IsBadRepeater = true break end
+			for name,ent in pairs(sig.NextSignals or {})do
+				--findfunc(startnode,startx,dir,back,returnPassedNodes)
+				if (name:find("%a") or name:find("%d") or name == "*") and findfunc(sig.TrackPosition.node1, sig.TrackPosition.x, sig.TrackDir) ~= ent then IsBadRepeater = true break end
+			end
+			if IsBadRepeater then break end
+		end
+		if IsBadRepeater then continue end
+		
+		for _,sig2 in pairs(sigs)do
+			if not IsValid(sig2) or sig2 == sig then continue end
+			for routeid,params in pairs(sig2.Routes or {})do
+				local nextsignalName = params.NextSignal
+				if nextsignalName == "*" then nextsignalName = sig2.NextSignals["*"] and sig2.NextSignals["*"].Name end
+				if nextsignalName and nextsignalName == sig.Name then
+					sig2.NextSignals[params.NextSignal] = nil
+					local nextSignalEnt = findfunc(sig.TrackPosition.node1, sig.TrackPosition.x, sig.TrackDir)
+					params.NextSignal = nextSignalEnt.Name
+					sig2.NextSignals[params.NextSignal] = nextSignalEnt
+					print("reconfiguting signal "..(sig2.Name or tostring(sig2).." "..sig2:EntIndex()).." because of deleting signal "..nextsignalName)
+				end
+			end
+		end
+		SafeRemoveEntity(sig)
+		print("removed signal "..sig.Name.." because it useless repeater")
+	end
+end
 
 
 hook.Add("MetrostroiLoaded","UpgradeTracks",function()
@@ -287,15 +302,56 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 -- hook.Add("InitPostEntity","test",function()
 	local oldload = Metrostroi.Load
 	Metrostroi.Load = function(...)
+		-- RemovedSignals = {}
 		oldload(...)
 		UpgradeTracks()
 		--backsignals = {}
 		--forwsignals = {}
 	end
 	
+	-- local oldUpdateSignalEntities = Metrostroi.UpdateSignalEntities
+	-- Metrostroi.UpdateSignalEntities = function(...)
+		-- for _,self in pairs(ents.FindByClass("gmod_track_signal"))do
+			-- if not IsValid(self) then continue end
+			-- local needIterations = self.Routes and #self.Routes or 0
+			-- while needIterations > 0 do
+				-- if not self.Routes[needIterations].NextSignal or self.Routes[needIterations].Repeater and self.Routes[needIterations].NextSignal == self.Name or not self.Routes[needIterations].NextSignal:find("%a") and not self.Routes[needIterations].NextSignal:find("%d") and not self.Routes[needIterations].NextSignal:find("*",1,true) then
+					-- table.remove(self.Routes,needIterations)
+				-- end
+				-- needIterations = needIterations - 1
+			-- end
+			-- if not self.Routes or #self.Routes == 0 then
+				-- self.Routes = {{}}
+				-- if self.Name then
+					-- RemovedSignals[self.Name] = true
+				-- end
+				-- print("removed signal "..(self.Name or "NAME").." because of bad settings")
+				-- SafeRemoveEntity(self)
+			-- end
+		-- end
+		-- return oldUpdateSignalEntities(...)
+	-- end
+	
 	local oldPostInit = Metrostroi.PostSignalInitialize
 	Metrostroi.PostSignalInitialize = function()
 		oldPostInit()
+		RemoveUselessRepeaters()
+		
+		-- for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do
+			-- if IsValid(sig) then
+				-- for routeid,params in pairs(sig.Routes or {})do
+					-- local nextsignal = params.NextSignal
+					-- if nextsignal == "*" then nextsignal = sig.NextSignals["*"] and sig.NextSignals["*"].Name end
+					-- if nextsignal and RemovedSignals[nextsignal] then
+						-- sig.NextSignals[nextsignal] = nil
+						-- params.NextSignal = sig.Name
+						-- sig.NextSignals[params.NextSignal] = sig
+						-- print("reconfiguting signal "..sig.Name.." to self because of deleted signal "..nextsignal)
+					-- end
+				-- end
+			-- end
+		-- end
+		
 		GeneratePrevSignals()
 		GenerateRawOccupationSections()
 	end
