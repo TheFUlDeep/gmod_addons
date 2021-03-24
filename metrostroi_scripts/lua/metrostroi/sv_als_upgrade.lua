@@ -113,7 +113,7 @@ end
 
 
 --TODO нет проверки на isolating
-local function findfunc(startnode,startx,dir,back,returnPassedNodes)
+local function findfunc(startnode,startx,dir,back,returnPassedNodes,withIsolateSwitches)
 	if back then dir = not dir end
 	local curnodes = {{startx},{dir},{startnode}}--так будет только три таблицы
 	local nodescount = 1
@@ -139,7 +139,7 @@ local function findfunc(startnode,startx,dir,back,returnPassedNodes)
 		if Metrostroi.SignalEntitiesForNode[curnode] then
 			local nearestent
 			for _,ent in pairs(Metrostroi.SignalEntitiesForNode[curnode]) do
-				if IsValid(ent) and (back and dir ~= ent.TrackDir or not back and dir == ent.TrackDir) and ent.OutputARS ~= 0 and (dir and ent.TrackPosition.x > startx or not dir and ent.TrackX < startx) then
+				if IsValid(ent) and (withIsolateSwitches and ent.IsolateSwitches or not withIsolateSwitches) and (back and dir ~= ent.TrackDir or not back and dir == ent.TrackDir) and ent.OutputARS ~= 0 and (dir and ent.TrackPosition.x > startx or not dir and ent.TrackX < startx) then
 					if not nearestent or dir and ent.TrackX < nearestent.TrackX or not dir and ent.TrackX > nearestent.TrackX then--поиск ближайшего
 						nearestent = ent
 					end
