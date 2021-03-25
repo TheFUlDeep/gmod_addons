@@ -1565,8 +1565,8 @@ if SERVER then
 	
 	local LastTrainSpawned = os.time()
 	hook.Add("MetrostroiSpawnerRestrict","AllowNoARSWithTwoToSix",function(ply,Settings)
-		if os.time() - LastTrainSpawned < 6 then 
-			ULib.tsayError( ply, "Подожди " .. math.Round(LastTrainSpawned + 6 - os.time()) .. " seconds, чтобы заспавнить состав")
+		if os.time() - LastTrainSpawned < 10 then 
+			ULib.tsayError( ply, "Подожди " .. math.Round(LastTrainSpawned + 10 - os.time()) .. " seconds, чтобы заспавнить состав")
 			return true 
 		end
 		--if not ULib.ucl.query(ply,Settings.Train) then return true end--добавил просто по приколу. мне это не нужно

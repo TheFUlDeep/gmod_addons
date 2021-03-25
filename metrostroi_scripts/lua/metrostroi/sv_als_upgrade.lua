@@ -185,8 +185,32 @@ local function findfunc(startnode,startx,dir,back,returnPassedNodes,withIsolateS
 	if returnPassedNodes then return wasNodes end
 end
 
+local et = {}--empty table
+local PrevSignals = {}
+local function GeneratePrevSignals()
+	for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do
+		if not IsValid(sig) then continue end
+		for _,nextsig in pairs(sig.NextSignals or et)do
+			if not IsValid(nextsig) then continue end
+			PrevSignals[nextsig] = PrevSignals[nextsig] or {}
+			PrevSignals[nextsig][sig] = true
+		end
+	end
+end
+
 
 local RawOccupationSections = {}
+local function AddNodesToRawOccupationSectiona(way,sig)
+	-- findfunc возвращает одну большую таблицу, чтобы сама функция findfunc работала быстрее, так как используется постоянно, а здесь оно исопльзуется только один раз, значит можно потратить ресурсы на обработку таблицы
+	for node in pairs(way or et)do
+		local pathid = node.path.id
+		local nodeid = node.id
+		RawOccupationSections[pathid] = RawOccupationSections[pathid] or {}
+		RawOccupationSections[pathid][nodeid] = RawOccupationSections[pathid][nodeid] or {}
+		RawOccupationSections[pathid][nodeid][sig] = true
+	end
+end
+
 local function GenerateRawOccupationSections()
 	RawOccupationSections = {}
 	for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do
@@ -194,24 +218,27 @@ local function GenerateRawOccupationSections()
 		
 		--поиск всех ограничивающих светофоров спереди
 		local way = findfunc(sig.TrackPosition.node1,sig.TrackPosition.x,sig.TrackDir,false,true)
-		-- findfunc возвращает одну большую таблицу, чтобы сама функция findfunc работала быстрее, так как используется постоянно, а здесь оно исопльзуется только один раз, значит можно потратить ресурсы на обработку таблицы
-		for node in pairs(way or {})do
-			local pathid = node.path.id
-			local nodeid = node.id
-			RawOccupationSections[pathid] = RawOccupationSections[pathid] or {}
-			RawOccupationSections[pathid][nodeid] = RawOccupationSections[pathid][nodeid] or {}
-			RawOccupationSections[pathid][nodeid][sig] = true
-		end		
-	end
-end
-
-local PrevSignals = {}
-local function GeneratePrevSignals()
-	for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do
-		if not IsValid(sig) then continue end
-		for _,nextsig in pairs(sig.NextSignals)do
-			PrevSignals[nextsig] = PrevSignals[nextsig] or {}
-			PrevSignals[nextsig][sig] = true
+		
+		AddNodesToRawOccupationSectiona(way,sig)
+		
+		--если репитер (отключено) или галка PassOccupation то надо передать это назад до тех пор, пока не попадется обычный чигнал
+		local sigs = {sig}
+		local wassigs = {}
+		local sigscount = 1
+		while sigscount > 0 do
+			local cursig = sigs[sigscount]
+			sigs[sigscount] = nil
+			sigscount = sigscount - 1
+			if wassigs[cursig] then continue end
+			wassigs[cursig] = true
+			-- if (cursig.PassOcc or cursig.Routes and cursig.Route and cursig.Routes[cursig.Route].Repeater) and PrevSignals[cursig] then
+			if cursig.PassOcc and PrevSignals[cursig] then
+				for prevsig in pairs(PrevSignals[cursig])do
+					AddNodesToRawOccupationSectiona(way,prevsig)
+					sigscount = sigscount + 1
+					sigs[sigscount] = prevsig
+				end
+			end
 		end
 	end
 end
@@ -231,27 +258,6 @@ timer.Create("Metrostroi Signals Occupation Upgrade",1,0,function()
 				if not IsValid(sig) or not sig.TrackPosition then continue end
 				if pathid ~= sig.TrackPosition.path.id or pathid == sig.TrackPosition.path.id and (sig.TrackDir and pos.x > sig.TrackPosition.x or not sig.TrackDir and pos.x < sig.TrackPosition.x) then
 					occupiedSigs[sig] = train
-					-- print(sig.Name, "occupied")
-					--если репитер или галка PassOccupation то надо передать это назад до тех пор, пока не попадется обычный чигнал
-					local sigs = {sig}
-					local wassigs = {}
-					local sigscount = 1
-					while sigscount > 0 do
-						local cursig = sigs[sigscount]
-						sigs[sigscount] = nil
-						sigscount = sigscount - 1
-						if wassigs[cursig] then continue end
-						wassigs[cursig] = true
-						-- if (cursig.PassOcc or cursig.Routes and cursig.Route and cursig.Routes[cursig.Route].Repeater) and PrevSignals[cursig] then
-						if cursig.PassOcc and PrevSignals[cursig] then
-							for prevsig in pairs(PrevSignals[cursig])do
-								occupiedSigs[prevsig] = train
-								-- print(prevsig.Name, "occupied")
-								sigscount = sigscount + 1
-								sigs[sigscount] = prevsig
-							end
-						end
-					end
 				end
 			end
 		end
@@ -265,9 +271,9 @@ local function RemoveUselessRepeaters()
 		if not IsValid(sig) or not sig.TrackPosition then continue end
 		
 		local IsBadRepeater
-		for routeid, params in pairs(sig.Routes or {})do
+		for routeid, params in pairs(sig.Routes or et)do
 			if not params.Repeater or params.Switches and (params.Switches:find("+",1,true) or params.Switches:find("-",1,true)) then IsBadRepeater = true break end
-			for name,ent in pairs(sig.NextSignals or {})do
+			for name,ent in pairs(sig.NextSignals or et)do
 				--findfunc(startnode,startx,dir,back,returnPassedNodes)
 				if (name:find("%a") or name:find("%d") or name == "*") and findfunc(sig.TrackPosition.node1, sig.TrackPosition.x, sig.TrackDir) ~= ent then IsBadRepeater = true break end
 			end
@@ -277,7 +283,7 @@ local function RemoveUselessRepeaters()
 		
 		for _,sig2 in pairs(sigs)do
 			if not IsValid(sig2) or sig2 == sig then continue end
-			for routeid,params in pairs(sig2.Routes or {})do
+			for routeid,params in pairs(sig2.Routes or et)do
 				local nextsignalName = params.NextSignal
 				if nextsignalName == "*" then nextsignalName = sig2.NextSignals["*"] and sig2.NextSignals["*"].Name end
 				if nextsignalName and nextsignalName == sig.Name then
@@ -337,7 +343,7 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 		
 		-- for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do
 			-- if IsValid(sig) then
-				-- for routeid,params in pairs(sig.Routes or {})do
+				-- for routeid,params in pairs(sig.Routes or et)do
 					-- local nextsignal = params.NextSignal
 					-- if nextsignal == "*" then nextsignal = sig.NextSignals["*"] and sig.NextSignals["*"].Name end
 					-- if nextsignal and RemovedSignals[nextsignal] then
