@@ -112,7 +112,6 @@ local function UpgradeTracks()
 end
 
 
---TODO нет проверки на isolating
 local function findfunc(startnode,startx,dir,back,returnPassedNodes,withIsolateSwitches)
 	if back then dir = not dir end
 	local curnodes = {{startx},{dir},{startnode}}--так будет только три таблицы
