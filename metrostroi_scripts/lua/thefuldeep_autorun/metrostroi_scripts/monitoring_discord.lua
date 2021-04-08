@@ -50,7 +50,7 @@ if CLIENT then return end
 require("gwsockets")
 local discordChannelID = "622503663998468096"
 
-if not file.Exists("websocketip.txt","DATA") or not WS then return end
+if not file.Exists("websocketip.txt","DATA") then return end
 local webserverip = file.Read("websocketip.txt","DATA")
 if not webserverip:find("%a") and not webserverip:find("%d") then return end
 local ws = GWSockets.createWebSocket("wss://"..webserverip.."/")
