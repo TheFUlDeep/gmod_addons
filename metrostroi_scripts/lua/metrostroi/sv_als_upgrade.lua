@@ -70,7 +70,6 @@ local function UpgradeTracks()
 					if another and
 						(
 						another.next and another.prev
-						--TODO проверить две следующие строчки. Не уверен в правильности углов
 						or not another.prev and another.next and math.abs(selfang - (another.next.pos - another.pos):Angle()[2]) < 90
 						or not another.next and another.prev and math.abs(selfang - (another.prev.pos - another.pos):Angle()[2]) > 90
 						)
@@ -113,20 +112,24 @@ local function UpgradeTracks()
 end
 
 
---TODO нет проверки на isolating
-local function findfunc(startnode,startx,dir,back,returnPassedNodes)
+local function findfunc(startnode,startx,dir,back,returnPassedNodes,withIsolateSwitches)
+	--когда returnPassedNodes = true, я буду скипать passOcc потому что исопльзуется только для генерации отрезков занятости
 	if back then dir = not dir end
 	local curnodes = {{startx},{dir},{startnode}}--так будет только три таблицы
 	local nodescount = 1
 	local wasNodes = {}
+	local EndSignals = {}
+	local startEnds = {{},{}}
 	while nodescount > 0 do
+		-- print("a")
 		startx = curnodes[1][nodescount]
 		dir = curnodes[2][nodescount]
 		dirstr = dir and "next" or "prev"
 		curnode = curnodes[3][nodescount]
 		
 		local pathid = curnode.path.id
-		
+		startEnds[1][pathid] = startx
+		startEnds[2][pathid] = startx
 		for i = 1,3 do curnodes[i][nodescount] = nil end
 		nodescount = nodescount - 1
 		
@@ -140,18 +143,23 @@ local function findfunc(startnode,startx,dir,back,returnPassedNodes)
 		if Metrostroi.SignalEntitiesForNode[curnode] then
 			local nearestent
 			for _,ent in pairs(Metrostroi.SignalEntitiesForNode[curnode]) do
-				if IsValid(ent) and (back and dir ~= ent.TrackDir or not back and dir == ent.TrackDir) and ent.OutputARS ~= 0 and (dir and ent.TrackPosition.x > startx or not dir and ent.TrackX < startx) then
-					if not nearestent or dir and ent.TrackX < nearestent.TrackX or not dir and ent.TrackX > nearestent.TrackX then--поиск ближайшего
+				if IsValid(ent) and (withIsolateSwitches and ent.IsolateSwitches or not withIsolateSwitches) and not ent.PassOcc and (back and dir ~= ent.TrackDir or not back and dir == ent.TrackDir) and ent.OutputARS ~= 0 and (dir and ent.TrackPosition.x > startx or not dir and ent.TrackPosition.x < startx) then
+					if not nearestent or math.abs(startx - ent.TrackX) < math.abs(startx - nearestent.TrackX) then--поиск ближайшего
 						nearestent = ent
+						startEnds[2][pathid] = nearestent.TrackX
 					end
 				end
 			end
 			
 			if nearestent then
 				if not returnPassedNodes then
-					return nearestent
+					if not allEndSignals then
+						return nearestent
+					else
+						EndSignals[nearestent] = true
+						needcontinue = true
+					end
 				else
-					-- print(nearestent.Name)
 					needcontinue = true
 				end
 			end
@@ -160,7 +168,6 @@ local function findfunc(startnode,startx,dir,back,returnPassedNodes)
 		--переход на следующий ноуд (или на следующий трек)		
 		--сначала ищется на другом треке
 		local newnodeparamsTbl = continuations[pathid] and continuations[pathid][curnode.id]
-		-- print(pathid,curnode.id, needcontinue)
 		if newnodeparamsTbl then
 			for _,newnodeparams in pairs(newnodeparamsTbl) do
 				local curnode = Metrostroi.Paths[newnodeparams[1]][newnodeparams[2]]
@@ -176,6 +183,7 @@ local function findfunc(startnode,startx,dir,back,returnPassedNodes)
 		if needcontinue then continue end
 		--потом ищется на том же треке, потому что добавляется в конец списка и будет проверятсья первым
 		if curnode[dirstr] then
+			-- print("switched to",dirstr,"node")
 			nodescount = nodescount + 1
 			curnodes[1][nodescount] = startx
 			curnodes[2][nodescount] = dir
@@ -184,102 +192,87 @@ local function findfunc(startnode,startx,dir,back,returnPassedNodes)
 		
 	end
 	
-	if returnPassedNodes then return wasNodes end
+	if returnPassedNodes then return startEnds end
 end
 
 
-local RawOccupationSections = {}
-local function GenerateRawOccupationSections()
-	RawOccupationSections = {}
+local et = {}--empty table
+
+
+local OccupationSections = {}
+local function GenerateOccupationSections()
+	OccupationSections = {}
 	for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do
 		if not IsValid(sig) or not sig.TrackPosition then continue end
-		--создаю отрезки от стартового сигнала до всех возможных следующих сигналов
-		local starttrackid = sig.TrackPosition.path.id
-		local startnodeid = sig.TrackPosition.node1.id
 		
-		--поиск всех ограничивающих светофоров спереди
+		--поиск всех отрезков занятости
 		local way = findfunc(sig.TrackPosition.node1,sig.TrackPosition.x,sig.TrackDir,false,true)
-		-- findfunc возвращает одну большую таблицу, чтобы сама функция findfunc работала быстрее, так как используется постоянно, а здесь оно исопльзуется только один раз, значит можно потратить ресурсы на обработку таблицы
-		for node in pairs(way or {})do
-			local pathid = node.path.id
-			local nodeid = node.id
-			RawOccupationSections[pathid] = RawOccupationSections[pathid] or {}
-			RawOccupationSections[pathid][nodeid] = RawOccupationSections[pathid][nodeid] or {}
-			RawOccupationSections[pathid][nodeid][sig] = true
-		end		
-	end
-end
--- UpgradeTracks()
---GenerateRawOccupationSections()
--- for k,v in pairs(RawOccupationSections)do
-	-- for k1,v1 in pairs(v) do
-		-- for k2 in pairs(v1) do
-			-- if k2.Name ~= "PRD" then continue end
-			-- print(k,k1,k2)
-		-- end
-	-- end
--- end
--- local asd = Metrostroi.GetSignalByName("MR283")
--- print("AAAAAAAAAAAAAAAAAAAAAAAAA")
--- for k,v in pairs(findfunc(asd.TrackPosition.node1,asd.TrackPosition.x,asd.TrackDir,false,true))do
-	-- print(k.path.id,k.id)
--- end
--- print("BBBBBBBBBBBBBBBBBBBBBBBBB")
-
-local PrevSignals = {}
-local function GeneratePrevSignals()
-	for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do
-		if not IsValid(sig) then continue end
-		for _,nextsig in pairs(sig.NextSignals)do
-			PrevSignals[nextsig] = PrevSignals[nextsig] or {}
-			PrevSignals[nextsig][sig] = true
+		for pathid,startx in pairs(way[1])do
+			if not way[2] then continue end	
+			OccupationSections[pathid] = OccupationSections[pathid] or {}
+			table.insert(OccupationSections[pathid],{start = startx, ["end"] = way[2][pathid], sig = sig})
+			end
 		end
 	end
 end
 
 
-local occupiedSigs = {}--таблица светофоров, которые заняты поездами
+
 timer.Create("Metrostroi Signals Occupation Upgrade",1,0,function()
-	occupiedSigs = {}
 	--смотрю каждую позицию поездов и указываю занятость в сигналам по сгенерированной таблице
+	for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do
+		if IsValid(sig) then
+			sig.OccupiedTfd = false
+		end
+	end
+	
 	for train,pos in pairs(Metrostroi.TrainPositions)do
 		if not pos[1] then continue end
 		pos = pos[1]
-		local pathid = pos.path.id
-		local nodeid = pos.node1.id
-		if RawOccupationSections[pathid] and RawOccupationSections[pathid][nodeid] then
-			for sig in pairs(RawOccupationSections[pathid][nodeid])do
-				if not IsValid(sig) or not sig.TrackPosition then continue end
-				if pathid ~= sig.TrackPosition.path.id or pathid == sig.TrackPosition.path.id and (sig.TrackDir and pos.x > sig.TrackPosition.x or not sig.TrackDir and pos.x < sig.TrackPosition.x) then
-					occupiedSigs[sig] = train
-					-- print(sig.Name, "occupied")
-					--если репитер или галка PassOccupation то надо передать это назад до тех пор, пока не попадется обычный чигнал
-					local sigs = {sig}
-					local wassigs = {}
-					local sigscount = 1
-					while sigscount > 0 do
-						local cursig = sigs[sigscount]
-						sigs[sigscount] = nil
-						sigscount = sigscount - 1
-						if wassigs[cursig] then continue end
-						wassigs[cursig] = true
-						-- if (cursig.PassOcc or cursig.Routes and cursig.Route and cursig.Routes[cursig.Route].Repeater) and PrevSignals[cursig] then
-						if cursig.PassOcc and PrevSignals[cursig] then
-							for prevsig in pairs(PrevSignals[cursig])do
-								occupiedSigs[prevsig] = train
-								-- print(prevsig.Name, "occupied")
-								sigscount = sigscount + 1
-								sigs[sigscount] = prevsig
-							end
-						end
-					end
-				end
+		local x = pos.x
+		for _,params in pairs(OccupationSections[pos.path.id] or et)do
+			if IsValid(params.sig) and (x < params['end'] and x > params['start'] or x > params['end'] and x < params['start']) then
+				params.sig.OccupiedTfd = train
 			end
 		end
 	end
 end)
 
-
+-- local RemovedSignals = {}
+local function RemoveUselessRepeaters()
+	local sigs = ents.FindByClass("gmod_track_signal")
+	for _,sig in pairs(sigs)do
+		if not IsValid(sig) or not sig.TrackPosition then continue end
+		
+		local IsBadRepeater
+		for routeid, params in pairs(sig.Routes or et)do
+			if not params.Repeater or params.Switches and (params.Switches:find("+",1,true) or params.Switches:find("-",1,true)) then IsBadRepeater = true break end
+			for name,ent in pairs(sig.NextSignals or et)do
+				--findfunc(startnode,startx,dir,back,returnPassedNodes)
+				if (name:find("%a") or name:find("%d") or name == "*") and findfunc(sig.TrackPosition.node1, sig.TrackPosition.x, sig.TrackDir) ~= ent then IsBadRepeater = true break end
+			end
+			if IsBadRepeater then break end
+		end
+		if IsBadRepeater then continue end
+		
+		for _,sig2 in pairs(sigs)do
+			if not IsValid(sig2) or sig2 == sig then continue end
+			for routeid,params in pairs(sig2.Routes or et)do
+				local nextsignalName = params.NextSignal
+				if nextsignalName == "*" then nextsignalName = sig2.NextSignals["*"] and sig2.NextSignals["*"].Name end
+				if nextsignalName and nextsignalName == sig.Name then
+					sig2.NextSignals[params.NextSignal] = nil
+					local nextSignalEnt = findfunc(sig.TrackPosition.node1, sig.TrackPosition.x, sig.TrackDir)
+					params.NextSignal = nextSignalEnt.Name
+					sig2.NextSignals[params.NextSignal] = nextSignalEnt
+					print("reconfiguting signal "..(sig2.Name or tostring(sig2).." "..sig2:EntIndex()).." because of deleting signal "..nextsignalName)
+				end
+			end
+		end
+		SafeRemoveEntity(sig)
+		print("removed signal "..sig.Name.." because it useless repeater")
+	end
+end
 
 
 hook.Add("MetrostroiLoaded","UpgradeTracks",function()
@@ -287,17 +280,57 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 -- hook.Add("InitPostEntity","test",function()
 	local oldload = Metrostroi.Load
 	Metrostroi.Load = function(...)
+		-- RemovedSignals = {}
 		oldload(...)
 		UpgradeTracks()
 		--backsignals = {}
 		--forwsignals = {}
 	end
 	
+	-- local oldUpdateSignalEntities = Metrostroi.UpdateSignalEntities
+	-- Metrostroi.UpdateSignalEntities = function(...)
+		-- for _,self in pairs(ents.FindByClass("gmod_track_signal"))do
+			-- if not IsValid(self) then continue end
+			-- local needIterations = self.Routes and #self.Routes or 0
+			-- while needIterations > 0 do
+				-- if not self.Routes[needIterations].NextSignal or self.Routes[needIterations].Repeater and self.Routes[needIterations].NextSignal == self.Name or not self.Routes[needIterations].NextSignal:find("%a") and not self.Routes[needIterations].NextSignal:find("%d") and not self.Routes[needIterations].NextSignal:find("*",1,true) then
+					-- table.remove(self.Routes,needIterations)
+				-- end
+				-- needIterations = needIterations - 1
+			-- end
+			-- if not self.Routes or #self.Routes == 0 then
+				-- self.Routes = {{}}
+				-- if self.Name then
+					-- RemovedSignals[self.Name] = true
+				-- end
+				-- print("removed signal "..(self.Name or "NAME").." because of bad settings")
+				-- SafeRemoveEntity(self)
+			-- end
+		-- end
+		-- return oldUpdateSignalEntities(...)
+	-- end
+	
 	local oldPostInit = Metrostroi.PostSignalInitialize
 	Metrostroi.PostSignalInitialize = function()
 		oldPostInit()
-		GeneratePrevSignals()
-		GenerateRawOccupationSections()
+		RemoveUselessRepeaters()
+		
+		-- for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do
+			-- if IsValid(sig) then
+				-- for routeid,params in pairs(sig.Routes or et)do
+					-- local nextsignal = params.NextSignal
+					-- if nextsignal == "*" then nextsignal = sig.NextSignals["*"] and sig.NextSignals["*"].Name end
+					-- if nextsignal and RemovedSignals[nextsignal] then
+						-- sig.NextSignals[nextsignal] = nil
+						-- params.NextSignal = sig.Name
+						-- sig.NextSignals[params.NextSignal] = sig
+						-- print("reconfiguting signal "..sig.Name.." to self because of deleted signal "..nextsignal)
+					-- end
+				-- end
+			-- end
+		-- end
+		
+		GenerateOccupationSections()
 	end
 	
 	local oldGetARSJoint = Metrostroi.GetARSJoint
@@ -452,8 +485,8 @@ hook.Add("InitPostEntity","Metrostroi signals occupation upgrade",function()
 		-- if not self.FoundedAll then return end
 		if not self.Close and not self.KGU then --not self.OverrideTrackOccupied and
 			if self.Node and  self.TrackPosition then
-				self.Occupied = occupiedSigs[self] and true
-				local train = occupiedSigs[self] and (occupiedSigs[self].WagonList or {occupiedSigs[self]})
+				self.Occupied = self.OccupiedTfd and true
+				local train = self.OccupiedTfd and (self.OccupiedTfd.WagonList or {self.OccupiedTfd})
 				self.OccupiedBy = train and train[#train]
 				self.OccupiedByNow = train and train[1]
 			end

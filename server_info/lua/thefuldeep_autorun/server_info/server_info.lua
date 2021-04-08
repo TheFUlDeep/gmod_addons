@@ -505,7 +505,8 @@ timer.Create("ScoreBoardAdditional", 5, 0, function()
 end)
 
 --Direction для поездов. false - убывает, true - увеличивается
-
+--отключено для производительности
+do return end
 local function PrepareDataToSending()
 	if not THEFULDEEP.SERVERINFOINITIALIZED then return end
 	if not THEFULDEEP or not THEFULDEEP.DETECTSTATION then print("detectstation is not avaliable") return end
