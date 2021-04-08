@@ -10,3 +10,6 @@
 [submodule "gm_metrostroi_717_clear_white_route_numbers"]
 	path = gm_metrostroi_717_clear_white_route_numbers
 	url = https://github.com/TheFUlDeep/gm_metrostroi_717_clear_white_route_numbers
+[submodule "Gmod-Websockets"]
+	path = Gmod-Websockets
+	url = https://github.com/HunterNL/Gmod-Websockets
