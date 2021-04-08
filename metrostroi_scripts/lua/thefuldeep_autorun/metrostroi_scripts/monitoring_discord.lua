@@ -46,7 +46,7 @@
 
 
 if CLIENT then return end
---TODO смена карты, выключение сервера
+--TODO смена карты, выключение сервера, загружающиеся игроки
 require("gwsockets")
 local discordChannelID = "622503663998468096"
 
