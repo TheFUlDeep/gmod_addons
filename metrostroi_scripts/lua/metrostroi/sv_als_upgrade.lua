@@ -111,8 +111,8 @@ local function UpgradeTracks()
 	end
 end
 
-asd = {}
-function asd.findfunc(startnode,startx,dir,back,returnPassedNodes,withIsolateSwitches)
+
+local function findfunc(startnode,startx,dir,back,returnPassedNodes,withIsolateSwitches)
 	--когда returnPassedNodes = true, я буду скипать passOcc потому что исопльзуется только для генерации отрезков занятости
 	if back then dir = not dir end
 	local curnodes = {{startx},{dir},{startnode}}--так будет только три таблицы
@@ -194,15 +194,12 @@ function asd.findfunc(startnode,startx,dir,back,returnPassedNodes,withIsolateSwi
 	
 	if returnPassedNodes then return startEnds end
 end
-local findfunc = asd.findfunc
 
 local et = {}--empty table
 
-asd.OccupationSections = {}
-local OccupationSections = asd.OccupationSections
+local OccupationSections = {}
 local function GenerateOccupationSections()
 	OccupationSections = {}
-	asd.OccupationSections = OccupationSections
 	for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do
 		if not IsValid(sig) or not sig.TrackPosition then continue end
 		
