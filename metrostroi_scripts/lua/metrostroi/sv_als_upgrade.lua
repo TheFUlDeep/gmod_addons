@@ -32,7 +32,7 @@ local function FindNearNode(node)--довольно медленная функ�
 	local nrearestnode,curdist,x,lerptonext
 	for pathid,path in pairs(Metrostroi.Paths)do
 		for id,node1 in ipairs(path)do
-			if pathid == nodepathid and math.abs(id - nodeid) < 5 then continue end--если это соседний ноуд, то пропустить
+			if pathid == nodepathid and math.abs(id - nodeid) < 5 then continue end--если это соседний ноуд того же трека, то пропустить
 			local nextnode = node1.next
 			for i = 0, nextnode and parts or 0 do
 				local lerp = i/parts
@@ -58,7 +58,7 @@ local function UpgradeTracks()
 	for id,path in pairs(Metrostroi.TrackEditor.Paths)do
 		continuations[id] = continuations[id] or {}
 		local count = #path
-		if count > 2 then
+		if count > 1 then
 			for i = 1,2 do
 				local idx = i == 1 and i or count
 				local p = Metrostroi.Paths[id]
@@ -81,7 +81,7 @@ local function UpgradeTracks()
 								another.id,
 								another.x + (another.pos:Distance(LerpVector(lerptonext,another.pos, lerptonext ~= 0 and another.next.pos or another.pos)))*0.01905,
 								another.next and math.abs(selfang - (another.next.pos - another.pos):Angle()[2]) < 90 or another.prev and math.abs(selfang - (another.prev.pos - another.pos):Angle()[2]) > 90,
-								--i == 2--не нужно, так как тут берутся только концы треков
+								i == 2
 							}
 						)
 						
@@ -111,8 +111,8 @@ local function UpgradeTracks()
 	end
 end
 
-
-local function findfunc(startnode,startx,dir,back,returnPassedNodes,withIsolateSwitches)
+asd = {}
+function asd.findfunc(startnode,startx,dir,back,returnPassedNodes,withIsolateSwitches)
 	--когда returnPassedNodes = true, я буду скипать passOcc потому что исопльзуется только для генерации отрезков занятости
 	if back then dir = not dir end
 	local curnodes = {{startx},{dir},{startnode}}--так будет только три таблицы
@@ -171,7 +171,7 @@ local function findfunc(startnode,startx,dir,back,returnPassedNodes,withIsolateS
 		if newnodeparamsTbl then
 			for _,newnodeparams in pairs(newnodeparamsTbl) do
 				local curnode = Metrostroi.Paths[newnodeparams[1]][newnodeparams[2]]
-				if curnode and (newnodeparams[5] == nil or dir == newnodeparams[5]) then
+				if curnode and dir == newnodeparams[5] then
 					nodescount = nodescount + 1
 					curnodes[1][nodescount] = newnodeparams[3]
 					curnodes[2][nodescount] = newnodeparams[4]
@@ -194,24 +194,24 @@ local function findfunc(startnode,startx,dir,back,returnPassedNodes,withIsolateS
 	
 	if returnPassedNodes then return startEnds end
 end
-
+local findfunc = asd.findfunc
 
 local et = {}--empty table
 
-
-local OccupationSections = {}
+asd.OccupationSections = {}
+local OccupationSections = asd.OccupationSections
 local function GenerateOccupationSections()
 	OccupationSections = {}
+	asd.OccupationSections = OccupationSections
 	for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do
 		if not IsValid(sig) or not sig.TrackPosition then continue end
 		
 		--поиск всех отрезков занятости
 		local way = findfunc(sig.TrackPosition.node1,sig.TrackPosition.x,sig.TrackDir,false,true)
+		if not way[2] then continue end	
 		for pathid,startx in pairs(way[1])do
-			if not way[2] then continue end	
 			OccupationSections[pathid] = OccupationSections[pathid] or {}
 			table.insert(OccupationSections[pathid],{start = startx, ["end"] = way[2][pathid], sig = sig})
-			end
 		end
 	end
 end
@@ -484,7 +484,7 @@ hook.Add("InitPostEntity","Metrostroi signals occupation upgrade",function()
 		-- print(self.FoundedAll)
 		-- if not self.FoundedAll then return end
 		if not self.Close and not self.KGU then --not self.OverrideTrackOccupied and
-			if self.Node and  self.TrackPosition then
+			if self.Node and self.TrackPosition then
 				self.Occupied = self.OccupiedTfd and true
 				local train = self.OccupiedTfd and (self.OccupiedTfd.WagonList or {self.OccupiedTfd})
 				self.OccupiedBy = train and train[#train]
@@ -502,5 +502,17 @@ hook.Add("InitPostEntity","Metrostroi signals occupation upgrade",function()
 			self.Occupied = self.Close or self.KGU --self.OverrideTrackOccupied or
 		end
 	end
+	
+	local oldARSLogick = SIGNAL.ARSLogic
+	SIGNAL.ARSLogic = function(self,...)
+		if self.Routes[self.Route or 1].Repeater then self:CheckOccupation() end
+		return oldARSLogick(self,...)
+	end
+	
 end)
 
+-- теперь репитеры проверяются на занятость
+-- разрешил определять продолжение треков для треков из двух ноудов
+-- вернул последний элемент таблицы продолжений треков и за счет этого убрал лишнюю проверку на nil при переходе на следующий ноуд в findfunc
+-- передвинул условие в строку 211 (хз вочему оно было в цикле)
+-- TODO для каждого ноуда найти следующий сигнал, поезд при наезде на ноуд будет получать этот сигнал, а не искать его
