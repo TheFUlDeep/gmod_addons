@@ -277,9 +277,9 @@ timer.Create("Metrostroi Signals Occupation Upgrade",1,0,function()
 		pos = pos[1]
 		local x = pos.x
 		local pathid = pos.path.id
-		for _,params in pairs(OccupationSections[pathid] and OccupationSections[pathid][pos.node1.id] or et)do
-			if IsValid(params.sig) and (x < params['end'] and x > params['start'] or x > params['end'] and x < params['start']) then
-				params.sig.OccupiedTfd = train
+		for _,condition in pairs(OccupationSections[pathid] and OccupationSections[pathid][pos.node1.id] or et)do
+			if IsValid(condition.sig) and (x < condition['end'] and x > condition['start'] or x > condition['end'] and x < condition['start']) then
+				condition.sig.OccupiedTfd = train
 			end
 		end
 	end
@@ -369,7 +369,6 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 					forwsig = not back and nextsig.nextsig
 				end
 			end
-		if forwsig then print("forw",forwsig.Name)end
 		return forwsig
 	end
 	
