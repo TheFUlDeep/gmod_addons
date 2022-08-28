@@ -374,7 +374,7 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 	
 	local oldPostInit = Metrostroi.PostSignalInitialize
 	Metrostroi.PostSignalInitialize = function()
-		Metrostroi.GetARSJoint oldGetARSJoint
+		Metrostroi.GetARSJoint = oldGetARSJoint
 		oldPostInit()
 		RemoveUselessRepeaters()
 		
