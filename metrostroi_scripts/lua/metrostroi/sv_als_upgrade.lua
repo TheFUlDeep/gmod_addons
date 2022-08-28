@@ -1,3 +1,6 @@
+-- сигналы определяют занятость перепригивая на другие треки
+-- функция GetARSJoint работает быстрее, так как просто проверяется по нужному ноуду, а не производит поиск по треку
+
 if CLIENT then return end
 
 --teleport to track
@@ -119,17 +122,17 @@ local function findfunc(startnode,startx,dir,back,returnPassedNodes,withIsolateS
 	local nodescount = 1
 	local wasNodes = {}
 	local EndSignals = {}
-	local startEnds = {{},{}}
+	-- 1 - началы отрезков, 2 - концы отрезков, 3 - сигналы на концах
+	local startEnds = {{},{},{}}
 	while nodescount > 0 do
-		-- print("a")
 		startx = curnodes[1][nodescount]
 		dir = curnodes[2][nodescount]
 		dirstr = dir and "next" or "prev"
 		curnode = curnodes[3][nodescount]
 		
 		local pathid = curnode.path.id
-		startEnds[1][pathid] = startx
-		startEnds[2][pathid] = startx
+		startEnds[1][pathid] = startEnds[1][pathid] or startx
+		startEnds[2][pathid] = startEnds[2][pathid] or startx
 		for i = 1,3 do curnodes[i][nodescount] = nil end
 		nodescount = nodescount - 1
 		
@@ -174,6 +177,8 @@ local function findfunc(startnode,startx,dir,back,returnPassedNodes,withIsolateS
 				if curnode and dir == newnodeparams[5] then
 					nodescount = nodescount + 1
 					curnodes[1][nodescount] = newnodeparams[3]
+					startEnds[1][curnode.path.id] = startEnds[1][curnode.path.id] or newnodeparams[3]
+					startEnds[2][curnode.path.id] = startEnds[2][curnode.path.id] or newnodeparams[3]
 					curnodes[2][nodescount] = newnodeparams[4]
 					curnodes[3][nodescount] = curnode
 				end
@@ -183,19 +188,21 @@ local function findfunc(startnode,startx,dir,back,returnPassedNodes,withIsolateS
 		if needcontinue then continue end
 		--потом ищется на том же треке, потому что добавляется в конец списка и будет проверятсья первым
 		if curnode[dirstr] then
-			-- print("switched to",dirstr,"node")
 			nodescount = nodescount + 1
 			curnodes[1][nodescount] = startx
 			curnodes[2][nodescount] = dir
 			curnodes[3][nodescount] = curnode[dirstr]
+			startEnds[2][pathid] = curnode[dirstr].x
 		end
 		
 	end
 	
-	if returnPassedNodes then return startEnds end
+	if returnPassedNodes then return startEnds, wasNodes end
 end
 
+
 local et = {}--empty table
+
 
 local OccupationSections = {}
 local function GenerateOccupationSections()
@@ -204,11 +211,53 @@ local function GenerateOccupationSections()
 		if not IsValid(sig) or not sig.TrackPosition then continue end
 		
 		--поиск всех отрезков занятости
-		local way = findfunc(sig.TrackPosition.node1,sig.TrackPosition.x,sig.TrackDir,false,true)
-		if not way[2] then continue end	
+		local way, nodes = findfunc(sig.TrackPosition.node1,sig.TrackPosition.x,sig.TrackDir,false,true)
+		local pathid = sig.TrackPosition.path.id
 		for pathid,startx in pairs(way[1])do
+			local condition = {start = startx, ["end"] = way[2][pathid], sig = sig}
 			OccupationSections[pathid] = OccupationSections[pathid] or {}
-			table.insert(OccupationSections[pathid],{start = startx, ["end"] = way[2][pathid], sig = sig})
+			for node in pairs(nodes) do
+				OccupationSections[pathid][node.id] = OccupationSections[pathid][node.id] or {}
+				table.insert(OccupationSections[pathid][node.id],condition)
+			end
+		end
+	end
+end
+
+
+
+local LinkedTracksToSignals = {}
+local function LinkTracksToSignals()
+	LinkedTracksToSignals = {}
+
+	local wasNodes = {}
+	for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do
+		if not IsValid(sig) or not sig.TrackPosition then continue end
+		
+		local pathid = sig.TrackPosition.node1.path.id
+		local node = sig.TrackPosition.node1
+		wasNodes[node] = true
+		local x = sig.TrackPosition.x
+		LinkedTracksToSignals[pathid] = LinkedTracksToSignals[pathid] or {}
+		LinkedTracksToSignals[pathid][sig.TrackDir] = LinkedTracksToSignals[pathid][sig.TrackDir] or {}
+		LinkedTracksToSignals[pathid][sig.TrackDir][node] = LinkedTracksToSignals[pathid][sig.TrackDir][node] or {}
+		LinkedTracksToSignals[pathid][sig.TrackDir][node].sig = sig
+		LinkedTracksToSignals[pathid][sig.TrackDir][node].x = x
+		LinkedTracksToSignals[pathid][sig.TrackDir][node].nextsig = findfunc(node,x,sig.TrackDir)
+	end
+	
+	-- вот это самая калящая меня часть, возможно она будет отрабатывать сто лет
+	for pathid,path in pairs(Metrostroi.Paths or et)do
+		for i = 1, #path do
+		local node = path[i]
+			if wasNodes[node] then continue end
+			LinkedTracksToSignals[pathid] = LinkedTracksToSignals[pathid] or {}
+			for dirdec = 0,1 do
+				local dir = dirdec == 1
+				LinkedTracksToSignals[pathid][dir] = LinkedTracksToSignals[pathid][dir] or {}
+				LinkedTracksToSignals[pathid][dir][node] = LinkedTracksToSignals[pathid][dir][node] or {}
+				LinkedTracksToSignals[pathid][dir][node].nextsig = findfunc(node,node.x,dir)
+			end
 		end
 	end
 end
@@ -227,7 +276,8 @@ timer.Create("Metrostroi Signals Occupation Upgrade",1,0,function()
 		if not pos[1] then continue end
 		pos = pos[1]
 		local x = pos.x
-		for _,params in pairs(OccupationSections[pos.path.id] or et)do
+		local pathid = pos.path.id
+		for _,params in pairs(OccupationSections[pathid] and OccupationSections[pathid][pos.node1.id] or et)do
 			if IsValid(params.sig) and (x < params['end'] and x > params['start'] or x > params['end'] and x < params['start']) then
 				params.sig.OccupiedTfd = train
 			end
@@ -307,8 +357,25 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 		-- return oldUpdateSignalEntities(...)
 	-- end
 	
+	local oldGetARSJoint = Metrostroi.GetARSJoint
+	function Metrostroi.NewGetARSJoint(node,x,dir,train)
+		local forwsig
+			local pathid = node.path.id
+			local nextsig = LinkedTracksToSignals[pathid] and LinkedTracksToSignals[pathid][dir] and LinkedTracksToSignals[pathid][dir][node] and LinkedTracksToSignals[pathid][dir][node]
+			if nextsig then
+				if nextsig.x then
+					forwsig = (dir and x < nextsig.x or not dir and x > nextsig.x) and nextsig.sig or nextsig.nextsig
+				else
+					forwsig = not back and nextsig.nextsig
+				end
+			end
+		if forwsig then print("forw",forwsig.Name)end
+		return forwsig
+	end
+	
 	local oldPostInit = Metrostroi.PostSignalInitialize
 	Metrostroi.PostSignalInitialize = function()
+		Metrostroi.GetARSJoint oldGetARSJoint
 		oldPostInit()
 		RemoveUselessRepeaters()
 		
@@ -328,9 +395,9 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 		-- end
 		
 		GenerateOccupationSections()
+		LinkTracksToSignals()
+		Metrostroi.GetARSJoint = Metrostroi.NewGetARSJoint
 	end
-	
-	local oldGetARSJoint = Metrostroi.GetARSJoint
 	
 	
 	--проверка, что вагон точно на треке. Это ухудшит производительность, но оно проверяется только если forw не найден в первый раз и найден во второй или третий
@@ -366,62 +433,60 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 		end
 	end]]
 	
-	Metrostroi.GetARSJoint = function(node,x,dir,train)
-		--первый раз ищется стандартно
-		local forw,back = oldGetARSJoint(node,x,dir,train)
-		--do return forw,back end
-		--print("first",forw and forw.Name)
+	-- Metrostroi.GetARSJoint = function(node,x,dir,train)
+		-- --первый раз ищется стандартно
+		-- local forw,back = oldGetARSJoint(node,x,dir,train)
+		-- --do return forw,back end
+		-- --print("first",forw and forw.Name)
 		
-		--Если не нашел, то ищется по тому же треку в радиусе 350 стандартным способом. Если нашел, то проверяется, что состав точно на этом треке
-		--Если не нашел, то ищется по другому треку в радиусе 350 стандартным способом. Если нашел, то проверяется, что состав точно на этом треке
-		--Глеб сказал, что этот вариант медленнее, поэтому пока что отключил
-		--[[if IsValid(train) and not forw then
-			forw = CheckForw(train,nil,node)
-		end]]
-		--print("oldmethod",forw and forw.Name)
+		-- --Если не нашел, то ищется по тому же треку в радиусе 350 стандартным способом. Если нашел, то проверяется, что состав точно на этом треке
+		-- --Если не нашел, то ищется по другому треку в радиусе 350 стандартным способом. Если нашел, то проверяется, что состав точно на этом треке
+		-- --Глеб сказал, что этот вариант медленнее, поэтому пока что отключил
+		-- --[[if IsValid(train) and not forw then
+			-- forw = CheckForw(train,nil,node)
+		-- end]]
+		-- --print("oldmethod",forw and forw.Name)
 		
-		--И если все равно не нашел, то иду до конца трека, ищу там новый трек, и ищу по нему в направлении в зависимости от угла новым способом
-		--фишка этой штуки в том, что оно может перепрыгивать с трека на трек. Но может спрыгивать только с конца трека, а запрыгивать в любом месте трека
-		if not forw then
-			forw = findfunc(node,x,dir)
-			--print("forw by forw",forw and forw.Name)
-			if not forw and IsValid(train) then
-				--если не нашел forw, то определяю его по заднему сигналу
-				--этот вариант не сработает, потому что мрашрут может дропнуться во время проезда
-				--или сработает?
-				if not back then 
-					back = findfunc(node,x,dir,true) 
-					--print("back by back",back and back.Name)
-				end
+		-- --И если все равно не нашел, то иду до конца трека, ищу там новый трек, и ищу по нему в направлении в зависимости от угла новым способом
+		-- --фишка этой штуки в том, что оно может перепрыгивать с трека на трек. Но может спрыгивать только с конца трека, а запрыгивать в любом месте трека
+		-- if not forw then
+			-- forw = findfunc(node,x,dir)
+			-- --print("forw by forw",forw and forw.Name)
+			-- if not forw and IsValid(train) then
+				-- --если не нашел forw, то определяю его по заднему сигналу
+				-- --этот вариант не сработает, потому что мрашрут может дропнуться во время проезда
+				-- --или сработает?
+				-- if not back then 
+					-- back = findfunc(node,x,dir,true) 
+					-- --print("back by back",back and back.Name)
+				-- end
 				
 
-				if back and back.NextSignalLink and back.NextSignalLink ~= back then
-					forw = back.NextSignalLink
-					--print("forw by back",forw and forw.Name)
-				end
-			end
-		end
+				-- if back and back.NextSignalLink and back.NextSignalLink ~= back then
+					-- forw = back.NextSignalLink
+					-- --print("forw by back",forw and forw.Name)
+				-- end
+			-- end
+		-- end
 		
-		--[[if IsValid(train) then
-			local CurTime = CurTime()
-			if forw then forwsignals[forw] = CurTime end
-			if back then backsignals[back] = CurTime end
+		-- --[[if IsValid(train) then
+			-- local CurTime = CurTime()
+			-- if forw then forwsignals[forw] = CurTime end
+			-- if back then backsignals[back] = CurTime end
 			
-			--ищу сигнал вперед относительно задней головы
-			local lastwag = train.WagonList and train.WagonList[#train.WagonList]
-			local pos = lastwag and Metrostroi.TrainPositions[lastwag]
-			if pos then
-				local backsig = findfunc(pos.node1,pos.x,Metrostroi.TrainDirections[lastwag])
-				local forwsig = findfunc(pos.node1,pos.x,Metrostroi.TrainDirections[lastwag],true)
-				if backsig then backsignals[backsig] = CurTime end
-				if forwsig then forwsignals[forwsig] = CurTime end
-			end
-		end]]
-		--print("res",forw and forw.Name, back and back.Name)
-		return forw,back
-	end
-	
-	
+			-- --ищу сигнал вперед относительно задней головы
+			-- local lastwag = train.WagonList and train.WagonList[#train.WagonList]
+			-- local pos = lastwag and Metrostroi.TrainPositions[lastwag]
+			-- if pos then
+				-- local backsig = findfunc(pos.node1,pos.x,Metrostroi.TrainDirections[lastwag])
+				-- local forwsig = findfunc(pos.node1,pos.x,Metrostroi.TrainDirections[lastwag],true)
+				-- if backsig then backsignals[backsig] = CurTime end
+				-- if forwsig then forwsignals[forwsig] = CurTime end
+			-- end
+		-- end]]
+		-- --print("res",forw and forw.Name, back and back.Name)
+		-- return forw,back
+	-- end
 	
 	
 	
@@ -508,8 +573,3 @@ hook.Add("InitPostEntity","Metrostroi signals occupation upgrade",function()
 	
 end)
 
--- теперь репитеры проверяются на занятость
--- разрешил определять продолжение треков для треков из двух ноудов
--- вернул последний элемент таблицы продолжений треков и за счет этого убрал лишнюю проверку на nil при переходе на следующий ноуд в findfunc
--- передвинул условие в строку 211 (хз вочему оно было в цикле)
--- TODO для каждого ноуда найти следующий сигнал, поезд при наезде на ноуд будет получать этот сигнал, а не искать его
