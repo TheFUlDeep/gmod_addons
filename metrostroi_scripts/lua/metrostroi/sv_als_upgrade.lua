@@ -236,7 +236,8 @@ local function LinkTracksToSignals()
 		
 		local pathid = sig.TrackPosition.node1.path.id
 		local node = sig.TrackPosition.node1
-		wasNodes[node] = true
+		wasNodes[node] = wasNodes[node] or {}
+		wasNodes[node][sig.TrackDir] = true
 		local x = sig.TrackPosition.x
 		LinkedTracksToSignals[pathid] = LinkedTracksToSignals[pathid] or {}
 		LinkedTracksToSignals[pathid][sig.TrackDir] = LinkedTracksToSignals[pathid][sig.TrackDir] or {}
@@ -250,10 +251,10 @@ local function LinkTracksToSignals()
 	for pathid,path in pairs(Metrostroi.Paths or et)do
 		for i = 1, #path do
 		local node = path[i]
-			if wasNodes[node] then continue end
 			LinkedTracksToSignals[pathid] = LinkedTracksToSignals[pathid] or {}
 			for dirdec = 0,1 do
 				local dir = dirdec == 1
+				if wasNodes[node] and wasNodes[node][dir] then continue end
 				LinkedTracksToSignals[pathid][dir] = LinkedTracksToSignals[pathid][dir] or {}
 				LinkedTracksToSignals[pathid][dir][node] = LinkedTracksToSignals[pathid][dir][node] or {}
 				LinkedTracksToSignals[pathid][dir][node].nextsig = findfunc(node,node.x,dir)
