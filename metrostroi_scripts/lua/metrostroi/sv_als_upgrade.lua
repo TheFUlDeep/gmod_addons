@@ -1,5 +1,6 @@
 -- сигналы определяют занятость перепригивая на другие треки
 -- функция GetARSJoint работает быстрее, так как просто проверяется по нужному ноуду, а не производит поиск по треку
+-- производительность определения сигнала составом быстрее примерно в 35к раз
 
 if CLIENT then return end
 
@@ -262,6 +263,41 @@ local function LinkTracksToSignals()
 end
 
 
+local LinkedBackTracksToSignals = {}
+local function LinkBackTracksToSignals()
+	LinkedBackTracksToSignals = {}
+
+	local wasNodes = {}
+	for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do
+		if not IsValid(sig) or not sig.TrackPosition then continue end
+		
+		local pathid = sig.TrackPosition.node1.path.id
+		local node = sig.TrackPosition.node1
+		wasNodes[node] = wasNodes[node] or {}
+		wasNodes[node][sig.TrackDir] = true
+		local x = sig.TrackPosition.x
+		LinkedBackTracksToSignals[pathid] = LinkedBackTracksToSignals[pathid] or {}
+		LinkedBackTracksToSignals[pathid][sig.TrackDir] = LinkedBackTracksToSignals[pathid][sig.TrackDir] or {}
+		LinkedBackTracksToSignals[pathid][sig.TrackDir][node] = LinkedBackTracksToSignals[pathid][sig.TrackDir][node] or {}
+		table.insert(LinkedBackTracksToSignals[pathid][sig.TrackDir][node],{["sig"] = sig, ["nextsig"] = findfunc(node,x,sig.TrackDir)})
+	end
+	
+	-- вот это самая калящая меня часть, возможно она будет отрабатывать сто лет
+	for pathid,path in pairs(Metrostroi.Paths or et)do
+		for i = 1, #path do
+		local node = path[i]
+			LinkedBackTracksToSignals[pathid] = LinkedBackTracksToSignals[pathid] or {}
+			for dirdec = 0,1 do
+				local dir = dirdec == 1
+				if wasNodes[node] and wasNodes[node][dir] then continue end
+				LinkedBackTracksToSignals[pathid][dir] = LinkedBackTracksToSignals[pathid][dir] or {}
+				LinkedBackTracksToSignals[pathid][dir][node] = LinkedBackTracksToSignals[pathid][dir][node] or {}
+				LinkedBackTracksToSignals[pathid][dir][node].nextsig = findfunc(node,node.x,dir,true)
+			end
+		end
+	end
+end
+
 
 timer.Create("Metrostroi Signals Occupation Upgrade",1,0,function()
 	--смотрю каждую позицию поездов и указываю занятость в сигналам по сгенерированной таблице
@@ -357,25 +393,42 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 	-- end
 	
 	local oldGetARSJoint = Metrostroi.GetARSJoint
-	Metrostroi.OldGetARSJoint = oldGetARSJoint
 	function Metrostroi.NewGetARSJoint(node,x,dir,train)
-		local forwsig
-			local pathid = node.path.id
-			local nextsigs = LinkedTracksToSignals[pathid] and LinkedTracksToSignals[pathid][dir] and LinkedTracksToSignals[pathid][dir][node] and LinkedTracksToSignals[pathid][dir][node]
-			if #nextsigs == 0 then
-				forwsig = nextsigs.nextsig
-			else
-				local minleng,lastnearestsig
-				for _,nextsig in pairs(nextsigs or et)do
-					local sig = (dir and x < nextsig.sig.TrackPosition.x or not dir and x > nextsig.sig.TrackPosition.x) and nextsig.sig or nextsig.nextsig
-					local leng = math.abs(x - sig.TrackPosition.x)
-					if not minleng or leng < minleng then
-						minx = leng
-						forwsig = sig
-					end
+		local forwsig,backsig
+		local pathid = node.path.id
+		local nextsigs = LinkedTracksToSignals[pathid] and LinkedTracksToSignals[pathid][dir] and LinkedTracksToSignals[pathid][dir][node] and LinkedTracksToSignals[pathid][dir][node]
+		if #nextsigs == 0 then
+			forwsig = nextsigs.nextsig
+		else
+			local minleng,lastnearestsig
+			for _,nextsig in pairs(nextsigs or et)do
+				local sig = (dir and x < nextsig.sig.TrackPosition.x or not dir and x > nextsig.sig.TrackPosition.x) and nextsig.sig or nextsig.nextsig
+				if not sig then continue end
+				local leng = math.abs(x - sig.TrackPosition.x)
+				if not minleng or leng < minleng then
+					minx = leng
+					forwsig = sig
 				end
 			end
-		return forwsig
+		end
+			
+		local nextsigs = LinkedBackTracksToSignals[pathid] and LinkedBackTracksToSignals[pathid][dir] and LinkedBackTracksToSignals[pathid][dir][node] and LinkedBackTracksToSignals[pathid][dir][node]
+		if #nextsigs == 0 then
+			backsig = nextsigs.nextsig
+		else
+			local minleng,lastnearestsig
+			for _,nextsig in pairs(nextsigs or et)do
+				local sig = (dir and x < nextsig.sig.TrackPosition.x or not dir and x > nextsig.sig.TrackPosition.x) and nextsig.nextsig or nextsig.sig
+				if not sig then continue end
+				local leng = math.abs(x - sig.TrackPosition.x)
+				if not minleng or leng < minleng then
+					minx = leng
+					backsig = sig
+				end
+			end
+		end
+
+		return forwsig, backsig
 	end
 	
 	local oldPostInit = Metrostroi.PostSignalInitialize
@@ -401,6 +454,7 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 		
 		GenerateOccupationSections()
 		LinkTracksToSignals()
+		LinkBackTracksToSignals()
 		Metrostroi.GetARSJoint = Metrostroi.NewGetARSJoint
 	end
 	
