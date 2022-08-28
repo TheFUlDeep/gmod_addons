@@ -242,9 +242,7 @@ local function LinkTracksToSignals()
 		LinkedTracksToSignals[pathid] = LinkedTracksToSignals[pathid] or {}
 		LinkedTracksToSignals[pathid][sig.TrackDir] = LinkedTracksToSignals[pathid][sig.TrackDir] or {}
 		LinkedTracksToSignals[pathid][sig.TrackDir][node] = LinkedTracksToSignals[pathid][sig.TrackDir][node] or {}
-		LinkedTracksToSignals[pathid][sig.TrackDir][node].sig = sig
-		LinkedTracksToSignals[pathid][sig.TrackDir][node].x = x
-		LinkedTracksToSignals[pathid][sig.TrackDir][node].nextsig = findfunc(node,x,sig.TrackDir)
+		table.insert(LinkedTracksToSignals[pathid][sig.TrackDir][node],{["sig"] = sig, ["nextsig"] = findfunc(node,x,sig.TrackDir)})
 	end
 	
 	-- вот это самая калящая меня часть, возможно она будет отрабатывать сто лет
@@ -359,15 +357,22 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 	-- end
 	
 	local oldGetARSJoint = Metrostroi.GetARSJoint
+	Metrostroi.OldGetARSJoint = oldGetARSJoint
 	function Metrostroi.NewGetARSJoint(node,x,dir,train)
 		local forwsig
 			local pathid = node.path.id
-			local nextsig = LinkedTracksToSignals[pathid] and LinkedTracksToSignals[pathid][dir] and LinkedTracksToSignals[pathid][dir][node] and LinkedTracksToSignals[pathid][dir][node]
-			if nextsig then
-				if nextsig.x then
-					forwsig = (dir and x < nextsig.x or not dir and x > nextsig.x) and nextsig.sig or nextsig.nextsig
-				else
-					forwsig = not back and nextsig.nextsig
+			local nextsigs = LinkedTracksToSignals[pathid] and LinkedTracksToSignals[pathid][dir] and LinkedTracksToSignals[pathid][dir][node] and LinkedTracksToSignals[pathid][dir][node]
+			if #nextsigs == 0 then
+				forwsig = nextsigs.nextsig
+			else
+				local minleng,lastnearestsig
+				for _,nextsig in pairs(nextsigs or et)do
+					local sig = (dir and x < nextsig.sig.TrackPosition.x or not dir and x > nextsig.sig.TrackPosition.x) and nextsig.sig or nextsig.nextsig
+					local leng = math.abs(x - sig.TrackPosition.x)
+					if not minleng or leng < minleng then
+						minx = leng
+						forwsig = sig
+					end
 				end
 			end
 		return forwsig
@@ -572,4 +577,3 @@ hook.Add("InitPostEntity","Metrostroi signals occupation upgrade",function()
 	end
 	
 end)
-
