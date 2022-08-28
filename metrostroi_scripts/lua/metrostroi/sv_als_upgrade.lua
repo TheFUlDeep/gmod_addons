@@ -122,8 +122,8 @@ local function findfunc(startnode,startx,dir,back,returnPassedNodes,withIsolateS
 	local nodescount = 1
 	local wasNodes = {}
 	local EndSignals = {}
-	-- 1 - началы отрезков, 2 - концы отрезков, 3 - сигналы на концах
-	local startEnds = {{},{},{}}
+	-- 1 - началы отрезков, 2 - концы отрезков
+	local startEnds = {{},{}}
 	while nodescount > 0 do
 		startx = curnodes[1][nodescount]
 		dir = curnodes[2][nodescount]
