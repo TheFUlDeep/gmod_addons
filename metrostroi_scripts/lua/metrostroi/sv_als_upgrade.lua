@@ -635,7 +635,7 @@ end)
 
 local function compareTables(new,old)
 	for k in pairs(new)do
-		if not new[k] then return new[k] end
+		if not old[k] then return k end
 	end
 end
 
