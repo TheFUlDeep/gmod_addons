@@ -1,6 +1,7 @@
 -- сигналы определяют занятость перепригивая на другие треки
 -- функция GetARSJoint работает быстрее, так как просто проверяется по нужному ноуду, а не производит поиск по треку
 -- производительность определения сигнала составом быстрее примерно в 35к раз
+-- TODO узнать, что быстрее, два раза обращение к полю таблицы или один раз помещение в таблицу и два раза обращение к этой переменной?
 
 if CLIENT then return end
 
@@ -212,14 +213,19 @@ local function GenerateOccupationSections()
 		if not IsValid(sig) or not sig.TrackPosition then continue end
 		
 		--поиск всех отрезков занятости
-		local way, nodes = findfunc(sig.TrackPosition.node1,sig.TrackPosition.x,sig.TrackDir,false,true)
+		local way, nodes = findfunc(sig.Node,sig.TrackPosition.x,sig.TrackDir,false,true)
 		local pathid = sig.TrackPosition.path.id
 		for pathid,startx in pairs(way[1])do
-			local condition = {start = startx, ["end"] = way[2][pathid], sig = sig}
+			-- local condition = {start = startx, ["end"] = way[2][pathid], sig = sig}
 			OccupationSections[pathid] = OccupationSections[pathid] or {}
 			for node in pairs(nodes) do
-				OccupationSections[pathid][node.id] = OccupationSections[pathid][node.id] or {}
-				table.insert(OccupationSections[pathid][node.id],condition)
+				-- начальный ноуд будет с условием по иксу, а все следующие без условия (даже если там впереди будет сигнал, думаю не страшно)
+				OccupationSections[pathid][node] = OccupationSections[pathid][node] or {}
+				if node ~= sig.Node then
+					table.insert(OccupationSections[pathid][node],{sig=sig})--тут таблица {sig = sig}, а не просто значение sig, потому что она может проверяться на поле start
+				else
+					table.insert(OccupationSections[pathid][node],{sig=sig,start=startx})
+				end
 			end
 		end
 	end
@@ -235,8 +241,8 @@ local function LinkTracksToSignals()
 	for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do
 		if not IsValid(sig) or not sig.TrackPosition then continue end
 		
-		local pathid = sig.TrackPosition.node1.path.id
-		local node = sig.TrackPosition.node1
+		local pathid = sig.Node.path.id
+		local node = sig.Node
 		wasNodes[node] = wasNodes[node] or {}
 		wasNodes[node][sig.TrackDir] = true
 		local x = sig.TrackPosition.x
@@ -271,8 +277,8 @@ local function LinkBackTracksToSignals()
 	for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do
 		if not IsValid(sig) or not sig.TrackPosition then continue end
 		
-		local pathid = sig.TrackPosition.node1.path.id
-		local node = sig.TrackPosition.node1
+		local pathid = sig.Node.path.id
+		local node = sig.Node
 		wasNodes[node] = wasNodes[node] or {}
 		wasNodes[node][sig.TrackDir] = true
 		local x = sig.TrackPosition.x
@@ -303,18 +309,48 @@ timer.Create("Metrostroi Signals Occupation Upgrade",1,0,function()
 	--смотрю каждую позицию поездов и указываю занятость в сигналам по сгенерированной таблице
 	for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do
 		if IsValid(sig) then
-			sig.OccupiedTfd = false
+			sig.OccupiedTfd = {}
 		end
 	end
-	
+
 	for train,pos in pairs(Metrostroi.TrainPositions)do
 		if not pos[1] then continue end
 		pos = pos[1]
-		local x = pos.x
+		local trainx = pos.x
 		local pathid = pos.path.id
-		for _,condition in pairs(OccupationSections[pathid] and OccupationSections[pathid][pos.node1.id] or et)do
-			if IsValid(condition.sig) and (x < condition['end'] and x > condition['start'] or x > condition['end'] and x < condition['start']) then
-				condition.sig.OccupiedTfd = train
+		if not OccupationSections[pathid] then continue end
+		local minlen,foundnearsig
+		for _,condition in ipairs(OccupationSections[pathid][pos.node1] or et)do
+			-- тут надо найти самый ближний в правильном направлении
+			if not condition.start or not IsValid(condition.sig) then continue end
+			if condition.start then
+				local startx = condition.start
+				local sigdir = condition.sig.TrackDir
+				-- TODO проверить условие на направление
+				if sigdir and trainx > startx or not sigdir and trainx < startx then
+					if not minlen or math.abs(startx - trainx) < minlen then
+						-- print("occupied by x", condition.sig.Name)
+						condition.sig.OccupiedTfd[train] = true
+						foundnearsig = condition.sig
+					end
+				end
+			else
+				condition.sig.OccupiedTfd[train] = true
+				-- print("occupied by node", condition.sig.Name)
+			end
+		end
+		
+		for _,condition in ipairs(OccupationSections[pathid][pos.node1] or et)do
+			-- тут надо найти самый ближний в правильном направлении
+			if condition.start or not IsValid(condition.sig) then continue end
+			if not foundnearsig then
+				condition.sig.OccupiedTfd[train] = true
+				-- print("occupied by node", condition.sig.Name)
+			else
+				if trainx < foundnearsig.TrackPosition.x and trainx > condition.sig.TrackPosition.x or trainx > foundnearsig.TrackPosition.x and trainx < condition.sig.TrackPosition.x then
+					condition.sig.OccupiedTfd[train] = true
+					-- print("occupied by node and x", condition.sig.Name)
+				end
 			end
 		end
 	end
@@ -331,7 +367,7 @@ local function RemoveUselessRepeaters()
 			if not params.Repeater or params.Switches and (params.Switches:find("+",1,true) or params.Switches:find("-",1,true)) then IsBadRepeater = true break end
 			for name,ent in pairs(sig.NextSignals or et)do
 				--findfunc(startnode,startx,dir,back,returnPassedNodes)
-				if (name:find("%a") or name:find("%d") or name == "*") and findfunc(sig.TrackPosition.node1, sig.TrackPosition.x, sig.TrackDir) ~= ent then IsBadRepeater = true break end
+				if (name:find("%a") or name:find("%d") or name == "*") and findfunc(sig.Node, sig.TrackPosition.x, sig.TrackDir) ~= ent then IsBadRepeater = true break end
 			end
 			if IsBadRepeater then break end
 		end
@@ -344,7 +380,7 @@ local function RemoveUselessRepeaters()
 				if nextsignalName == "*" then nextsignalName = sig2.NextSignals["*"] and sig2.NextSignals["*"].Name end
 				if nextsignalName and nextsignalName == sig.Name then
 					sig2.NextSignals[params.NextSignal] = nil
-					local nextSignalEnt = findfunc(sig.TrackPosition.node1, sig.TrackPosition.x, sig.TrackDir)
+					local nextSignalEnt = findfunc(sig.Node, sig.TrackPosition.x, sig.TrackDir)
 					params.NextSignal = nextSignalEnt.Name
 					sig2.NextSignals[params.NextSignal] = nextSignalEnt
 					print("reconfiguting signal "..(sig2.Name or tostring(sig2).." "..sig2:EntIndex()).." because of deleting signal "..nextsignalName)
@@ -400,7 +436,7 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 		if #nextsigs == 0 then
 			forwsig = nextsigs.nextsig
 		else
-			local minleng,lastnearestsig
+			local minleng
 			for _,nextsig in pairs(nextsigs or et)do
 				local sig = (dir and x < nextsig.sig.TrackPosition.x or not dir and x > nextsig.sig.TrackPosition.x) and nextsig.sig or nextsig.nextsig
 				if not sig then continue end
@@ -416,7 +452,7 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 		if #nextsigs == 0 then
 			backsig = nextsigs.nextsig
 		else
-			local minleng,lastnearestsig
+			local minleng
 			for _,nextsig in pairs(nextsigs or et)do
 				local sig = (dir and x < nextsig.sig.TrackPosition.x or not dir and x > nextsig.sig.TrackPosition.x) and nextsig.nextsig or nextsig.sig
 				if not sig then continue end
@@ -597,26 +633,32 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 	-- end	
 end)
 
+local function compareTables(new,old)
+	for k in pairs(new)do
+		if not new[k] then return new[k] end
+	end
+end
 
 hook.Add("InitPostEntity","Metrostroi signals occupation upgrade",function()
 	local SIGNAL = scripted_ents.GetStored("gmod_track_signal").t
 	--основу скопировал из ентити сигнала
 	SIGNAL.CheckOccupation = function(self)
-		-- print(self.FoundedAll)
-		-- if not self.FoundedAll then return end
 		if not self.Close and not self.KGU then --not self.OverrideTrackOccupied and
 			if self.Node and self.TrackPosition then
-				self.Occupied = self.OccupiedTfd and true
-				local train = self.OccupiedTfd and (self.OccupiedTfd.WagonList or {self.OccupiedTfd})
-				self.OccupiedBy = train and train[#train]
-				self.OccupiedByNow = train and train[1]
+				if not table.IsEmpty(self.OccupiedTfd) then
+					local newwag = compareTables(self.OccupiedTfd, self.PrevOccupiedTfd)
+					if newwag then
+						self.OccupiedBy = newwag
+						self.InvationSignal = false
+					end
+				else
+					self.OccupiedBy = nil
+				end
+				self.Occupied = self.OccupiedBy and true
+				self.PrevOccupiedTfd = self.OccupiedTfd
 			end
 			if self.Routes[self.Route] and self.Routes[self.Route].Manual then
 				self.Occupied = self.Occupied or not self.Routes[self.Route].IsOpened
-			end
-			if self.OccupiedByNowOld ~= self.OccupiedByNow then
-				self.InvationSignal = false
-				self.OccupiedByNowOld = self.OccupiedByNow
 			end
 		else
 			self.NextSignalLink = nil
@@ -624,6 +666,14 @@ hook.Add("InitPostEntity","Metrostroi signals occupation upgrade",function()
 		end
 	end
 	
+	local oldinit = SIGNAL.Initialize
+	SIGNAL.Initialize = function(self,...)
+		self.OccupiedTfd = {}
+		self.PrevOccupiedTfd = {}
+		return oldinit(self,...)
+	end
+	
+	-- TODO проверить, будет ли адекватно везде работать
 	local oldARSLogick = SIGNAL.ARSLogic
 	SIGNAL.ARSLogic = function(self,...)
 		if self.Routes[self.Route or 1].Repeater then self:CheckOccupation() end
