@@ -394,40 +394,7 @@ end
 
 
 hook.Add("MetrostroiLoaded","UpgradeTracks",function()
--- timer.Simple(0,function()
--- hook.Add("InitPostEntity","test",function()
-	local oldload = Metrostroi.Load
-	Metrostroi.Load = function(...)
-		-- RemovedSignals = {}
-		oldload(...)
-		UpgradeTracks()
-		--backsignals = {}
-		--forwsignals = {}
-	end
-	
-	-- local oldUpdateSignalEntities = Metrostroi.UpdateSignalEntities
-	-- Metrostroi.UpdateSignalEntities = function(...)
-		-- for _,self in pairs(ents.FindByClass("gmod_track_signal"))do
-			-- if not IsValid(self) then continue end
-			-- local needIterations = self.Routes and #self.Routes or 0
-			-- while needIterations > 0 do
-				-- if not self.Routes[needIterations].NextSignal or self.Routes[needIterations].Repeater and self.Routes[needIterations].NextSignal == self.Name or not self.Routes[needIterations].NextSignal:find("%a") and not self.Routes[needIterations].NextSignal:find("%d") and not self.Routes[needIterations].NextSignal:find("*",1,true) then
-					-- table.remove(self.Routes,needIterations)
-				-- end
-				-- needIterations = needIterations - 1
-			-- end
-			-- if not self.Routes or #self.Routes == 0 then
-				-- self.Routes = {{}}
-				-- if self.Name then
-					-- RemovedSignals[self.Name] = true
-				-- end
-				-- print("removed signal "..(self.Name or "NAME").." because of bad settings")
-				-- SafeRemoveEntity(self)
-			-- end
-		-- end
-		-- return oldUpdateSignalEntities(...)
-	-- end
-	
+
 	local oldGetARSJoint = Metrostroi.GetARSJoint
 	function Metrostroi.NewGetARSJoint(node,x,dir,train)
 		local forwsig,backsig
@@ -466,10 +433,43 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 
 		return forwsig, backsig
 	end
+-- timer.Simple(0,function()
+-- hook.Add("InitPostEntity","test",function()
+	local oldload = Metrostroi.Load
+	Metrostroi.Load = function(...)
+		Metrostroi.GetARSJoint = oldGetARSJoint
+		-- RemovedSignals = {}
+		oldload(...)
+		UpgradeTracks()
+		--backsignals = {}
+		--forwsignals = {}
+	end
+	
+	-- local oldUpdateSignalEntities = Metrostroi.UpdateSignalEntities
+	-- Metrostroi.UpdateSignalEntities = function(...)
+		-- for _,self in pairs(ents.FindByClass("gmod_track_signal"))do
+			-- if not IsValid(self) then continue end
+			-- local needIterations = self.Routes and #self.Routes or 0
+			-- while needIterations > 0 do
+				-- if not self.Routes[needIterations].NextSignal or self.Routes[needIterations].Repeater and self.Routes[needIterations].NextSignal == self.Name or not self.Routes[needIterations].NextSignal:find("%a") and not self.Routes[needIterations].NextSignal:find("%d") and not self.Routes[needIterations].NextSignal:find("*",1,true) then
+					-- table.remove(self.Routes,needIterations)
+				-- end
+				-- needIterations = needIterations - 1
+			-- end
+			-- if not self.Routes or #self.Routes == 0 then
+				-- self.Routes = {{}}
+				-- if self.Name then
+					-- RemovedSignals[self.Name] = true
+				-- end
+				-- print("removed signal "..(self.Name or "NAME").." because of bad settings")
+				-- SafeRemoveEntity(self)
+			-- end
+		-- end
+		-- return oldUpdateSignalEntities(...)
+	-- end
 	
 	local oldPostInit = Metrostroi.PostSignalInitialize
 	Metrostroi.PostSignalInitialize = function()
-		Metrostroi.GetARSJoint = oldGetARSJoint
 		oldPostInit()
 		RemoveUselessRepeaters()
 		
@@ -644,7 +644,7 @@ hook.Add("InitPostEntity","Metrostroi signals occupation upgrade",function()
 	--основу скопировал из ентити сигнала
 	SIGNAL.CheckOccupation = function(self)
 		if not self.Close and not self.KGU then --not self.OverrideTrackOccupied and
-			if not table.IsEmpty(self.OccupiedTfd) then
+			if not table.IsEmpty(self.OccupiedTfd or et) then
 				-- добавил self.OccupiedTfd ~= self.PrevOccupiedTfd с надеждой на то, что уменьшу количество вызовов функции compareTables
 				local newwag = self.OccupiedTfd ~= self.PrevOccupiedTfd and compareTables(self.OccupiedTfd, self.PrevOccupiedTfd)
 				if newwag then
