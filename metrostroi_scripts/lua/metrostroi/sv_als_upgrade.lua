@@ -645,7 +645,8 @@ hook.Add("InitPostEntity","Metrostroi signals occupation upgrade",function()
 	SIGNAL.CheckOccupation = function(self)
 		if not self.Close and not self.KGU then --not self.OverrideTrackOccupied and
 			if not table.IsEmpty(self.OccupiedTfd) then
-				local newwag = compareTables(self.OccupiedTfd, self.PrevOccupiedTfd)
+				-- добавил self.OccupiedTfd ~= self.PrevOccupiedTfd с надеждой на то, что уменьшу количество вызовов функции compareTables
+				local newwag = self.OccupiedTfd ~= self.PrevOccupiedTfd and compareTables(self.OccupiedTfd, self.PrevOccupiedTfd)
 				if newwag then
 					self.OccupiedBy = newwag
 					self.InvationSignal = false
