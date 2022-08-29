@@ -644,19 +644,17 @@ hook.Add("InitPostEntity","Metrostroi signals occupation upgrade",function()
 	--основу скопировал из ентити сигнала
 	SIGNAL.CheckOccupation = function(self)
 		if not self.Close and not self.KGU then --not self.OverrideTrackOccupied and
-			if self.Node and self.TrackPosition then
-				if not table.IsEmpty(self.OccupiedTfd) then
-					local newwag = compareTables(self.OccupiedTfd, self.PrevOccupiedTfd)
-					if newwag then
-						self.OccupiedBy = newwag
-						self.InvationSignal = false
-					end
-				else
-					self.OccupiedBy = nil
+			if not table.IsEmpty(self.OccupiedTfd) then
+				local newwag = compareTables(self.OccupiedTfd, self.PrevOccupiedTfd)
+				if newwag then
+					self.OccupiedBy = newwag
+					self.InvationSignal = false
 				end
-				self.Occupied = self.OccupiedBy and true
-				self.PrevOccupiedTfd = self.OccupiedTfd
+			else
+				self.OccupiedBy = nil
 			end
+			self.Occupied = self.OccupiedBy and true
+			self.PrevOccupiedTfd = self.OccupiedTfd
 			if self.Routes[self.Route] and self.Routes[self.Route].Manual then
 				self.Occupied = self.Occupied or not self.Routes[self.Route].IsOpened
 			end
