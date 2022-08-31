@@ -1,4 +1,3 @@
-print("a")
 -- сигналы определяют занятость перепригивая на другие треки
 -- функция GetARSJoint работает быстрее, так как просто проверяется по нужному ноуду, а не производит поиск по треку
 -- производительность определения сигнала составом быстрее примерно в 35к раз
@@ -397,7 +396,6 @@ end
 hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 	Metrostroi.oldGetARSJoint = Metrostroi.GetARSJoint
 	function Metrostroi.NewGetARSJoint(node,x,dir,train)
-		print("c")
 		local forwsig,backsig
 		local pathid = node.path.id
 		local nextsigs = LinkedTracksToSignals[pathid] and LinkedTracksToSignals[pathid][dir] and LinkedTracksToSignals[pathid][dir][node] and LinkedTracksToSignals[pathid][dir][node]
