@@ -1,3 +1,4 @@
+print("a")
 -- сигналы определяют занятость перепригивая на другие треки
 -- функция GetARSJoint работает быстрее, так как просто проверяется по нужному ноуду, а не производит поиск по треку
 -- производительность определения сигнала составом быстрее примерно в 35к раз
@@ -129,8 +130,8 @@ local function findfunc(startnode,startx,dir,back,returnPassedNodes,withIsolateS
 	while nodescount > 0 do
 		startx = curnodes[1][nodescount]
 		dir = curnodes[2][nodescount]
-		dirstr = dir and "next" or "prev"
-		curnode = curnodes[3][nodescount]
+		local dirstr = dir and "next" or "prev"
+		local curnode = curnodes[3][nodescount]
 		
 		local pathid = curnode.path.id
 		startEnds[1][pathid] = startEnds[1][pathid] or startx
@@ -394,9 +395,9 @@ end
 
 
 hook.Add("MetrostroiLoaded","UpgradeTracks",function()
-
-	local oldGetARSJoint = Metrostroi.GetARSJoint
+	Metrostroi.oldGetARSJoint = Metrostroi.GetARSJoint
 	function Metrostroi.NewGetARSJoint(node,x,dir,train)
+		print("c")
 		local forwsig,backsig
 		local pathid = node.path.id
 		local nextsigs = LinkedTracksToSignals[pathid] and LinkedTracksToSignals[pathid][dir] and LinkedTracksToSignals[pathid][dir][node] and LinkedTracksToSignals[pathid][dir][node]
@@ -408,7 +409,7 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 				local sig = (dir and x < nextsig.sig.TrackPosition.x or not dir and x > nextsig.sig.TrackPosition.x) and nextsig.sig or nextsig.nextsig
 				if not sig then continue end
 				local leng = math.abs(x - sig.TrackPosition.x)
-				if not minleng or leng < minleng then
+				if not minleng or leng < minlengprin then
 					minx = leng
 					forwsig = sig
 				end
@@ -437,12 +438,31 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 -- hook.Add("InitPostEntity","test",function()
 	local oldload = Metrostroi.Load
 	Metrostroi.Load = function(...)
-		Metrostroi.GetARSJoint = oldGetARSJoint
 		-- RemovedSignals = {}
 		oldload(...)
 		UpgradeTracks()
 		--backsignals = {}
 		--forwsignals = {}
+		RemoveUselessRepeaters()
+		
+		-- for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do
+			-- if IsValid(sig) then
+				-- for routeid,params in pairs(sig.Routes or et)do
+					-- local nextsignal = params.NextSignal
+					-- if nextsignal == "*" then nextsignal = sig.NextSignals["*"] and sig.NextSignals["*"].Name end
+					-- if nextsignal and RemovedSignals[nextsignal] then
+						-- sig.NextSignals[nextsignal] = nil
+						-- params.NextSignal = sig.Name
+						-- sig.NextSignals[params.NextSignal] = sig
+						-- print("reconfiguting signal "..sig.Name.." to self because of deleted signal "..nextsignal)
+					-- end
+				-- end
+			-- end
+		-- end
+		
+		GenerateOccupationSections()
+		LinkTracksToSignals()
+		LinkBackTracksToSignals()
 	end
 	
 	-- local oldUpdateSignalEntities = Metrostroi.UpdateSignalEntities
@@ -468,32 +488,13 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 		-- return oldUpdateSignalEntities(...)
 	-- end
 	
-	local oldPostInit = Metrostroi.PostSignalInitialize
-	Metrostroi.PostSignalInitialize = function()
-		oldPostInit()
-		RemoveUselessRepeaters()
-		
-		-- for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do
-			-- if IsValid(sig) then
-				-- for routeid,params in pairs(sig.Routes or et)do
-					-- local nextsignal = params.NextSignal
-					-- if nextsignal == "*" then nextsignal = sig.NextSignals["*"] and sig.NextSignals["*"].Name end
-					-- if nextsignal and RemovedSignals[nextsignal] then
-						-- sig.NextSignals[nextsignal] = nil
-						-- params.NextSignal = sig.Name
-						-- sig.NextSignals[params.NextSignal] = sig
-						-- print("reconfiguting signal "..sig.Name.." to self because of deleted signal "..nextsignal)
-					-- end
-				-- end
-			-- end
-		-- end
-		
-		GenerateOccupationSections()
-		LinkTracksToSignals()
-		LinkBackTracksToSignals()
+	local oldUpdateSignalEntities = Metrostroi.UpdateSignalEntities
+	Metrostroi.UpdateSignalEntities = function(...)
+		Metrostroi.GetARSJoint = Metrostroi.oldGetARSJoint
+		local res = oldUpdateSignalEntities(...)
 		Metrostroi.GetARSJoint = Metrostroi.NewGetARSJoint
+		return res
 	end
-	
 	
 	--проверка, что вагон точно на треке. Это ухудшит производительность, но оно проверяется только если forw не найден в первый раз и найден во второй или третий
 	--и эта проверка обязательна, так как при увеличенном радиусе может найтись трек соседнего пути
@@ -677,6 +678,14 @@ hook.Add("InitPostEntity","Metrostroi signals occupation upgrade",function()
 	SIGNAL.ARSLogic = function(self,...)
 		if self.Routes[self.Route or 1].Repeater then self:CheckOccupation() end
 		return oldARSLogick(self,...)
-	end
+	end	
 	
+	
+	local oldpostinit = SIGNAL.PostInitalize
+	SIGNAL.PostInitalize = function(...)
+		Metrostroi.GetARSJoint = Metrostroi.oldGetARSJoint
+		local res oldpostinit(...)
+		Metrostroi.GetARSJoint = Metrostroi.NewGetARSJoint
+		return res
+	end
 end)
