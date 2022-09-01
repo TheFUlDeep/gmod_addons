@@ -323,20 +323,14 @@ timer.Create("Metrostroi Signals Occupation Upgrade",1,0,function()
 		for _,condition in ipairs(OccupationSections[pathid][pos.node1] or et)do
 			-- тут надо найти самый ближний в правильном направлении
 			if not condition.start or not IsValid(condition.sig) then continue end
-			if condition.start then
-				local startx = condition.start
-				local sigdir = condition.sig.TrackDir
-				-- TODO проверить условие на направление
-				if sigdir and trainx > startx or not sigdir and trainx < startx then
-					if not minlen or math.abs(startx - trainx) < minlen then
-						-- print("occupied by x", condition.sig.Name)
-						condition.sig.OccupiedTfd[train] = true
-						foundnearsig = condition.sig
-					end
+			local startx = condition.start
+			local sigdir = condition.sig.TrackDir
+			if sigdir and trainx > startx or not sigdir and trainx < startx then
+				if not minlen or math.abs(startx - trainx) < minlen then
+					-- print("occupied by x", condition.sig.Name)
+					condition.sig.OccupiedTfd[train] = true
+					foundnearsig = condition.sig
 				end
-			else
-				condition.sig.OccupiedTfd[train] = true
-				-- print("occupied by node", condition.sig.Name)
 			end
 		end
 		
