@@ -107,7 +107,7 @@ local Remove = TheFulDeepsAvtooborot.Remove
 
 TheFulDeepsAvtooborot.Toggle = function(Name)
 	if not ConditionsTbls[Name] then print("автооборота с таким именем не существует") return end
-	RunConsoleCommand("metrostroi_avtooborot_toggle_"..Name)
+	RunConsoleCommand("metrostroi_avtooborot_toggle",Name)
 end
 local Toggle = TheFulDeepsAvtooborot.Toggle
 
