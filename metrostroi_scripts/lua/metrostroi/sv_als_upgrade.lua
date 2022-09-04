@@ -392,34 +392,38 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 	function Metrostroi.NewGetARSJoint(node,x,dir,train)
 		local forwsig,backsig
 		local pathid = node.path.id
-		local nextsigs = LinkedTracksToSignals[pathid] and LinkedTracksToSignals[pathid][dir] and LinkedTracksToSignals[pathid][dir][node] and LinkedTracksToSignals[pathid][dir][node]
-		if #nextsigs == 0 then
-			forwsig = nextsigs.nextsig
-		else
-			local minleng
-			for _,nextsig in pairs(nextsigs or et)do
-				local sig = (dir and x < nextsig.sig.TrackPosition.x or not dir and x > nextsig.sig.TrackPosition.x) and nextsig.sig or nextsig.nextsig
-				if not sig then continue end
-				local leng = math.abs(x - sig.TrackPosition.x)
-				if not minleng or leng < minlengprin then
-					minx = leng
-					forwsig = sig
+		local nextsigs = LinkedTracksToSignals[pathid] and LinkedTracksToSignals[pathid][dir] and LinkedTracksToSignals[pathid][dir][node]
+		if nextsigs then
+			if #nextsigs == 0 then
+				forwsig = nextsigs.nextsig
+			else
+				local minleng
+				for _,nextsig in pairs(nextsigs or et)do
+					local sig = (dir and x < nextsig.sig.TrackPosition.x or not dir and x > nextsig.sig.TrackPosition.x) and nextsig.sig or nextsig.nextsig
+					if not sig then continue end
+					local leng = math.abs(x - sig.TrackPosition.x)
+					if not minleng or leng < minlengprin then
+						minx = leng
+						forwsig = sig
+					end
 				end
 			end
 		end
 			
-		local nextsigs = LinkedBackTracksToSignals[pathid] and LinkedBackTracksToSignals[pathid][dir] and LinkedBackTracksToSignals[pathid][dir][node] and LinkedBackTracksToSignals[pathid][dir][node]
-		if #nextsigs == 0 then
-			backsig = nextsigs.nextsig
-		else
-			local minleng
-			for _,nextsig in pairs(nextsigs or et)do
-				local sig = (dir and x < nextsig.sig.TrackPosition.x or not dir and x > nextsig.sig.TrackPosition.x) and nextsig.nextsig or nextsig.sig
-				if not sig then continue end
-				local leng = math.abs(x - sig.TrackPosition.x)
-				if not minleng or leng < minleng then
-					minx = leng
-					backsig = sig
+		local nextsigs = LinkedBackTracksToSignals[pathid] and LinkedBackTracksToSignals[pathid][dir] and LinkedBackTracksToSignals[pathid][dir][node]
+		if nextsigs then
+			if #nextsigs == 0 then
+				backsig = nextsigs.nextsig
+			else
+				local minleng
+				for _,nextsig in pairs(nextsigs or et)do
+					local sig = (dir and x < nextsig.sig.TrackPosition.x or not dir and x > nextsig.sig.TrackPosition.x) and nextsig.nextsig or nextsig.sig
+					if not sig then continue end
+					local leng = math.abs(x - sig.TrackPosition.x)
+					if not minleng or leng < minleng then
+						minx = leng
+						backsig = sig
+					end
 				end
 			end
 		end
