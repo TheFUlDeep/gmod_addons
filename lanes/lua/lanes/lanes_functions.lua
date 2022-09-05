@@ -112,6 +112,7 @@ lanes.CreateSingleTask = function(id,libs,opts,convert,func,callback,inArgs)
 end
 local CreateSingleTask = lanes.CreateSingleTask
 
+--TODO это говно по прочине на каждом повторении создается новый поток (вызывается функция f, а это вызов функции core_lane_new), а я хочу чтобы выполнялся тот же поток
 lanes.CreateRepeatingTask = function(delay,count,dont_die,id,...)
 	CreateSingleTask(id,...)
 	local task = LaneTasks[id]
