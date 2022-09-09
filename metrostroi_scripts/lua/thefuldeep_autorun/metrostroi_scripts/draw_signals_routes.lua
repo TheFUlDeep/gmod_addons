@@ -55,7 +55,7 @@ if SERVER then
 	
 	--hook.Add("PlayerInitialSpawn","Metrostroi Send routes info for drawing",SendRoutesInfo)
 	
-	timer.Create("Metrostroi Update Close NW2 value for signals",2,0,function()
+	timer.Create("Metrostroi.SignalsRoutesForDrawing",2,0,function()
 		for _,v in pairs(entsFindByClass(signals_class)) do
 			if IsValid(v) then v:SetNW2Bool("Close",v.Close) end
 		end
@@ -114,7 +114,7 @@ cvars.AddChangeCallback("draw_signal_routes_distance", function(convar,old,new)S
 --разница в производительности примерно в 10 раз
 --короче чем больше таблица, тем медленнее работает. Поэтому в таймере я делаю маленькую таблицу, из которой уже ресуются текста
 local viewpos = Vector(0)
-timer.Create("Metrostroi Get signals routes for drawing",1,0,function()
+timer.Create("Metrostroi.SignalsRoutesForDrawing",1,0,function()
 	texts = {}
 	if C_Enabled:GetBool() then		
 		
@@ -142,7 +142,7 @@ local r,g,b = 255,255,255
 local color = Color(r,g,b,255)
 local color2 = Color(255-r,255-g,255-b,255)
 local EyePos = EyePos
-hook.Add("PreDrawEffects","Metrostroi Draw Signals Routes",function()
+hook.Add("PreDrawEffects","Metrostroi.SignalsRoutesForDrawing",function()
 	viewpos = EyePos()
 	
 	for _,params in pairs(texts) do
