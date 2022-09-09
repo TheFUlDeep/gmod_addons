@@ -40,13 +40,15 @@ if SERVER then
 		end
 	end
 
-	local oldPostInit = Metrostroi.PostSignalInitialize
-	Metrostroi.PostSignalInitialize = function(...)
-		timer.Create("Metrostroi.SignalsRoutesForDrawing",2,1,function()
-			SendRoutesInfo()
-		end)
-		return oldPostInit(...)
-	end
+	hook.Add("MetrostroiLoaded","Metrostroi.SignalsRoutesForDrawing",function()
+		local oldPostInit = Metrostroi.PostSignalInitialize
+		Metrostroi.PostSignalInitialize = function(...)
+			timer.Create("Metrostroi.SignalsRoutesForDrawing",2,1,function()
+				SendRoutesInfo()
+			end)
+			return oldPostInit(...)
+		end
+	end)
 	
 	--так делать не стоит
 	--hook.Add("PlayerInitialSpawn","Metrostroi Send routes info for drawing",SendRoutesInfo)
