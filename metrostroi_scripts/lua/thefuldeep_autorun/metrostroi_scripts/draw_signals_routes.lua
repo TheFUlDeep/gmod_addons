@@ -8,54 +8,50 @@ if SERVER then
 
 	--можно конечно было сделать, чтобы таблица генерировалась один раз при перезагрузки сигналки, и уже готовая просто отправлялясь, но вроде оно несильно ест производительность, поэтмоу пофиг
 	local function SendRoutesInfo(ply)
-		timer.Simple(1,function()
-		timer.Simple(1,function()
-			local signalsCommands = {}
-			for _,signal in pairs(entsFindByClass(signals_class)) do
-				if not IsValid(signal) then continue end
-				local commands = {}
-				
-				for _,route in pairs(signal.Routes or {}) do
-					local routeName = route.RouteName
-					if not routeName or routeName == "" then
-						if route.Manual then
-							routeName = signal.Name or ""
-						else
-							continue
-						end
+		local signalsCommands = {}
+		for _,signal in pairs(entsFindByClass(signals_class)) do
+			if not IsValid(signal) then continue end
+			local commands = {}
+
+			for _,route in pairs(signal.Routes or {}) do
+				local routeName = route.RouteName
+				if not routeName or routeName == "" then
+					if route.Manual then
+						routeName = signal.Name or ""
+					else
+						continue
 					end
-					routeName = '"'..routeName..'"'
-					if route.Emer then routeName = "Emergency "..routeName end
-					tableinsert(commands,1,routeName)--мне тут надо в обратном порядке, потому что я рисую текста снизу вверх
 				end
-				if #commands < 1 then continue end
-				
-				signalsCommands[signal:EntIndex()] = commands
+				routeName = '"'..routeName..'"'
+				if route.Emer then routeName = "Emergency "..routeName end
+				tableinsert(commands,1,routeName)--мне тут надо в обратном порядке, потому что я рисую текста снизу вверх
 			end
-				
-			net.Start("Metrostroi.SignalsRoutesForDrawing")
-				net.WriteTable(signalsCommands)
-			if IsValid(ply) then 
-				net.Send(ply)
-			else
-				net.Broadcast()
-			end
-		end)
-		end)
+			if #commands < 1 then continue end
+
+			signalsCommands[signal:EntIndex()] = commands
+		end
+
+		net.Start("Metrostroi.SignalsRoutesForDrawing")
+			net.WriteTable(signalsCommands)
+		if IsValid(ply) then 
+			net.Send(ply)
+		else
+			net.Broadcast()
+		end
 	end
 
-	
-	timer.Simple(0.01,function()
-		local oldload = Metrostroi.Load
-		Metrostroi.Load = function(...)
-			oldload(...)
+	local oldPostInit = Metrostroi.PostSignalInitialize
+	Metrostroi.PostSignalInitialize = function(...)
+		timer.Create("Metrostroi.SignalsRoutesForDrawing",2,1,function()
 			SendRoutesInfo()
-		end
-	end)
+		end)
+		return oldPostInit(...)
+	end
 	
+	--так делать не стоит
 	--hook.Add("PlayerInitialSpawn","Metrostroi Send routes info for drawing",SendRoutesInfo)
 	
-	timer.Create("Metrostroi.SignalsRoutesForDrawing",2,0,function()
+	timer.Create("Metrostroi.SignalsRoutesForDrawing NW2 Close value",2,0,function()
 		for _,v in pairs(entsFindByClass(signals_class)) do
 			if IsValid(v) then v:SetNW2Bool("Close",v.Close) end
 		end
