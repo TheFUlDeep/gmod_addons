@@ -1,4 +1,3 @@
---TODO увеличить разрешение текста
 local entsFindByClass = ents.FindByClass
 local signals_class = "gmod_track_signal"
 local tableinsert = table.insert
@@ -43,7 +42,7 @@ if SERVER then
 	hook.Add("MetrostroiLoaded","Metrostroi.SignalsRoutesForDrawing",function()
 		local oldPostInit = Metrostroi.PostSignalInitialize
 		Metrostroi.PostSignalInitialize = function(...)
-			timer.Create("Metrostroi.SignalsRoutesForDrawing",2,1,function()
+			timer.Create("Metrostroi.SignalsRoutesForDrawing",3,1,function()
 				SendRoutesInfo()
 			end)
 			return oldPostInit(...)
@@ -134,7 +133,7 @@ end)
 
 
 
-local font = "Default"
+local font = "DermaLarge"
 local drawSimpleTextOutlined = draw.SimpleTextOutlined
 local r,g,b = 255,255,255
 local color = Color(r,g,b,255)
@@ -144,7 +143,7 @@ hook.Add("PreDrawEffects","Metrostroi.SignalsRoutesForDrawing",function()
 	viewpos = EyePos()
 	
 	for _,params in pairs(texts) do
-		cam.Start3D2D(params[2],params[3],1)
+		cam.Start3D2D(params[2],params[3],0.5)
 			local hlast = 0
 			for _,text in pairs(params[4]) do
 				local w,h = drawSimpleTextOutlined(text, font, 0, hlast, color, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, color2)
