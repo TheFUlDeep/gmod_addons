@@ -1,9 +1,10 @@
+--TODO увеличить разрешение текста
 local entsFindByClass = ents.FindByClass
 local signals_class = "gmod_track_signal"
 local tableinsert = table.insert
 
 if SERVER then
-	util.AddNetworkString("SignalsRoutesForDrawing")
+	util.AddNetworkString("Metrostroi.SignalsRoutesForDrawing")
 
 	--можно конечно было сделать, чтобы таблица генерировалась один раз при перезагрузки сигналки, и уже готовая просто отправлялясь, но вроде оно несильно ест производительность, поэтмоу пофиг
 	local function SendRoutesInfo(ply)
@@ -32,7 +33,7 @@ if SERVER then
 				signalsCommands[signal:EntIndex()] = commands
 			end
 				
-			net.Start("SignalsRoutesForDrawing")
+			net.Start("Metrostroi.SignalsRoutesForDrawing")
 				net.WriteTable(signalsCommands)
 			if IsValid(ply) then 
 				net.Send(ply)
@@ -52,21 +53,33 @@ if SERVER then
 		end
 	end)
 	
-	hook.Add("PlayerInitialSpawn","Send routes info for drawing",SendRoutesInfo)
+	--hook.Add("PlayerInitialSpawn","Metrostroi Send routes info for drawing",SendRoutesInfo)
 	
-	timer.Create("Update Close NW2 value for signals",2,0,function()
+	timer.Create("Metrostroi Update Close NW2 value for signals",2,0,function()
 		for _,v in pairs(entsFindByClass(signals_class)) do
 			if IsValid(v) then v:SetNW2Bool("Close",v.Close) end
 		end
 	end)
+	
+	net.Receive("Metrostroi.SignalsRoutesForDrawing", function(len, ply)
+		if not IsValid(ply) then return end
+		SendRoutesInfo(ply)
+	end)
+	
 end
 
 if SERVER then return end
 
+
+hook.Add("InitPostEntity", "Metrostroi.SignalsRoutesForDrawing", function()
+	net.Start("Metrostroi.SignalsRoutesForDrawing")
+	net.SendToServer()
+end)
+
 local texts = {}--ентити, позиция, угол, таблица маршрутов, закрыт ли вручную
 
 local signalsCommands = {}
-net.Receive("SignalsRoutesForDrawing", function()
+net.Receive("Metrostroi.SignalsRoutesForDrawing", function()
 	signalsCommands = net.ReadTable()
 end)
 
@@ -100,13 +113,10 @@ cvars.AddChangeCallback("draw_signal_routes_distance", function(convar,old,new)S
 --методом os.clock было вычислено, что постоянный потсоянный по таблице из 200 элементов медленнее, чем потсоянный проход по таблице из 10ти элементов при постоянной ее очистке и обращении к таблице из 200 по ключу раз в секунду
 --разница в производительности примерно в 10 раз
 --короче чем больше таблица, тем медленнее работает. Поэтому в таймере я делаю маленькую таблицу, из которой уже ресуются текста
-THEFULDEEP = THEFULDEEP or {}
-local THEFULDEEP = THEFULDEEP
-THEFULDEEP.RealViewPos = Vector(0)
-timer.Create("Get signals routes for drawing",1,0,function()
+local viewpos = Vector(0)
+timer.Create("Metrostroi Get signals routes for drawing",1,0,function()
 	texts = {}
 	if C_Enabled:GetBool() then		
-		local viewpos = THEFULDEEP.RealViewPos
 		
 		local index = 0
 		for _,signal in pairs(entsFindByClass(signals_class)) do
@@ -132,8 +142,8 @@ local r,g,b = 255,255,255
 local color = Color(r,g,b,255)
 local color2 = Color(255-r,255-g,255-b,255)
 local EyePos = EyePos
-hook.Add("PreDrawEffects","Draw Signals Routes",function()
-	THEFULDEEP.RealViewPos = EyePos()
+hook.Add("PreDrawEffects","Metrostroi Draw Signals Routes",function()
+	viewpos = EyePos()
 	
 	for _,params in pairs(texts) do
 		cam.Start3D2D(params[2],params[3],1)
