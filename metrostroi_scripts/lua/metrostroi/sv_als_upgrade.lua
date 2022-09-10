@@ -523,7 +523,8 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 					end
 			end
 		end
-
+		
+		--именно такое отправление, чтобы с меньшей вероятностью кикнуло с причиной Client # overflowed reliable channel
 		tbltosend = util.Compress(util.TableToJSON(tbltosend,true))
 		local timeout = 5
 		for i = 1, #tbltosend, 60000 do
