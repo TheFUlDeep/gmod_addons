@@ -1,9 +1,84 @@
 -- сигналы определяют занятость перепригивая на другие треки
 -- функция GetARSJoint работает быстрее, так как просто проверяется по нужному ноуду, а не производит поиск по треку
 -- производительность определения сигнала составом быстрее примерно в 35к раз
--- TODO узнать, что быстрее, два раза обращение к полю таблицы или один раз помещение в таблицу и два раза обращение к этой переменной?
+-- TODO узнать, что быстрее, два раза обращение к полю таблицы или один раз помещение в таблицу и два раза обращение к этой переменной?\
 
+if CLIENT then
+	local ShowPaths=true
+	hook.Add("MetrostroiLoaded","Metrostroi.AlsUpgrade",function()
+		local  c_metrostroi_trackeditor_togglenodes = concommand.GetTable()
+		c_metrostroi_trackeditor_togglenodes = c_metrostroi_trackeditor_togglenodes.metrostroi_trackeditor_togglenodes
+
+		concommand.Add("metrostroi_trackeditor_togglenodes",function()
+			c_metrostroi_trackeditor_togglenodes()
+			ShowPaths=not ShowPaths
+		end)
+	end)
+	
+	local receiivedTbl = {}
+	-- tbltosend = {forwsigs = {forwdir = {}, backdir = {}}, backsigs = {forwdir = {}, backdir = {}}, occupiedsigs = {}, nodepos = node.pos, nodeang}
+	net.Receive("Metrostroi.AlsUpgrade",function()
+		local needclear = net.ReadBool()
+		if needclear then
+			receiivedTbl = {}
+		else
+			local idx = table.insert(receiivedTbl, net.ReadTable())
+		end
+	end)
+	
+	local texts = {}
+	local viewpos = Vector(0)
+	local maxdist = 2000^2
+	local backang = Angle(0,180,0)
+	local offset = Angle(0,90+180,90)
+	local zeroangle = Angle(0,0,0)
+	timer.Create("Metrostroi.AlsUpgrade",1,0,function()
+		if not ShowPaths then return end
+		texts = {}
+		
+		for _,params in pairs(receiivedTbl)do
+			if params.nodepos:DistToSqr(viewpos) > maxdist then continue end
+			for i = 0,1 do
+				local newidx = table.insert(texts,{})
+				texts[newidx].pos = params.nodepos
+				texts[newidx].ang = params.nodeang + offset + (i == 0 and zeroangle or backang)
+				texts[newidx].texts = {}
+				for d = 0,2 do
+					local tbl = d == 0 and (i == 0 and params.forwsigs.forwdir or params.forwsigs.backdir) or d == 1 and (i == 0 and params.backsigs.forwdir or params.backsigs.backdir) or params.occupiedsigs
+					for _,signame in pairs(tbl)do
+						table.insert(texts[newidx].texts, d == 0 and "next "..signame or d == 1 and "prev "..signame or d == 2 and "occup "..signame)
+					end
+				end
+			end
+			-- if table.IsEmpty(texts[newidx].texts) then table.remove(texts,newidx)end
+		end
+	end)
+
+
+
+	local font = "Default"
+	local drawSimpleTextOutlined = draw.SimpleTextOutlined
+	local r,g,b = 255,255,255
+	local color = Color(r,g,b,255)
+	local color2 = Color(255-r,255-g,255-b,255)
+	local EyePos = EyePos
+	hook.Add("PreDrawEffects","Metrostroi.AlsUpgrade",function()
+		if not ShowPaths then return end
+		viewpos = EyePos()
+		
+		for _,params in pairs(texts) do
+			cam.Start3D2D(params.pos,params.ang,1)
+				local hlast = 0
+				for _,text in pairs(params.texts) do
+					local w,h = drawSimpleTextOutlined(text, font, 0, hlast, color, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, color2)
+					hlast = hlast - h
+				end
+			cam.End3D2D()
+		end
+	end)
+end
 if CLIENT then return end
+
 
 --teleport to track
 concommand.Add("metrostroi_ttt", function(ply,cmd,args)
@@ -18,11 +93,6 @@ concommand.Add("metrostroi_ttt", function(ply,cmd,args)
 	ply:SetMoveType(MOVETYPE_NOCLIP)
 	ply:SetPos(Paths[arg1][arg2].pos)
 end)
-
-
-
-
-
 
 
 local continuations = {}--тут сохраняю связи концов треков, если есть
@@ -234,71 +304,42 @@ end
 
 
 local LinkedTracksToSignals = {}
+local LinkedBackTracksToSignals = {}
 local function LinkTracksToSignals()
 	LinkedTracksToSignals = {}
-
-	local wasNodes = {}
-	for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do
-		if not IsValid(sig) or not sig.TrackPosition then continue end
-		
-		local pathid = sig.Node.path.id
-		local node = sig.Node
-		wasNodes[node] = wasNodes[node] or {}
-		wasNodes[node][sig.TrackDir] = true
-		local x = sig.TrackPosition.x
-		LinkedTracksToSignals[pathid] = LinkedTracksToSignals[pathid] or {}
-		LinkedTracksToSignals[pathid][sig.TrackDir] = LinkedTracksToSignals[pathid][sig.TrackDir] or {}
-		LinkedTracksToSignals[pathid][sig.TrackDir][node] = LinkedTracksToSignals[pathid][sig.TrackDir][node] or {}
-		table.insert(LinkedTracksToSignals[pathid][sig.TrackDir][node],{["sig"] = sig, ["nextsig"] = findfunc(node,x,sig.TrackDir)})
-	end
-	
-	-- вот это самая калящая меня часть, возможно она будет отрабатывать сто лет
-	for pathid,path in pairs(Metrostroi.Paths or et)do
-		for i = 1, #path do
-		local node = path[i]
-			LinkedTracksToSignals[pathid] = LinkedTracksToSignals[pathid] or {}
-			for dirdec = 0,1 do
-				local dir = dirdec == 1
-				if wasNodes[node] and wasNodes[node][dir] then continue end
-				LinkedTracksToSignals[pathid][dir] = LinkedTracksToSignals[pathid][dir] or {}
-				LinkedTracksToSignals[pathid][dir][node] = LinkedTracksToSignals[pathid][dir][node] or {}
-				LinkedTracksToSignals[pathid][dir][node].nextsig = findfunc(node,node.x,dir)
-			end
-		end
-	end
-end
-
-
-local LinkedBackTracksToSignals = {}
-local function LinkBackTracksToSignals()
 	LinkedBackTracksToSignals = {}
+	Metrostroi.LinkedBackTracksToSignals = LinkedBackTracksToSignals
+	Metrostroi.LinkedTracksToSignals = LinkedTracksToSignals
 
-	local wasNodes = {}
-	for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do
-		if not IsValid(sig) or not sig.TrackPosition then continue end
+	for b = 0,1 do
+		local linksTbl = b == 1 and LinkedBackTracksToSignals or LinkedTracksToSignals
+		local wasNodes = {}
+		for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do
+			if not IsValid(sig) or not sig.TrackPosition then continue end
+			
+			local pathid = sig.Node.path.id
+			local node = sig.Node
+			wasNodes[node] = wasNodes[node] or {}
+			wasNodes[node][sig.TrackDir] = true
+			local x = sig.TrackPosition.x
+			linksTbl[pathid] = linksTbl[pathid] or {}
+			linksTbl[pathid][sig.TrackDir] = linksTbl[pathid][sig.TrackDir] or {}
+			linksTbl[pathid][sig.TrackDir][node] = linksTbl[pathid][sig.TrackDir][node] or {}
+			table.insert(linksTbl[pathid][sig.TrackDir][node],{["sig"] = sig, ["nextsig"] = findfunc(node,x,sig.TrackDir,b == 1)})
+		end
 		
-		local pathid = sig.Node.path.id
-		local node = sig.Node
-		wasNodes[node] = wasNodes[node] or {}
-		wasNodes[node][sig.TrackDir] = true
-		local x = sig.TrackPosition.x
-		LinkedBackTracksToSignals[pathid] = LinkedBackTracksToSignals[pathid] or {}
-		LinkedBackTracksToSignals[pathid][sig.TrackDir] = LinkedBackTracksToSignals[pathid][sig.TrackDir] or {}
-		LinkedBackTracksToSignals[pathid][sig.TrackDir][node] = LinkedBackTracksToSignals[pathid][sig.TrackDir][node] or {}
-		table.insert(LinkedBackTracksToSignals[pathid][sig.TrackDir][node],{["sig"] = sig, ["nextsig"] = findfunc(node,x,sig.TrackDir)})
-	end
-	
-	-- вот это самая калящая меня часть, возможно она будет отрабатывать сто лет
-	for pathid,path in pairs(Metrostroi.Paths or et)do
-		for i = 1, #path do
-		local node = path[i]
-			LinkedBackTracksToSignals[pathid] = LinkedBackTracksToSignals[pathid] or {}
-			for dirdec = 0,1 do
-				local dir = dirdec == 1
-				if wasNodes[node] and wasNodes[node][dir] then continue end
-				LinkedBackTracksToSignals[pathid][dir] = LinkedBackTracksToSignals[pathid][dir] or {}
-				LinkedBackTracksToSignals[pathid][dir][node] = LinkedBackTracksToSignals[pathid][dir][node] or {}
-				LinkedBackTracksToSignals[pathid][dir][node].nextsig = findfunc(node,node.x,dir,true)
+		-- вот это самая калящая меня часть, возможно она будет отрабатывать сто лет
+		for pathid,path in pairs(Metrostroi.Paths or et)do
+			for i = 1, #path do
+			local node = path[i]
+				linksTbl[pathid] = linksTbl[pathid] or {}
+				for dirdec = 0,1 do
+					local dir = dirdec == 1
+					if wasNodes[node] and wasNodes[node][dir] then continue end
+					linksTbl[pathid][dir] = linksTbl[pathid][dir] or {}
+					linksTbl[pathid][dir][node] = linksTbl[pathid][dir][node] or {}
+					linksTbl[pathid][dir][node].nextsig = findfunc(node,node.x,dir, b==1)
+				end
 			end
 		end
 	end
@@ -386,48 +427,40 @@ local function RemoveUselessRepeaters()
 	end
 end
 
+-- при нажатии на кнопку load в трек эдиторе, на каждом ноуде будут рисоваться сигналы спереди, сзади и те, что будут occupied
+util.AddNetworkString("Metrostroi.AlsUpgrade")
 
 hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 	Metrostroi.oldGetARSJoint = Metrostroi.GetARSJoint
 	function Metrostroi.NewGetARSJoint(node,x,dir,train)
 		local forwsig,backsig
-		local pathid = node.path.id
-		local nextsigs = LinkedTracksToSignals[pathid] and LinkedTracksToSignals[pathid][dir] and LinkedTracksToSignals[pathid][dir][node]
-		if nextsigs then
+		for b = 0,1 do
+			local linksTbl = b == 1 and LinkedBackTracksToSignals or LinkedTracksToSignals
+			local res
+			local pathid = node.path.id
+			local nextsigs = linksTbl[pathid] and linksTbl[pathid][dir] and linksTbl[pathid][dir][node]
+			if not nextsigs then continue end
 			if #nextsigs == 0 then
-				forwsig = nextsigs.nextsig
+				res = nextsigs.nextsig
 			else
 				local minleng
-				for _,nextsig in pairs(nextsigs or et)do
-					local sig = (dir and x < nextsig.sig.TrackPosition.x or not dir and x > nextsig.sig.TrackPosition.x) and nextsig.sig or nextsig.nextsig
+				for _,nextsig in pairs(nextsigs)do
+					local sig = (dir and (b ~= 1 and x < nextsig.sig.TrackPosition.x or b == 1 and x > nextsig.sig.TrackPosition.x) or not dir and (b ~= 1 and x > nextsig.sig.TrackPosition.x or b == 1 and x < nextsig.sig.TrackPosition.x)) and nextsig.sig or nextsig.nextsig
 					if not sig then continue end
 					local leng = math.abs(x - sig.TrackPosition.x)
 					if not minleng or leng < minlengprin then
 						minx = leng
-						forwsig = sig
+						res = sig
 					end
 				end
 			end
-		end
 			
-		local nextsigs = LinkedBackTracksToSignals[pathid] and LinkedBackTracksToSignals[pathid][dir] and LinkedBackTracksToSignals[pathid][dir][node]
-		if nextsigs then
-			if #nextsigs == 0 then
-				backsig = nextsigs.nextsig
+			if b == 1 then
+				backsig = res
 			else
-				local minleng
-				for _,nextsig in pairs(nextsigs or et)do
-					local sig = (dir and x < nextsig.sig.TrackPosition.x or not dir and x > nextsig.sig.TrackPosition.x) and nextsig.nextsig or nextsig.sig
-					if not sig then continue end
-					local leng = math.abs(x - sig.TrackPosition.x)
-					if not minleng or leng < minleng then
-						minx = leng
-						backsig = sig
-					end
-				end
+				forwsig = res
 			end
 		end
-
 		return forwsig, backsig
 	end
 	
@@ -439,11 +472,51 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 			RemoveUselessRepeaters()
 			GenerateOccupationSections()
 			LinkTracksToSignals()
-			LinkBackTracksToSignals()
 			Metrostroi.GetARSJoint = Metrostroi.NewGetARSJoint
 		end)
 		return oldPostInit(...)
 	end
+	
+	
+	local c_metrostroi_trackeditor_load = concommand.GetTable()
+	c_metrostroi_trackeditor_load = c_metrostroi_trackeditor_load.metrostroi_trackeditor_load
+
+	concommand.Add("metrostroi_trackeditor_load",function(ply,cmd,args,fullstring)
+		c_metrostroi_trackeditor_load(ply,cmd,args,fullstring)
+		if not IsValid(ply) or not ply:IsSuperAdmin() then return end
+		net.Start("Metrostroi.AlsUpgrade")
+			net.WriteBool(true)
+		net.Send(ply)
+		for pathid,path in pairs(Metrostroi.Paths or et)do
+			for nodeid, node in ipairs(path)do
+				net.Start("Metrostroi.AlsUpgrade")
+					local tbltosend = {forwsigs = {forwdir = {}, backdir = {}}, backsigs = {forwdir = {}, backdir = {}}, occupiedsigs = {}, nodepos = node.pos, nodeang = node.next and (node.next.pos - node.pos):Angle() or node.prev and (node.pos - node.prev.pos):Angle()}
+					for i = 0,1 do
+						local dir = i == 1
+						for b = 0,1 do
+							local tbllinks = b == 1 and LinkedBackTracksToSignals or LinkedTracksToSignals or et
+							local nextsigs = tbllinks[pathid] and tbllinks[pathid][dir] and tbllinks[pathid][dir][node]
+							if not nextsigs then continue end
+							local key = b == 1 and "backsigs" or "forwsigs"
+							tbltosend[key] = tbltosend[key] or {}
+							local key2 = dir and "forwdir" or "backdir"
+							tbltosend[key][key2] = tbltosend[key][key2] or {}
+							table.insert(tbltosend[key][key2], nextsigs.nextsig and nextsigs.nextsig.Name)
+							for _,nextsig in pairs(nextsigs or et)do
+								table.insert(tbltosend[key][key2], nextsig.nextsig and nextsig.nextsig.Name)
+								table.insert(tbltosend[key][key2], nextsig.sig and nextsig.sig.Name)
+							end
+						end
+					end
+					for _,tbl in pairs(OccupationSections[pathid] and OccupationSections[pathid][node] or et)do
+						table.insert(tbltosend.occupiedsigs, tbl.sig and tbl.sig.Name)
+					end
+					net.WriteBool(false)
+					net.WriteTable(tbltosend)
+				net.Send(ply)
+			end
+		end
+	end)	
 end)
 
 local function compareTables(new,old)
@@ -501,3 +574,4 @@ hook.Add("InitPostEntity","Metrostroi signals occupation upgrade",function()
 		return res
 	end
 end)
+
