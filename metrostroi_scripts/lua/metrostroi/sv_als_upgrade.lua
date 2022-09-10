@@ -18,13 +18,19 @@ if CLIENT then
 	end)
 	
 	local receiivedTbl = {}
-	-- tbltosend = {forwsigs = {forwdir = {}, backdir = {}}, backsigs = {forwdir = {}, backdir = {}}, occupiedsigs = {}, nodepos = node.pos, nodeang}
+	local receiivedStr = ""
+	-- tbltosend = {forwsigs = {forwdir = {}, backdir = {}}, backsigs = {forwdir = {}, backdir = {}}, occupiedsigs = {}, nodeposs = {}, nodeangs = {}}
 	net.Receive("Metrostroi.AlsUpgrade",function()
-		local needclear = net.ReadBool()
-		if needclear then
-			receiivedTbl = {}
+		local leng = net.ReadUInt(16)
+		if leng == 0 then
+			receiivedTbl = util.JSONToTable(util.Decompress(receiivedStr))
+			receiivedStr = ""
+			for i = 1, #receiivedTbl.nodeposs do
+				receiivedTbl.nodeposs[i] = Vector(receiivedTbl.nodeposs[i][1],receiivedTbl.nodeposs[i][2],receiivedTbl.nodeposs[i][3])
+				receiivedTbl.nodeangs[i] = Angle(receiivedTbl.nodeangs[i][1],receiivedTbl.nodeangs[i][2],receiivedTbl.nodeangs[i][3])
+			end
 		else
-			local idx = table.insert(receiivedTbl, net.ReadTable())
+			receiivedStr = receiivedStr..net.ReadData(leng)
 		end
 	end)
 	
@@ -35,18 +41,18 @@ if CLIENT then
 	local offset = Angle(0,90+180,90)
 	local zeroangle = Angle(0,0,0)
 	timer.Create("Metrostroi.AlsUpgrade",1,0,function()
-		if not ShowPaths then return end
+		if not ShowPaths or not receiivedTbl.occupiedsigs then return end
 		texts = {}
 		
-		for _,params in pairs(receiivedTbl)do
-			if params.nodepos:DistToSqr(viewpos) > maxdist then continue end
+		for idx = 1, #receiivedTbl.occupiedsigs do
+			if receiivedTbl.nodeposs[idx]:DistToSqr(viewpos) > maxdist then continue end
 			for i = 0,1 do
 				local newidx = table.insert(texts,{})
-				texts[newidx].pos = params.nodepos
-				texts[newidx].ang = params.nodeang + offset + (i == 0 and zeroangle or backang)
+				texts[newidx].pos = receiivedTbl.nodeposs[idx]
+				texts[newidx].ang = receiivedTbl.nodeangs[idx] + offset + (i == 0 and zeroangle or backang)
 				texts[newidx].texts = {}
 				for d = 0,2 do
-					local tbl = d == 0 and (i == 0 and params.forwsigs.forwdir or params.forwsigs.backdir) or d == 1 and (i == 0 and params.backsigs.forwdir or params.backsigs.backdir) or params.occupiedsigs
+					local tbl = d == 0 and (i == 0 and receiivedTbl.forwsigs.forwdir[idx] or receiivedTbl.forwsigs.backdir[idx]) or d == 1 and (i == 0 and receiivedTbl.backsigs.forwdir[idx] or receiivedTbl.backsigs.backdir[idx]) or receiivedTbl.occupiedsigs[idx]
 					for _,signame in pairs(tbl)do
 						table.insert(texts[newidx].texts, d == 0 and "next "..signame or d == 1 and "prev "..signame or d == 2 and "occup "..signame)
 					end
@@ -486,13 +492,13 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 	concommand.Add("metrostroi_trackeditor_load",function(ply,cmd,args,fullstring)
 		c_metrostroi_trackeditor_load(ply,cmd,args,fullstring)
 		if not IsValid(ply) or not ply:IsSuperAdmin() then return end
-		net.Start("Metrostroi.AlsUpgrade")
-			net.WriteBool(true)
-		net.Send(ply)
+		local tbltosend = {forwsigs = {forwdir = {}, backdir = {}}, backsigs = {forwdir = {}, backdir = {}}, occupiedsigs = {}, nodeposs = {}, nodeangs = {}}
 		for pathid,path in pairs(Metrostroi.Paths or et)do
 			for nodeid, node in ipairs(path)do
-				net.Start("Metrostroi.AlsUpgrade")
-					local tbltosend = {forwsigs = {forwdir = {}, backdir = {}}, backsigs = {forwdir = {}, backdir = {}}, occupiedsigs = {}, nodepos = node.pos, nodeang = node.next and (node.next.pos - node.pos):Angle() or node.prev and (node.pos - node.prev.pos):Angle()}
+					local idx = #tbltosend.nodeposs + 1
+					tbltosend.nodeposs[idx] = {node.pos[1],node.pos[2],node.pos[3]}
+					tbltosend.nodeangs[idx] = node.next and (node.next.pos - node.pos):Angle() or node.prev and (node.pos - node.prev.pos):Angle()
+					tbltosend.nodeangs[idx] = {tbltosend.nodeangs[idx][1],tbltosend.nodeangs[idx][2],tbltosend.nodeangs[idx][3]}
 					for i = 0,1 do
 						local dir = i == 1
 						for b = 0,1 do
@@ -500,24 +506,41 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 							local nextsigs = tbllinks[pathid] and tbllinks[pathid][dir] and tbllinks[pathid][dir][node]
 							if not nextsigs then continue end
 							local key = b == 1 and "backsigs" or "forwsigs"
-							tbltosend[key] = tbltosend[key] or {}
 							local key2 = dir and "forwdir" or "backdir"
-							tbltosend[key][key2] = tbltosend[key][key2] or {}
-							table.insert(tbltosend[key][key2], nextsigs.nextsig and nextsigs.nextsig.Name)
+							tbltosend[key][key2][idx] = tbltosend[key][key2][idx] or {}
+							table.insert(tbltosend[key][key2][idx], nextsigs.nextsig and nextsigs.nextsig.Name)
 							for _,nextsig in pairs(nextsigs or et)do
-								table.insert(tbltosend[key][key2], nextsig.nextsig and nextsig.nextsig.Name)
-								table.insert(tbltosend[key][key2], nextsig.sig and nextsig.sig.Name)
+								table.insert(tbltosend[key][key2][idx], nextsig.nextsig and nextsig.nextsig.Name)
+								table.insert(tbltosend[key][key2][idx], nextsig.sig and nextsig.sig.Name)
 							end
 						end
 					end
+
+					tbltosend.occupiedsigs[idx] = {}
 					for _,tbl in pairs(OccupationSections[pathid] and OccupationSections[pathid][node] or et)do
-						table.insert(tbltosend.occupiedsigs, tbl.sig and tbl.sig.Name)
+						table.insert(tbltosend.occupiedsigs[idx], tbl.sig and tbl.sig.Name)
 					end
-					net.WriteBool(false)
-					net.WriteTable(tbltosend)
-				net.Send(ply)
 			end
 		end
+
+		tbltosend = util.Compress(util.TableToJSON(tbltosend,true))
+		local timeout = 0
+		for i = 1, #tbltosend, 60000 do
+			timer.Simple(timeout,function()
+				local data = string.sub(tbltosend,i,i+59999)
+				net.Start("Metrostroi.AlsUpgrade")
+					net.WriteUInt(#data, 16)
+					net.WriteData(data,#data)
+				net.Send(ply)
+			end)
+			timeout = timeout + 5
+		end
+		timer.Simple(timeout,function()
+			net.Start("Metrostroi.AlsUpgrade")
+				net.WriteUInt(0, 16)
+			net.Send(ply)
+		end)
+
 	end)	
 end)
 
