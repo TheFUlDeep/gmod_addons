@@ -195,13 +195,13 @@ local function UpgradeTracks()
 end
 
 
-local function findfunc(startnode,startx,dir,back,returnPassedNodes,withIsolateSwitches)
+local function findfunc(startnode,startx,dir,back,returnPassedNodes,dontSkipPassOcc)
 	--когда returnPassedNodes = true, я буду скипать passOcc потому что исопльзуется только для генерации отрезков занятости
 	if back then dir = not dir end
 	local curnodes = {{startx},{dir},{startnode}}--так будет только три таблицы
 	local nodescount = 1
 	local wasNodes = {}
-	local EndSignals = {}
+	-- local EndSignals = {}
 	-- 1 - началы отрезков, 2 - концы отрезков
 	local startEnds = {{},{}}
 	while nodescount > 0 do
@@ -226,7 +226,7 @@ local function findfunc(startnode,startx,dir,back,returnPassedNodes,withIsolateS
 		if Metrostroi.SignalEntitiesForNode[curnode] then
 			local nearestent
 			for _,ent in pairs(Metrostroi.SignalEntitiesForNode[curnode]) do
-				if IsValid(ent) and (withIsolateSwitches and ent.IsolateSwitches or not withIsolateSwitches) and not ent.PassOcc and (back and dir ~= ent.TrackDir or not back and dir == ent.TrackDir) and ent.OutputARS ~= 0 and (dir and ent.TrackPosition.x > startx or not dir and ent.TrackPosition.x < startx) then
+				if IsValid(ent) and (dontSkipPassOcc or not ent.PassOcc) and (back and dir ~= ent.TrackDir or not back and dir == ent.TrackDir) and ent.OutputARS ~= 0 and (dir and ent.TrackPosition.x > startx or not dir and ent.TrackPosition.x < startx) then
 					if not nearestent or math.abs(startx - ent.TrackX) < math.abs(startx - nearestent.TrackX) then--поиск ближайшего
 						nearestent = ent
 						startEnds[2][pathid] = nearestent.TrackX
@@ -236,12 +236,12 @@ local function findfunc(startnode,startx,dir,back,returnPassedNodes,withIsolateS
 			
 			if nearestent then
 				if not returnPassedNodes then
-					if not allEndSignals then
+					-- if not allEndSignals then
 						return nearestent
-					else
-						EndSignals[nearestent] = true
-						needcontinue = true
-					end
+					-- else
+						-- EndSignals[nearestent] = true
+						-- needcontinue = true
+					-- end
 				else
 					needcontinue = true
 				end
@@ -333,7 +333,7 @@ local function LinkTracksToSignals()
 			linksTbl[pathid] = linksTbl[pathid] or {}
 			linksTbl[pathid][sig.TrackDir] = linksTbl[pathid][sig.TrackDir] or {}
 			linksTbl[pathid][sig.TrackDir][node] = linksTbl[pathid][sig.TrackDir][node] or {}
-			table.insert(linksTbl[pathid][sig.TrackDir][node],{["sig"] = sig, ["nextsig"] = findfunc(node,x,sig.TrackDir,b == 1)})
+			table.insert(linksTbl[pathid][sig.TrackDir][node],{["sig"] = sig, ["nextsig"] = findfunc(node,x,sig.TrackDir,b == 1,nil,true)})
 		end
 		
 		-- вот это самая калящая меня часть, возможно она будет отрабатывать сто лет
@@ -346,7 +346,7 @@ local function LinkTracksToSignals()
 					if wasNodes[node] and wasNodes[node][dir] then continue end
 					linksTbl[pathid][dir] = linksTbl[pathid][dir] or {}
 					linksTbl[pathid][dir][node] = linksTbl[pathid][dir][node] or {}
-					linksTbl[pathid][dir][node].nextsig = findfunc(node,node.x,dir, b==1)
+					linksTbl[pathid][dir][node].nextsig = findfunc(node,node.x,dir, b==1,nil,true)
 				end
 			end
 		end
@@ -599,4 +599,3 @@ hook.Add("InitPostEntity","Metrostroi signals occupation upgrade",function()
 		return res
 	end
 end)
-
