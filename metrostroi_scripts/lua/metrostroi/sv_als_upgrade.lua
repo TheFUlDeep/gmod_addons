@@ -524,7 +524,7 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 		end
 
 		tbltosend = util.Compress(util.TableToJSON(tbltosend,true))
-		local timeout = 0
+		local timeout = 5
 		for i = 1, #tbltosend, 60000 do
 			timer.Simple(timeout,function()
 				local data = string.sub(tbltosend,i,i+59999)
