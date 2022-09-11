@@ -317,8 +317,6 @@ local LinkedBackTracksToSignals = {}
 local function LinkTracksToSignals()
 	LinkedTracksToSignals = {}
 	LinkedBackTracksToSignals = {}
-	Metrostroi.LinkedBackTracksToSignals = LinkedBackTracksToSignals
-	Metrostroi.LinkedTracksToSignals = LinkedTracksToSignals
 
 	for b = 0,1 do
 		local linksTbl = b == 1 and LinkedBackTracksToSignals or LinkedTracksToSignals
