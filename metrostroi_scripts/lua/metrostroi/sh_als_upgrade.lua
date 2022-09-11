@@ -450,6 +450,7 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 				-- если "спереди" на этом ноуде сигналов нет, то беру nextsig от ближайщего (то есть ближайшего "заднего")
 				-- если есть то беру sig ближайшего (то есть самого ближайшего)
 				local minlenforw, minlen, sigforw, sig
+				--по сути тут можно использовать ipairs, но разницы не будет, так как если #nextsigs~=0 то в таблице будут только числовые ключи
 				for _,nextsig in pairs(nextsigs)do
 					-- только тут условия местами поменялись по сравнению с комментом выше
 					local len = math.abs(x - nextsig.sig.TrackPosition.x)
