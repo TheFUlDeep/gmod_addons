@@ -377,19 +377,20 @@ timer.Create("Metrostroi Signals Occupation Upgrade",1,0,function()
 				if sigdir and trainx > startx or not sigdir and trainx < startx then
 					local len = math.abs(startx - trainx)
 					if not minlen or len < minlen then
-						condition.sig.OccupiedTfd = condition.sig.OccupiedTfd..train:EntIndex()
 						occupiedbyx = condition.sig
 						minlen = len
-						-- print(condition.sig and condition.sig.Name, "occupied by x")
 					end
 				end
 			end
-			
-			if occupiedbyx then continue end
-			for _,condition in ipairs(OccupationSections[pathid][pos.node1][dir] or et)do
-				if not IsValid(condition.sig) or condition.start then continue end
-				condition.sig.OccupiedTfd = condition.sig.OccupiedTfd..train:EntIndex()
-				-- print(condition.sig and condition.sig.Name,"occupied by node")
+			if occupiedbyx then
+				occupiedbyx.OccupiedTfd = occupiedbyx.OccupiedTfd..train:EntIndex()
+				-- print(occupiedbyx and occupiedbyx.Name, "occupied by x")
+			else
+				for _,condition in ipairs(OccupationSections[pathid][pos.node1][dir] or et)do
+					if not IsValid(condition.sig) or condition.start then continue end
+					condition.sig.OccupiedTfd = condition.sig.OccupiedTfd..train:EntIndex()
+					-- print(condition.sig and condition.sig.Name,"occupied by node")
+				end
 			end
 		end
 	end
@@ -429,7 +430,7 @@ local function RemoveUselessRepeaters()
 			end
 		end
 		SafeRemoveEntity(sig)
-		print("removed signal "..sig.Name.." because it useless repeater")
+		-- print("removed signal "..sig.Name.." because it useless repeater")
 	end
 end
 
@@ -477,7 +478,7 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 			
 			if b == 1 then backsig = res else forwsig = res end
 		end
-		-- print(forwsig and forwsig.Name, backsig and backsig.Name)
+		print(forwsig and forwsig.Name, backsig and backsig.Name)
 		return forwsig, backsig
 	end
 	
@@ -612,3 +613,4 @@ hook.Add("InitPostEntity","Metrostroi signals occupation upgrade",function()
 	end
 end)
 
+	
