@@ -457,8 +457,8 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 					local sig = (dir and (b ~= 1 and x < nextsig.sig.TrackPosition.x or b == 1 and x > nextsig.sig.TrackPosition.x) or not dir and (b ~= 1 and x > nextsig.sig.TrackPosition.x or b == 1 and x < nextsig.sig.TrackPosition.x)) and nextsig.sig or nextsig.nextsig
 					if not sig then continue end
 					local leng = math.abs(x - sig.TrackPosition.x)
-					if not minleng or leng < minlengprin then
-						minx = leng
+					if not minleng or leng < minleng then
+						minleng = leng
 						res = sig
 					end
 				end
