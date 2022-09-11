@@ -336,7 +336,7 @@ local function LinkTracksToSignals()
 		-- вот это самая калящая меня часть, возможно она будет отрабатывать сто лет
 		for pathid,path in pairs(Metrostroi.Paths or et)do
 			for i = 1, #path do
-			local node = path[i]
+				local node = path[i]
 				linksTbl[pathid] = linksTbl[pathid] or {}
 				for dirdec = 0,1 do
 					local dir = dirdec == 1
@@ -473,11 +473,7 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 				res = sigforw or sig
 			end
 			
-			if b == 1 then
-				backsig = res
-			else
-				forwsig = res
-			end
+			if b == 1 then backsig = res else forwsig = res end
 		end
 		-- print(forwsig and forwsig.Name, backsig and backsig.Name)
 		return forwsig, backsig
