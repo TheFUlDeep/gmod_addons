@@ -18,7 +18,7 @@ if CLIENT then
 		end)
 	end)
 	
-	local receiivedTbl = {}
+	local receiivedTbl = {occupiedsigs = {}}
 	local receiivedStr = ""
 	-- tbltosend = {forwsigs = {forwdir = {}, backdir = {}}, backsigs = {forwdir = {}, backdir = {}}, occupiedsigs = {}, nodeposs = {}, nodeangs = {}}
 	net.Receive("Metrostroi.AlsUpgrade",function()
@@ -42,7 +42,7 @@ if CLIENT then
 	local offset = Angle(0,90+180,90)
 	local zeroangle = Angle(0,0,0)
 	timer.Create("Metrostroi.AlsUpgrade",1,0,function()
-		if not ShowPaths or not receiivedTbl.occupiedsigs then return end
+		if not ShowPaths then return end
 		texts = {}
 		
 		for idx = 1, #receiivedTbl.occupiedsigs do
@@ -400,6 +400,8 @@ timer.Create("Metrostroi Signals Occupation Upgrade",1,0,function()
 	end
 end)
 
+--мб тут надо поменять
+--Удалять повторители надо в том случае, если у него только один маршрут и это только репитер (или все маршруты без условий указывают на один сигнал) (короче если репитер всегда указывает только на один спал (если у него есть второй роут с другим сигналом но без условий - не трогать, потому что возможно им управляют через луа)) и при его удалении некстсигнал у светофора, который указывал на репитер, некстсигнал не поменяется. Итого - у репитера должен быть один роут без условий и при его удалении будет тот же сигнал если просто скипать репитер для всех светофоров, которые указывают на этот репитер, ну и реконфинурировать сигналы, которые указывали на репитер
 -- local RemovedSignals = {}
 local function RemoveUselessRepeaters()
 	local sigs = ents.FindByClass("gmod_track_signal")
