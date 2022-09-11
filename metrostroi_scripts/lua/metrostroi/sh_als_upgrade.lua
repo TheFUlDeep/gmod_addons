@@ -117,7 +117,7 @@ local function FindNearNode(node)--довольно медленная функ�
 	local nrearestnode,curdist,x,lerptonext
 	for pathid,path in pairs(Metrostroi.Paths)do
 		for id,node1 in ipairs(path)do
-			if pathid == nodepathid and math.abs(id - nodeid) < 5 then continue end--если это соседний ноуд того же трека, то пропустить
+			if pathid == nodepathid and math.abs(id - nodeid) < 5 then continue end--если это соседний ноуд того же трека, то пропустить. Почему именно 5? да прост взял от балды число
 			local nextnode = node1.next
 			for i = 0, nextnode and parts or 0 do
 				local lerp = i/parts
@@ -219,7 +219,7 @@ local function findfunc(startnode,startx,dir,back,returnPassedNodes)
 		for i = 1,3 do curnodes[i][nodescount] = nil end
 		nodescount = nodescount - 1
 		
-		--проверка на рекурсию
+		--проверка на рекурсию. В первую очередь делалась для луплайна
 		if wasNodes[curnode] ~= nil then continue end
 		wasNodes[curnode] = dir or false --нельзя, чтобы сюда попал nil
 		
