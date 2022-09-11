@@ -375,9 +375,11 @@ timer.Create("Metrostroi Signals Occupation Upgrade",1,0,function()
 				local startx = condition.start
 				local sigdir = condition.sig.TrackDir
 				if sigdir and trainx > startx or not sigdir and trainx < startx then
-					if not minlen or math.abs(startx - trainx) < minlen then
+					local len = math.abs(startx - trainx)
+					if not minlen or len < minlen then
 						condition.sig.OccupiedTfd = condition.sig.OccupiedTfd..train:EntIndex()
 						occupiedbyx = condition.sig
+						minlen = len
 						-- print(condition.sig and condition.sig.Name, "occupied by x")
 					end
 				end
