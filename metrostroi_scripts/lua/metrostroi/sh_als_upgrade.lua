@@ -566,7 +566,6 @@ hook.Add("InitPostEntity","Metrostroi signals occupation upgrade",function()
 				-- TODO тут пригласительный отключится не только в случае заезда нового вагона на блок участок, но и в случае исчезновения любого вагона с блок участка, а это наверное неправильно
 				-- но я не хочу тратить ресурсы на обработку таблц, поэтому  оставил так
 				--OccupiedBy надо для работы интервальных часов
-				local newtrain = OccupiedTfd ~= self.PrevOccupiedTfd
 				if OccupiedTfd ~= self.PrevOccupiedTfd then
 					self.InvationSignal = false
 				end
