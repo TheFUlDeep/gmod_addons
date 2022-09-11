@@ -562,6 +562,7 @@ hook.Add("InitPostEntity","Metrostroi signals occupation upgrade",function()
 		if not self.Close and not self.KGU then --not self.OverrideTrackOccupied and
 			local OccupiedTfd = self.OccupiedTfd
 			if self.NextSignalLink and self.NextSignalLink.PassOcc then OccupiedTfd = OccupiedTfd..self.NextSignalLink.OccupiedTfd end
+			--поле OccupiedBy нужно для работы интервальных часов. Так бы я убрал его полностью
 			if OccupiedTfd ~= "" then
 				-- TODO тут пригласительный отключится не только в случае заезда нового вагона на блок участок, но и в случае исчезновения любого вагона с блок участка, а это наверное неправильно
 				-- но я не хочу тратить ресурсы на обработку таблц, поэтому  оставил так
