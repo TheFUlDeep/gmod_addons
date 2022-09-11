@@ -478,7 +478,7 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 			
 			if b == 1 then backsig = res else forwsig = res end
 		end
-		print(forwsig and forwsig.Name, backsig and backsig.Name)
+		--print(forwsig and forwsig.Name, backsig and backsig.Name)
 		return forwsig, backsig
 	end
 	
