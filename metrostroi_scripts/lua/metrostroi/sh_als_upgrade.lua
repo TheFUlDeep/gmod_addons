@@ -478,7 +478,8 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 		Metrostroi.GetARSJoint = Metrostroi.oldGetARSJoint
 		timer.Create("metrostroi PostSignalInitialize upgrade",2,1,function()
 			UpgradeTracks()
-			RemoveUselessRepeaters()
+			--отключил потому что хз кто там чо через луа как будет сигналы трогать
+			--RemoveUselessRepeaters()
 			GenerateOccupationSections()
 			LinkTracksToSignals()
 			Metrostroi.GetARSJoint = Metrostroi.NewGetARSJoint
