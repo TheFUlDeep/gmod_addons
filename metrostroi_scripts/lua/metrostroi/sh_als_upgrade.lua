@@ -220,7 +220,7 @@ local function findfunc(startnode,startx,dir,back,returnPassedNodes)
 		nodescount = nodescount - 1
 		
 		--проверка на рекурсию
-		if wasNodes[curnode] then continue end
+		if wasNodes[curnode] ~= nil then continue end
 		wasNodes[curnode] = dir or false --нельзя, чтобы сюда попал nil
 		
 		
