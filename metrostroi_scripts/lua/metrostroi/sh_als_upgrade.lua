@@ -290,7 +290,7 @@ local function GenerateOccupationSections()
 	for _,sig in pairs(ents.FindByClass("gmod_track_signal"))do
 		if not IsValid(sig) or not sig.TrackPosition then continue end
 		
-		--поиск всех отрезков занятости
+		--поиск всех отрезков занятости от каждого сигнала
 		local way, nodes = findfunc(sig.Node,sig.TrackPosition.x,sig.TrackDir,false,true)
 		local pathid = sig.TrackPosition.path.id
 		for pathid,startx in pairs(way[1])do
