@@ -307,6 +307,8 @@ local function GenerateOccupationSections()
 			end
 		end
 	end
+	--TODO тут можно пройтись по полученным ноудам и дать дополнительный ключ тем, у которых все сигналы без startx (ну или наоборот)
+	--чтобы в таймере сразу по этому ключу обрезать один из двух циклов. Но я думаю это будет мизерное изменение в производительности
 	print("Metrostroi: Linked Signals to nodes for Occupation")
 end
 
