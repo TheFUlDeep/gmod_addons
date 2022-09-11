@@ -447,6 +447,7 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 			local pathid = node.path.id
 			local nextsigs = linksTbl[pathid] and linksTbl[pathid][dir] and linksTbl[pathid][dir][node]
 			if not nextsigs then continue end
+			--если на ноуде не было сигналов, то ему дается только одно поле nextsig
 			if #nextsigs == 0 then
 				res = nextsigs.nextsig
 			else
