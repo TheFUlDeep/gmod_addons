@@ -340,6 +340,8 @@ local function LinkTracksToSignals()
 				linksTbl[pathid] = linksTbl[pathid] or {}
 				for dirdec = 0,1 do
 					local dir = dirdec == 1
+					--если на этом ноуде есть сигнал, то он пропускается
+					--в принципе эту проверку можно было заменить на if Metrostroi.SignalEntitiesForNode[node] then continue end, было бы тоже самое
 					if wasNodes[node] and wasNodes[node][dir] then continue end
 					linksTbl[pathid][dir] = linksTbl[pathid][dir] or {}
 					linksTbl[pathid][dir][node] = linksTbl[pathid][dir][node] or {}
