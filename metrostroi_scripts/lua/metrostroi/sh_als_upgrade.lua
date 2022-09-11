@@ -316,8 +316,6 @@ local LinkedBackTracksToSignals = {}
 local function LinkTracksToSignals()
 	LinkedTracksToSignals = {}
 	LinkedBackTracksToSignals = {}
-	Metrostroi.LinkedBackTracksToSignals = LinkedBackTracksToSignals
-	Metrostroi.LinkedTracksToSignals = LinkedTracksToSignals
 	
 	for b = 0,1 do
 		local linksTbl = b == 1 and LinkedBackTracksToSignals or LinkedTracksToSignals
@@ -441,7 +439,7 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 	function Metrostroi.NewGetARSJoint(node,x,dir,train)
 		local forwsig,backsig
 		for b = 0,1 do
-			local linksTbl = b == 1 and Metrostroi.LinkedBackTracksToSignals or Metrostroi.LinkedTracksToSignals
+			local linksTbl = b == 1 and LinkedBackTracksToSignals or LinkedTracksToSignals
 			local res
 			local pathid = node.path.id
 			local nextsigs = linksTbl[pathid] and linksTbl[pathid][dir] and linksTbl[pathid][dir][node]
