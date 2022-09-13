@@ -110,15 +110,14 @@ local maxdist = (384/2)^2 -- это дефолтный Y_PAD в функции G
 local parts = 3
 --максимальная дистанция между ноудами одного трека - 500 (MAX_NODE_DISTANCE в sv_trackeditor.lua)
 --делю каждый ноуд на три части, и тогда лимит в 192 пройдет корректно
---TODO эта функция ищет только один "другой" ближайший трек. Если один трек разветвится в два, поведение будет непредсказуемым
---в принципе вроде бы функция findfunc нормально отработает, если будет несколько ответвлений. Надо прокачать только FindNearNode и UpgradeTracks
---как вариант - добавить аргумент игнорирования ноуда или пути (скорее пути, потому что разветвление именно путей) в FindNearNode, и вызывать ее до тех пор, пока не вернется nil
-local function FindNearNode(node)--довольно медленная функция, но она вызывается только при загрузке сигналки, поэтому пофиг
+local function FindNearNode(node,ignorePaths)--довольно медленная функция, но она вызывается только при загрузке сигналки, поэтому пофиг
+	ignorePaths = ignorePaths or et
 	local nodepathid = node.path.id
 	local nodeid = node.id
 	local pos = node.pos
 	local nrearestnode,curdist,x,lerptonext
 	for pathid,path in pairs(Metrostroi.Paths)do
+		if ignorePaths[pathid] then continue end
 		for id,node1 in ipairs(path)do
 			if pathid == nodepathid and math.abs(id - nodeid) < 5 then continue end--если это соседний ноуд того же трека, то пропустить. Почему именно 5? да прост взял от балды число
 			local nextnode = node1.next
@@ -140,6 +139,12 @@ local function FindNearNode(node)--довольно медленная функ�
 	return nrearestnode,lerptonext
 end
 
+local function IsTablesDifferents(tbl1,tbl2)
+	for k,v in pairs(tbl1)do
+		if tbl2[k] ~= v then return true end
+	end
+end
+
 local function UpgradeTracks()
 	continuations = {}
 	--тут прохожусь во всем концам треков и ищу, есть ли продолжения
@@ -151,29 +156,44 @@ local function UpgradeTracks()
 				local idx = i == 1 and i or count
 				local p = Metrostroi.Paths[id]
 				local selfnode = Metrostroi.Paths[id][idx]
-				if selfnode then
-					local selfang = (selfnode.pos - (i == 1 and p[2].pos or p[count-1].pos)):Angle()[2]--угол в сторону крайнего ноуда
-					local another,lerptonext = FindNearNode(selfnode)--может можно использовать Metrostroi.NearestNodes(pos)?
-					--если перепрыгивает на новый трек, и у этого нового трека это первый (или последний) ноуд, то добавлять только в том случае, если угол подходит
-					if another and
+				if not selfnode then continue end
+				local selfang = (selfnode.pos - (i == 1 and p[2].pos or p[count-1].pos)):Angle()[2]--угол в сторону крайнего ноуда
+				local another,lerptonext = FindNearNode(selfnode,ignorePaths)--может можно использовать Metrostroi.NearestNodes(pos)?
+				local ignorePaths = {}
+				while another do
+					ignorePaths[another.path.id] = true
+					--если перепрыгнул не на крайний ноуд или
+					--если перепрыгивает на новый трек, и у этого нового трека это крайний, то добавлять только в том случае, если угол подходит
+					
+					--тут отсекаются ограничения по углам
+					if not
 						(
-						another.next and another.prev
-						or not another.prev and another.next and math.abs(selfang - (another.next.pos - another.pos):Angle()[2]) < 90
-						or not another.next and another.prev and math.abs(selfang - (another.prev.pos - another.pos):Angle()[2]) > 90
+							another.next and another.prev
+							or not another.prev and another.next and math.abs(selfang - (another.next.pos - another.pos):Angle()[2]) < 90
+							or not another.next and another.prev and math.abs(selfang - (another.prev.pos - another.pos):Angle()[2]) > 90
 						)
 					then
-						continuations[id][idx] = continuations[id][idx] or {}
-						local n = table.insert(continuations[id][idx],
-							{
-								another.path.id,
-								another.id,
-								another.x + (another.pos:Distance(LerpVector(lerptonext,another.pos, lerptonext ~= 0 and another.next.pos or another.pos)))*0.01905,
-								another.next and math.abs(selfang - (another.next.pos - another.pos):Angle()[2]) < 90 or another.prev and math.abs(selfang - (another.prev.pos - another.pos):Angle()[2]) > 90,
-								i == 2
-							}
-						)
-						
-						--связываю в обратную сторону
+						another,lerptonext = FindNearNode(selfnode,ignorePaths)--может можно использовать Metrostroi.NearestNodes(pos)?
+						continue
+					end
+							
+					continuations[id][idx] = continuations[id][idx] or {}
+					local n = table.insert(continuations[id][idx],
+						{
+							another.path.id,
+							another.id,
+							another.x + (another.pos:Distance(LerpVector(lerptonext,another.pos, lerptonext ~= 0 and another.next.pos or another.pos)))*0.01905,
+							--тут не надо второе. Так как если перепрыгивает не на край нового трека, то этого условия хватает. А если это край, то отсекается условиями выше
+							another.next and math.abs(selfang - (another.next.pos - another.pos):Angle()[2]) < 90 or false --[[ another.prev and math.abs(selfang - (another.prev.pos - another.pos):Angle()[2]) > 90]],
+							i == 2
+						}
+					)
+					
+					--связываю в обратную сторону для того, чтобы можно было "спрыгивать" не только с краев
+					--если перепрыгивание было на другоей конец, то пропускаю, так как он сам потом свяжется в обратную сторону. То есть таким образом избегаю дублей
+					--закомментил, потому что это условие не работает, потому что может случиться так, что треки сканируются не в "идеальном" порядке
+					--Так что прописал удаление дубликатов отдельно в конце, когда все уже сгенерировано
+					-- if not (another.next and another.prev) then
 						continuations[another.path.id] = continuations[another.path.id] or {}
 						continuations[another.path.id][another.id] = continuations[another.path.id][another.id] or {}
 						table.insert(continuations[another.path.id][another.id],
@@ -185,24 +205,32 @@ local function UpgradeTracks()
 								not continuations[id][idx][n][4]--рестрикт, указание, с какого направления можно перепрыгивать
 							}
 						)
-					end
+					-- end
+					another,lerptonext = FindNearNode(selfnode,ignorePaths)--может можно использовать Metrostroi.NearestNodes(pos)?
 				end
 			end
 		end
 	end
-	-- for k,v in pairs(continuations)do
-		-- for k1,v2 in pairs(v)do
-			-- for _,v1 in pairs(v2) do
-				-- print("linked path",k,"node",k1,"and path",v1[1],"node",v1[2],"new dir is",v1[4],"allow from dir",v1[5])
-			-- end
-		-- end
-	-- end
+	
+	--очистка от дубликатов и принт заликнованных сигналов
+	for k,v in pairs(continuations)do
+		for k1,v2 in pairs(v)do
+			for k3,v3 in pairs(v2)do
+				for k4,v4 in pairs(v2)do
+					if k3 ~= k4 and not IsTablesDifferents(v3,v4)then 
+						table.remove(v2,k4)
+						-- print("removed dubplicate")
+					end
+				end
+			-- print("linked path",k,"node",k1,"and path",v3[1],"node",v3[2],"new dir is",v3[4],"allow from dir",v3[5])
+			end
+		end
+	end
 	print("Metrostroi: Linked Pahts")
 end
 
 
 local function findfunc(startnode,startx,dir,back,returnPassedNodes)
-	--когда returnPassedNodes = true, я буду скипать passOcc потому что исопльзуется только для генерации отрезков занятости
 	if back then dir = not dir end
 	local curnodes = {{startx},{dir},{startnode}}--так будет только три таблицы
 	local nodescount = 1
@@ -433,7 +461,7 @@ local function RemoveUselessRepeaters()
 					local nextSignalEnt = findfunc(sig.Node, sig.TrackPosition.x, sig.TrackDir)
 					params.NextSignal = nextSignalEnt.Name
 					sig2.NextSignals[params.NextSignal] = nextSignalEnt
-					print("reconfiguting signal "..(sig2.Name or tostring(sig2).." "..sig2:EntIndex()).." because of deleting signal "..nextsignalName)
+					-- print("reconfiguting signal "..(sig2.Name or tostring(sig2).." "..sig2:EntIndex()).." because of deleting signal "..nextsignalName)
 				end
 			end
 		end
@@ -487,7 +515,7 @@ hook.Add("MetrostroiLoaded","UpgradeTracks",function()
 			
 			if b == 1 then backsig = res else forwsig = res end
 		end
-		--print(forwsig and forwsig.Name, backsig and backsig.Name)
+		-- print("forw",forwsig and forwsig.Name, "back",backsig and backsig.Name)
 		return forwsig, backsig
 	end
 	
