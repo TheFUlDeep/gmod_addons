@@ -26,7 +26,7 @@ local c_net_graph = GetConVar("net_graph")
 local white = Color(255,255,255)
 local textdata = {text = "",pos = {0,0}}
 local empty_str = ""
-hook.Add("HUDDrawScoreBoard", "cpu_load", function()
+hook.Add("HUDDrawScoreBoard", cpu_load_str, function()
     if not c_net_graph:GetBool() then return end
     textdata.text = GetGlobalString(cpu_load_str,empty_str)
     draw.Text(textdata)
