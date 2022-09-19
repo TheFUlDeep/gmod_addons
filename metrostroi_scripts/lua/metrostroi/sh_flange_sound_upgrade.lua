@@ -64,7 +64,6 @@ hook.Add("InitPostEntity","Metrostroi flange sound bogeys upgrade",function()
 			-- PrintTable(ENT.Spawner)
 		-- end)
 		-- end
-		for i = 1,100 do print("b")end
 		
 	end
 	if SERVER then return end
