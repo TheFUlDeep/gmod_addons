@@ -601,6 +601,7 @@ hook.Add("InitPostEntity","Metrostroi signals occupation upgrade",function()
 	SIGNAL.CheckOccupation = function(self)
 		if not self.Close and not self.KGU then --not self.OverrideTrackOccupied and
 			local OccupiedTfd = self.OccupiedTfd
+			--TODO если сигналы с PassOcc будут указывать друг на друга, будет ли расти стринг до бесконечности?
 			if self.NextSignalLink and self.NextSignalLink.PassOcc then OccupiedTfd = OccupiedTfd..self.NextSignalLink.OccupiedTfd end
 			--поле OccupiedBy нужно для работы интервальных часов. Так бы я убрал его полностью
 			if OccupiedTfd ~= "" then
