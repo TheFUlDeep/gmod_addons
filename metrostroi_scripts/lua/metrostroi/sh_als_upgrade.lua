@@ -260,7 +260,7 @@ local function findfunc(startnode,startx,dir,back,returnPassedNodes)
 		if Metrostroi.SignalEntitiesForNode[curnode] then
 			local nearestent
 			for _,ent in pairs(Metrostroi.SignalEntitiesForNode[curnode]) do
-				if IsValid(ent) and (dontSkipPassOcc or not ent.PassOcc) and (back and dir ~= ent.TrackDir or not back and dir == ent.TrackDir) and ent.OutputARS ~= 0 and (dir and ent.TrackPosition.x > startx or not dir and ent.TrackPosition.x < startx) then
+				if IsValid(ent) and (back and dir ~= ent.TrackDir or not back and dir == ent.TrackDir) and ent.OutputARS ~= 0 and (dir and ent.TrackPosition.x > startx or not dir and ent.TrackPosition.x < startx) then
 					if not nearestent or math.abs(startx - ent.TrackX) < math.abs(startx - nearestent.TrackX) then--поиск ближайшего
 						nearestent = ent
 						startEnds[2][pathid] = nearestent.TrackX
