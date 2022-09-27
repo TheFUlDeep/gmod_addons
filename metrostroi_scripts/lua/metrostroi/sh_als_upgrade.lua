@@ -170,6 +170,7 @@ local function UpgradeTracks()
 						(
 							another.next and another.prev
 							or not another.prev and another.next and math.abs(selfang - (another.next.pos - another.pos):Angle()[2]) < 90
+							--TODO а тут ведь надо тоже < 90 наверное???????
 							or not another.next and another.prev and math.abs(selfang - (another.prev.pos - another.pos):Angle()[2]) > 90
 						)
 					then
