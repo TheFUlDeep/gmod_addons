@@ -11,7 +11,7 @@ jobs:
 
     - uses: leafo/gh-actions-lua@v5
       with:
-        luaVersion: "5.1.5"
+        luaVersion: "5.1"
       env:
         ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
         
