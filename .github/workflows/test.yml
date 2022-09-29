@@ -24,4 +24,4 @@ jobs:
 
     - name: test
       run: |
-        test.lua -o utfTerminal
+        test.lua
