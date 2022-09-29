@@ -1,3 +1,4 @@
+require("lfs")
 DIR_SEP="/" --should be "/" for Unix platforms (Linux and Mac)
 function browseFolder(root)
 	for entity in lfs.dir(root) do
