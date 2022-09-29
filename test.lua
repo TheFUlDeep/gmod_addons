@@ -40,6 +40,6 @@ function scandir(directory, recursive, extensions)
     return fileList
 end
 
-for key, value in ipairs(scandir()) do
+for key, value in ipairs(scandir('',true)) do
     print(value)
 end
