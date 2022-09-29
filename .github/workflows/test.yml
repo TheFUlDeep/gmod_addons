@@ -11,17 +11,10 @@ jobs:
 
     - uses: leafo/gh-actions-lua@v5
       with:
-        luaVersion: "5.1"
+        luaVersion: "5.1.5"
       env:
         ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
-        
-    - uses: leafo/gh-actions-luarocks@v4
-    
-    - name: build
-      run: |
-        luarocks install luafilesystem
-        luarocks make
 
     - name: test
       run: |
-        test.lua
+        lua test.lua
