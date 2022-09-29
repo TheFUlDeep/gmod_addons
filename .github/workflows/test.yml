@@ -16,4 +16,4 @@ jobs:
         ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
 
     - name: test
-      run: dir
+      run: luac -p test.lua
