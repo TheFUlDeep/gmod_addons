@@ -16,4 +16,5 @@ jobs:
         ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
 
     - name: test
-      run: dir /s/b *.lua
+      run: |
+        @echo off & for /f %a in ('dir /s /b') do echo %~fa %~za
