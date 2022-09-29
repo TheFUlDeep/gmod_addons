@@ -20,6 +20,7 @@ jobs:
     - name: build
       run: |
         luarocks install luafilesystem
+        luarocks make
 
     - name: test
       run: |
