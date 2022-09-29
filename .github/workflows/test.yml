@@ -17,4 +17,4 @@ jobs:
 
     - name: test
       run: |
-        echo $(find . -name '*.lua' -print)
+        luac -p $(find . -name '*.lua' -print)
