@@ -24,7 +24,6 @@ if SERVER then return end
 
 local c_net_graph = GetConVar("net_graph")
 
-local white = Color(255,255,255)
 local textdata = {text = empty_str,pos = {0,0}}
 hook.Add("HUDDrawScoreBoard", cpu_load_str, function()
     if not c_net_graph:GetBool() then return end
